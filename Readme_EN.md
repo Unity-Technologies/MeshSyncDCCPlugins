@@ -53,7 +53,6 @@ This is a separate package, but the process for installation and use is the same
 ### 3ds Max
 Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
 - Installation: 
-  - Donload UnityMeshSync_3dsMax_Windows.zip from [releases](https://github.com/unity3d-jp/MeshSync/releases)
   - Copy MeshSyncClient3dsMax.dlu into the directory for plugin paths.
     - Plugin paths can be added in Max by going to Add under Customize -> Configure User and System Paths -> 3rd Party Plug-Ins
     - The default path (C:\Program Files\Autodesk\3ds Max 2019\Plugins) should be fine, but using a separate path is recommended
@@ -83,7 +82,6 @@ Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
 ### Motion Builder
 Confirmed functionality with Motion Builder 2015, 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) 
 - Installation:
-  - Download UnityMeshSync_MotionBuilder_*.zip from [releases](https://github.com/unity3d-jp/MeshSync/releases)
   - Copy MeshSyncClientMotionBuilder.dll to the directory registered as a plugin path 
     - Plugin paths can be added in Motion Builder under Settings -> Preferences -> SDK menu
 - After installation an object called UnityMeshSync will be added to the Asset Browser under Templates -> Devices, so add it to the scene  
@@ -106,8 +104,6 @@ Confirmed functionality with Motion Builder 2015, 2016, 2017, 2018, 2019 + Windo
 ### Blender
 Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows, Mac, Linux (CentOS 7). Be aware that depending on the implementation, **there is a high possibility that upgrading the Blender version will lead to a loss of compatibility**. Be especially careful when upgrading to the popular 2.8 versions. A supported version will be released when issues become known.
 - Installation: 
-  - Download UnityMeshSync_Blender_*.zip from [releases](https://github.com/unity3d-jp/MeshSync/releases) 
-    - When you decompress the file, there will be another zip file in the UnityMeshSync_Blender_* directory, but this can be left alone 
   - In Blender, go to File -> User Preferences -> Add-ons (2.80 and after: Edit -> User Preferences), click "Install Add-on from file" at the bottom of the screen, and select the plugin zip file. 
   - **If an older version is already installed, it must be deleted beforehand**. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu, **restart Blender after removing the older version** then follow the above steps.
 - "Import-Export: Unity Mesh Sync" will be added to the menu, so select it to enable it.
@@ -133,7 +129,6 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
 
   Functionality confirmed with Modo 10, 12, 13 + Windows, Mac, Linux (CentOS 7).
   - Installation:
-    - Download UnityMeshSync_Modo_*.zip from [releases](https://github.com/unity3d-jp/MeshSync/releases)
     - Designate MeshSyncClientModo.fx in Modo under System -> Add Plug-in
   - After installing, View will be added to the menu (Application -> Custom View -> UnityMeshSync), where varous options and settings can be accessed 
   - While "Auto Sync" is checked, changes made to the mesh will automatically be reflected in Unity. If Auto Sync is disabled, the "Manual Sync" button can be used to sync changes
@@ -163,7 +158,6 @@ As of Modo 13, the  [Mood Bridge for Unity](https://learn.foundry.com/modo/conte
 Supported in Windows for version 3 and 4 (32bit & 64bit) and Mac (version 4 only). All 3 versions are probably supported, but 4 versions must be 4.6.4 or later (bone output is not supported for earlier versions). 
 Also, dll is different in version 4.7 and later. This is due to changes to the bone system after 4.7 which lead to a loss of plugin compatibility. Morph output is also supported in 4.7 and later. 
 - Installation:
-  - Download  UnityMeshSync_Metasequoia*.zip from [releases](https://github.com/unity3d-jp/MeshSync/releases) and decompress
   - Go to Help -> About Plug-ins in Metasequoia, and select the plugin file under "Install" in the lower left of the dialogue. It's a Station plugin type. 
   - **If older versions are already installed, remove them manually before hand**. Delete the appropriate files before starting Metasequoia. 
 - Panel -> Unity Mesh Sync will be added after installation, open this and check "Auto Sync".
@@ -183,66 +177,8 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 - Check "Sync Bones" to reflect bones supported by Metasequoia 4 versions. Checking "Sync Poses" will reflect the pose designated under "Skinning". 
 
 
-### Unity
-- Functionality confirmed in Unity 5.6 and later + Windows (64 bit), Mac, Linux (CentOS 7) 
-- Installation:
-  - Download MeshSync.unitypackage from [releases](https://github.com/unity3d-jp/MeshSync/releases) and import it into the project.
-    - This repository can be directly imported into Unity 2018.3 and later versions. Open the project's Packages/manifest.json in a text editor and add the following line under "dependencies".
-    > "com.unity.meshsync": "https://github.com/unity3d-jp/MeshSync.git",
-  
-  - When installing on older versions, **close Unity and delete Assets/UTJ/MeshSync before importing the package**. If the plugin dll loads, the update will fail. 
-  - After importing, the GameObject -> MeshSync menu will be added
-- Create a server object under GameObject -> MeshSync -> Create Server. This object will handle the sync process.
-
-<img align="right" src="https://user-images.githubusercontent.com/1488611/49274442-c40c4400-f4bb-11e8-99d6-3257cdbe7320.png" height=400>
-
-- Root Object
-  - Designate an object to act as the root for object groups generated by synching. If not designated, an object will be created in the root. 
-- Sync Transform, etc.
-  - Setting for enabling/disabling sync for individual components. Created because of situations such as Transform sync getting in the way of checking physics simulation behavior in Play mode.
-- Update Mesh Collider
-  - When enabled, MeshCollider details will also be updated when the Mesh is updated, if an object has a MeshCollider. 
-- Track Material Assignment
-  - When enabled, if a material is assigned by dragging and dropping in the SceneView, that update will be detected and any other Mesh using the same material will also have its material updated. 
-- Animation Interpolation
-  - Sets the animation interpolation method. The default smooth interpolation will be fine in most cases, but for films it may be preferable to match the number of animation samples to the target framerate on the DCC side and disable interpolation by selecting (Constant).   
-- Progressive Display
-  - When enabled, mid-reception scene updates will be reflected in real-time. When disabled, updates will be reflected after all of the scene data is received.  
-  
-  &nbsp;
-
-- Material List
-  - The MeshSyncServer maintains a list of materials. Assigning a material to this list will also assign it to corresponding objects as appropriate. 
-- Make Asset
-  - Meshes created by editing in DCC tools become objects that can only exist as they are in the scene where they are created. They have to be saved as asset files in order to be used in other scenes or projects. 
-  Click the "Export Mesh "button in the MeshSyncServer to make those meshes into assets (files will be created in the directory designated by the "Asset Export Path").  
-
-
-## Tips and Important Points
-- Sync happens via TCP/IP, so it can still be done even if Unity and the DCC tool are on separate machines. To set up this kind of connection go to the client DCC tool's Server / Port setting and designate the machine running Unity.
-
-
-- When there is a MeshSyncServer object in the scene in Unity, open the server's address:port in your browser to view the server's Unity GameView via the browser(the default is [127.0.0.1:8080](http://127.0.0.1:8080)). 
-  If a message is sent from the browser's message form, that message will appear in Unity's Console. This communication method can be useful when Unity and the DCC tool are being used by different people. 
-
-
-- If only the pose/animation are being edited, we recommend disabling "Sync Meshes". Not sending mesh data can make performance lighter.
-  - If only the bones are being edited on the plugin side the mesh shouldn't be sent, but this can be difficult to judge so currently that doesn't happen by default.
-
-
-- Note that in versions prior to Unity 2019.1 the most effective number of bones per vertex is 4. 
-  If there are too many bones, the results won't sync between the DCC tool and Unity. 
-    - In Unity 2019.1 a maximum of 255 bones can be used (See "Unlimited" in Skin Weights under Project Settings -> Quality -> Other).
-    This means that cases which require lots of bones, such as facial animations, should be able to sync with no problem.
-
-
-- With these qualities in mind, this plugin is only designed to be used in the Editor, but it will also work if used in the runtime. **Be sure not to accidentally leave this plugin in the final build.**  
-  The animations won't sync in the runtime, but model sync will still work. 
-
 
 ##  Related
 - [NormalPainter](https://github.com/unity3d-jp/NormalPainter): Tool for editing vectors in Unity
 - [BlendShapeBuilder](https://github.com/unity3d-jp/BlendShapeBuilder): Tool for building BlendShapes in Unity
 
-## License
-[MIT](LICENSE.txt), the Blender plugin license is [GPL3](Plugin/MeshSyncClientBlender/LICENSE.txt) (because a portion of the Blender source code is used)
