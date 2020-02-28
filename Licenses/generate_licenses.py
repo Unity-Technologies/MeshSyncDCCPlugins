@@ -88,8 +88,8 @@ class LicenseBuilder(object):
     logging.info("List of licenses: %s", ', '.join(license_libs))
 
     # Generate markdown.
-    output_license_file = open(os.path.join(output_dir, 'License.md'), 'w+')
-    output_license_file.write('This package contains third-party software components governed by the license(s) indicated below:\n\n')
+    output_license_file = open(os.path.join(output_dir, 'Third Party Notices.md'), 'w+')
+    output_license_file.write('This repository contains third-party software components governed by the license(s) indicated below:\n\n')
     
     for license_lib in license_libs:
       if len(LIB_TO_LICENSES_DICT[license_lib]) == 0:
@@ -111,9 +111,9 @@ class LicenseBuilder(object):
 
 #example: generate_licenses.py ..
 def main():
-    parser = argparse.ArgumentParser(description='Generate License.md')
+    parser = argparse.ArgumentParser(description='Generate Third Party Notices.md')
     parser.add_argument('--verbose', action='store_true', default=False, help='Debug logging.')
-    parser.add_argument('output_dir', help='Directory to output License.md to.')
+    parser.add_argument('output_dir', help='Directory to output Third Party Notices.md to.')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
