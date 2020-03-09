@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+cmake  -DMESHSYNC_VER:STRING=$1 ..
