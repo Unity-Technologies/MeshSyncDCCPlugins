@@ -30,10 +30,25 @@
 ## Build Steps (Mac)
 
 Open a terminal and execute the following.
-While doing that, replace `[meshsync_version]` withe the actual version, for example `0.0.1-preview`
+While doing that, replace `meshsync_version` withe the actual version, for example `0.0.1-preview`
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
-$ ./build_meshsync_dcc_plugin [meshsync_version]
+$ ./build_meshsync_dcc_plugin meshsync_version [Custom Arguments]
+$ xcodebuild -scheme mscore -configuration MinSizeRel build
 ```
+
+Custom arguments can be specified to build only specify DCC tool plugins. If omitted, then the script will try to build the plugins for all the supported DCC tools.
+
+### Maya
+
+
+
+* -DBUILD_MAYA_ALL=ON
+* -DBUILD_MAYA_2016_PLUGIN=ON
+* -DBUILD_MAYA_2017_PLUGIN=ON
+* -DBUILD_MAYA_2018_PLUGIN=ON
+* -DBUILD_MAYA_2019_PLUGIN=ON
+* -DBUILD_MAYA_2020_PLUGIN=ON
+
