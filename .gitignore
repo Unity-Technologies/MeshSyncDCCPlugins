@@ -34,5 +34,6 @@
 # CMake
 Build/CMakeCache.txt
 Build/CMakeFiles**
+Build/cmake_install.cmake
 Build/MakeFile
 Build/MeshSync-**
