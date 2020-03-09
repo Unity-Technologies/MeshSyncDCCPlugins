@@ -44,7 +44,11 @@ Build/*.xcodeproj/**
 Build/ispc**
 Build/*.vcxproj**
 Build/*.sln
+Build/Src**
 
 # XCode
 Build/MeshSyncDCCPlugin.build/**
+
+# Symbolic links
+Src/MeshSyncClientMaya2*
 
