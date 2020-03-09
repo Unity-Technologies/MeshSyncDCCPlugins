@@ -45,3 +45,6 @@ Build/ispc**
 Build/*.vcxproj**
 Build/*.sln
 
+# XCode
+Build/MeshSyncDCCPlugin.build/**
+
