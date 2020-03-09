@@ -14,11 +14,10 @@ fi
 MESHSYNC_VER=$1
 
 #Custom build arguments
-if [ "$#" >=2 ]; then
+if [ "$#" -ge 2 ]; then
     shift 1
     CMAKE_BUILD_ARGS="$*"
-    echo "Custom Build Arguments: $CMAKE_BUILD_ARGS"
 fi
 
-
+echo "cmake build Arguments: $CMAKE_BUILD_ARGS"
 cmake  -DMESHSYNC_VER:STRING=$MESHSYNC_VER $CMAKE_BUILD_ARGS ..
