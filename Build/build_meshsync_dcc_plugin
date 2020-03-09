@@ -1,3 +1,24 @@
 #!/usr/bin/env bash
 
-cmake  -DMESHSYNC_VER:STRING=$1 ..
+
+# The default will build all
+CMAKE_BUILD_ARGS="-DBUILD_MAYA_ALL=ON -DBUILD_3DSMAX_ALL=ON -DBUILD_BLENDER_ALL=ON"
+
+#Invalid arguments check
+if [ "$#" -le 0  ]; then
+    echo "Usage: build_meshsync_dcc_plugin [meshsync_version]"
+    exit
+    #CMAKE_BUILD_ARGS="-DBUILD_MAYA_ALL=ON -DBUILD_3DSMAX_ALL=ON -DBUILD_BLENDER_ALL=ON"
+fi
+
+MESHSYNC_VER=$1
+
+#Custom build arguments
+if [ "$#" >=2 ]; then
+    shift 1
+    CMAKE_BUILD_ARGS="$*"
+    echo "Custom Build Arguments: $CMAKE_BUILD_ARGS"
+fi
+
+
+cmake  -DMESHSYNC_VER:STRING=$MESHSYNC_VER $CMAKE_BUILD_ARGS ..
