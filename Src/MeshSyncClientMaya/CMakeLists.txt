@@ -1,8 +1,10 @@
+# Find version
 string(REGEX MATCH "([LT0-9.]+)$" MAYA_VERSION "${CMAKE_CURRENT_SOURCE_DIR}")
 string(REGEX MATCH "([0-9.]+)$" MAYA_YEAR ${MAYA_VERSION})
 string(REGEX MATCH "LT" MAYA_LT ${MAYA_VERSION})
 set(MESHSYNC_CLIENT_MAYA "MeshSyncClientMaya${MAYA_VERSION}")
 
+set(MESHSYNC_PLUGIN_MAYA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 include(Maya)
 setup_maya(${MAYA_VERSION})
@@ -11,16 +13,22 @@ file(GLOB sources *.cpp *.h)
 add_library(${MESHSYNC_CLIENT_MAYA} SHARED ${sources})
 add_dependencies(${MESHSYNC_CLIENT_MAYA} MeshUtils MeshSync)
 
+#Include, pch
+target_precompile_headers(${MESHSYNC_CLIENT_MAYA}  PRIVATE "${MESHSYNC_PLUGIN_MAYA_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_MAYA} PRIVATE 
     "${CMAKE_SOURCE_DIR}" 
     "${MAYA${MAYA_VERSION}_INCLUDE_DIR}"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
-target_link_libraries(${MESHSYNC_CLIENT_MAYA} MeshSync MeshUtils ${Poco_LIBRARIES} ${MAYA${MAYA_VERSION}_LIBRARIES})
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_MAYA} ${ZSTD_LIBRARY})
-endif()
+target_link_libraries(${MESHSYNC_CLIENT_MAYA} 
+    MeshSync MeshUtils 
+    ${Poco_LIBRARIES} 
+    ${MAYA${MAYA_VERSION}_LIBRARIES}
+)
+
+target_link_libraries(${MESHSYNC_CLIENT_MAYA} ${ZSTD_LIBRARY})
+
 if(${MAYA_VERSION} MATCHES "LT")
     add_definitions(-DMAYA_LT=1)
 else()
