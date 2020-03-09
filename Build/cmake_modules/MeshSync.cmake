@@ -17,13 +17,18 @@ function(get_meshsync meshsync_ver)
            file(REMOVE ${MESHSYNC_ARCHIVE_LOCAL_PATH})
            message(FATAL_ERROR "Could not download MeshSync ${meshsync_ver} !")
        endif()
+       
+       # Extract
+       execute_process(
+           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+           COMMAND tar -xf ${MESHSYNC_ARCHIVE_LOCAL_PATH}
+       )
    endif()
-
-   
-   execute_process(
-       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-       COMMAND tar -xf ${MESHSYNC_ARCHIVE_LOCAL_PATH}
-   )
-
 endfunction()
 
+# ------------------------------------------------------------------------------
+
+function(setup_meshsync meshsync_ver)     
+    set(MESHSYNC_PLUGIN_LOCAL_PATH  "${CMAKE_BINARY_DIR}/MeshSync-${meshsync_ver}/Plugin~")
+    add_subdirectory(${MESHSYNC_PLUGIN_LOCAL_PATH})
+endfunction()
