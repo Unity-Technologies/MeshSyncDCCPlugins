@@ -35,3 +35,4 @@
 Build/CMakeCache.txt
 Build/CMakeFiles**
 Build/MakeFile
+Build/MeshSync-**
