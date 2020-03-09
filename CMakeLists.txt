@@ -5,6 +5,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
 set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 
 # prerequisites. 
+find_package(Poco COMPONENTS Net)
+include(ISPC)
+#find_package(ZSTD)
+#add_definitions(-DmsEnableZSTD)
 
 #CCache variable to hold MeshSync version
 SET(MESHSYNC_VER "0.0.1-preview" CACHE STRING "MeshSync package version")
@@ -26,6 +30,25 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 
 # CXX Setup
+if(APPLE)
+    set(PLATFORM "Mac")
+    set(MAC ON)
+elseif(ANDROID)
+    set(PLATFORM "Android")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(PLATFORM "Linux")
+    set(LINUX ON)
+
+elseif(WIN32) 
+    #Compile with MultiThreaded DLL flag to use dynamically-linked runtime library (Poco)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")    
+    
+    #Set /fp. We need so that -infinity == infinity == NaN. See Transform::setupDataFlags()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+endif()
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,8 +70,12 @@ option(BUILD_MAYA_2020_PLUGIN "Build MeshSync Plugin for Maya 2020" OFF)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-if(BUILD_MAYA_2020_PLUGIN)
-    add_subdirectory_link(MeshSyncClientMaya2020 MeshSyncClientMaya)
+if(BUILD_MAYA_2019_PLUGIN)
+    add_subdirectory_link(MeshSyncClientMaya2019 MeshSyncClientMaya)
 endif()
+
+#if(BUILD_MAYA_2020_PLUGIN)
+#    add_subdirectory_link(MeshSyncClientMaya2020 MeshSyncClientMaya)
+#endif()
 
 
