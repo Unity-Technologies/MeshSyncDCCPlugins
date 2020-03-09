@@ -15,8 +15,12 @@ function(setup_maya maya_version)
             maya/MGlobal.h
         HINTS
             ${MAYA${maya_version}_PATHS}
+        PATH_SUFFIXES 
+            include
     )
     mark_as_advanced(MAYA${maya_version}_INCLUDE_DIR)
+    
+    # message(${MAYA${maya_version}_INCLUDE_DIR})
     
     # Libs
     foreach(MAYA_LIB OpenMayaAnim OpenMayaFX OpenMayaRender OpenMayaUI OpenMaya Foundation)
@@ -34,6 +38,8 @@ function(setup_maya maya_version)
             list(APPEND MAYA${maya_version}_LIBRARIES ${MAYA${maya_version}_${MAYA_LIB}_LIBRARY})
         endif()
     endforeach()
+    
+    # message(${MAYA${maya_version}_LIBRARIES})
 
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args("Maya${maya_version}"
