@@ -43,6 +43,7 @@
 
 #include "MayaLTSupport.h"
 
+#include <maya/MTypes.h>
 #include <maya/MAnimControl.h>
 #include <maya/MGlobal.h>
 #include <maya/MDistance.h>
