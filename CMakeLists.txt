@@ -11,6 +11,30 @@ SET(MESHSYNC_VER "0.0.1-preview" CACHE STRING "MeshSync package version")
 
 # Get MeshSync
 include(MeshSync)
-
 get_meshsync(${MESHSYNC_VER})
+setup_meshsync(${MESHSYNC_VER})
+
+# Build MeshSync
+
+
+
+# Maya
+if(BUILD_MAYA_ALL)
+    option(BUILD_MAYA_2016_PLUGIN "Build MeshSync Plugin for Maya 2016" ON)
+    option(BUILD_MAYA_2017_PLUGIN "Build MeshSync Plugin for Maya 2017" ON)
+    option(BUILD_MAYA_2018_PLUGIN "Build MeshSync Plugin for Maya 2018" ON)
+    option(BUILD_MAYA_2019_PLUGIN "Build MeshSync Plugin for Maya 2019" ON)
+    option(BUILD_MAYA_2020_PLUGIN "Build MeshSync Plugin for Maya 2020" ON)
+endif()
+
+option(BUILD_MAYA_2016_PLUGIN "Build MeshSync Plugin for Maya 2016" OFF)
+option(BUILD_MAYA_2017_PLUGIN "Build MeshSync Plugin for Maya 2017" OFF)
+option(BUILD_MAYA_2018_PLUGIN "Build MeshSync Plugin for Maya 2018" OFF)
+option(BUILD_MAYA_2019_PLUGIN "Build MeshSync Plugin for Maya 2019" OFF)
+option(BUILD_MAYA_2020_PLUGIN "Build MeshSync Plugin for Maya 2020" OFF)
+
+if(BUILD_MAYA_2020_PLUGIN)
+#    add_subdirectory_link(MeshSyncClientMaya2015 MeshSyncClientMaya)
+endif()
+
 
