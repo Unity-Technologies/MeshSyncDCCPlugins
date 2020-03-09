@@ -30,5 +30,6 @@ endfunction()
 
 function(setup_meshsync meshsync_ver)     
     set(MESHSYNC_PLUGIN_LOCAL_PATH  "${CMAKE_BINARY_DIR}/MeshSync-${meshsync_ver}/Plugin~")
+    set(MESHSYNC_PLUGIN_SRC_ROOT    "${MESHSYNC_PLUGIN_LOCAL_PATH}/Src" PARENT_SCOPE)
     add_subdirectory(${MESHSYNC_PLUGIN_LOCAL_PATH})
 endfunction()
