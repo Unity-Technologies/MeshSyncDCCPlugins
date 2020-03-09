@@ -27,6 +27,14 @@
 
 
 
+## More Prerequisites
+
+
+``` 
+export MAYA2019_SDK_PATH=your_path
+export MAYA2020_SDK_PATH=your_path
+``` 
+
 ## Build Steps (Mac)
 
 Open a terminal and execute the following.
@@ -42,7 +50,6 @@ $ xcodebuild -scheme mscore -configuration MinSizeRel build
 Custom arguments can be specified to build only specify DCC tool plugins. If omitted, then the script will try to build the plugins for all the supported DCC tools.
 
 ### Maya
-
 
 
 * -DBUILD_MAYA_ALL=ON
