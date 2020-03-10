@@ -10,7 +10,7 @@ function(setup_maya maya_version)
         "/opt/autodesk/maya${maya_version}"        
     )
     
-    # Header
+    # Header. Use find_path to store to cache
     find_path(MAYA${maya_version}_INCLUDE_DIR
         NAMES 
             maya/MGlobal.h
@@ -23,7 +23,7 @@ function(setup_maya maya_version)
     
     # message(${MAYA${maya_version}_INCLUDE_DIR})
     
-    # Libs
+    # Libs, and set cache at the end
     foreach(MAYA_LIB OpenMayaAnim OpenMayaFX OpenMayaRender OpenMayaUI OpenMaya Foundation)
         find_file(MAYA${maya_version}_${MAYA_LIB}_LIBRARY 
             NAMES 
@@ -40,16 +40,16 @@ function(setup_maya maya_version)
             list(APPEND MAYA${maya_version}_LIBRARIES ${MAYA${maya_version}_${MAYA_LIB}_LIBRARY})
         endif()
     endforeach()
+    set(MAYA${maya_version}_LIBRARIES ${MAYA${maya_version}_LIBRARIES} CACHE STRING "Maya ${maya_version} libraries")
+    mark_as_advanced(MAYA${maya_version}_LIBRARIES)
     
-    # message(${MAYA${maya_version}_LIBRARIES})
-
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args("Maya${maya_version}"
         DEFAULT_MSG
         MAYA${maya_version}_INCLUDE_DIR
         MAYA${maya_version}_LIBRARIES
-    )
-    
+    )    
+   
     if(NOT ${Maya${maya_version}_FOUND})  
         message(FATAL_ERROR "Maya ${maya_version} SDK could not be found. Searched paths: ${MAYA${maya_version}_PATHS}")        
     endif()
