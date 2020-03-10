@@ -7,10 +7,11 @@ set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
 include(ISPC)
-#find_package(ZSTD)
-#add_definitions(-DmsEnableZSTD)
+set(ENABLE_ZSTD ON CACHE BOOL "Use ZSTD for scene cache compression")
+find_package(ZSTD)
+add_definitions(-DmsEnableZSTD)
 
-#CCache variable to hold MeshSync version
+#CCache variable to hold MeshSync version. This is overwritten by the passed argument
 SET(MESHSYNC_VER "0.0.1-preview" CACHE STRING "MeshSync package version")
 
 # MeshSync
@@ -22,7 +23,14 @@ setup_meshsync(${MESHSYNC_VER})
 # Call add_subdirectory using symbolic link
 function(add_subdirectory_link to from)
     if(NOT EXISTS "${SRC_ROOT}/${to}")
-        execute_process(WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" COMMAND ln -s "${SRC_ROOT}/${from}" "${SRC_ROOT}/${to}")
+        if(WIN32) 
+            file(TO_NATIVE_PATH "${SRC_ROOT}/${from}" native_src)
+            file(TO_NATIVE_PATH "${SRC_ROOT}/${to}"   native_dest)
+            execute_process(WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" COMMAND cmd.exe /c mklink /D ${native_dest} ${native_src})
+        else()   
+            execute_process(WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" COMMAND ln -s "${SRC_ROOT}/${from}" "${SRC_ROOT}/${to}" )
+        endif()
+        
     endif()
     add_subdirectory("${SRC_ROOT}/${to}")
 endfunction()
