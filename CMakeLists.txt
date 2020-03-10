@@ -52,6 +52,9 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")    
     
+    # Additional Poco Net dependencies on Windows
+    list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
+    
     #Set /fp. We need so that -infinity == infinity == NaN. See Transform::setupDataFlags()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 endif()
