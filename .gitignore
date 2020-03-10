@@ -48,6 +48,10 @@ Build/Src**
 # XCode
 Build/MeshSyncDCCPlugin.build/**
 
+# Visual Studio
+Build/.vs
+Build/x64
+
 # Symbolic links
 Src/MeshSyncClientMaya2*
 
