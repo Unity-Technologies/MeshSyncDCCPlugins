@@ -3,7 +3,7 @@ function(setup_maya maya_version)
 
     # The possible root paths of Maya
     list(APPEND MAYA${maya_version}_PATHS
-        ENV MAYA${maya_version}_SDK_PATH
+        $ENV{MAYA_SDK_${maya_version}}
         "/Applications/Autodesk/maya${maya_version}"
         "/Applications/Autodesk/maya${maya_version}/Maya.app/Contents"
         "/usr/autodesk/maya${maya_version}"
@@ -27,6 +27,7 @@ function(setup_maya maya_version)
     foreach(MAYA_LIB OpenMayaAnim OpenMayaFX OpenMayaRender OpenMayaUI OpenMaya Foundation)
         find_file(MAYA${maya_version}_${MAYA_LIB}_LIBRARY 
             NAMES 
+                ${MAYA_LIB}.lib     # Multithreaded-DLL, Windows            
                 lib${MAYA_LIB}${CMAKE_SHARED_LIBRARY_SUFFIX} 
             PATHS
                 ${MAYA${maya_version}_PATHS}                
