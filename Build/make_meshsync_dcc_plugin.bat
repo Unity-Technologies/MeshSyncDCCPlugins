@@ -11,7 +11,7 @@ for %%x in (%*) do (
 REM Invalid arguments check
 IF %ARG_COUNT% LEQ  0 (
     echo Usage: build_meshsync_dcc_plugin [meshsync_version]
-    exit
+    exit /B
 )
 
 SET MESHSYNC_VER=%1
