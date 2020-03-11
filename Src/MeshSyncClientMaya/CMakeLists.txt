@@ -2,10 +2,9 @@
 string(REGEX MATCH "([LT0-9.]+)$" MAYA_VERSION "${CMAKE_CURRENT_SOURCE_DIR}")
 string(REGEX MATCH "([0-9.]+)$" MAYA_YEAR ${MAYA_VERSION})
 string(REGEX MATCH "LT" MAYA_LT ${MAYA_VERSION})
-set(MESHSYNC_CLIENT_MAYA "MeshSyncClientMaya${MAYA_VERSION}")
+set(MESHSYNC_CLIENT_MAYA "MeshSyncClientMAYA_${MAYA_VERSION}")
 
 set(MESHSYNC_PLUGIN_MAYA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
 include(Maya)
 setup_maya(${MAYA_VERSION})
 
@@ -39,6 +38,8 @@ if(LINUX)
 elseif(MAC)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES COMPILE_FLAGS -DOSMac_)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".bundle")
+elseif(WIN32)
+    set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".mll")
 endif()
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME "MeshSyncClientMaya")
