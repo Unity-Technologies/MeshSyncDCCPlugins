@@ -24,23 +24,26 @@
     $ devenv zstd.sln /upgrade
     $ msbuild zstd.sln /p:Configuration=Release /p:Platform=x64
     ```
-
+1. [Setup DCC tools](SetupDCC.md)
 
 
 ## Build Steps (Win)
 
 
 Start "Developer Command Prompt for VS 2017" and execute the following:
-While doing that, replace `<meshsync_version>` with the actual version, for example `0.0.1-preview`
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin\Build
-$ make_meshsync_dcc_plugin.bat <meshsync_version> [Custom Arguments]
+$ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
 $ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=MinSizeRel /p:Platform=x64 /m /nologo
 ```
 
-Custom arguments can be specified to build only specify DCC tool plugins. If omitted, then the script will try to build the plugins for all the supported DCC tools.
+There are two parameters in the script
+* `<meshsync_version>`  
+  The MeshSync package version that we want the DCC plugins to work with.
+* `[optional_arguments]`  
+  See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
 > For a regular "Command Prompt", there is a script: *VsDevCmd_2017.bat* 
 > under the *Build* folder, which if executed, will turn the prompt into a 
@@ -72,12 +75,12 @@ Custom arguments can be specified to build only specify DCC tool plugins. If omi
     ``` 
     $ brew install zstd
     ```  
+1. [Setup DCC tools](SetupDCC.md)
 
 
 ## Build Steps (Mac)
 
-Open a terminal and execute the following.
-While doing that, replace `<meshsync_version>` with the actual version, for example `0.0.1-preview`
+Open a terminal and execute the following:
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
@@ -86,22 +89,12 @@ $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -scheme mscore -configuration MinSizeRel build
 ```
 
-Custom arguments can be specified to build only specify DCC tool plugins. If omitted, then the script will try to build the plugins for all the supported DCC tools.
+There are two parameters in the script
+* `<meshsync_version>`  
+  The MeshSync package version that we want the DCC plugins to work with.
+* `[optional_arguments]`  
+  See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
-### Maya
-
-### More Prerequisites
 
 
-``` 
-export MAYA_SDK_2019=your_path
-export MAYA_SDK_2020=your_path
-``` 
-
-* -DBUILD_MAYA_ALL=ON
-* -DBUILD_MAYA_2016_PLUGIN=ON
-* -DBUILD_MAYA_2017_PLUGIN=ON
-* -DBUILD_MAYA_2018_PLUGIN=ON
-* -DBUILD_MAYA_2019_PLUGIN=ON
-* -DBUILD_MAYA_2020_PLUGIN=ON
 
