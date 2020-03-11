@@ -51,6 +51,8 @@ function(setup_maya maya_version)
     )    
    
     if(NOT ${Maya${maya_version}_FOUND})  
-        message(FATAL_ERROR "Maya ${maya_version} SDK could not be found. Searched paths: ${MAYA${maya_version}_PATHS}")        
+        message(FATAL_ERROR "Maya ${maya_version} SDK could not be found. Please define MAYA_SDK_${maya_version}. \n"
+            "Paths searched for Maya SDK: ${MAYA${maya_version}_PATHS}"
+        )
     endif()
 endfunction()
