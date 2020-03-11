@@ -2,8 +2,9 @@
 
 Please refer to the following sections to setup each DCC tool.
 
-Unless specified by [MakeOptionalArguments](MakeOptionalArguments.md), 
-the build script will build MeshSync plugins for [all supported DCC tools](../../README.md).
+> Unless specified by [MakeOptionalArguments](MakeOptionalArguments.md), 
+the build script will build MeshSync plugins for [all supported DCC tools](../../README.md), 
+and therefore all supported DCC tools below have to be set up.
 
 ## Maya
 
