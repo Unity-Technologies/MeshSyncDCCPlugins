@@ -65,28 +65,27 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Maya
+list(APPEND MAYA_VERSIONS
+    MAYA_2017
+    MAYA_2018
+    MAYA_2019
+    MAYA_2020
+) 
+
 if(BUILD_MAYA_ALL)
-    option(BUILD_MAYA_2016_PLUGIN "Build MeshSync Plugin for Maya 2016" ON)
-    option(BUILD_MAYA_2017_PLUGIN "Build MeshSync Plugin for Maya 2017" ON)
-    option(BUILD_MAYA_2018_PLUGIN "Build MeshSync Plugin for Maya 2018" ON)
-    option(BUILD_MAYA_2019_PLUGIN "Build MeshSync Plugin for Maya 2019" ON)
-    option(BUILD_MAYA_2020_PLUGIN "Build MeshSync Plugin for Maya 2020" ON)
+    foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
+        option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" ON)
+    endforeach(CUR_MAYA_VER)   
 endif()
 
-option(BUILD_MAYA_2016_PLUGIN "Build MeshSync Plugin for Maya 2016" OFF)
-option(BUILD_MAYA_2017_PLUGIN "Build MeshSync Plugin for Maya 2017" OFF)
-option(BUILD_MAYA_2018_PLUGIN "Build MeshSync Plugin for Maya 2018" OFF)
-option(BUILD_MAYA_2019_PLUGIN "Build MeshSync Plugin for Maya 2019" OFF)
-option(BUILD_MAYA_2020_PLUGIN "Build MeshSync Plugin for Maya 2020" OFF)
+foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
+    option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
+    if (BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN)
+        add_subdirectory_link(MeshSyncClient${CUR_MAYA_VER} MeshSyncClientMaya)
+    endif()
+endforeach(CUR_MAYA_VER)   
+
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-if(BUILD_MAYA_2019_PLUGIN)
-    add_subdirectory_link(MeshSyncClientMaya2019 MeshSyncClientMaya)
-endif()
-
-#if(BUILD_MAYA_2020_PLUGIN)
-#    add_subdirectory_link(MeshSyncClientMaya2020 MeshSyncClientMaya)
-#endif()
 
 
