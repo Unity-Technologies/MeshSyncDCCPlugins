@@ -53,5 +53,5 @@ Build/.vs
 Build/x64
 
 # Symbolic links
-Src/MeshSyncClientMaya2*
+Src/MeshSyncClientMAYA_*
 
