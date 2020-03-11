@@ -44,3 +44,6 @@ Src/.vs
 # Symbolic links
 Src/MeshSyncClientMAYA_*
 
+# Files to be distributed (Build results)
+Dist/Maya
+
