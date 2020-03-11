@@ -3,6 +3,7 @@ PROJECT(MeshSyncDCCPlugin)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
 set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
+set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
 
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
