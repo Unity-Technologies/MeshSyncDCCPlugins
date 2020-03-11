@@ -51,6 +51,7 @@ Build/MeshSyncDCCPlugin.build/**
 # Visual Studio
 Build/.vs
 Build/x64
+Src/.vs
 
 # Symbolic links
 Src/MeshSyncClientMAYA_*
