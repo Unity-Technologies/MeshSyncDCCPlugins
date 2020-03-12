@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # The default will build all
 CMAKE_BUILD_ARGS="-DBUILD_MAYA_ALL=ON -DBUILD_3DSMAX_ALL=ON -DBUILD_BLENDER_ALL=ON"
 
@@ -8,7 +7,6 @@ CMAKE_BUILD_ARGS="-DBUILD_MAYA_ALL=ON -DBUILD_3DSMAX_ALL=ON -DBUILD_BLENDER_ALL=
 if [ "$#" -le 0  ]; then
     echo "Usage: build_meshsync_dcc_plugin [meshsync_version]"
     exit
-    #CMAKE_BUILD_ARGS="-DBUILD_MAYA_ALL=ON -DBUILD_3DSMAX_ALL=ON -DBUILD_BLENDER_ALL=ON"
 fi
 
 MESHSYNC_VER=$1
@@ -22,7 +20,7 @@ fi
 BUILD_SYSTEM=""
 case "${unameOut}" in
     Darwin*)    BUILD_SYSTEM="-GXcode";;
-    *)          BUILD_SYSTEM="-GXcode";;
+    *)          BUILD_SYSTEM="";;
 esac
 echo ${machine}
 
