@@ -14,6 +14,8 @@ Based on the version of [Maya](https://www.autodesk.com/products/maya/overview),
 
 For example in MacOS:
 ``` 
+export MAYA_SDK_2017=/Applications/Autodesk/maya2017/Maya.app/Contents
+export MAYA_SDK_2018=/path/to/maya/sdk/2018
 export MAYA_SDK_2019=/path/to/maya/sdk/2019
 export MAYA_SDK_2020=/path/to/maya/sdk/2020
 ``` 
