@@ -43,10 +43,10 @@ $ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
 $ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=MinSizeRel /p:Platform=x64 /m /nologo
 ```
 
-There are two parameters in the script
+There are two parameters in the script  
 * `<meshsync_version>`  
-  The MeshSync package version that we want the DCC plugins to work with.
-* `[optional_arguments]`  
+  The MeshSync package version that we want the DCC plugins to work with.  
+* `[optional_arguments]`   
   See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
 > For a regular "Command Prompt", there is a script: *VsDevCmd_2017.bat* 
@@ -62,6 +62,10 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
 
 1. Install [cmake](https://cmake.org/) 
 1. Install [XCode](https://developer.apple.com/xcode/)
+1. Install XCode Command Line tools  
+    ``` 
+    xcode-select --install
+    ```  
 1. Install [Homebrew](https://brew.sh/)
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
 1. Build [Poco](https://pocoproject.org) (static libraries).  
@@ -80,11 +84,15 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
     export Poco_DIR=~/MySDK/poco
     ```  
     It might also be good to add this command to *~/.bash_profile*
-1. Install [zstd](https://github.com/facebook/zstd/releases)  via Homebrew  
+1. Install the following via Homebrew  
     ``` 
     $ brew install zstd
+    $ brew install tbb
     ```  
-    Currently, the used version of zstd is `stable 1.4.4`.
+    
+    Currently, the used version of each is:
+    * zstd: `stable 1.4.4`.
+    * tbb:  `stable 2020_U1`.
     
 1. [Setup DCC tools](SetupDCC.md)
 
@@ -100,9 +108,9 @@ $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration MinSizeRel build
 ```
 
-There are two parameters in the script
-* `<meshsync_version>`  
-  The MeshSync package version that we want the DCC plugins to work with.
+There are two parameters in the script  
+* `<meshsync_version>`    
+  The MeshSync package version that we want the DCC plugins to work with.  
 * `[optional_arguments]`  
   See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
