@@ -26,7 +26,9 @@ target_link_libraries(${MESHSYNC_CLIENT_MAYA}
     ${MAYA${MAYA_VERSION}_LIBRARIES}
 )
 
-target_link_libraries(${MESHSYNC_CLIENT_MAYA} ${ZSTD_LIBRARY})
+if(ENABLE_ZSTD)
+    target_link_libraries(${MESHSYNC_CLIENT_MAYA} ${ZSTD_LIBRARY})
+endif()
 
 if(${MAYA_VERSION} MATCHES "LT")
     add_definitions(-DMAYA_LT=1)
