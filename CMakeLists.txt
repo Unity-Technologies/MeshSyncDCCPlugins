@@ -75,13 +75,13 @@ list(APPEND MAYA_VERSIONS
 
 if(BUILD_MAYA_ALL)
     foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
-        option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" ON)
+        option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" ON)
     endforeach(CUR_MAYA_VER)   
 endif()
 
 foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
-    option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
-    if (BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN)
+    option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
+    if (BUILD_${CUR_MAYA_VER}_PLUGIN)
         add_subdirectory_link(MeshSyncClient${CUR_MAYA_VER} MeshSyncClientMaya)
     endif()
 endforeach(CUR_MAYA_VER)   
@@ -90,3 +90,20 @@ endforeach(CUR_MAYA_VER)
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+# Maya
+list(APPEND BLENDER_VERSIONS
+    BLENDER_2_80
+) 
+
+if(BUILD_BLENDER_ALL)
+    foreach(CUR_BLENDER_VER IN LISTS BLENDER_VERSIONS)
+        option(BUILD_${CUR_BLENDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_BLENDER_VER}" ON)
+    endforeach(CUR_BLENDER_VER)   
+endif()
+
+foreach(CUR_BLENDER_VER IN LISTS BLENDER_VERSIONS)
+    option(BUILD_${CUR_BLENDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_BLENDER_VER}" OFF)
+    if (BUILD_${CUR_BLENDER_VER}_PLUGIN)
+        add_subdirectory_link(MeshSyncClient${CUR_BLENDER_VER} MeshSyncClientBlender)
+    endif()
+endforeach(CUR_BLENDER_VER)   
