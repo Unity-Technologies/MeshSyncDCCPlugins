@@ -1,12 +1,18 @@
+<img src="Docs/Images/Demo.gif">
 
-![demo](https://user-images.githubusercontent.com/1488611/39971828-98afa1d8-573d-11e8-9a6f-86263bee8949.gif)
-# MeshSync
-[English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/MeshSync)
+# Other Languages
+- [日本語](Readme_JP.md)
 
-DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるツールです。ゲーム上でどう見えるかをその場で確認しながらモデリングすることを可能にします。  
-Unity と DCC ツール両方のプラグインとして機能し、現在 [Maya](https://www.autodesk.eu/products/maya/overview), [Maya LT](https://www.autodesk.eu/products/maya-lt/overview), [3ds Max](https://www.autodesk.com/products/3ds-max/overview), [Blender](https://blenderartists.org/), [メタセコイア](http://www.metaseq.net/), [xismo](http://mqdl.jpn.org/) をサポートしています。
+# MeshSyncDCCPlugin
 
-## Supported platforms
+DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるためのパッケージ: 
+[MeshSync](https://github.com/unity3d-jp/MeshSync) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
+MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
+
+サポートされている DCC ツールにインストールする手順については [Installation](Docs/en/Installation.md) を参照して下さい。
+(現在英語のみとなっています)
+
+## サポートされている DCC ツール
 
 |                     | Windows            | Mac                | Linux              | 
 | --------------------| ------------------ | ------------------ |------------------- | 
@@ -30,10 +36,19 @@ Unity と DCC ツール両方のプラグインとして機能し、現在 [Maya
 | Metasequoia 3.x     | :white_check_mark: |                    |                    | 
 | Metasequoia 4.x     | :white_check_mark: |                    | :white_check_mark: | 
 
-Notes:
-* :white_check_mark: : Supported
-* :x: : Impossible to support (platform unsupported by the DCC, etc)
-* empty : May be supported in the future
+メモ:
+* :white_check_mark: : 対応済み
+* :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
+* empty : これから対応する可能性がある
+
+# License
+- [License](LICENSE.md)
+- [Third Party Notices](Third%20Party%20Notices.md)
+
+# 現在整理中
+
+このドキュメントは現在整理中です。
+ご参考までに、前のバージョンのドキュメントは下記においてあります。
 
 ## 使い方
 1. [Maya](#maya)
