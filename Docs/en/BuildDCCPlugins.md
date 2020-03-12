@@ -97,7 +97,7 @@ Open a terminal and execute the following:
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
-$ xcodebuild -scheme mscore -configuration MinSizeRel build
+$ xcodebuild -alltargets -configuration MinSizeRel build
 ```
 
 There are two parameters in the script
