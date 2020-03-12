@@ -28,7 +28,7 @@
     $ devenv zstd.sln /upgrade
     $ msbuild zstd.sln /p:Configuration=Release /p:Platform=x64
     ```
-1. [Setup DCC tools](SetupDCC.md)
+1. [Setup DCC tools](SetupDCC.md) for building
 
 
 ## Build Steps (Win)
@@ -94,7 +94,7 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
     * zstd: `stable 1.4.4`.
     * tbb:  `stable 2020_U1`.
     
-1. [Setup DCC tools](SetupDCC.md)
+1. [Setup DCC tools](SetupDCC.md) for building
 
 
 ## Build Steps (Mac)
