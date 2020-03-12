@@ -18,7 +18,8 @@ if [ "$#" -ge 2 ]; then
 fi
 
 BUILD_SYSTEM=""
-case "${unameOut}" in
+UNAME_OUT="$(uname -s)"
+case "${UNAME_OUT}" in
     Darwin*)    BUILD_SYSTEM="-GXcode";;
     *)          BUILD_SYSTEM="";;
 esac
