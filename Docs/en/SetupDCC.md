@@ -18,6 +18,6 @@ export MAYA_SDK_2019=/path/to/maya/sdk/2019
 export MAYA_SDK_2020=/path/to/maya/sdk/2020
 ``` 
 
-> On Windows, Maya 2017 requires the path to the full product installation, instead of just the devkit.
+> Maya 2017 requires the path to the full product installation, instead of just the devkit.
 
 
