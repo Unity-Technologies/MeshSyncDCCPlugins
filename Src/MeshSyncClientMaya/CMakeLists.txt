@@ -42,13 +42,15 @@ elseif(MAC)
 elseif(WIN32)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".mll")
 endif()
+
+set(MESHSYNC_CLIENT_MAYA_OUTPUT_NAME "MeshSyncClientMaya")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES PREFIX "")
-set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME "MeshSyncClientMaya")
+set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME ${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME})
 
 if (MAC)
-    set(DEST_DIR "${DIST_ROOT}/Maya")
+    set(MOD_DEST_DIR "${DIST_ROOT}/Maya")
 else()
-    set(DEST_DIR "${DIST_ROOT}/Maya/modules")
+    set(MOD_DEST_DIR "${DIST_ROOT}/Maya/modules")
 endif()
 
 set(MEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
@@ -73,7 +75,7 @@ set(MLL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/plug-ins")
 # Prepare the directory and MEL scripts
 file(MAKE_DIRECTORY ${MEL_DEST_DIR})
 file(MAKE_DIRECTORY ${MLL_DEST_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/etc/UnityMeshSync.mod DESTINATION ${DEST_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/etc/UnityMeshSync.mod DESTINATION ${MOD_DEST_DIR})
 file(COPY ${MEL_SRC_DIR} DESTINATION ${MEL_DEST_DIR})
 
 file(TO_NATIVE_PATH ${MLL_DEST_DIR} NATIVE_MLL_DEST_DIR)
@@ -86,17 +88,16 @@ if(WIN32)
     )
 else()
             
-#    if(ENABLE_OSX_BUNDLE)            
-#        SET(target_filename \${TARGET_BUILD_DIR}/${name}.bundle)
-#    else()
-#        SET(target_filename $<TARGET_FILE:${name}>)
-#    endif()
+   if(ENABLE_OSX_BUNDLE)
+       SET(TARGET_FILENAME \${TARGET_BUILD_DIR}/${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME}.bundle)
+   else()
+       SET(TARGET_FILENAME $<TARGET_FILE:${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME}>)
+   endif()
         
     # Linux or Mac
-#    add_custom_command(TARGET ${MESHSYNC_CLIENT_MAYA} POST_BUILD
-#        COMMAND rm -rf ${arg_PLUGINS_DIR}/${target_filename}
-#        COMMAND cp -r ${target_filename} ${native_plugins_dir}               
-#    )
+   add_custom_command(TARGET ${MESHSYNC_CLIENT_MAYA} POST_BUILD
+       COMMAND cp -r ${TARGET_FILENAME} ${MLL_DEST_DIR}
+   )
 endif()
 
 
