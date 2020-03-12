@@ -1,6 +1,3 @@
-# Prerequisites
-*.d
-
 # Compiled Object files
 *.slo
 *.lo
@@ -11,22 +8,42 @@
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+# CMake
+Build/Build/MeshSync**
+Build/CMakeCache.txt
+Build/CMakeFiles**
+Build/CMakeScripts/**
+Build/cmake_install.cmake
+Build/MakeFile
+Build/MeshSync-**
+Build/ispc**
+Build/*.xcodeproj/**
+Build/ispc**
+Build/*.vcxproj**
+Build/*.sln
+Build/Src**
+
+# XCode
+Build/MeshSyncDCCPlugin.build/**
+
+# Visual Studio
+Build/.vs
+Build/x64
+Src/.vs
+
+# Symbolic links
+Src/MeshSyncClientMAYA_*
+
+# Files to be distributed (Build results)
+Dist/Maya
+

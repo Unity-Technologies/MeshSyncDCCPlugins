@@ -1,3 +1,4 @@
+
 ![demo](https://user-images.githubusercontent.com/1488611/39971828-98afa1d8-573d-11e8-9a6f-86263bee8949.gif)
 # MeshSync
 [English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/unity3d-jp/MeshSync)
@@ -5,6 +6,34 @@
 DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるツールです。ゲーム上でどう見えるかをその場で確認しながらモデリングすることを可能にします。  
 Unity と DCC ツール両方のプラグインとして機能し、現在 [Maya](https://www.autodesk.eu/products/maya/overview), [Maya LT](https://www.autodesk.eu/products/maya-lt/overview), [3ds Max](https://www.autodesk.com/products/3ds-max/overview), [Blender](https://blenderartists.org/), [メタセコイア](http://www.metaseq.net/), [xismo](http://mqdl.jpn.org/) をサポートしています。
 
+## Supported platforms
+
+|                     | Windows            | Mac                | Linux              | 
+| --------------------| ------------------ | ------------------ |------------------- | 
+| Maya 2017           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2018           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2019           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2020           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya LT 2019 +      | :white_check_mark: |                    | :x:                | 
+| 3ds Max 2017        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2019        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2020        | :white_check_mark: | :x:                | :x:                | 
+| MotionBuilder 2017  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2018  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2019  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2020  | :white_check_mark: | :x:                | :white_check_mark: | 
+| Blender 2.79b       | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Metasequoia 3.x     | :white_check_mark: |                    |                    | 
+| Metasequoia 4.x     | :white_check_mark: |                    | :white_check_mark: | 
+
+Notes:
+* :white_check_mark: : Supported
+* :x: : Impossible to support (platform unsupported by the DCC, etc)
+* empty : May be supported in the future
 
 ## 使い方
 1. [Maya](#maya)

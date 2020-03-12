@@ -1,4 +1,3 @@
-#define _MApiVersion
 #include "pch.h"
 #include "msmayaContext.h"
 #include "msmayaCommand.h"

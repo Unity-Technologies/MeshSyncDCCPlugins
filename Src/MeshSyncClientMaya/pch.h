@@ -36,13 +36,14 @@
 #include "MeshSync/MeshSyncUtils.h"
 
 // avoid multiple definition of `MApiVersion'
-//#define _MApiVersion
+#define _MApiVersion
 
 // avoid redefinition of bool on maya 2015
 #define _BOOL
 
 #include "MayaLTSupport.h"
 
+#include <maya/MTypes.h>
 #include <maya/MAnimControl.h>
 #include <maya/MGlobal.h>
 #include <maya/MDistance.h>

@@ -1,0 +1,60 @@
+global proc UnityMeshSync_Cache()
+{
+    global string $Window = "Export Cache";
+    if (`window -exists $Window`) deleteUI -window $Window;
+    window -t ("Unity Mesh Sync") -wh 300 610 $Window;
+
+    string $version         = `UnityMeshSync_CacheSettings -q -pluginVersion`;
+    string $address         = `UnityMeshSync_CacheSettings -q -address`;
+    int    $port            = `UnityMeshSync_CacheSettings -q -port`;
+    float  $scaleFactor     = `UnityMeshSync_CacheSettings -q -scaleFactor`;
+    int    $removeNamespace = `UnityMeshSync_CacheSettings -q -removeNamespace`;
+    int    $syncMeshes      = `UnityMeshSync_CacheSettings -q -syncMeshes`;
+    int    $makeDoubleSided = `UnityMeshSync_CacheSettings -q -makeDoubleSided`;
+    int    $bakeDeformers   = `UnityMeshSync_CacheSettings -q -bakeDeformers`;
+    int    $syncBlendShapes = `UnityMeshSync_CacheSettings -q -syncBlendShapes`;
+    int    $syncBones       = `UnityMeshSync_CacheSettings -q -syncBones`;
+    int    $syncTextures    = `UnityMeshSync_CacheSettings -q -syncTextures`;
+    int    $syncCameras     = `UnityMeshSync_CacheSettings -q -syncCameras`;
+    int    $syncLights      = `UnityMeshSync_CacheSettings -q -syncLights`;
+
+    columnLayout -columnOffset "left" 5;
+
+    text -label "Scene" -font "boldLabelFont";
+    separator -h 5 -w 250 -style none;
+
+    rowLayout -numberOfColumns 2;
+        text -label "Scale Factor"; floatField -value $scaleFactor umsCtrlScaleFactor;
+    setParent ..;
+    checkBox -label "Remove Namespace" -value $removeNamespace umsCtrlRemoveNamespace;
+
+    checkBox -label "Sync Meshes" -value $syncMeshes umsCtrlSyncMeshes;
+    columnLayout -visible $syncMeshes -columnOffset "left" 20 msuFoldMeshes;
+        checkBox -label "Make Double Sided" -value $makeDoubleSided umsCtSettingsrlMakeDoubleSided;
+        checkBox -label "Bake Deformers" -value $bakeDeformers umsCtrlBakeDeformers;
+    setParent ..;
+    checkBox -label "Sync Blend Shapes" -value $syncBlendShapes umsCtrlSyncBlendShapes;
+    checkBox -label "Sync Bones" -value $syncBones umsCtrlSyncBones;
+    checkBox -label "Sync Textures" -value $syncTextures umsCtrlSyncTextures;
+
+    checkBox -label "Sync Cameras" -value $syncCameras umsCtrlSyncCameras;
+    checkBox -label "Sync Lights" -value $syncLights umsCtrlSyncLights;
+
+    separator -h 5 -w 250 -style none;
+
+    button -l "Sync" -c "umsCBSyncAnimations";
+
+    separator -h 20 -w 250;
+    string $pluginVersion = "Plugin Version: " + $version;
+    text -label $pluginVersion;
+
+    setParent ..;
+
+    showWindow $Window;
+}
+
+global proc umsCBManualSync()
+{
+    string $ret = `UnityMeshSync_CacheExport`;
+}
+
