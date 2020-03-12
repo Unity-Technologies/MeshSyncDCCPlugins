@@ -1,4 +1,4 @@
-# Setting Up DCC
+# Setting Up DCC Tools for Building Plugins
 
 Please refer to the following sections to setup each DCC tool.
 
