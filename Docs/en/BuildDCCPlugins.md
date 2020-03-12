@@ -5,18 +5,22 @@
 1. Install [cmake](https://cmake.org/) 
 1. Install Visual Studio 2017
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
-1. Download and build [Poco](https://pocoproject.org) (static libraries).  
+1. Build [Poco](https://pocoproject.org) (static libraries).  
+   * Download [Poco 1.10.1](https://github.com/pocoproject/poco/archive/poco-1.10.1-release.zip) and extract the file in a folder
+   * Start "Developer Command Prompt for VS 2017" and go to where Poco was extracted
+   * Execute the following in the command prompt      
     ``` 
-    $ git clone -b master https://github.com/pocoproject/poco.git
     $ mkdir cmake-build
     $ cd cmake-build
     $ cmake .. -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 15 2017" -A x64
     $ cmake --build . --config MinSizeRel && cmake --build . --config Debug
     ```
+    
     > For other types of Poco configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
+    
 1. Add *Poco_DIR* environment variable to point to the Poco root folder above
 1. Build [zstd](https://github.com/facebook/zstd/releases)  
-   * Download and extract one of the releases in a folder
+   * Download [zstd-v1.4.4-win64](https://github.com/facebook/zstd/releases/download/v1.4.4/zstd-v1.4.4-win64.zip) and extract the file in a folder
    * Start "Developer Command Prompt for VS 2017" and go to where zstd was extracted
    * Execute the following in the command prompt      
     ``` 
@@ -60,9 +64,11 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
 1. Install [XCode](https://developer.apple.com/xcode/)
 1. Install [Homebrew](https://brew.sh/)
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
-1. Download and build the debug and release versions of [Poco](https://pocoproject.org) (static libraries).  
+1. Build [Poco](https://pocoproject.org) (static libraries).  
+   * Download [Poco 1.10.1](https://github.com/pocoproject/poco/archive/poco-1.10.1-release.zip) and extract the file in a folder
+   * Open a terminal and go to where Poco was extracted
+   * Execute the following in the command prompt      
     ``` 
-    $ git clone -b master https://github.com/pocoproject/poco.git
     $ mkdir cmake-build
     $ cd cmake-build
     $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel && cmake --build . 
@@ -78,6 +84,8 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
     ``` 
     $ brew install zstd
     ```  
+    Currently, the used version of zstd is `stable 1.4.4`.
+    
 1. [Setup DCC tools](SetupDCC.md)
 
 
