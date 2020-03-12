@@ -7,7 +7,7 @@
 ## Maya
 
 * Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required.
-* Copy the scripts/plugins depending on the platform
+* Copy the plugins
   - Windows:   
     If `MAYA_APP_DIR` environment variable is setup, copy the *modules* directory there.  
     If not, go to `%USERPROFILE%\Documents\maya` in Windows Explorer, and copy the *modules* directory there.
