@@ -2,9 +2,9 @@
 
 1. [Maya](#maya)
 
-<img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
-
 ## Maya
+
+<img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
 * Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required.
 * Copy the plugins
@@ -13,7 +13,7 @@
     If not, go to `%USERPROFILE%\Documents\maya` in Windows Explorer, and copy the *modules* directory there.
   - Mac:   
     Copy the *UnityMeshSync* directory and *UnityMeshSync.mod* file to `/Users/Shared/Autodesk/modules/maya`.
-  - Linux: 
+  - Linux:  
     Copy the *modules* directory to `~/maya/<maya_version)`
   
   
