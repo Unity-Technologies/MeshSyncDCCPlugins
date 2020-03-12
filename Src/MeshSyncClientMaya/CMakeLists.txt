@@ -48,9 +48,9 @@ set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME ${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME})
 
 if (MAC)
-    set(MOD_DEST_DIR "${DIST_ROOT}/Maya")
+    set(DEST_DIR "${DIST_ROOT}/Maya")
 else()
-    set(MOD_DEST_DIR "${DIST_ROOT}/Maya/modules")
+    set(DEST_DIR "${DIST_ROOT}/Maya/modules")
 endif()
 
 set(MEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
