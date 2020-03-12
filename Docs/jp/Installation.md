@@ -6,7 +6,7 @@
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-* Autodesk のライセンスのため, [手動のビルド](../end/BuildDCCPlugins.md) (現在英語のみ) が必要です。
+* Autodesk のライセンスのため, [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) が必要です。
 * プラグインをコピーする
   - Windows:   
     `MAYA_APP_DIR` の環境変数が設定されている場合はそこにコピーする。  
