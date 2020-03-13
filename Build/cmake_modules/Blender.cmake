@@ -35,12 +35,12 @@ function(setup_blender blender_ver)
     # Header. Use find_path to store to cache
     find_path(BLENDER${blender_ver}_INCLUDE_DIR
         NAMES
-            BKE_blender_version.h
+            blenkernel/BKE_blender_version.h
         HINTS
             ${BLENDER${blender_ver}_PATHS}
-        PATH_SUFFIXES
-            blenkernel
+        NO_DEFAULT_PATH            
     )
+    
     mark_as_advanced(BLENDER${blender_ver}_INCLUDE_DIR)
     #
     # # message(${BLENDER${blender_ver}_INCLUDE_DIR})
