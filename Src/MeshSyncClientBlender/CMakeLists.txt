@@ -53,6 +53,7 @@ endif()
 set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES OUTPUT_NAME "MeshSyncClientBlender")
 
+# Install/copying after build
 set(DIST_DIR "${CMAKE_INSTALL_PREFIX}/UnityMeshSync_Blender_${PLATFORM}/blender-${BLENDER_VERSION}")
 set(PYD_DIR "${DIST_DIR}/MeshSyncClientBlender")
 install(FILES
@@ -61,3 +62,4 @@ install(FILES
     DESTINATION ${DIST_DIR})
 install(FILES python/__init__.py DESTINATION ${PYD_DIR})
 install(TARGETS ${MESHSYNC_CLIENT_BLENDER} DESTINATION ${PYD_DIR})
+
