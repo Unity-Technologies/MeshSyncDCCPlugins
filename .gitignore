@@ -27,6 +27,7 @@ Build/cmake_install.cmake
 Build/MakeFile
 Build/MeshSync-**
 Build/Blender-**
+Build/Python-**
 Build/ispc**
 Build/*.xcodeproj/**
 Build/ispc**
