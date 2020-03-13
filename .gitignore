@@ -48,5 +48,4 @@ Src/MeshSyncClientMAYA_*
 Src/MeshSyncClientBLENDER_*
 
 # Files to be distributed (Build results)
-Dist/UnityMeshSync_*
-
+Dist/UnityMeshSync_**
