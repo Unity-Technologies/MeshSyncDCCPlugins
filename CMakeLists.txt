@@ -4,6 +4,7 @@ PROJECT(MeshSyncDCCPlugin)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
 set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
+set(EXTERNAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/External)
 
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
@@ -92,7 +93,8 @@ endforeach(CUR_MAYA_VER)
 
 # Maya
 list(APPEND BLENDER_VERSIONS
-    BLENDER_2_80
+    BLENDER_2.79
+#    BLENDER_2.80
 ) 
 
 if(BUILD_BLENDER_ALL)
