@@ -81,7 +81,7 @@ void setup(py::object bpy_context)
     if (g_context)
         return;
 
-    auto rna = (BPy_StructRNA*)bpy_context.ptr();
+    BPy_StructRNA* rna = (BPy_StructRNA*)bpy_context.ptr();
     if (strcmp(rna->ob_base.ob_type->tp_name, "Context") != 0) {
         return;
     }
