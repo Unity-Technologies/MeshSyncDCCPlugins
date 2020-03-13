@@ -1,5 +1,3 @@
-# * BLENDER2.80_PYTHON_VERSION
-# * BLENDER2.80_PYTHON_INCLUDE_DIR
 
 include(Utilities)
 
@@ -22,7 +20,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# Set ${Blender${blender_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
+# Set the following to cache
+# - ${Blender${blender_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
+# - ${BLENDER${blender_ver}_PYTHON_VERSION}: the version of Python used by this Blender version
 function(setup_blender blender_ver)
 
     set(BLENDER_SRC_ROOT "${CMAKE_BINARY_DIR}/Blender-${blender_ver}")
@@ -42,29 +42,6 @@ function(setup_blender blender_ver)
     )
     
     mark_as_advanced(BLENDER${blender_ver}_INCLUDE_DIR)
-    #
-    # # message(${BLENDER${blender_ver}_INCLUDE_DIR})
-    #
-    # # Libs, and set cache at the end
-    # foreach(BLENDER_LIB OpenBlenderAnim OpenBlenderFX OpenBlenderRender OpenBlenderUI OpenBlender Foundation)
-    #     find_file(BLENDER${blender_ver}_${BLENDER_LIB}_LIBRARY
-    #         NAMES
-    #             ${BLENDER_LIB}.lib     # Multithreaded-DLL, Windows
-    #             lib${BLENDER_LIB}${CMAKE_SHARED_LIBRARY_SUFFIX}
-    #         PATHS
-    #             ${BLENDER${blender_ver}_PATHS}
-    #         PATH_SUFFIXES
-    #             lib
-    #             MacOS
-    #     )
-    #     mark_as_advanced(BLENDER${blender_ver}_${BLENDER_LIB}_LIBRARY)
-    #     if(BLENDER${blender_ver}_${BLENDER_LIB}_LIBRARY)
-    #         list(APPEND BLENDER${blender_ver}_LIBRARIES ${BLENDER${blender_ver}_${BLENDER_LIB}_LIBRARY})
-    #     endif()
-    # endforeach()
-    # set(BLENDER${blender_ver}_LIBRARIES ${BLENDER${blender_ver}_LIBRARIES} CACHE STRING "Blender ${blender_ver} libraries")
-    # mark_as_advanced(BLENDER${blender_ver}_LIBRARIES)
-    #
 
     # CXX Setup
     if(APPLE)
@@ -88,15 +65,7 @@ function(setup_blender blender_ver)
             build_files/cmake/platform   #python 3.5
     )
     
-    message(${PYTHON_CMAKE_PLATFORM})
-    message(${PYTHON_CMAKE_PLATFORM})
-    message(${BLENDER_SRC_ROOT}/build_files/cmake/platform/${PYTHON_CMAKE_PLATFORM})
-
-    message(${BLENDER${blender_ver}_CMAKE_VERSION})
-    message(${BLENDER${blender_ver}_CMAKE_VERSION})
-    message(${BLENDER${blender_ver}_CMAKE_VERSION})
-
-    # Find Python version. 
+    # Find Python version used in this Blender Version. 
     # Line: 
     # - set(PYTHON_VERSION 3.7.0)
     # -	set(PYTHON_VERSION 3.5)
@@ -112,7 +81,6 @@ function(setup_blender blender_ver)
         BLENDER${blender_ver}_INCLUDE_DIR
         BLENDER${blender_ver}_CMAKE_VERSION
         BLENDER${blender_ver}_PYTHON_VERSION 
-#        BLENDER${blender_ver}_LIBRARIES
     )
     message("Blender ${blender_ver} is using Python ${BLENDER${blender_ver}_PYTHON_VERSION}")
     
@@ -122,23 +90,3 @@ function(setup_blender blender_ver)
 endfunction()
 
 
-# set(BLENDER2.80_PYTHON_VERSION 37 CACHE STRING "")
-# mark_as_advanced(BLENDER2.80_PYTHON_VERSION)
-#
-# find_path(BLENDER2.80_PYTHON_INCLUDE_DIR
-#     NAMES
-#         "Python.h"
-#     PATHS
-#         "/opt/rh/rh-python37/root/usr/include"
-#         "/usr/local/include"
-#     PATH_SUFFIXES
-#         "python3.7m"
-#     NO_DEFAULT_PATH
-# )
-# mark_as_advanced(BLENDER2.80_PYTHON_INCLUDE_DIR)
-#
-# include(FindPackageHandleStandardArgs)
-# find_package_handle_standard_args("Blender"
-#     DEFAULT_MSG
-#     BLENDER2.80_PYTHON_INCLUDE_DIR
-# )

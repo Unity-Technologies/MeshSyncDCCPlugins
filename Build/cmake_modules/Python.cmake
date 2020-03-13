@@ -40,12 +40,29 @@ endfunction()
 function(configure_python python_ver_no_dots)
     get_python_full_version(${python_ver_no_dots})
 
-    set(PYTHON_SRC_ROOT "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}")    
-    message("Configuring Python: ${PYTHON_SRC_ROOT}")
-    execute_process(
-        WORKING_DIRECTORY ${PYTHON_SRC_ROOT}
-        COMMAND ./configure
+    set(PYTHON_${python_ver_no_dots}_SRC_ROOT "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}" CACHE STRING "Python ${python_ver_no_dots} root folder")    
+    message("Configuring Python: ${PYTHON_${python_ver_no_dots}_SRC_ROOT}")
+    if(NOT ${python_ver_no_dots}_CONFIGURED)
+        execute_process(
+            WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
+            COMMAND ./configure
+        )
+        set(${python_ver_no_dots}_CONFIGURED ON CACHE BOOL "${python_ver_no_dots} configured flag")
+        mark_as_advanced(${python_ver_no_dots}_CONFIGURED)        
+    endif()
+    
+    
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args("Python_${python_ver_no_dots}"
+        DEFAULT_MSG
+        PYTHON_${python_ver_no_dots}_SRC_ROOT
     )
+    
+    if(NOT ${Python_${python_ver_no_dots}_FOUND})
+        message(FATAL_ERROR "Failed to find and configure Python ${python_ver_no_dots}. \n"
+            "  Path: ${PYTHON_SRC_ROOT}"
+        )
+    endif()    
         
 endfunction()
 

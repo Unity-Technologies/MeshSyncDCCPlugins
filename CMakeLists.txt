@@ -91,12 +91,11 @@ endforeach(CUR_MAYA_VER)
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-# Maya
+# Blender
 list(APPEND BLENDER_VERSIONS
     BLENDER_2.79
-#    BLENDER_2.80
+    BLENDER_2.80
 ) 
-
 if(BUILD_BLENDER_ALL)
     foreach(CUR_BLENDER_VER IN LISTS BLENDER_VERSIONS)
         option(BUILD_${CUR_BLENDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_BLENDER_VER}" ON)

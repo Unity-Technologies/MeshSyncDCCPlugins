@@ -1,36 +1,43 @@
+#Find Version
 string(REGEX MATCH "([0-9.]+)$" BLENDER_VERSION "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MESHSYNC_CLIENT_BLENDER "MeshSyncClientBlender${BLENDER_VERSION}")
 
-find_package(Blender${BLENDER_VERSION})
+# Setup Blender & Python source code
+include(Blender)
+get_blender(${BLENDER_VERSION})
+setup_blender(${BLENDER_VERSION})
+
 set(BLENDER_PYTHON_VERSION ${BLENDER${BLENDER_VERSION}_PYTHON_VERSION})
-set(BLENDER_PYTHON_INCLUDE_DIR ${BLENDER${BLENDER_VERSION}_PYTHON_INCLUDE_DIR})
+include(Python)
+get_python(${BLENDER_PYTHON_VERSION})
+configure_python(${BLENDER_PYTHON_VERSION})
+
+set(BLENDER_PYTHON_VERSION ${BLENDER${BLENDER_VERSION}_PYTHON_VERSION})
 string(REPLACE "." "_" BLENDER_MODULE_BLENDER_VERSION ${BLENDER_VERSION})
 
-set(EXTERNAL_DIR "${CMAKE_SOURCE_DIR}/External")
-set(EXTERNAL_ARCHIVE "${EXTERNAL_DIR}/External.7z")
-if(NOT EXISTS "${EXTERNAL_ARCHIVE}")
-    file(DOWNLOAD "https://github.com/unity3d-jp/MeshSync/releases/download/20171228/External.7z" "${EXTERNAL_ARCHIVE}" SHOW_PROGRESS)
-    execute_process(WORKING_DIRECTORY "${EXTERNAL_DIR}" COMMAND 7za x "${EXTERNAL_ARCHIVE}")
-endif()
-
 set(BLENDER_INCLUDE_DIRS
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/blenkernel"
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/blenlib"
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/bmesh"
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/makesdna"
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/makesrna"
-    "${EXTERNAL_DIR}/blender-${BLENDER_VERSION}/include/python"
-    "${BLENDER_PYTHON_INCLUDE_DIR}"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/blenkernel"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/blenlib"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/bmesh"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesdna"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesrna"
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/python"
+    ${PYTHON_${BLENDER_PYTHON_VERSION}_SRC_ROOT}
+    ${PYTHON_${BLENDER_PYTHON_VERSION}_SRC_ROOT}/Include
 )
+
 
 file(GLOB sources *.cpp *.h *.c)
 add_library(${MESHSYNC_CLIENT_BLENDER}  SHARED ${sources})
 
 add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshUtils MeshSync)
-target_include_directories(${MESHSYNC_CLIENT_BLENDER} PUBLIC
-    "${CMAKE_SOURCE_DIR}"
-    "${CMAKE_SOURCE_DIR}/External"
+
+target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
+target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
+    "${EXTERNAL_ROOT}"
     ${BLENDER_INCLUDE_DIRS}
+    ${MESHSYNC_PLUGIN_SRC_ROOT}
+
 )
 target_link_libraries(${MESHSYNC_CLIENT_BLENDER} MeshSync MeshUtils ${Poco_LIBRARIES})
 if(ENABLE_ZSTD)
