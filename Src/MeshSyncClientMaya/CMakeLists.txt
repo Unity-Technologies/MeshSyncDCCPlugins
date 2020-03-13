@@ -38,25 +38,22 @@ endif()
 
 if(LINUX)
     target_link_libraries(${MESHSYNC_CLIENT_MAYA} pthread "-Wl,--no-undefined")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_Linux/modules")
 elseif(MAC)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES COMPILE_FLAGS -DOSMac_)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".bundle")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_Mac")
 elseif(WIN32)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".mll")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_Windows/modules")
 endif()
 
 set(MESHSYNC_CLIENT_MAYA_OUTPUT_NAME "MeshSyncClientMaya")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME ${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME})
 
-if (MAC)
-    set(DEST_DIR "${DIST_ROOT}/Maya")
-else()
-    set(DEST_DIR "${DIST_ROOT}/Maya/modules")
-endif()
-
 set(MEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-set(MEL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}")
+set(MEL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/scripts")
 set(MLL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/plug-ins")
 
 # Folder structure
