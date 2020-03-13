@@ -41,6 +41,7 @@ $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin\Build
 $ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
 $ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=MinSizeRel /p:Platform=x64 /m /nologo
+$ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
 ```
 
 There are two parameters in the script  
