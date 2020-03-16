@@ -38,25 +38,22 @@ endif()
 
 if(LINUX)
     target_link_libraries(${MESHSYNC_CLIENT_MAYA} pthread "-Wl,--no-undefined")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_${MESHSYNC_VER}_Linux/modules")
 elseif(MAC)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES COMPILE_FLAGS -DOSMac_)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".bundle")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_${MESHSYNC_VER}_Mac")
 elseif(WIN32)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES SUFFIX ".mll")
+    set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_Maya_${MESHSYNC_VER}_Windows/modules")
 endif()
 
 set(MESHSYNC_CLIENT_MAYA_OUTPUT_NAME "MeshSyncClientMaya")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES OUTPUT_NAME ${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME})
 
-if (MAC)
-    set(DEST_DIR "${DIST_ROOT}/Maya")
-else()
-    set(DEST_DIR "${DIST_ROOT}/Maya/modules")
-endif()
-
 set(MEL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-set(MEL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}")
+set(MEL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/scripts")
 set(MLL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/plug-ins")
 
 # Folder structure
@@ -74,32 +71,11 @@ set(MLL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/plug-ins")
 #       |   |- scripts
 #       |   |     └─ MEL scripts
 
-# Prepare the directory and MEL scripts
-file(MAKE_DIRECTORY ${MEL_DEST_DIR})
-file(MAKE_DIRECTORY ${MLL_DEST_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/etc/UnityMeshSync.mod DESTINATION ${DEST_DIR})
-file(COPY ${MEL_SRC_DIR} DESTINATION ${MEL_DEST_DIR})
+# copy files to destination, as part of the install process.
+install(DIRECTORY scripts/ DESTINATION "${MEL_DEST_DIR}" )
+install(DIRECTORY etc/ DESTINATION "${DEST_DIR}/" FILES_MATCHING PATTERN "*.mod")
+install(TARGETS ${MESHSYNC_CLIENT_MAYA} DESTINATION "${MLL_DEST_DIR}")
 
-file(TO_NATIVE_PATH ${MLL_DEST_DIR} NATIVE_MLL_DEST_DIR)
 
-# Copy the target and MLL scripts              
-if(WIN32) 
-    # Win: Visual Studio Settings
-    add_custom_command(TARGET ${MESHSYNC_CLIENT_MAYA} POST_BUILD
-        COMMAND copy $(TargetPath) ${NATIVE_MLL_DEST_DIR}                                   
-    )
-else()
-            
-   if(ENABLE_OSX_BUNDLE)
-       SET(TARGET_FILENAME \${TARGET_BUILD_DIR}/${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME}.bundle)
-   else()
-       SET(TARGET_FILENAME $<TARGET_FILE:${MESHSYNC_CLIENT_MAYA_OUTPUT_NAME}>)
-   endif()
-        
-    # Linux or Mac
-   add_custom_command(TARGET ${MESHSYNC_CLIENT_MAYA} POST_BUILD
-       COMMAND cp -r ${TARGET_FILENAME} ${MLL_DEST_DIR}
-   )
-endif()
 
 
