@@ -29,17 +29,17 @@
 
 <img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
-1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases) 
+1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
      * Go to File -> User Preferences -> Add-ons
-     * Click "Install Add-on from file" at the bottom of the window, and select the plugin zip file
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the menu
+     * Click "Install Add-on from file" at the bottom of the window, and select the plugin zip file.
+     * Confirm that "Import-Export: Unity Mesh Sync" is added to the menu.
    - Blender 2.80 or after:
      * Go to Edit -> User Preferences
-     * Click "Install" at the top right of the window, and select the plugin zip file
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab
-1. Check "Import-Export: Unity Mesh Sync" to enable it
+     * Click "Install" at the top right of the window, and select the plugin zip file.
+     * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
+1. Check "Import-Export: Unity Mesh Sync" to enable it.
 
 
 > If the plugin for the used MeshSync version can't be found on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases), 
@@ -50,7 +50,7 @@
 When installing a Blender plugin, the older version has to be uninstalled first if it exists.   
 Steps to uninstall:
 
-1. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu
-1. Click "Remove" button
-1. Restart Blender 
+1. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu.
+1. Click "Remove" button.
+1. Restart Blender. 
 

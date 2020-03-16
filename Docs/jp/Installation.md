@@ -28,17 +28,17 @@
 
 <img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
-1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする 
+1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
 1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
-     * File -> User Preferences -> Add-ons を開く
-     * 画面下部の "Install Add-on from file" を押し、プラグインの zip ファイルを指定する
-     * "Import-Export: Unity Mesh Sync" が追加されたのを確認する        
+     * File -> User Preferences -> Add-ons を開く。
+     * 画面下部の "Install Add-on from file" を押し、プラグインの zip ファイルを指定する。
+     * "Import-Export: Unity Mesh Sync" が追加されたのを確認する。        
    - Blender 2.80 以降:
-     * Edit -> User Preferences を開く 
-     * ウィンドウの右上の "Install" をクリックし、プラグインの zip ファイルを指定する
-     * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する
-1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する 
+     * Edit -> User Preferences を開く。 
+     * ウィンドウの右上の "Install" をクリックし、プラグインの zip ファイルを指定する。
+     * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する。
+1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
    
 
 > 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合、 
@@ -49,7 +49,7 @@
 Blender のプラグインをインストールする時、古いバージョンのプラグインがあれば、それを事前にアンインストールしておく必要があります。  
 アンインストールの手順：
 
-1. Add-ons メニューから "Import-Export: Unity Mesh Sync" を選択
-1. "Remove" ボタンをクリック
-1. Blender を再起動 
+1. Add-ons メニューから "Import-Export: Unity Mesh Sync" を選択。
+1. "Remove" ボタンをクリック。
+1. Blender を再起動。
   
