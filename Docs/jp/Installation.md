@@ -41,8 +41,8 @@
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する 
    
 
-> 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合, 
-  [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) を参考にし、ビルドできます。
+> 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合、 
+  [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) を参考にし、ビルドします。
   
 ### Caveat
 
