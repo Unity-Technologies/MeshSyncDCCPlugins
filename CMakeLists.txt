@@ -50,6 +50,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LINUX ON)
 
 elseif(WIN32) 
+    set(PLATFORM "Windows")
+    
     # Additional Poco Net dependencies on Windows
     list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
 
