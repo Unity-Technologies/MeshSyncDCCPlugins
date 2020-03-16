@@ -47,8 +47,9 @@ function(configure_python python_ver_no_dots)
     message("Configuring Python: ${PYTHON_${python_ver_no_dots}_SRC_ROOT}")
     if(NOT ${python_ver_no_dots}_CONFIGURED)
         if(WIN32)
-            execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
-                COMMAND "..\\VsDevCmd_2017.bat &&  devenv PCbuild\\pcbuild.sln /upgrade && PCbuild\\build.bat -p x64"
+
+            execute_process(WORKING_DIRECTORY "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PCbuild" 
+                COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64
             )
         else()
             execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
