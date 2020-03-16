@@ -26,12 +26,15 @@ Build/CMakeScripts/**
 Build/cmake_install.cmake
 Build/MakeFile
 Build/MeshSync-**
+Build/Blender-**
+Build/Python-**
 Build/ispc**
 Build/*.xcodeproj/**
 Build/ispc**
 Build/*.vcxproj**
 Build/*.sln
 Build/Src**
+Build/install_manifest.txt
 
 # XCode
 Build/MeshSyncDCCPlugin.build/**
@@ -43,7 +46,7 @@ Src/.vs
 
 # Symbolic links
 Src/MeshSyncClientMAYA_*
+Src/MeshSyncClientBLENDER_*
 
 # Files to be distributed (Build results)
-Dist/UnityMeshSync_*
-
+Dist/UnityMeshSync_**

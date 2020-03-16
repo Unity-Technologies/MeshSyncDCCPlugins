@@ -4,6 +4,7 @@ PROJECT(MeshSyncDCCPlugin)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
 set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
+set(EXTERNAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/External)
 
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
@@ -49,6 +50,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LINUX ON)
 
 elseif(WIN32) 
+    set(PLATFORM "Windows")
+    
     # Additional Poco Net dependencies on Windows
     list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
 
@@ -75,13 +78,13 @@ list(APPEND MAYA_VERSIONS
 
 if(BUILD_MAYA_ALL)
     foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
-        option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" ON)
+        option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" ON)
     endforeach(CUR_MAYA_VER)   
 endif()
 
 foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
-    option(BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
-    if (BUILD_${BUILD_MAYA_VER_PLUGIN}_PLUGIN)
+    option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
+    if (BUILD_${CUR_MAYA_VER}_PLUGIN)
         add_subdirectory_link(MeshSyncClient${CUR_MAYA_VER} MeshSyncClientMaya)
     endif()
 endforeach(CUR_MAYA_VER)   
@@ -90,3 +93,20 @@ endforeach(CUR_MAYA_VER)
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+# Blender
+list(APPEND BLENDER_VERSIONS
+    BLENDER_2.79
+    BLENDER_2.80
+) 
+if(BUILD_BLENDER_ALL)
+    foreach(CUR_BLENDER_VER IN LISTS BLENDER_VERSIONS)
+        option(BUILD_${CUR_BLENDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_BLENDER_VER}" ON)
+    endforeach(CUR_BLENDER_VER)   
+endif()
+
+foreach(CUR_BLENDER_VER IN LISTS BLENDER_VERSIONS)
+    option(BUILD_${CUR_BLENDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_BLENDER_VER}" OFF)
+    if (BUILD_${CUR_BLENDER_VER}_PLUGIN)
+        add_subdirectory_link(MeshSyncClient${CUR_BLENDER_VER} MeshSyncClientBlender)
+    endif()
+endforeach(CUR_BLENDER_VER)   
