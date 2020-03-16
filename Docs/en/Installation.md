@@ -26,7 +26,7 @@
   
 ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
 
-* Download Blender plugin that corresponds to MeshSync with the same version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases) 
+* Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases) 
 * Depending on the Blender version, the way to install is different.
   - Blender 2.79:
     * Go to File -> User Preferences -> Add-ons.
@@ -40,7 +40,8 @@
 
 <img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
-> If the plugin can't be found on the release page, please refer to [manual building](BuildDCCPlugins.md) to build manually.
+> If the plugin for the used MeshSync version can't be found on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases), 
+　please refer to [manual building](BuildDCCPlugins.md) to build manually.
 
 ### Caveat
 
