@@ -21,6 +21,7 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Set the following to cache
+# - ${BLENDER${blender_ver}_INCLUDE_DIR}: Blender include directory
 # - ${Blender${blender_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
 # - ${BLENDER${blender_ver}_PYTHON_VERSION}: the version of Python used by this Blender version
 function(setup_blender blender_ver)
@@ -55,7 +56,7 @@ function(setup_blender blender_ver)
     # Find the version of python required
     find_file(BLENDER${blender_ver}_CMAKE_VERSION
         NAMES
-            versions.cmake
+            versions.cmake           # python 3.7
             ${PYTHON_CMAKE_PLATFORM} # python 3.5
         HINTS
             ${BLENDER_SRC_ROOT}
