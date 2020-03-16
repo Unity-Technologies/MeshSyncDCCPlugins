@@ -71,10 +71,7 @@ set(MLL_DEST_DIR "${DEST_DIR}/UnityMeshSync/${MAYA_YEAR}${MAYA_LT}/plug-ins")
 #       |   |- scripts
 #       |   |     └─ MEL scripts
 
-# Prepare the directory and MEL scripts
-#file(MAKE_DIRECTORY ${MEL_DEST_DIR})
-#file(MAKE_DIRECTORY ${MLL_DEST_DIR})
-
+# copy files to destination, as part of the install process.
 install(DIRECTORY scripts/ DESTINATION "${MEL_DEST_DIR}" )
 install(DIRECTORY etc/ DESTINATION "${DEST_DIR}/" FILES_MATCHING PATTERN "*.mod")
 install(TARGETS ${MESHSYNC_CLIENT_MAYA} DESTINATION "${MLL_DEST_DIR}")
