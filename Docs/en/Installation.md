@@ -25,10 +25,6 @@
   
 ## Blender
   
-![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
-
-<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
-
 1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
@@ -39,7 +35,12 @@
      * Go to Edit -> User Preferences
      * Click "Install" at the top right of the window, and select the plugin zip file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
+![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
+1. Confirm that MeshSync panel is added.
+  
+![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
 
 
 > If the plugin for the used MeshSync version can't be found on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases), 

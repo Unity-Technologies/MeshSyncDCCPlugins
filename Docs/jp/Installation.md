@@ -24,10 +24,6 @@
 
 ## Blender
   
-![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
-
-<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
-
 1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
 1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
@@ -38,7 +34,13 @@
      * Edit -> User Preferences を開く。 
      * ウィンドウの右上の "Install" をクリックし、プラグインの zip ファイルを指定する。
      * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する。
+
+![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
+1. MeshSync パネルが追加されたのを確認する。
+  
+![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
    
 
 > 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合、 
