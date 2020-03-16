@@ -56,7 +56,7 @@ set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES OUTPUT_NAME "MeshSyncClientBlender")
 
 # Install/copying after build
-set(DIST_DIR "${CMAKE_INSTALL_PREFIX}/UnityMeshSync_Blender_${MESHSYNC_VER}_${PLATFORM}/blender-${BLENDER_VERSION}")
+set(DIST_DIR "${CMAKE_INSTALL_PREFIX}/UnityMeshSync_${MESHSYNC_VER}_Blender_${PLATFORM}/blender-${BLENDER_VERSION}")
 set(PYD_DIR "${DIST_DIR}/MeshSyncClientBlender")
 install(FILES
     python/unity_mesh_sync_common.py
