@@ -1,6 +1,7 @@
 # Installation
 
 1. [Maya](#maya)
+1. [Blender](#blender)
 
 ## Maya
 
@@ -25,6 +26,8 @@
   
 ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
 
+<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
+
 1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロード 
 1. Blender のバージョンによって、インストールする方法が少々違います.
    - Blender 2.79:
@@ -37,7 +40,6 @@
      * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する 
    
-<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
 > 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合, 
   [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) を参考にし、ビルドできます。

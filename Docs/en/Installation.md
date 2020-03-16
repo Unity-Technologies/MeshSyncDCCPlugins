@@ -1,6 +1,7 @@
 # Installation
 
 1. [Maya](#maya)
+1. [Blender](#blender)
 
 ## Maya
 
@@ -26,6 +27,8 @@
   
 ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
 
+<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
+
 1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases) 
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
@@ -38,14 +41,13 @@
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab
 1. Check "Import-Export: Unity Mesh Sync" to enable it
 
-<img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
 > If the plugin for the used MeshSync version can't be found on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases), 
-  please refer to [manual building](BuildDCCPlugins.md) to build manually.
+  please refer to [the manual building page](BuildDCCPlugins.md) to build manually.
 
 ### Caveat
 
-If an older version of the Blender plugin is already installed, it must be deleted before installing a new version.   
+If an older version of the Blender plugin is already installed, it must be deleted before installing the new version.   
 Steps to delete:
 
 1. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu
