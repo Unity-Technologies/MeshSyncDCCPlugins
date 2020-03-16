@@ -22,10 +22,8 @@ set(BLENDER_INCLUDE_DIRS
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesdna"
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesrna"
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/python"
-    ${PYTHON_${BLENDER_PYTHON_VERSION}_SRC_ROOT}
-    ${PYTHON_${BLENDER_PYTHON_VERSION}_SRC_ROOT}/Include
+    ${PYTHON_${BLENDER_PYTHON_VERSION}_INCLUDE_DIRS}
 )
-
 
 file(GLOB sources *.cpp *.h *.c)
 add_library(${MESHSYNC_CLIENT_BLENDER}  SHARED ${sources})
@@ -39,7 +37,12 @@ target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     ${MESHSYNC_PLUGIN_SRC_ROOT}
 
 )
-target_link_libraries(${MESHSYNC_CLIENT_BLENDER} MeshSync MeshUtils ${Poco_LIBRARIES})
+target_link_libraries(${MESHSYNC_CLIENT_BLENDER} 
+    MeshSync 
+    MeshUtils ${Poco_LIBRARIES}
+    ${PYTHON_${BLENDER_PYTHON_VERSION}_LIBRARY}    
+)
+  
 if(ENABLE_ZSTD)
     target_link_libraries(${MESHSYNC_CLIENT_BLENDER} ${ZSTD_LIBRARY})
 endif()

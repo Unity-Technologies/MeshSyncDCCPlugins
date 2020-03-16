@@ -37,25 +37,59 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Configure Python. Generate pyconfig.h
+# Returns:
+# - PYTHON_${python_ver_no_dots}_INCLUDE_DIRS: include dirs this version of Python
+# - PYTHON_${python_ver_no_dots}_LIBRARY: (Windows only) the library of this version of Python 
 function(configure_python python_ver_no_dots)
     get_python_full_version(${python_ver_no_dots})
 
-    set(PYTHON_${python_ver_no_dots}_SRC_ROOT "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}" CACHE STRING "Python ${python_ver_no_dots} root folder")    
+    set(PYTHON_${python_ver_no_dots}_SRC_ROOT "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}" )    
     message("Configuring Python: ${PYTHON_${python_ver_no_dots}_SRC_ROOT}")
     if(NOT ${python_ver_no_dots}_CONFIGURED)
-        execute_process(
-            WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
-            COMMAND ./configure
+        if(WIN32)
+            execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
+                COMMAND "..\\VsDevCmd_2017.bat &&  devenv PCbuild\\pcbuild.sln /upgrade && PCbuild\\build.bat -p x64"
+            )
+        else()
+            execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
+                COMMAND ./configure
+            )
+        endif()
+        set(${python_ver_no_dots}_CONFIGURED ON CACHE INTERNAL "${python_ver_no_dots} configured flag")
+    endif()
+    
+    set(PYTHON_${python_ver_no_dots}_INCLUDE_DIRS  
+            "${PYTHON_${python_ver_no_dots}_SRC_ROOT}" 
+            "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/Include"
+        CACHE INTERNAL "Python ${python_ver_no_dots} include directories"
+    )
+    
+    # Windows only. Shouldn't be required on other platforms
+    if(WIN32) 
+        set(PYTHON_${python_ver_no_dots}_INCLUDE_DIRS  
+                "${PYTHON_${python_ver_no_dots}_INCLUDE_DIRS};" 
+                "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PC"
+            CACHE INTERNAL "Python ${python_ver_no_dots} include directories"
         )
-        set(${python_ver_no_dots}_CONFIGURED ON CACHE BOOL "${python_ver_no_dots} configured flag")
-        mark_as_advanced(${python_ver_no_dots}_CONFIGURED)        
+        
+        find_library(
+            PYTHON_${python_ver_no_dots}_LIBRARY        
+            NAMES             
+                python${python_ver_no_dots}.lib
+            HINTS 
+                ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
+            PATH_SUFFIXES
+                PCbuild/amd64            
+        )
+        
     endif()
     
     
+        
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args("Python_${python_ver_no_dots}"
         DEFAULT_MSG
-        PYTHON_${python_ver_no_dots}_SRC_ROOT
+        PYTHON_${python_ver_no_dots}_INCLUDE_DIRS        
     )
     
     if(NOT ${Python_${python_ver_no_dots}_FOUND})
