@@ -28,8 +28,8 @@
 
 <img align="right" src="../Images/MeshSyncClientBlender.png" height=400>
 
-1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロード 
-1. Blender のバージョンによって、インストールする方法が少々違います.
+1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする 
+1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
      * File -> User Preferences -> Add-ons を開く
      * 画面下部の "Install Add-on from file" を押し、プラグインの zip ファイルを指定する
@@ -46,8 +46,8 @@
   
 ### Caveat
 
-古いバージョンのプラグインがインストール済みの場合、事前に削除しておく必要があります。  
-削除するためのステップ：
+Blender のプラグインをインストールする時、古いバージョンのプラグインがあれば、それを事前にアンインストールしておく必要があります。  
+アンインストールの手順：
 
 1. Add-ons メニューから "Import-Export: Unity Mesh Sync" を選択
 1. "Remove" ボタンをクリック

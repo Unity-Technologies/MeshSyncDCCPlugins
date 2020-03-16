@@ -47,8 +47,8 @@
 
 ### Caveat
 
-If an older version of the Blender plugin is already installed, it must be deleted before installing the new version.   
-Steps to delete:
+When installing a Blender plugin, the older version has to be uninstalled first if it exists.   
+Steps to uninstall:
 
 1. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu
 1. Click "Remove" button
