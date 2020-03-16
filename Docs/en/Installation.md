@@ -35,7 +35,8 @@
      * Go to Edit -> User Preferences
      * Click "Install" at the top right of the window, and select the plugin zip file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
-![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     
+     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.

@@ -35,7 +35,7 @@
      * ウィンドウの右上の "Install" をクリックし、プラグインの zip ファイルを指定する。
      * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する。
 
-![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
 
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
 1. MeshSync パネルが追加されたのを確認する。
