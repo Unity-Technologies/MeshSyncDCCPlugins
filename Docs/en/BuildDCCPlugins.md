@@ -50,7 +50,7 @@ There are two parameters in the script
 > under the *Build* folder, which if executed, will turn the prompt into a 
 > "Developer Command Prompt for VS 2017".
 
-The build results will be located in *Dist/<DCC_Tool>* folder.  
+The build results will be located in *Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>* folder.  
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
 
 #### Notes
@@ -118,7 +118,7 @@ There are two parameters in the script
 * `[optional_arguments]`  
   See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
-The build results will be located in *Dist/<DCC_Tool>* folder.  
+The build results will be located in *Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>* folder.  
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
 
 
