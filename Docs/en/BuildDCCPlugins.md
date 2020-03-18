@@ -21,18 +21,9 @@
     $ cmake --build . --config MinSizeRel && cmake --build . --config Debug
     ```
     
-    > For other types of Poco configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
+    > To build Poco libraries with other configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
     
 1. Add *Poco_DIR* environment variable to point to the Poco root folder above
-1. Build [zstd](https://github.com/facebook/zstd/releases)  
-   * Download [zstd-v1.4.4-win64](https://github.com/facebook/zstd/releases/download/v1.4.4/zstd-v1.4.4-win64.zip) and extract the file in a folder
-   * Start "Developer Command Prompt for VS 2017" and go to where zstd was extracted
-   * Execute the following in the command prompt      
-    ``` 
-    $ cd build\VS2010
-    $ devenv zstd.sln /upgrade
-    $ msbuild zstd.sln /p:Configuration=Release /p:Platform=x64
-    ```
 1. [Setup DCC tools](SetupDCC.md) for building
 
 
@@ -61,6 +52,13 @@ There are two parameters in the script
 
 The build results will be located in *Dist/<DCC_Tool>* folder.  
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
+
+#### Notes
+
+The build process will try to link againts Poco's release libraries in the following order:  
+1. MinSizeRel  
+1. Release  
+1. RelWithDebInfo 
 
 ## Building on Mac OSX
 
