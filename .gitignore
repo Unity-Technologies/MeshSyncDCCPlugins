@@ -47,6 +47,7 @@ Src/.vs
 # Symbolic links
 Src/MeshSyncClientMAYA_*
 Src/MeshSyncClientBLENDER_*
+Src/MeshSyncClient3DSMAX_*
 
 # Files to be distributed (Build results)
 Dist/UnityMeshSync_**
