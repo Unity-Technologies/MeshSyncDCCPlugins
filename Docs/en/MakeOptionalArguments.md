@@ -14,6 +14,12 @@ in the following sections.
 * Maya 2019: `-DBUILD_MAYA_2019_PLUGIN=ON`
 * Maya 2020: `-DBUILD_MAYA_2020_PLUGIN=ON`
 
+## Blender
+
+* All supported Blender versions: `-DBUILD_BLENDER_ALL=ON`
+* Blender 2.79: `-DBLENDER_2.79=ON`
+* Blender 2.80: `-DBLENDER_2.80=ON`
+
 # Tips
 
 Multiple optional arguments can be joined together to build MeshSync plugins for a specific combination of 
