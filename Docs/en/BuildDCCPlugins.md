@@ -1,6 +1,11 @@
-# Building on Windows
+# Building Plugins
 
-## Prerequisites (Win)
+1. [Windows](#building-on-windows)
+1. [Mac OSX](#building-on-mac_osx)
+
+## Building on Windows
+
+### Prerequisites (Win)
 
 1. Install [cmake](https://cmake.org/) 
 1. Install Visual Studio 2017
@@ -31,7 +36,7 @@
 1. [Setup DCC tools](SetupDCC.md) for building
 
 
-## Build Steps (Win)
+### Build Steps (Win)
 
 
 Start "Developer Command Prompt for VS 2017" and execute the following:
@@ -57,9 +62,9 @@ There are two parameters in the script
 The build results will be located in *Dist/<DCC_Tool>* folder.  
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
 
-# Building on Mac OSX
+## Building on Mac OSX
 
-## Prerequisites (Mac)
+### Prerequisites (Mac)
 
 1. Install [cmake](https://cmake.org/) 
 1. Install [XCode](https://developer.apple.com/xcode/)
@@ -98,7 +103,7 @@ Refer to the [installation guide](Installation.md) to install the plugin for eac
 1. [Setup DCC tools](SetupDCC.md) for building
 
 
-## Build Steps (Mac)
+### Build Steps (Mac)
 
 Open a terminal and execute the following:
 
