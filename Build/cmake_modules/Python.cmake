@@ -45,7 +45,7 @@ function(configure_python python_ver_no_dots)
 
     set(PYTHON_${python_ver_no_dots}_SRC_ROOT "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}" )    
     message("Configuring Python: ${PYTHON_${python_ver_no_dots}_SRC_ROOT}")
-    if(NOT ${python_ver_no_dots}_CONFIGURED)
+    if(NOT PYTHON_${python_ver_no_dots}_LIBRARY_FOUND OR NOT ${python_ver_no_dots}_CONFIGURED)
         if(WIN32)
 
             execute_process(WORKING_DIRECTORY "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PCbuild" 
