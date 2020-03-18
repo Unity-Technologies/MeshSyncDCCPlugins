@@ -25,6 +25,7 @@
     
 1. Add *Poco_DIR* environment variable to point to the Poco root folder above
 1. [Setup DCC tools](SetupDCC.md) for building
+1. On Windows 10, allow regular users to [create symbolic links](CreateSymbolicLinksOnWindows10.md).
 
 
 ### Build Steps (Win)
