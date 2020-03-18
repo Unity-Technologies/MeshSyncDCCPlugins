@@ -21,6 +21,9 @@ include(MeshSync)
 get_meshsync(${MESHSYNC_VER})
 setup_meshsync(${MESHSYNC_VER})
 
+# Force Unicode character set
+add_definitions(-DUNICODE -D_UNICODE)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Call add_subdirectory using symbolic link
 function(add_subdirectory_link to from)
