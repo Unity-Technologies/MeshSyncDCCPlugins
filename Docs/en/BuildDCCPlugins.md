@@ -2,6 +2,7 @@
 
 1. [Windows](#building-on-windows)
 1. [Mac OSX](#building-on-mac_osx)
+1. [Tips](#tips)
 
 ## Building on Windows
 
@@ -122,5 +123,18 @@ There are two parameters in the script
 The build results will be located in *Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>* folder.  
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
 
+
+
+## Tips
+
+If the build process fails, try removing `CMakeCache.txt` and return to 
+execute `make_meshsync_dcc_plugin` again.  
+For example on Mac:
+
+``` 
+$ rm CMakeCache.txt
+$ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
+$ xcodebuild -alltargets -configuration MinSizeRel build
+```
 
 
