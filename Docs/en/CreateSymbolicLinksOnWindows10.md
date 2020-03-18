@@ -1,10 +1,11 @@
 # Allow Symbolic Links on Windows 10
 
 The build process needs to create symbolic links to create 
-projects that correspond to different versions of DCC tools,
-and this symbolic link creation is not allowed for regular users on Windows 10 by default.
+plugin projects that correspond to different versions of DCC tools,
+and by default, this symbolic link creation is not allowed for regular users 
+on Windows 10.
 
-Follow these steps to allow symbolic link creation 
+Follow these steps to allow symbolic link creations: 
 
 1. Open **Local Security Policy** by typing `secpol.msc` on Windows Command Prompt
 
