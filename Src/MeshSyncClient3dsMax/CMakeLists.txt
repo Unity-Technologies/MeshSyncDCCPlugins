@@ -54,7 +54,7 @@ set(DLU_DEST_DIR "${DEST_DIR}/3dsMax${3DSMAX_YEAR}")
 
 
 # copy files to destination, as part of the install process.
-install(TARGETS ${MESHSYNC_CLIENT_3DSMAX} LIBRARY DESTINATION "${DLU_DEST_DIR}" NAMELINK_SKIP)
+install(TARGETS ${MESHSYNC_CLIENT_3DSMAX}  DESTINATION "${DLU_DEST_DIR}")
 
 
 
