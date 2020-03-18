@@ -47,8 +47,9 @@ function(configure_python python_ver_no_dots)
     message("Configuring Python: ${PYTHON_${python_ver_no_dots}_SRC_ROOT}")
 
 	
-    if( ${PYTHON_${python_ver_no_dots}_LIBRARY} STREQUAL "PYTHON_${python_ver_no_dots}_LIBRARY-NOTFOUND" 
-	     OR NOT ${python_ver_no_dots}_CONFIGURED)
+    if( (DEFINED ${PYTHON_${python_ver_no_dots}_LIBRARY} AND ${PYTHON_${python_ver_no_dots}_LIBRARY} STREQUAL "PYTHON_${python_ver_no_dots}_LIBRARY-NOTFOUND") 
+	     OR NOT PYTHON_${python_ver_no_dots}_CONFIGURED
+	  )
         if(WIN32)
             execute_process(WORKING_DIRECTORY "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PCbuild" 
                 COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64
@@ -58,7 +59,7 @@ function(configure_python python_ver_no_dots)
                 COMMAND ./configure
             )
         endif()
-        set(${python_ver_no_dots}_CONFIGURED ON CACHE INTERNAL "${python_ver_no_dots} configured flag")
+        set(PYTHON_${python_ver_no_dots}_CONFIGURED ON CACHE INTERNAL "Python ${python_ver_no_dots} configured flag")
     endif()
     
     set(PYTHON_${python_ver_no_dots}_INCLUDE_DIRS  
