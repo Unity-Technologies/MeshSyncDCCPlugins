@@ -1,6 +1,7 @@
 # Set
 # - ${3DSMAX${3dsmax_version}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
-# - 3DSMAX${3dsmax_version}_INCLUDE_DIR: the include directory of 3DSMax
+# - ${3DSMAX${3dsmax_version}_INCLUDE_DIR}: the include directory of 3DSMax
+# - $[3DSMAX${3dsmax_version}_LIBRARIES}: path to the 3DSMax libraries
 function(setup_3dsmax 3dsmax_version)
 
     # The possible root paths of Maya
