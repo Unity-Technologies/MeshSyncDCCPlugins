@@ -138,3 +138,29 @@ if(WIN32)
 		endif()
 	endforeach(CUR_3DSMAX_VER)   
 endif()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# MOTIONBUILDER (Windows only)
+list(APPEND MOTIONBUILDER_VERSIONS
+    MOTIONBUILDER_2017
+    MOTIONBUILDER_2018
+    MOTIONBUILDER_2019
+    MOTIONBUILDER_2020
+) 
+if(BUILD_MOTIONBUILDER_ALL)
+    foreach(CUR_MOTIONBUILDER_VER IN LISTS MOTIONBUILDER_VERSIONS)
+        option(BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MOTIONBUILDER_VER}" ON)
+    endforeach(CUR_MOTIONBUILDER_VER)   
+endif()
+
+if(WIN32 OR LINUX)
+	foreach(CUR_MOTIONBUILDER_VER IN LISTS MOTIONBUILDER_VERSIONS)
+		option(BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MOTIONBUILDER_VER}" OFF)
+		if (BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN)
+			add_subdirectory_link(MeshSyncClient${CUR_MOTIONBUILDER_VER} MeshSyncClientMotionBuilder)
+		endif()
+	endforeach(CUR_MOTIONBUILDER_VER)   
+endif()
+
+
+
