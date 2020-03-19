@@ -58,7 +58,7 @@ function(setup_motionbuilder motionbuilder_version)
     
     if(NOT ${MOTIONBUILDER${motionbuilder_version}_FOUND})  
         message(FATAL_ERROR "MotionBuilder ${motionbuilder_version} SDK could not be found. Please define MOTIONBUILDER_SDK_${motionbuilder_version}. \n"
-            "Paths searched for MotionBuilder SDK: ${3DSMAX${motionbuilder_version}_PATHS}"
+            "Paths searched for MotionBuilder SDK: ${MOTIONBUILDER${motionbuilder_version}_PATHS}"
         )
     endif() 
 
