@@ -43,6 +43,7 @@ Build/MeshSyncDCCPlugin.build/**
 Build/.vs
 Build/x64
 Src/.vs
+Src/*.vcxproj**
 
 # Symbolic links
 Src/MeshSyncClientMAYA_*
