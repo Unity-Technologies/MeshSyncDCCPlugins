@@ -30,8 +30,8 @@
 
 1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
-   one of the following a directories:
-   - **(Recommended)** A custom directory that has been added in 3ds Max by the following menu:
+   one of the following directories:
+   - **(Recommended)** A custom directory for plugins that has been added in 3ds Max by the following menu:
      * 3ds Max 2019 and earlier: Customize -> Configure System Paths. Then select *3rd Party Plug-Ins* tab.
      * 3ds Max 2020: Customize -> Configure User and System Paths. Then select *3rd Party Plug-Ins* tab.
    - The plugin path under the installation directory, e.g: `C:\Program Files\Autodesk\3ds Max 2019\Plugins`

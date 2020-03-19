@@ -8,7 +8,7 @@
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. Autodesk のライセンスにより, 現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
 1. プラグインをコピーする
    - Windows:   
      `MAYA_APP_DIR` の環境変数が設定されている場合はそこにコピーする。  
@@ -27,16 +27,17 @@
 
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
-1. Autodesk のライセンスにより, 現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
-1. 下記のどちらのフォルダーに使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
-   - **(推奨)**　追加されたプラグイン用のカスタムパス。このメニューで追加できます：
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
+   - **(推奨)**　追加されたプラグイン用のパス。このメニューで追加できます：
      * 3ds Max 2019 以前: Customize -> Configure System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
      * 3ds Max 2020: Customize -> Configure User and System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
-   - 3ds Max のインストールパスの下にあるプラグインパス。例：`C:\Program Files\Autodesk\3ds Max 2019\Plugins`
+   - 3ds Max のインストールパスの下にあるプラグイン用のパス。  
+     例：`C:\Program Files\Autodesk\3ds Max 2019\Plugins`
 1. メインメニューバーに "UnityMeshSync" が追加されたのを確認する。
    それの "Window" から設定ウィンドウを開けます。
    - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加されているので、
-  　 そちらから MeshSync の機能にアクセスできます。
+     そちらから MeshSync の機能にアクセスできます。
 
 
 ## Blender
