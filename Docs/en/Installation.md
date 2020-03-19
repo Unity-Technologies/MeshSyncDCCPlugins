@@ -1,13 +1,14 @@
 # Installation
 
 1. [Maya](#maya)
+1. [3ds Max](#3ds-max)
 1. [Blender](#blender)
 
 ## Maya
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required.
+1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
 1. Copy the plugins
    - Windows:   
      If `MAYA_APP_DIR` environment variable is setup, copy the *modules* directory there.  
@@ -23,6 +24,24 @@
 1. Notice that *UnityMeshSync* should now be available on the shelf UI.  
   Click on the gear icon to open the settings menu and start playing around with MeshSync.
   
+## 3ds Max
+
+<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
+
+1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
+   one of the following a directories:
+   - **(Recommended)** A custom directory that has been added in 3ds Max by the following menu:
+     * 3ds Max 2019 and earlier: Customize -> Configure System Paths. Then select *3rd Party Plug-Ins* tab.
+     * 3ds Max 2020: Customize -> Configure User and System Paths. Then select *3rd Party Plug-Ins* tab.
+   - The plugin path under the installation directory, e.g: `C:\Program Files\Autodesk\3ds Max 2019\Plugins`
+1. Confirm that "UnityMeshSync" has been added to the main menu bar.
+   The settings window can be opened by clicking "Window". 
+   > If we change the menu bar, "UnityMeshSync" will be added under Action, which 
+   > still allows us to access MeshSync features.
+
+
+
 ## Blender
   
 1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
