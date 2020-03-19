@@ -30,6 +30,7 @@
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
 1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Start 3ds Max
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
    one of the following directories:
    - **(Recommended)** A custom directory for plugins that has been added in 3ds Max by the following menu:
@@ -44,7 +45,7 @@
 
 ## MotionBuilder
 
-<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
+<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=320>
 
 1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
 1. Start MotionBuilder
@@ -61,6 +62,7 @@
 ## Blender
   
 1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
+1. Start Blender
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
      * Go to File -> User Preferences -> Add-ons
