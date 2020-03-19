@@ -49,6 +49,7 @@ Src/*.vcxproj**
 Src/MeshSyncClientMAYA_*
 Src/MeshSyncClientBLENDER_*
 Src/MeshSyncClient3DSMAX_*
+Src/MeshSyncClientMOTIONBUILDER_*
 
 # Files to be distributed (Build results)
 Dist/UnityMeshSync_**
