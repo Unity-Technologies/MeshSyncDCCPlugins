@@ -2,6 +2,7 @@
 
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
+1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
 
 ## Maya
@@ -29,22 +30,39 @@
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
 1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Start 3ds Max
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
    one of the following directories:
    - **(Recommended)** A custom directory for plugins that has been added in 3ds Max by the following menu:
      * 3ds Max 2019 and earlier: Customize -> Configure System Paths. Then select *3rd Party Plug-Ins* tab.
      * 3ds Max 2020: Customize -> Configure User and System Paths. Then select *3rd Party Plug-Ins* tab.
    - The plugin path under the installation directory, e.g: `C:\Program Files\Autodesk\3ds Max 2019\Plugins`
+1. Restart 3ds Max 
 1. Confirm that "UnityMeshSync" has been added to the main menu bar.
    The settings window can be opened by clicking "Window". 
    > If we change the menu bar, "UnityMeshSync" will be added under Action, which 
    > still allows us to access MeshSync features.
 
+## MotionBuilder
+
+<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
+
+1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Start MotionBuilder.
+1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
+1. Copy *MeshSyncClientMotionBuilder.dll* that corresponds to the used version of MotionBuilder into 
+   the custom plugin path.
+1. Restart MotionBuilder.
+1. Confirm that "UnityMeshSync" is added in the AssetBrowser under Templates -> Devices folder.
+1. Add "UnityMeshSync" to the scene.
+1. Start playing around with various MeshSync settings and features by 
+   selecting Devices -> UnityMeshSync in the Navigator.
 
 
 ## Blender
   
 1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
+1. Start Blender
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
      * Go to File -> User Preferences -> Add-ons

@@ -2,6 +2,7 @@
 
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
+1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
 
 ## Maya
@@ -28,21 +29,37 @@
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
 1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. 3ds Max を起動する。
 1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
    - **(推奨)**　追加されたプラグイン用のパス。このメニューで追加できます：
      * 3ds Max 2019 以前: Customize -> Configure System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
      * 3ds Max 2020: Customize -> Configure User and System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
    - 3ds Max のインストールパスの下にあるプラグイン用のパス。  
      例：`C:\Program Files\Autodesk\3ds Max 2019\Plugins`
+1. 3ds Max を再起動する。
 1. メインメニューバーに "UnityMeshSync" が追加されたのを確認する。
    それの "Window" から設定ウィンドウを開けます。
    - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加
      されているので、そちらから MeshSync の機能にアクセスできます。
 
+## MotionBuilder
+
+
+<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
+
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. MotionBuilder を起動する。
+1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
+1. プラグイン用のパスに、使用されている MotionBuilder のバージョンに該当する *MeshSyncClientMotionBuilder.dll* をコピーする。
+1. MotionBuilder を再起動する。
+1. Asset Browser 内の Templates -> Devices フォルダーに "UnityMeshSync" が追加されたのを確認する。
+1. "UnityMeshSync" をシーンに追加する。
+1. Navigator 内の Devices -> UnityMeshSync を選択することで、MeshSync の各種設定や機能にアクセスできます。 
 
 ## Blender
   
 1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. Blender を起動する。
 1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
      * File -> User Preferences -> Add-ons を開く。
