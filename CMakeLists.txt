@@ -117,7 +117,7 @@ endforeach(CUR_BLENDER_VER)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# 3DSMAX
+# 3DSMAX (Windows only)
 list(APPEND 3DSMAX_VERSIONS
     3DSMAX_2017
     3DSMAX_2018
@@ -130,9 +130,11 @@ if(BUILD_3DSMAX_ALL)
     endforeach(CUR_3DSMAX_VER)   
 endif()
 
-foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
-    option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
-    if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
-        add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
-    endif()
-endforeach(CUR_3DSMAX_VER)   
+if(WIN32)
+	foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
+		option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
+		if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
+			add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
+		endif()
+	endforeach(CUR_3DSMAX_VER)   
+endif()
