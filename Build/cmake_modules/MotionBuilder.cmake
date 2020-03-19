@@ -9,6 +9,9 @@ function(setup_motionbuilder motionbuilder_version)
     list(APPEND MOTIONBUILDER${motionbuilder_version}_PATHS	
         $ENV{MOTIONBUILDER_SDK_${motionbuilder_version}}
         $ENV{MOTIONBUILDER_SDK_${motionbuilder_version}}/OpenRealitySDK
+        "/usr/autodesk/MotionBuilder${motionbuilder_version}/OpenRealitySDK"
+        "/opt/autodesk/MotionBuilder${motionbuilder_version}/OpenRealitySDK"		
+		
     )
 	
     # Header. Use find_path to store to cache
