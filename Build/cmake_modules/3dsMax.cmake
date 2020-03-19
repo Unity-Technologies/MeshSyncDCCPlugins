@@ -40,7 +40,7 @@ function(setup_3dsmax 3dsmax_version)
             list(APPEND 3DSMAX${3dsmax_version}_LIBRARIES ${3DSMAX${3dsmax_version}_${3DSMAX_LIB}_LIBRARY})
         endif()
     endforeach()
-    set(3DSMAX${3dsmax_version}_LIBRARIES ${3DSMAX${3dsmax_version}_LIBRARIES} CACHE STRING "Maya ${3dsmax_version} libraries")
+    set(3DSMAX${3dsmax_version}_LIBRARIES ${3DSMAX${3dsmax_version}_LIBRARIES} CACHE STRING "3ds Max ${3dsmax_version} libraries")
     mark_as_advanced(3DSMAX${3dsmax_version}_LIBRARIES)
     
     include(FindPackageHandleStandardArgs)
@@ -51,8 +51,8 @@ function(setup_3dsmax 3dsmax_version)
     )    
    
     if(NOT ${3DSMAX${3dsmax_version}_FOUND})  
-        message(FATAL_ERROR "Maya ${3dsmax_version} SDK could not be found. Please define 3DSMAX_SDK_${3dsmax_version}. \n"
-            "Paths searched for Maya SDK: ${3DSMAX${3dsmax_version}_PATHS}"
+        message(FATAL_ERROR "3ds Max ${3dsmax_version} SDK could not be found. Please define 3DSMAX_SDK_${3dsmax_version}. \n"
+            "Paths searched for 3ds Max SDK: ${3DSMAX${3dsmax_version}_PATHS}"
         )
     endif()
 endfunction()
