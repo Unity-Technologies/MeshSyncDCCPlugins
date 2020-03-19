@@ -30,8 +30,8 @@ function(setup_motionbuilder motionbuilder_version)
     foreach(MOTIONBUILDER_LIB fbsdk)
         find_file(MOTIONBUILDER${motionbuilder_version}_${MOTIONBUILDER_LIB}_LIBRARY 
             NAMES 
-                ${MOTIONBUILDER_LIB}.lib                     # Windows
-                lib${MOBU_LIB}${CMAKE_SHARED_LIBRARY_SUFFIX} # Linux
+                ${MOTIONBUILDER_LIB}.lib                                # Windows
+                lib${MOTIONBUILDER_LIB}${CMAKE_SHARED_LIBRARY_SUFFIX}   # Linux
             PATHS
                 ${MOTIONBUILDER${motionbuilder_version}_PATHS}                
             PATH_SUFFIXES 
