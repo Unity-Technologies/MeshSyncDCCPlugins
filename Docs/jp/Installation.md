@@ -36,8 +36,8 @@
      例：`C:\Program Files\Autodesk\3ds Max 2019\Plugins`
 1. メインメニューバーに "UnityMeshSync" が追加されたのを確認する。
    それの "Window" から設定ウィンドウを開けます。
-   - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加されているので、
-     そちらから MeshSync の機能にアクセスできます。
+   - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加
+     されているので、そちらから MeshSync の機能にアクセスできます。
 
 
 ## Blender
