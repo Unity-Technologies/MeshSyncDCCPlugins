@@ -10,7 +10,7 @@ and therefore all supported DCC tools below have to be set up.
 
 Based on the version of [Maya](https://www.autodesk.com/products/maya/overview), set the following environment variable:
 * `MAYA_SDK_<MAYA_VERSION>` : 
-  where the [SDK/devkit](https://www.autodesk.com/developer-network/platform-technologies/maya) is installed.
+  where the [SDK or devkit](https://www.autodesk.com/developer-network/platform-technologies/maya) is installed.
 
 For example in MacOS:
 ``` 
