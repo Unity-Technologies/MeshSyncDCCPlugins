@@ -41,7 +41,7 @@ Notes:
 * empty : May be supported in the future
 
 # License
-- [License](LICENSE.md)
+- [License](LICENSE)
 - [Third Party Notices](Third%20Party%20Notices.md)
 
 # Currently being reorganized

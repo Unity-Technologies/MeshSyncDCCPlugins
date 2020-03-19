@@ -1,13 +1,14 @@
 # Installation
 
 1. [Maya](#maya)
+1. [3ds Max](#3ds-max)
 1. [Blender](#blender)
 
 ## Maya
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. Autodesk のライセンスのため, [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) が必要です。
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
 1. プラグインをコピーする
    - Windows:   
      `MAYA_APP_DIR` の環境変数が設定されている場合はそこにコピーする。  
@@ -21,6 +22,23 @@
 1. MeshSyncClient の Loaded にチェックを入れてプラグインを有効化する。
 1. シェルフ UI に UnityMeshSync が追加されているはずです。  
    歯車アイコンで設定メニューを開き、MeshSync と色々遊んでみましょう。
+
+## 3ds Max
+
+<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
+
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
+   - **(推奨)**　追加されたプラグイン用のパス。このメニューで追加できます：
+     * 3ds Max 2019 以前: Customize -> Configure System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
+     * 3ds Max 2020: Customize -> Configure User and System Paths をクリックし、*3rd Party Plug-Ins* タブを選択する。
+   - 3ds Max のインストールパスの下にあるプラグイン用のパス。  
+     例：`C:\Program Files\Autodesk\3ds Max 2019\Plugins`
+1. メインメニューバーに "UnityMeshSync" が追加されたのを確認する。
+   それの "Window" から設定ウィンドウを開けます。
+   - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加
+     されているので、そちらから MeshSync の機能にアクセスできます。
+
 
 ## Blender
   

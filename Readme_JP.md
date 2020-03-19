@@ -41,7 +41,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 * empty : これから対応する可能性がある
 
 # License
-- [License](LICENSE.md)
+- [License](LICENSE)
 - [Third Party Notices](Third%20Party%20Notices.md)
 
 # 現在整理中
