@@ -2,6 +2,7 @@
 
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
+1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
 
 ## Maya
@@ -39,6 +40,19 @@
    - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加
      されているので、そちらから MeshSync の機能にアクセスできます。
 
+## MotionBuilder
+
+
+<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
+
+1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. MotionBuilder を起動する。
+1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
+1. プラグイン用のパスに、使用されている MotionBuilder のバージョンに該当する *MeshSyncClientMotionBuilder.dll* をコピーする。
+1. MotionBuilder を再起動する。
+1. Asset Browser 内の Templates -> Devices フォルダーに "UnityMeshSync" が追加されたのを確認する。
+1. "UnityMeshSync" をシーンに追加する。
+1. Navigator 内の Devices -> UnityMeshSync を選択することで、MeshSync の各種設定や機能にアクセスできます。 
 
 ## Blender
   
