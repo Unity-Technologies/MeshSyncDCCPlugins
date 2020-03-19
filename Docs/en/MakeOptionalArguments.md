@@ -1,10 +1,11 @@
 # Make: Optional Arguments
 
-Following the steps in [Building DCC Plugins](BuildDCCPlugins.md) will build 
-MeshSync plugins for [all supported DCC tools](../../Readme.md) by default.
+The build process is setup so that all MeshSync plugins for [all supported DCC tools](../../Readme.md) 
+will be built by default.
 
-To build plugins for specific DCC tools, replace `[optional_arguments]` with commands described
-in the following sections.
+To build plugins for only specific DCC tools, 
+replace `[optional_arguments]` in the [manual building page](BuildDCCPlugins.md)
+with commands described in the following sections.
 
 ## Maya
 
