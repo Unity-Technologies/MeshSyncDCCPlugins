@@ -45,18 +45,18 @@
 
 ## MotionBuilder
 
-<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=320>
+<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
 
 1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
-1. Start MotionBuilder
+1. Start MotionBuilder.
 1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
 1. Copy *MeshSyncClientMotionBuilder.dll* that corresponds to the used version of MotionBuilder into 
    the custom plugin path.
-1. Restart MotionBuilder
+1. Restart MotionBuilder.
 1. Confirm that "UnityMeshSync" is added in the AssetBrowser under Templates -> Devices folder.
 1. Add "UnityMeshSync" to the scene.
-1. Start playing around with various MeshSync settings and features through by 
-   selecting Devices -> UnityMeshSync in the Navigator 
+1. Start playing around with various MeshSync settings and features by 
+   selecting Devices -> UnityMeshSync in the Navigator.
 
 
 ## Blender

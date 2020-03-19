@@ -45,7 +45,7 @@
 ## MotionBuilder
 
 
-<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=320>
+<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
 
 1. Autodesk のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
 1. MotionBuilder を起動する。
