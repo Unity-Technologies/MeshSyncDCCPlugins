@@ -21,8 +21,6 @@ target_include_directories(${MESHSYNC_CLIENT_3DSMAX} PRIVATE
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
-message(${3DSMAX${3DSMAX_VERSION}_INCLUDE_DIR}/samples/modifiers/morpher/include/MorpherApi.h)
-
 target_link_libraries(${MESHSYNC_CLIENT_3DSMAX} 
     MeshSync MeshUtils 
     ${Poco_LIBRARIES} 
