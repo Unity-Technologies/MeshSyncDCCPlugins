@@ -9,9 +9,6 @@ set(EXTERNAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/External)
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
 include(ISPC)
-set(ENABLE_ZSTD ON CACHE BOOL "Use ZSTD for scene cache compression")
-find_package(ZSTD)
-add_definitions(-DmsEnableZSTD)
 
 #CCache variable to hold MeshSync version. This is overwritten by the passed argument
 SET(MESHSYNC_VER "0.0.1-preview" CACHE STRING "MeshSync package version")
@@ -20,6 +17,12 @@ SET(MESHSYNC_VER "0.0.1-preview" CACHE STRING "MeshSync package version")
 include(MeshSync)
 get_meshsync(${MESHSYNC_VER})
 setup_meshsync(${MESHSYNC_VER})
+
+set(ENABLE_ZSTD ON CACHE BOOL "Use ZSTD for scene cache compression")
+include(ZSTD)
+setup_zstd(${MESHSYNC_VER})
+add_definitions(-DmsEnableZSTD)
+
 
 # Force Unicode character set
 add_definitions(-DUNICODE -D_UNICODE)
