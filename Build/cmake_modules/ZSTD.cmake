@@ -9,7 +9,7 @@ function(setup_zstd meshsync_ver)
             "zstd.h"
         PATHS
             ${MESHSYNC_PLUGIN_LOCAL_PATH}/External/zstd/include
-        
+        NO_DEFAULT_PATH                
     )
 
     mark_as_advanced(ZSTD_INCLUDE_DIR)
