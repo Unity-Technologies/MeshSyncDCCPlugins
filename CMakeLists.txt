@@ -1,6 +1,37 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 PROJECT(MeshSyncDCCPlugin)
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+# CXX Setup
+if(APPLE)
+    set(PLATFORM "Mac")
+    set(MAC ON)
+elseif(ANDROID)
+    set(PLATFORM "Android")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(PLATFORM "Linux")
+    set(LINUX ON)
+
+elseif(WIN32) 
+    set(PLATFORM "Windows")
+    
+    # Additional Poco Net dependencies on Windows
+    list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
+
+    #Compile with MultiThreaded DLL flag to use dynamically-linked runtime library (Poco)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")        
+   
+    #Set /fp. We need so that -infinity == infinity == NaN. See Transform::setupDataFlags()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+endif()
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
 set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
@@ -39,35 +70,6 @@ function(add_subdirectory_link to from)
     endif()
     add_subdirectory("${SRC_ROOT}/${to}")
 endfunction()
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-# CXX Setup
-if(APPLE)
-    set(PLATFORM "Mac")
-    set(MAC ON)
-elseif(ANDROID)
-    set(PLATFORM "Android")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(PLATFORM "Linux")
-    set(LINUX ON)
-
-elseif(WIN32) 
-    set(PLATFORM "Windows")
-    
-    # Additional Poco Net dependencies on Windows
-    list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
-
-    #Compile with MultiThreaded DLL flag to use dynamically-linked runtime library (Poco)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")        
-   
-    #Set /fp. We need so that -infinity == infinity == NaN. See Transform::setupDataFlags()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
-endif()
-
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # ----------------------------------------------------------------------------------------------------------------------
 
