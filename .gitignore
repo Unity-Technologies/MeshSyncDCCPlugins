@@ -27,7 +27,7 @@ Build/CMakeCache.txt
 Build/CMakeFiles**
 Build/CMakeScripts/**
 Build/cmake_install.cmake
-Build/MakeFile
+Build/Makefile
 Build/MeshSync-**
 Build/Blender-**
 Build/blender-**
