@@ -5,8 +5,8 @@ include(Utilities)
 
 function(get_blender blender_ver)
 
-    #Example Link: https://github.com/blender/blender/archive/v2.82a.zip 
-    set(BLENDER_ARCHIVE_FILE "v${blender_ver}.zip")
+    #Example Link: https://github.com/blender/blender/archive/v2.82a.tar.gz 
+    set(BLENDER_ARCHIVE_FILE "v${blender_ver}.tar.gz")
     set(BLENDER_ARCHIVE_URL "https://github.com/blender/blender/archive/${BLENDER_ARCHIVE_FILE}")
     set(BLENDER_ARCHIVE_LOCAL_PATH "${CMAKE_BINARY_DIR}/Blender-${BLENDER_ARCHIVE_FILE}")
 
