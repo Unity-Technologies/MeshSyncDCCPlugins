@@ -10,7 +10,10 @@
 
 ### Prerequisites (Win)
 
-1. Install [cmake](https://cmake.org/).
+1. Install [cmake](https://cmake.org/)  version 3.5 or later.  
+   Make sure to choose one of the "Add CMake to the System PATH ..." options as shown below.  
+   ![CMakeInstallation](../Images/CMakeInstallation.png)
+   
 1. Install Visual Studio 2017.
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
 1. Build [Poco](https://pocoproject.org) (static libraries).  
@@ -65,7 +68,7 @@ The build process will try to link againts Poco's release libraries in the follo
 
 ### Prerequisites (Mac)
 
-1. Install [cmake](https://cmake.org/).
+1. Install [cmake](https://cmake.org/)  version 3.5 or later, if not already installed.
 1. Install [XCode](https://developer.apple.com/xcode/).
 1. Install XCode Command Line tools.  
     ``` 
