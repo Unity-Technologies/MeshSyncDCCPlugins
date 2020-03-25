@@ -32,7 +32,6 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 endif()
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -59,6 +58,11 @@ setup_meshsync(${MESHSYNC_VER})
 
 # Force Unicode character set
 add_definitions(-DUNICODE -D_UNICODE)
+
+# For available options, check MeshSync/msConfig.h and MeshUtils/muConfig.h
+# Example:
+#   -DmuEnablePPL
+#   -DmuEnableTBB
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Call add_subdirectory using symbolic link
