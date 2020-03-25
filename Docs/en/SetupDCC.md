@@ -12,6 +12,8 @@ Based on the version of [Maya](https://www.autodesk.com/products/maya/overview),
 * `MAYA_SDK_<MAYA_VERSION>` : 
   where the [SDK or devkit](https://www.autodesk.com/developer-network/platform-technologies/maya) is installed.
 
+> On Linux, no setup is necessary if Maya is installed in the default location.
+
 For example in MacOS:
 ``` 
 export MAYA_SDK_2017=/Applications/Autodesk/maya2017/Maya.app/Contents
@@ -37,6 +39,8 @@ on the Internet, then we need to set the following environment variable:
 
 Based on the version of [MotionBuilder](https://www.autodesk.com/products/motionbuilder/overview), set the following environment variable:
 * `MOTIONBUILDER_SDK_<MOTIONBUILDER_VERSION>` : where MotionBuilder is installed.
+
+> On Linux, no setup is necessary if MotionBuilder is installed in the default location.
 
 
 
