@@ -3,6 +3,11 @@ PROJECT(MeshSyncDCCPlugin)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+# For other available options, check MeshSync/msConfig.h and MeshUtils/muConfig.h
+# Example:
+#   -DmuEnablePPL
+#   -DmuEnableTBB
+
 # CXX Setup
 if(APPLE)
     set(PLATFORM "Mac")
@@ -20,6 +25,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
 elseif(WIN32) 
     set(PLATFORM "Windows")
+    add_definitions(-DmuEnablePPL)
     
     # Additional Poco Net dependencies on Windows
     list(APPEND Poco_LIBRARIES "ws2_32.lib;Iphlpapi.lib" )       
@@ -59,10 +65,6 @@ setup_meshsync(${MESHSYNC_VER})
 # Force Unicode character set
 add_definitions(-DUNICODE -D_UNICODE)
 
-# For available options, check MeshSync/msConfig.h and MeshUtils/muConfig.h
-# Example:
-#   -DmuEnablePPL
-#   -DmuEnableTBB
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Call add_subdirectory using symbolic link
