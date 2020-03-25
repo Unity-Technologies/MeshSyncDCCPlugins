@@ -118,7 +118,9 @@ $ xcodebuild -alltargets -configuration MinSizeRel build
 
 ## Installation
 
-If the build is successful, the generated binary files will be located in *Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>* folder.  
+If the build is successful, the generated binary files will be located in  
+*Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>* folder.  
+
 Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
 
 ## Tips
