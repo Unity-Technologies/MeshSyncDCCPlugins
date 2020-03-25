@@ -13,6 +13,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(PLATFORM "Linux")
     set(LINUX ON)
 
+    #--fpermissive is required on Linux for building MotionBuilder plugins.
+    #The error: ‘GetData’ was not declared in this scope, and no declarations were found by argument-dependent 
+    #    lookup at the point of instantiation [-fpermissive]
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+
 elseif(WIN32) 
     set(PLATFORM "Windows")
     
