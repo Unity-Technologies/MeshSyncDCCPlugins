@@ -2,13 +2,13 @@
 # * ZSTD_INCLUDE_DIR: where zstd.h is found
 # * ZSTD_LIBRARY: zstd library path
 
-function(setup_zstd meshsync_ver)
+function(setup_zstd meshsync_plugin_path)
 
     find_path(ZSTD_INCLUDE_DIR
         NAMES
             "zstd.h"
         PATHS
-            ${MESHSYNC_PLUGIN_LOCAL_PATH}/External/zstd/include
+            ${meshsync_plugin_path}/External/zstd/include
         NO_DEFAULT_PATH                
     )
 
@@ -32,7 +32,7 @@ function(setup_zstd meshsync_ver)
         NAMES
             ${zstd_lib_filename}
         PATHS
-            "${MESHSYNC_PLUGIN_LOCAL_PATH}/External/zstd/lib"
+            "${meshsync_plugin_path}/External/zstd/lib"
         PATH_SUFFIXES 
             ${zstd_lib_path_suffix}
         NO_DEFAULT_PATH        
@@ -49,7 +49,7 @@ function(setup_zstd meshsync_ver)
     
     if(NOT ${ZSTD_FOUND})  
         message(FATAL_ERROR "zstd could not be found. \n"
-            "Paths searched for ztsd: ${MESHSYNC_PLUGIN_LOCAL_PATH}/External/zstd/lib/${zstd_lib_path_suffix}"
+            "Paths searched for ztsd: ${meshsync_plugin_path}/External/zstd/lib/${zstd_lib_path_suffix}"
         )
     endif()
     

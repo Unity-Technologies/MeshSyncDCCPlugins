@@ -29,11 +29,15 @@ endfunction()
 # ------------------------------------------------------------------------------
 
 #return:
-# - MESHSYNC_PLUGIN_LOCAL_PATH: the Plugin~ folder of MeshSync 
 # - MESHSYNC_PLUGIN_SRC_ROOT:   the location of the source code MeshSync plugin. 
 function(setup_meshsync meshsync_ver)     
-    set(MESHSYNC_MAIN_CMAKE_PATH    "${CMAKE_BINARY_DIR}/MeshSync-${meshsync_ver}/Plugin~")
-    set(MESHSYNC_PLUGIN_LOCAL_PATH  "${MESHSYNC_MAIN_CMAKE_PATH}" PARENT_SCOPE)
+    set(MESHSYNC_PLUGIN_LOCAL_PATH  "${CMAKE_BINARY_DIR}/MeshSync-${meshsync_ver}/Plugin~")
     set(MESHSYNC_PLUGIN_SRC_ROOT    "${MESHSYNC_PLUGIN_LOCAL_PATH}/Src" PARENT_SCOPE)
-    add_subdirectory(${MESHSYNC_MAIN_CMAKE_PATH})
+
+    if(ENABLE_ZSTD)    
+        include(ZSTD)
+        setup_zstd(${MESHSYNC_PLUGIN_LOCAL_PATH})
+    endif()
+    
+    add_subdirectory(${MESHSYNC_PLUGIN_LOCAL_PATH})
 endfunction()
