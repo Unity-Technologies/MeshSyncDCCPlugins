@@ -36,7 +36,7 @@ bool IsVisibleInHierarchy(FBModel *src)
 
 std::string GetName(FBComponent *src)
 {
-    std::string ret = src->LongName;
+    std::string ret = src->LongName.AsString();
     mu::SanitizeNodeName(ret);
     return ret;
 }
