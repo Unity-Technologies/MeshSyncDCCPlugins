@@ -40,6 +40,9 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
+# Force Unicode character set
+add_definitions(-DUNICODE -D_UNICODE)
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
@@ -62,8 +65,6 @@ get_meshsync(${MESHSYNC_VER})
 setup_meshsync(${MESHSYNC_VER})
 
 
-# Force Unicode character set
-add_definitions(-DUNICODE -D_UNICODE)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
