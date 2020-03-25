@@ -173,6 +173,7 @@ $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ cmake --build . 
+$ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
