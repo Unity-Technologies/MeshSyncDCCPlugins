@@ -169,7 +169,7 @@ Open a terminal and execute the following:
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
-$ cmake --build. 
+$ cmake --build . 
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
