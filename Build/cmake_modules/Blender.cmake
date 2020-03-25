@@ -26,11 +26,9 @@ endfunction()
 # - ${BLENDER${blender_ver}_PYTHON_VERSION}: the version of Python used by this Blender version
 function(setup_blender blender_ver)
 
-    set(BLENDER_SRC_ROOT "${CMAKE_BINARY_DIR}/Blender-${blender_ver}")
-
-    # The possible root paths of Blender
-    list(APPEND BLENDER${blender_ver}_PATHS
-        ${BLENDER_SRC_ROOT}/source/blender
+    list(APPEND BLENDER_SRC_PATHS
+        "${CMAKE_BINARY_DIR}/Blender-${blender_ver}"
+        "${CMAKE_BINARY_DIR}/blender-${blender_ver}"
     )
         
     # Header. Use find_path to store to cache
@@ -38,7 +36,9 @@ function(setup_blender blender_ver)
         NAMES
             blenkernel/BKE_blender_version.h
         HINTS
-            ${BLENDER${blender_ver}_PATHS}
+            ${BLENDER_SRC_PATHS}
+        PATH_SUFFIXES
+            source/blender
         NO_DEFAULT_PATH            
     )
     
@@ -59,22 +59,27 @@ function(setup_blender blender_ver)
             versions.cmake           # python 3.7
             ${PYTHON_CMAKE_PLATFORM} # python 3.5
         HINTS
-            ${BLENDER_SRC_ROOT}
+            ${BLENDER_SRC_PATHS}
         PATH_SUFFIXES
             build_files/build_environment/cmake #python 3.7
             build_files/cmake/Modules    #python 3.5
             build_files/cmake/platform   #python 3.5
     )
     
+
     # Find Python version used in this Blender Version. 
     # Line: 
-    # - set(PYTHON_VERSION 3.7.0)
-    # -	set(PYTHON_VERSION 3.5)
+    # - set(PYTHON_VERSION 3.7.0
+    # -	set(PYTHON_VERSION 3.5
 
     file(READ ${BLENDER${blender_ver}_CMAKE_VERSION} VERSION_CONTENTS)    
-    string(REGEX MATCH "set\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]*)\\)" _ ${VERSION_CONTENTS})        
+    string(REGEX MATCH "set\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]*)" PYTHON_VERSION_SECTION ${VERSION_CONTENTS})        
+    if(NOT PYTHON_VERSION_SECTION)
+        string(REGEX MATCH "SET\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]*)" PYTHON_VERSION_SECTION ${VERSION_CONTENTS})        
+    endif()
     set(BLENDER${blender_ver}_PYTHON_VERSION ${CMAKE_MATCH_1}${CMAKE_MATCH_2} CACHE STRING "Python version used by Blender ${blender_ver}")    
-    #message("Python version: ${BLENDER${blender_ver}_PYTHON_VERSION}")
+    message("Python version: ${BLENDER${blender_ver}_PYTHON_VERSION}")
+
         
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args("Blender${blender_ver}"
