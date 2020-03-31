@@ -7,10 +7,12 @@ get_mq(${MQ_VERSION})
 setup_mq(${MQ_VERSION})
 
 
-file(GLOB sources *.cpp *.h *.mm)
-
-  
+file(GLOB sources *.cpp *.h)  
 list(FILTER sources EXCLUDE REGEX "MeshSyncClientMQ3\\.(h|cpp)") 
+if(APPLE)
+    file(GLOB sources *.mm)
+endif()
+
 
 add_library(${MESHSYNC_CLIENT_METASEQUOIA} MODULE ${sources})
 #set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES BUNDLE ON)
