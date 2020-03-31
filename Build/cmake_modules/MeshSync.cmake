@@ -7,7 +7,7 @@ function(get_meshsync meshsync_ver)
     set(MESHSYNC_ARCHIVE_FILE "${meshsync_ver}.tar.gz")
     set(MESHSYNC_ARCHIVE_URL "https://github.com/unity3d-jp/MeshSync/archive/${MESHSYNC_ARCHIVE_FILE}")
     set(MESHSYNC_ARCHIVE_LOCAL_PATH "${CMAKE_BINARY_DIR}/MeshSync-${MESHSYNC_ARCHIVE_FILE}")
-    set(MESHSYNC_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}/MeshSync-${meshsync_ver}")
+    set(MESHSYNC_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}")
 
     download_and_extract(
         ${MESHSYNC_ARCHIVE_URL}

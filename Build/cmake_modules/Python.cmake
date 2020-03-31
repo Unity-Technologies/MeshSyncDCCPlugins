@@ -25,7 +25,7 @@ function(get_python python_ver_no_dots)
     set(PYTHON_ARCHIVE_FILE "Python-${PYTHON_FULL_VERSION}.tgz")
     set(PYTHON_ARCHIVE_URL "https://www.python.org/ftp/python/${PYTHON_FULL_VERSION}/${PYTHON_ARCHIVE_FILE}")
     set(PYTHON_ARCHIVE_LOCAL_PATH "${CMAKE_BINARY_DIR}/${PYTHON_ARCHIVE_FILE}")
-    set(PYTHON_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}/Python-${PYTHON_FULL_VERSION}")
+    set(PYTHON_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}")
     
     download_and_extract(
         ${PYTHON_ARCHIVE_URL}

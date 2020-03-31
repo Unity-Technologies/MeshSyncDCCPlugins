@@ -9,7 +9,7 @@ function(get_blender blender_ver)
     set(BLENDER_ARCHIVE_FILE "v${blender_ver}.tar.gz")
     set(BLENDER_ARCHIVE_URL "https://github.com/blender/blender/archive/${BLENDER_ARCHIVE_FILE}")
     set(BLENDER_ARCHIVE_LOCAL_PATH "${CMAKE_BINARY_DIR}/Blender-${BLENDER_ARCHIVE_FILE}")
-    set(BLENDER_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}/blender-${blender_ver}")
+    set(BLENDER_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}")
     
     download_and_extract(
         ${BLENDER_ARCHIVE_URL}
