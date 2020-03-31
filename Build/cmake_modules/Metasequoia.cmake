@@ -11,8 +11,6 @@ function(get_mq mq_ver)
     set(MQ_ARCHIVE_LOCAL_PATH "${CMAKE_BINARY_DIR}/${MQ_ARCHIVE_FILE}")
     set(MQ_ARCHIVE_EXTRACT_PATH "${CMAKE_BINARY_DIR}/mqsdk-${mq_ver}")
     
-    message("Downloading ${MQ_ARCHIVE_URL} and extracting to ${MQ_ARCHIVE_EXTRACT_PATH}")
-
     download_and_extract(
         ${MQ_ARCHIVE_URL}
         ${MQ_ARCHIVE_LOCAL_PATH}
