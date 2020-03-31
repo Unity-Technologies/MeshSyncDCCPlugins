@@ -17,7 +17,8 @@ add_library(${MESHSYNC_CLIENT_METASEQUOIA} MODULE ${sources})
 #set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES OUTPUT_NAME "MeshSyncClientMQ4")
 
 if(APPLE)
-    set_target_properties(${name} PROPERTIES BUNDLE ON)
+    set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES BUNDLE ON)
+    set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES BUNDLE_EXTENSION "plugin")        
 endif()
 
 add_dependencies(${MESHSYNC_CLIENT_METASEQUOIA} MeshUtils MeshSync)
