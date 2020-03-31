@@ -183,11 +183,6 @@ list(APPEND MQ_VERSIONS
     MQ_471
     MQ_470
 )
-if(WIN32)
-    list(APPEND MQ_VERSIONS
-        MQ_311
-    )
-endif()
  
 if(BUILD_METASEQUOIA_ALL)
     foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
