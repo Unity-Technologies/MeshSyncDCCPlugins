@@ -25,8 +25,8 @@ endfunction()
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Set the following to cache
-# - ${MQ${mq_ver}_DIR}: MQ directory
-# - ${MQ${mq_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
+# - ${MQSDK_${mq_ver}_DIR}: MQ directory
+# - ${MQSDK_${mq_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
 function(setup_mq mq_ver)
 
     list(APPEND MQ_SRC_PATHS
@@ -34,7 +34,7 @@ function(setup_mq mq_ver)
     )
         
     # Header. Use find_path to store to cache
-    find_path(MQ${mq_ver}_DIR
+    find_path(MQSDK_${mq_ver}_DIR
         NAMES
             MQPlugin.h
         HINTS
@@ -44,15 +44,15 @@ function(setup_mq mq_ver)
         NO_DEFAULT_PATH            
     )
     
-    mark_as_advanced(MQ${mq_ver}_DIR)
+    mark_as_advanced(MQSDK_${mq_ver}_DIR)
         
     include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args("MQ${mq_ver}"
+    find_package_handle_standard_args("MQSDK_${mq_ver}"
         DEFAULT_MSG
-        MQ${mq_ver}_DIR
+        MQSDK_${mq_ver}_DIR
     )
     
-    if(NOT ${MQ${mq_ver}_FOUND})
+    if(NOT ${MQSDK_${mq_ver}_FOUND})
         message(FATAL_ERROR "MQ ${mq_ver} could not be detected. Please remove CMakeCache.txt and redo the build process")
     endif()
 endfunction()

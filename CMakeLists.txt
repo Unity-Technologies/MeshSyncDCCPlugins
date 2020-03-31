@@ -180,8 +180,15 @@ endif()
 # METASEQUOIA (Windows and Mac only)
 list(APPEND MQ_VERSIONS
     MQ_472
-    MQ_311
-) 
+    MQ_471
+    MQ_470
+)
+if(WIN32)
+    list(APPEND MQ_VERSIONS
+        MQ_311
+    )
+endif()
+ 
 if(BUILD_METASEQUOIA_ALL)
     foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
         option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" ON)

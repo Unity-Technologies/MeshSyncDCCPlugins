@@ -8,7 +8,9 @@ setup_mq(${MQ_VERSION})
 
 
 file(GLOB sources *.cpp *.h *.mm)
-#list(FILTER sources EXCLUDE REGEX "MeshSyncClientMQ3\\.(h|cpp)") 
+
+  
+list(FILTER sources EXCLUDE REGEX "MeshSyncClientMQ3\\.(h|cpp)") 
 
 add_library(${MESHSYNC_CLIENT_METASEQUOIA} MODULE ${sources})
 #set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES BUNDLE ON)
@@ -21,11 +23,18 @@ endif()
 add_dependencies(${MESHSYNC_CLIENT_METASEQUOIA} MeshUtils MeshSync)
 
 target_precompile_headers(${MESHSYNC_CLIENT_METASEQUOIA}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
+
+#ignore pch for the objective-c files
+set_source_files_properties(sdk_StringUtil.mm
+  PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+)
+
 target_include_directories(${MESHSYNC_CLIENT_METASEQUOIA} PRIVATE 
     "${CMAKE_CURRENT_SOURCE_DIR}" 
-    "${MQSDK_DIR}"
+    "${MQSDK_${MQ_VERSION}_DIR}"
     ${MESHSYNC_PLUGIN_SRC_ROOT}    
 )
+
 target_link_libraries(${MESHSYNC_CLIENT_METASEQUOIA} 
     MeshSync MeshUtils ${Poco_LIBRARIES} 
     ${COCOA_LIBRARY}
