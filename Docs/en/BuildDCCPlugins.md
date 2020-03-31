@@ -2,6 +2,7 @@
 
 1. [Windows](#building-on-windows)
 1. [Mac OSX](#building-on-mac-osx)
+1. [Linux](#building-on-linux)
 1. [Installation](#installation)
 1. [Tips](#tips)
 
@@ -9,7 +10,10 @@
 
 ### Prerequisites (Win)
 
-1. Install [cmake](https://cmake.org/).
+1. Install [cmake](https://cmake.org/)  version 3.5 or later.  
+   Make sure to choose one of the "Add CMake to the System PATH ..." options as shown below.  
+   ![CMakeInstallation](../Images/CMakeInstallation.png)
+   
 1. Install Visual Studio 2017.
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
 1. Build [Poco](https://pocoproject.org) (static libraries).  
@@ -64,7 +68,7 @@ The build process will try to link againts Poco's release libraries in the follo
 
 ### Prerequisites (Mac)
 
-1. Install [cmake](https://cmake.org/).
+1. Install [cmake](https://cmake.org/)  version 3.5 or later, if not already installed.
 1. Install [XCode](https://developer.apple.com/xcode/).
 1. Install XCode Command Line tools.  
     ``` 
@@ -115,6 +119,68 @@ $ xcodebuild -alltargets -configuration MinSizeRel build
 * `[optional_arguments]`  
   See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
+
+## Building on Linux
+
+### Prerequisites (Linux)
+
+1. Make sure C++14 development is supported, and define `CC` and `CXX` environment variables to point to C++14 dev tools.  
+   For example, by installing [devtoolset-7](https://www.softwarecollections.org/en/scls/rhscl/devtoolset-7/) in in CentOS 7, 
+   and then defining `CC` and `CXX` environment variables as follows:
+   ``` 
+   export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
+   export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
+   ``` 
+
+1. Install [cmake](https://cmake.org/)  version 3.5 or later.  
+   Example:
+    ``` 
+    wget https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0.tar.gz    
+    tar zxvf cmake-3.17.0.tar.gz
+    cd cmake-3.17.0
+    ./bootstrap --prefix=/usr/local
+    make -j$(nproc)
+    make install    
+    ```  
+1. Install git.   
+1. Build [Poco](https://pocoproject.org) (static libraries).  
+   * Download [Poco 1.10.1](https://github.com/pocoproject/poco/archive/poco-1.10.1-release.zip) and extract the file in a folder.
+   * Open a terminal and go to where Poco was extracted.
+   * Execute the following in the command prompt:
+    ``` 
+    $ mkdir cmake-build
+    $ cd cmake-build
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_POSITION_INDEPENDENT_CODE=ON && cmake --build . 
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POSITION_INDEPENDENT_CODE=ON && cmake --build . 
+    ```
+    > For other types of Poco configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
+    
+1. Add *Poco_DIR* environment variable to point to the Poco root folder above. For example:  
+    ``` 
+    export Poco_DIR=~/MySDK/poco
+    ```  
+    It might be convenient to add this command to *~/.bash_profile*.
+        
+1. [Setup DCC tools](SetupDCC.md) for building.
+
+
+### Build Steps (Linux)
+
+Open a terminal and execute the following:
+
+``` 
+$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
+$ cd MeshSyncDCCPlugin/Build
+$ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
+$ cmake --build . 
+$ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
+```
+
+`make_meshsync_dcc_plugin` has two parameters:  
+* `<meshsync_version>`    
+  The MeshSync package version that we want the DCC plugins to work with.  
+* `[optional_arguments]`  
+  See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
 ## Installation
 

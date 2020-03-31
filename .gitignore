@@ -18,15 +18,19 @@
 *.out
 *.app
 
+# Editor swap files
+*.swp 
+
 # CMake
 Build/Build/MeshSync**
 Build/CMakeCache.txt
 Build/CMakeFiles**
 Build/CMakeScripts/**
 Build/cmake_install.cmake
-Build/MakeFile
+Build/Makefile
 Build/MeshSync-**
 Build/Blender-**
+Build/blender-**
 Build/Python-**
 Build/ispc**
 Build/*.xcodeproj/**

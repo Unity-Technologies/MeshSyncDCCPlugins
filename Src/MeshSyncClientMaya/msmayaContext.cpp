@@ -2,6 +2,8 @@
 #include "msmayaUtils.h"
 #include "msmayaContext.h"
 #include "msmayaCommand.h"
+#include <cstdarg>
+
 
 
 bool DAGNode::isInstanced() const

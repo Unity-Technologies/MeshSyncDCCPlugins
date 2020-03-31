@@ -17,16 +17,11 @@
 #include <memory>
 #include <cassert>
 
-#ifdef _WIN32
-    #define msMaya_UsePPL
-#else 
-    #define msMaya_UseTBB
-#endif
-
-#ifdef msMaya_UsePPL
+#ifdef muEnablePPL
     #include <ppl.h>
 #endif
-#ifdef msMaya_UseTBB
+
+#ifdef muEnableTBB
     #include <tbb/tbb.h>
     namespace concurrency = tbb;
 #endif
