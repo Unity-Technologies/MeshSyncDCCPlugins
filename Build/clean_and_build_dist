@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+
+# Clean dist
+rm -Rf ../Dist/*
+cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
+
+cd ../Dist
+       
+# Preprocess Blender first
+find . -maxdepth 1 -mindepth 1 -type d | grep Blender | while read dir; do
+    cd $dir
+    for blenderVerDir in */ ; do
+        cd ${blenderVerDir} 
+        zip -r "${blenderVerDir%?}.zip" .
+        mv "${blenderVerDir%?}.zip" ..
+        cd .. 
+        rm -Rf $blenderVerDir    
+    done
+    cd ..
+done
+
+# Zip each folder 
+for d in */ ; do
+     zip -r "${d%?}.zip" "$d"
+done
