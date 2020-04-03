@@ -176,5 +176,28 @@ if(WIN32 OR LINUX)
 	endforeach(CUR_MOTIONBUILDER_VER)   
 endif()
 
+# ----------------------------------------------------------------------------------------------------------------------
+# METASEQUOIA (Windows and Mac only)
+list(APPEND MQ_VERSIONS
+    MQ_472
+    MQ_471
+    MQ_470
+)
+ 
+if(BUILD_METASEQUOIA_ALL)
+    foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
+        option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" ON)
+    endforeach(CUR_MQ_VER)   
+endif()
+
+if(WIN32 OR APPLE)
+	foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
+		option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" OFF)
+		if (BUILD_${CUR_MQ_VER}_PLUGIN)
+			add_subdirectory_link(MeshSyncClient${CUR_MQ_VER} MeshSyncClientMQ)
+		endif()
+	endforeach(CUR_MQ_VER)   
+endif()
+
 
 

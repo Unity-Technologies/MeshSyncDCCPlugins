@@ -3,6 +3,7 @@
 function(download_and_extract 
             archive_url
             archive_local_path 
+            extract_path
             download_msg
             err_msg
         )
@@ -16,12 +17,13 @@ function(download_and_extract
             file(REMOVE ${archive_local_path})
             message(FATAL_ERROR "${err_msg}")
         endif()
-       
+               
         # Extract
         message("   Extracting")
+        file(MAKE_DIRECTORY ${extract_path})        
         execute_process(
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMAND tar -xf ${archive_local_path}
+            COMMAND tar -xf ${archive_local_path} -C ${extract_path}
         )
     endif()
     

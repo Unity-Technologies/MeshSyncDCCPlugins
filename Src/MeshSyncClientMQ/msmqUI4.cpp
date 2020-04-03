@@ -290,7 +290,7 @@ static std::string FileSaveDialog()
     char path[MAX_PATH]{};
     sprintf(path, "recording.sc");
 
-    ::OPENFILENAME ofn{};
+    ::OPENFILENAMEA ofn{};
     ofn.lStructSize = sizeof(ofn);
     ofn.lpstrFile = path;
     ofn.nMaxFile = sizeof(path);

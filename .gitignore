@@ -32,6 +32,7 @@ Build/MeshSync-**
 Build/Blender-**
 Build/blender-**
 Build/Python-**
+Build/mqsdk**
 Build/ispc**
 Build/*.xcodeproj/**
 Build/ispc**
@@ -54,6 +55,7 @@ Src/MeshSyncClientMAYA_*
 Src/MeshSyncClientBLENDER_*
 Src/MeshSyncClient3DSMAX_*
 Src/MeshSyncClientMOTIONBUILDER_*
+Src/MeshSyncClientMQ_*
 
 # Files to be distributed (Build results)
 Dist/UnityMeshSync_**
