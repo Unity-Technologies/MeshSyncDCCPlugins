@@ -32,7 +32,6 @@ Please refer to [Installation](Docs/en/Installation.md) for the steps to install
 | Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Metasequoia 3.x     | :white_check_mark: |                    |                    | 
 | Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
 
 Notes:
