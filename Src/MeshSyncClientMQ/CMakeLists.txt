@@ -15,6 +15,7 @@ endif()
 
 
 add_library(${MESHSYNC_CLIENT_METASEQUOIA} MODULE ${sources})
+#set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES BUNDLE ON)
 #set_target_properties(${MESHSYNC_CLIENT_METASEQUOIA} PROPERTIES OUTPUT_NAME "MeshSyncClientMQ4")
 
 if(APPLE)
@@ -47,27 +48,11 @@ if(ENABLE_ZSTD)
 endif()
 
 
-
-# Zip
-# [TODO-sin: 2020-4-3] MinSizeRel should be replaced with ${CMAKE_BUILD_TYPE}
-set(ZIP_FILE "UnityMeshSync_${MESHSYNC_VER}_Metasequoia${MQ_VERSION}_${PLATFORM}.zip")
-set(ZIP_FULL_PATH "${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/${ZIP_FILE}")
-file(REMOVE ${ZIP_FULL_PATH})
-add_custom_target(CREATE_ZIP_${MESHSYNC_CLIENT_METASEQUOIA} COMMAND
-    ${CMAKE_COMMAND} -E tar "cfv" "${ZIP_FILE}" --format=zip
-       "${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel/*"
-WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/MinSizeRel"
-DEPENDS
-    ${MESHSYNC_CLIENT_METASEQUOIA}
-)
-
 # Install/copying after build
-#set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Metasequoia_${PLATFORM}/Metasequoia${MQ_VERSION}")
-#install(TARGETS ${MESHSYNC_CLIENT_METASEQUOIA} DESTINATION ${DIST_DIR})
+set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Metasequoia_${PLATFORM}/Metasequoia${MQ_VERSION}")
+install(TARGETS ${MESHSYNC_CLIENT_METASEQUOIA} DESTINATION ${DIST_DIR})
 
-install(FILES "${ZIP_FULL_PATH}" DESTINATION ${DIST_ROOT})
 
-#install(TARGETS CREATE_ZIP_${MESHSYNC_CLIENT_METASEQUOIA} DESTINATION ${DIST_ROOT})   
 #set(DIST_DIR "${CMAKE_INSTALL_PREFIX}/UnityMeshSync_Metasequoia_${PLATFORM}/Metasequoia${MQ_VERSION}")
 #install(CODE "execute_process(COMMAND mkdir -p \"${DIST_DIR}/MeshSyncClientMQ4.plugin/\")")
 #install(CODE "execute_process(COMMAND rm -rf \"${DIST_DIR}/MeshSyncClientMQ4.plugin/\")")
