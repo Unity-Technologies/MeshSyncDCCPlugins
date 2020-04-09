@@ -63,7 +63,11 @@ Dist/UnityMeshSync_**
 # Sample Project
 MeshSyncDCCPlugin~/Library/**
 MeshSyncDCCPlugin~/*.sln
+MeshSyncDCCPlugin~/*.csproj
 MeshSyncDCCPlugin~/Logs/**
 MeshSyncDCCPlugin~/Temp/**
+MeshSyncDCCPlugin~/obj/**
 
+# Rider
+**/.idea/**
 
