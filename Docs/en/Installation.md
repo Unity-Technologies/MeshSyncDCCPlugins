@@ -9,7 +9,8 @@
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Download the plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
+   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new).
 1. Copy the plugins
    - Windows:   
      If `MAYA_APP_DIR` environment variable is setup, copy the *modules* directory there.  
@@ -29,7 +30,8 @@
 
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
-1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Download the plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
+   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new).
 1. Start 3ds Max
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
    one of the following directories:
@@ -47,7 +49,8 @@
 
 <img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
 
-1. Due to Autodesk's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Download the plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
+   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new).
 1. Start MotionBuilder.
 1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
 1. Copy *MeshSyncClientMotionBuilder.dll* that corresponds to the used version of MotionBuilder into 
@@ -61,7 +64,8 @@
 
 ## Blender
   
-1. Download Blender plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).
+1. Download the plugin that corresponds to the used MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
+   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new).
 1. Start Blender
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
@@ -80,9 +84,6 @@
   
 ![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
 
-
-> If the plugin for the used MeshSync version can't be found on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases), 
-  please refer to [the manual building page](BuildDCCPlugins.md) to build manually.
 
 ### Caveat
 

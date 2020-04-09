@@ -58,7 +58,9 @@
 
 ## Blender
   
-1. 使っている MeshSync と同じバージョンの Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. 使っている MeshSync と同じバージョンのプラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+   見つからない場合は、[手動でビルド](BuildDCCPlugins.md) をするか、あるいは [issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
+
 1. Blender を起動する。
 1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
