@@ -39,6 +39,9 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 * :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
 * empty : これから対応する可能性がある
 
+# Building
+- [DCC プラグインをビルド](Docs/en/BuildDCCPlugins.md) (現在英語のみ)
+
 # License
 - [License](LICENSE)
 - [Third Party Notices](Third%20Party%20Notices.md)

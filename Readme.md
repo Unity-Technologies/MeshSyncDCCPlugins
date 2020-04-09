@@ -39,6 +39,10 @@ Notes:
 * :x: : Impossible to support (platform unsupported by the DCC, etc)
 * empty : May be supported in the future
 
+
+# Building
+- [Building DCC Plugins](Docs/en/BuildDCCPlugins.md)
+
 # License
 - [License](LICENSE)
 - [Third Party Notices](Third%20Party%20Notices.md)
