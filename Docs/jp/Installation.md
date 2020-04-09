@@ -83,7 +83,7 @@
 ![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
    
   
-### Caveat
+### 注意
 
 Blender のプラグインをインストールする時、古いバージョンのプラグインがあれば、それを事前にアンインストールしておく必要があります。  
 アンインストールの手順：
