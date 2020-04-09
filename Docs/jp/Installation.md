@@ -9,7 +9,7 @@
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. MeshSync と同じバージョンを持つ最新のプラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. MeshSync と同じバージョンを持つ最新の Maya プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
    見つからない場合は、[手動でビルド](BuildDCCPlugins.md) をするか、あるいは [issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
 1. プラグインをコピーする
    - Windows:   
@@ -29,7 +29,7 @@
 
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
-1. MeshSync と同じバージョンを持つ最新のプラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. MeshSync と同じバージョンを持つ最新の 3ds Max プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
    見つからない場合は、[手動でビルド](BuildDCCPlugins.md) をするか、あるいは [issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
 1. 3ds Max を起動する。
 1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
@@ -49,7 +49,7 @@
 
 <img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
 
-1. MeshSync と同じバージョンを持つ最新のプラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. MeshSync と同じバージョンを持つ最新の MotionBuilder プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
    見つからない場合は、[手動でビルド](BuildDCCPlugins.md) をするか、あるいは [issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
 1. MotionBuilder を起動する。
 1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
@@ -61,7 +61,7 @@
 
 ## Blender
    
-1. MeshSync と同じバージョンを持つ最新のプラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
+1. MeshSync と同じバージョンを持つ最新の Blender プラグインを[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)からダウンロードする。
    見つからない場合は、[手動でビルド](BuildDCCPlugins.md) をするか、あるいは [issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
 
 1. Blender を起動する。
