@@ -51,14 +51,14 @@ Plugins~/.vs
 Plugins~/*.vcxproj**
 
 # Symbolic links
-Plugins~/MeshSyncClientMAYA_*
-Plugins~/MeshSyncClientBLENDER_*
-Plugins~/MeshSyncClient3DSMAX_*
-Plugins~/MeshSyncClientMOTIONBUILDER_*
-Plugins~/MeshSyncClientMQ_*
+Plugins~/Src/MeshSyncClientMAYA_*
+Plugins~/Src/MeshSyncClientBLENDER_*
+Plugins~/Src/MeshSyncClient3DSMAX_*
+Plugins~/Src/MeshSyncClientMOTIONBUILDER_*
+Plugins~/Src/MeshSyncClientMQ_*
 
 # Files to be distributed (Build results)
-Dist/UnityMeshSync_**
+Plugins~/Dist/UnityMeshSync_**
 
 # Sample Project
 MeshSyncDCCPlugin~/Library/**
