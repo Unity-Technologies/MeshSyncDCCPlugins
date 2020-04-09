@@ -22,40 +22,48 @@
 *.swp 
 
 # CMake
-Build/Build/MeshSync**
-Build/CMakeCache.txt
-Build/CMakeFiles**
-Build/CMakeScripts/**
-Build/cmake_install.cmake
-Build/Makefile
-Build/MeshSync-**
-Build/Blender-**
-Build/blender-**
-Build/Python-**
-Build/mqsdk**
-Build/ispc**
-Build/*.xcodeproj/**
-Build/ispc**
-Build/*.vcxproj**
-Build/*.sln
-Build/Src**
-Build/install_manifest.txt
+Plugins~/Build/Build/MeshSync**
+Plugins~/Build/CMakeCache.txt
+Plugins~/Build/CMakeFiles**
+Plugins~/Build/CMakeScripts/**
+Plugins~/Build/cmake_install.cmake
+Plugins~/Build/Makefile
+Plugins~/Build/MeshSync-**
+Plugins~/Build/Blender-**
+Plugins~/Build/blender-**
+Plugins~/Build/Python-**
+Plugins~/Build/mqsdk**
+Plugins~/Build/ispc**
+Plugins~/Build/*.xcodeproj/**
+Plugins~/Build/ispc**
+Plugins~/Build/*.vcxproj**
+Plugins~/Build/*.sln
+Plugins~/Build/Src**
+Plugins~/Build/install_manifest.txt
 
 # XCode
-Build/MeshSyncDCCPlugin.build/**
+Plugins~/Build/MeshSyncDCCPlugin.build/**
 
 # Visual Studio
-Build/.vs
-Build/x64
-Src/.vs
-Src/*.vcxproj**
+Plugins~/Build/.vs
+Plugins~/Build/x64
+Plugins~/.vs
+Plugins~/*.vcxproj**
 
 # Symbolic links
-Src/MeshSyncClientMAYA_*
-Src/MeshSyncClientBLENDER_*
-Src/MeshSyncClient3DSMAX_*
-Src/MeshSyncClientMOTIONBUILDER_*
-Src/MeshSyncClientMQ_*
+Plugins~/MeshSyncClientMAYA_*
+Plugins~/MeshSyncClientBLENDER_*
+Plugins~/MeshSyncClient3DSMAX_*
+Plugins~/MeshSyncClientMOTIONBUILDER_*
+Plugins~/MeshSyncClientMQ_*
 
 # Files to be distributed (Build results)
 Dist/UnityMeshSync_**
+
+# Sample Project
+MeshSyncDCCPlugin~/Library/**
+MeshSyncDCCPlugin~/*.sln
+MeshSyncDCCPlugin~/Logs/**
+MeshSyncDCCPlugin~/Temp/**
+
+
