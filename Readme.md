@@ -9,7 +9,7 @@ This repository provides the source to build DCC plugins for [MeshSync](https://
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
 This allows devs to immediately see how things will look in-game while modelling.  
 
-Please refer to [Installation](Docs/en/Installation.md) for the steps to install the plugin to one of the supported DCC tools.
+Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps to install the plugin to one of the supported DCC tools.
 
 ## Supported DCC Tools
 
@@ -41,10 +41,10 @@ Notes:
 
 
 # Building
-- [Building DCC Plugins](Docs/en/BuildDCCPlugins.md)
+- [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
 # License
-- [License](LICENSE)
+- [License](LICENSE.md)
 - [Third Party Notices](Third%20Party%20Notices.md)
 
 # Currently being reorganized

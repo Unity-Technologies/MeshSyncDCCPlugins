@@ -9,7 +9,7 @@ DCC ツール上のモデルの編集をリアルタイムに Unity に反映さ
 [MeshSync](https://github.com/unity3d-jp/MeshSync) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
-サポートされている DCC ツールにインストールする手順については [インストール](Docs/jp/Installation.md) を参照して下さい。
+サポートされている DCC ツールにインストールする手順については [インストール](Plugins~/Docs/jp/Installation.md) を参照して下さい。
 
 ## サポートされている DCC ツール
 
@@ -40,10 +40,10 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 * empty : これから対応する可能性がある
 
 # Building
-- [DCC プラグインをビルド](Docs/en/BuildDCCPlugins.md) (現在英語のみ)
+- [DCC プラグインをビルド](Plugins~/Docs/en/BuildDCCPlugins.md) (現在英語のみ)
 
 # License
-- [License](LICENSE)
+- [License](LICENSE.md)
 - [Third Party Notices](Third%20Party%20Notices.md)
 
 # 現在整理中
