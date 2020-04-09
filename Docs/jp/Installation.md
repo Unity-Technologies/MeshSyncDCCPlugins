@@ -82,9 +82,6 @@
   
 ![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
    
-
-> 使っている MeshSync のバージョンに該当するプラグインが[リリースページ](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)に見つからない場合、 
-  [手動のビルド](../en/BuildDCCPlugins.md) (現在英語のみ) を参考にし、ビルドします。
   
 ### Caveat
 
