@@ -64,7 +64,7 @@
 
 ## Blender
   
-1. Download the latest Blender plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
+1. Get the latest Blender plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases).  
    If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new).
 1. Start Blender
 1. Depending on the Blender version, the installation is a bit different.
