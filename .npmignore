@@ -24,7 +24,7 @@ Plugins~/**
 MeshSyncDCCPlugin~/**
 
 # Don't ignore DCC plugin zip files
-!Editor/Plugins~/UnityMeshSync_0.0.3-preview_3DSMAX_Windows.zip
+!Editor/Plugins~/*.zip
 
 
 
