@@ -1,0 +1,30 @@
+artifacts/**
+build/**
+.build_script/**
+node_modules/**
+Documentation/ApiDocs/**
+Documentation~/ApiDocs/**
+AE~/**
+.DS_Store
+.npmrc
+.npmignore
+.gitignore
+CONTRIBUTING.md
+CONTRIBUTING.md.meta
+QAReport.md
+QAReport.md.meta
+.gitlab-ci.yml
+build.sh
+build.sh.meta
+build.bat
+build.bat.meta
+
+# Plugins and test project code
+Plugins~/**
+MeshSyncDCCPlugin~/**
+
+# Don't ignore DCC plugin zip files
+!Editor/Plugins~/*.zip
+
+
+

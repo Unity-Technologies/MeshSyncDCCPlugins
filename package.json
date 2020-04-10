@@ -1,0 +1,9 @@
+{
+	"name": "com.unity.meshsync-dcc-plugin",
+	"displayName":"MeshSync DCC Plugin",
+	"version": "0.0.1-preview",
+	"unity": "2019.3",
+	"description": "This package contains plugin binaries of DCC tools for using MeshSync, which is another package for synchronizing meshes/models editing in DCC tools into Unity in real time.",
+	"dependencies": {
+	}
+}
