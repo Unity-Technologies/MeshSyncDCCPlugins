@@ -3,7 +3,7 @@
 # Other Languages
 - [日本語](Readme_JP.md)
 
-# MeshSyncDCCPlugin
+# MeshSync DCC Plugins
 
 DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるためのパッケージ: 
 [MeshSync](https://github.com/unity3d-jp/MeshSync) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  

@@ -1,6 +1,6 @@
-# MeshSync DCC Plugin
+# MeshSync DCC Plugins
 
-MeshSync DCC Plugin is package that contains plugin binaries of DCC tools for using [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest), 
+MeshSync DCC Plugins is package that contains plugin binaries of DCC tools for using [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest), 
 which is another package for synchronizing meshes/models editing in DCC tools into Unity in real time.
 This allows devs to immediately see how things will look in-game while modelling.
 

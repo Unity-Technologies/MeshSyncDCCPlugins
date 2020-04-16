@@ -61,12 +61,12 @@ Plugins~/Src/MeshSyncClientMQ_*
 Plugins~/Dist/UnityMeshSync_**
 
 # Sample Project
-MeshSyncDCCPlugin~/Library/**
-MeshSyncDCCPlugin~/*.sln
-MeshSyncDCCPlugin~/*.csproj
-MeshSyncDCCPlugin~/Logs/**
-MeshSyncDCCPlugin~/Temp/**
-MeshSyncDCCPlugin~/obj/**
+MeshSyncDCCPlugins~/Library/**
+MeshSyncDCCPlugins~/*.sln
+MeshSyncDCCPlugins~/*.csproj
+MeshSyncDCCPlugins~/Logs/**
+MeshSyncDCCPlugins~/Temp/**
+MeshSyncDCCPlugins~/obj/**
 
 # Rider
 **/.idea/**

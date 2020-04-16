@@ -1,6 +1,6 @@
-# MeshSync DCC Plugin
+# MeshSync DCC Plugins
 
-MeshSyncDCCPlugin は DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるためのパッケージ: 
+MeshSync DCC Plugins は DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるためのパッケージ: 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインの格納するパッケージです。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
