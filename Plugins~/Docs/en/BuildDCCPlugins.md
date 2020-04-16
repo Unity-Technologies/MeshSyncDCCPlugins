@@ -203,4 +203,3 @@ $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration Release build
 ```
 
-
