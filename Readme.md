@@ -1,4 +1,4 @@
-<img src="Docs/Images/Demo.gif">
+![demo](Documentation~/images/Demo.gif)
 
 # Other Languages
 - [日本語](Readme_JP.md)
