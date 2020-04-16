@@ -24,7 +24,7 @@
     $ mkdir cmake-build
     $ cd cmake-build
     $ cmake .. -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 15 2017" -A x64
-    $ cmake --build . --config MinSizeRel && cmake --build . --config Debug
+    $ cmake --build . --config Release && cmake --build . --config Debug
     ```
     
     > To build Poco libraries with other configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
@@ -43,8 +43,8 @@ Start "Developer Command Prompt for VS 2017" and execute the following:
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin\Build
 $ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
-$ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=MinSizeRel /p:Platform=x64 /m /nologo
-$ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
+$ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=Release /p:Platform=x64 /m /nologo
+$ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 ```
 
 `make_meshsync_dcc_plugin.bat` has two parameters:  
@@ -60,8 +60,8 @@ $ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
 #### Notes
 
 The build process will try to link againts Poco's release libraries in the following order:  
-1. MinSizeRel  
 1. Release  
+1. MinSizeRel  
 1. RelWithDebInfo 
 
 ## Building on Mac OSX
@@ -83,7 +83,7 @@ The build process will try to link againts Poco's release libraries in the follo
     ``` 
     $ mkdir cmake-build
     $ cd cmake-build
-    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel && cmake --build . 
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release && cmake --build . 
     $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug && cmake --build . 
     ```
     > For other types of Poco configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
@@ -110,7 +110,7 @@ Open a terminal and execute the following:
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
-$ xcodebuild -alltargets -configuration MinSizeRel build
+$ xcodebuild -alltargets -configuration Release build
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
@@ -150,7 +150,7 @@ $ xcodebuild -alltargets -configuration MinSizeRel build
     ``` 
     $ mkdir cmake-build
     $ cd cmake-build
-    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_POSITION_INDEPENDENT_CODE=ON && cmake --build . 
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON && cmake --build . 
     $ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POSITION_INDEPENDENT_CODE=ON && cmake --build . 
     ```
     > For other types of Poco configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
@@ -173,7 +173,7 @@ $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
 $ cd MeshSyncDCCPlugin/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ cmake --build . 
-$ cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
+$ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
@@ -200,7 +200,7 @@ For example on Mac:
 ``` 
 $ rm CMakeCache.txt
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
-$ xcodebuild -alltargets -configuration MinSizeRel build
+$ xcodebuild -alltargets -configuration Release build
 ```
 
 
