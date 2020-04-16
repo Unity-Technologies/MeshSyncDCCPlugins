@@ -40,10 +40,10 @@
 Start "Developer Command Prompt for VS 2017" and execute the following:
 
 ``` 
-$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
-$ cd MeshSyncDCCPlugin\Build
+$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
+$ cd MeshSyncDCCPlugins\Build
 $ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
-$ msbuild MeshSyncDCCPlugin.sln /t:Build /p:Configuration=Release /p:Platform=x64 /m /nologo
+$ msbuild MeshSyncDCCPlugins.sln /t:Build /p:Configuration=Release /p:Platform=x64 /m /nologo
 $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 ```
 
@@ -107,8 +107,8 @@ The build process will try to link againts Poco's release libraries in the follo
 Open a terminal and execute the following:
 
 ``` 
-$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
-$ cd MeshSyncDCCPlugin/Build
+$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
+$ cd MeshSyncDCCPlugins/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration Release build
 ```
@@ -169,8 +169,8 @@ $ xcodebuild -alltargets -configuration Release build
 Open a terminal and execute the following:
 
 ``` 
-$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugin
-$ cd MeshSyncDCCPlugin/Build
+$ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
+$ cd MeshSyncDCCPlugins/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ cmake --build . 
 $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
