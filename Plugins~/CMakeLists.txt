@@ -1,6 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 PROJECT(MeshSyncDCCPlugins)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 # For other available options, check MeshSync/msConfig.h and MeshUtils/muConfig.h
