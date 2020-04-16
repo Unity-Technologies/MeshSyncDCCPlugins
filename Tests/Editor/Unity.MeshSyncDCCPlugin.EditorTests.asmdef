@@ -1,14 +1,24 @@
 {
-    "name": "Unity.[SubGroup].[YourPackageName].EditorTests",
+    "name": "Unity.MeshSyncDCCPlugin.EditorTests",
     "references": [
         "Unity.[SubGroup].[YourPackageName].Editor",
-        "Unity.[SubGroup].[YourPackageName]"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
+        "Unity.[SubGroup].[YourPackageName]",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
