@@ -41,7 +41,7 @@ Start "Developer Command Prompt for VS 2017" and execute the following:
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
-$ cd MeshSyncDCCPlugins\Build
+$ cd MeshSyncDCCPlugins\Plugins~\Build
 $ make_meshsync_dcc_plugin.bat <meshsync_version> [optional_arguments]
 $ msbuild MeshSyncDCCPlugins.sln /t:Build /p:Configuration=Release /p:Platform=x64 /m /nologo
 $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
@@ -108,7 +108,7 @@ Open a terminal and execute the following:
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
-$ cd MeshSyncDCCPlugins/Build
+$ cd MeshSyncDCCPlugins/Plugins~/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration Release build
 ```
@@ -170,7 +170,7 @@ Open a terminal and execute the following:
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
-$ cd MeshSyncDCCPlugins/Build
+$ cd MeshSyncDCCPlugins/Plugins~/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ cmake --build . 
 $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
