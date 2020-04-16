@@ -3,7 +3,7 @@
 # Other Languages
 - [日本語](Readme_JP.md)
 
-# MeshSyncDCCPlugin
+# MeshSync DCC Plugins
 
 This repository provides the source to build DCC plugins for [MeshSync](https://github.com/unity3d-jp/MeshSync), 
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
