@@ -21,7 +21,7 @@ build.bat.meta
 
 # Plugins and test project code
 Plugins~/**
-MeshSyncDCCPlugin~/**
+MeshSyncDCCPlugins~/**
 
 # Don't ignore DCC plugin zip files
 !Editor/Plugins~/*.zip
