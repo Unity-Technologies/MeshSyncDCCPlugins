@@ -15,6 +15,7 @@ if(APPLE)
 endif()
 
 add_library(${meshsync_client_metasequoia} MODULE ${sources})
+set_target_properties(${meshsync_client_metasequoia}  PROPERTIES OUTPUT_NAME "MeshSyncClientMQ")
 
 if(APPLE)
     set_target_properties(${meshsync_client_metasequoia} PROPERTIES BUNDLE ON)
