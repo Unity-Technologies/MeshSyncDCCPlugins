@@ -32,7 +32,7 @@ Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps t
 | Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
+| Metasequoia 4.x     | :white_check_mark: |                    |                    | 
 
 Notes:
 * :white_check_mark: : Supported
