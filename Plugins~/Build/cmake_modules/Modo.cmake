@@ -11,6 +11,8 @@ function(setup_modo modo_ver)
 
     list(APPEND MODO_APP_SRC_PATHS
         $ENV{MODO_APP_${modo_ver}}        
+        "/Applications/Modo${modo_ver}.2v2.app"        
+        "/Applications/Modo${modo_ver}.2v1.app"        
         "/Applications/Modo${modo_ver}.0v1.app"        
     )
     
