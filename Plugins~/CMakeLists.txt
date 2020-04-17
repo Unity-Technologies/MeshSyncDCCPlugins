@@ -201,5 +201,26 @@ if(WIN32)
 	endforeach(CUR_MQ_VER)   
 endif()
 
+# ----------------------------------------------------------------------------------------------------------------------
+
+# Modo
+list(APPEND MODO_VERSIONS
+    MODO_12
+    MODO_13    
+    MODO_14
+)
+ 
+if(BUILD_MODO_ALL)
+    foreach(CUR_MODO_VER IN LISTS MODO_VERSIONS)
+        option(BUILD_${CUR_MODO_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MODO_VER}" ON)
+    endforeach(CUR_MODO_VER)   
+endif()
+
+foreach(CUR_MODO_VER IN LISTS MODO_VERSIONS)
+	option(BUILD_${CUR_MODO_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MODO_VER}" OFF)
+	if (BUILD_${CUR_MODO_VER}_PLUGIN)
+		add_subdirectory_link(MeshSyncClient${CUR_MODO_VER} MeshSyncClientMODO)
+	endif()
+endforeach(CUR_MODO_VER)   
 
 
