@@ -103,7 +103,7 @@ Steps to uninstall:
 1. Start Metasequoia.
 1. Go to Help -> About Plug-ins, and click "Install" at the lower left of the Plug-win window.
 1. Select the plugin file from the extracted zip file that corresponds to the version of Metasequoia.  
-   For example *MeshSyncClientMQ472.plugin*
+   For example: *MeshSyncClientMQ472.plugin*
 1. Go to Panel -> Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 

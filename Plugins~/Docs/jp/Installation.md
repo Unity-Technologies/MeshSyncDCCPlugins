@@ -100,11 +100,11 @@ Blender のプラグインをインストールする時、古いバージョン
 
 1. zip ファイルを解凍。
 1. Metasequoia を起動する。
-1. Help -> About Plug-ins を開き, ウィンドウの左下の "Install" をクリックする。
+1. Help -> About Plug-ins を開き、ウィンドウの左下の "Install" をクリックする。
 1. 解凍した zip ファイルの中から、該当するプラグインファイルを指定する。  
    例：*MeshSyncClientMQ472.plugin*
 1. Panel -> Unity Mesh Sync を開く。  
-   このメニューが見つからない場合、 Plug-in ウィンドウに "Unity Mesh Sync" がチェックされているかどうかを確認する。
+   このメニューが見つからない場合、 Plug-in ウィンドウに "Unity Mesh Sync" がチェックされているかを確認する。
    
 ![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
   
