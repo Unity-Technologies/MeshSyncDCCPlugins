@@ -155,7 +155,7 @@ if(WIN32)
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
-# MOTIONBUILDER (Windows only)
+# MOTIONBUILDER (Windows or Linux only)
 list(APPEND MOTIONBUILDER_VERSIONS
     MOTIONBUILDER_2017
     MOTIONBUILDER_2018
@@ -178,7 +178,8 @@ if(WIN32 OR LINUX)
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
-# METASEQUOIA (Windows and Mac only)
+# METASEQUOIA (Windows only for now)
+# [Note-sin: 2020-4-17] Mac version isn't supported now because MQ_StationCallback() always crashes when executed in Mac. 
 list(APPEND MQ_VERSIONS
     MQ_472
     MQ_471
@@ -191,7 +192,7 @@ if(BUILD_METASEQUOIA_ALL)
     endforeach(CUR_MQ_VER)   
 endif()
 
-if(WIN32 OR APPLE)
+if(WIN32)
 	foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
 		option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" OFF)
 		if (BUILD_${CUR_MQ_VER}_PLUGIN)

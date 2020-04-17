@@ -42,12 +42,13 @@ Plugins~/Build/Src**
 Plugins~/Build/install_manifest.txt
 
 # XCode
-Plugins~/Build/MeshSyncDCCPlugin.build/**
+Plugins~/Build/MeshSyncDCCPlugins.build/**
 
 # Visual Studio
 Plugins~/Build/.vs
 Plugins~/Build/x64
 Plugins~/.vs
+Plugins~/Src/.vs
 Plugins~/*.vcxproj**
 
 # Symbolic links

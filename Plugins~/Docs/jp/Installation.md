@@ -4,13 +4,14 @@
 1. [3ds Max](#3ds-max)
 1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
+1. [Metasequoia](#metasequoia)
 
 ## Maya
 
 <img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
 
-1. MeshSync と同じバージョンを持つ最新の Maya プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
+1. MeshSync と同じバージョンを持つ最新の Maya プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
+   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
 1. プラグインをコピーする
    - Windows:   
      `MAYA_APP_DIR` の環境変数が設定されている場合はそこにコピーする。  
@@ -29,8 +30,8 @@
 
 <img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
-1. MeshSync と同じバージョンを持つ最新の 3ds Max プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
+1. MeshSync と同じバージョンを持つ最新の 3ds Max プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
+   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
 1. 3ds Max を起動する。
 1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
    - **(推奨)**　追加されたプラグイン用のパス。このメニューで追加できます：
@@ -49,8 +50,8 @@
 
 <img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
 
-1. MeshSync と同じバージョンを持つ最新の MotionBuilder プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
+1. MeshSync と同じバージョンを持つ最新の MotionBuilder プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
+   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
 1. MotionBuilder を起動する。
 1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
 1. プラグイン用のパスに、使用されている MotionBuilder のバージョンに該当する *MeshSyncClientMotionBuilder.dll* をコピーする。
@@ -61,8 +62,8 @@
 
 ## Blender
    
-1. MeshSync と同じバージョンを持つ最新の Blender プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugin/issues/new)、ご連絡を下さい。
+1. MeshSync と同じバージョンを持つ最新の Blender プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
+   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
 
 1. Blender を起動する。
 1. Blender のバージョンによって、インストールする方法が少々違います
@@ -91,4 +92,19 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Add-ons メニューから "Import-Export: Unity Mesh Sync" を選択。
 1. "Remove" ボタンをクリック。
 1. Blender を再起動。
+  
+  
+## Metasequoia
+1. MeshSync と同じバージョンを持つ最新の Metasequoia プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
+   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
+
+1. zip ファイルを解凍。
+1. Metasequoia を起動する。
+1. Help -> About Plug-ins を開き、ウィンドウの左下の "Install" をクリックする。
+1. 解凍した zip ファイルの中から、該当するプラグインファイルを指定する。  
+   例：*MeshSyncClientMQ472.plugin*
+1. Panel -> Unity Mesh Sync を開く。  
+   このメニューが見つからない場合、 Plug-in ウィンドウに "Unity Mesh Sync" がチェックされているかを確認する。
+   
+![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
   
