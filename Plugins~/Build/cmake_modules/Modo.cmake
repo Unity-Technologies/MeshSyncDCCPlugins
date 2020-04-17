@@ -2,10 +2,7 @@
 # * ${MODO_${modo_ver}_QT_INCLUDE_DIRS}
 # * ${MODO_${modo_ver}_QT_LIBRARIES}
 # - ${MODO_${modo_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
-#
-# Requires the following environment var to be setup previously
-# - MODO_SDK
-#
+##
 # This function also needs the paths to Modo application, and will try to look at the default location automatically.
 # If not found, then MODO_APP_${modo_ver} environment variable is required. Examples:
 # - MODO_APP_14
@@ -26,6 +23,9 @@ function(setup_modo modo_ver)
     
     # Library prefix/suffix
     if(APPLE)
+        # Only try to find from Frameworks automatically as the last resort
+        SET(CMAKE_FIND_FRAMEWORK LAST)
+        
         set(modo_qt_library_prefix "")
         set(modo_qt_library_suffix "")
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -58,11 +58,15 @@ function(setup_modo modo_ver)
         find_file(MODO_${modo_ver}_${QT_LIB}_LIBRARY 
             NAMES
                 ${modo_qt_library_prefix}${QT_LIB}${modo_qt_library_suffix}
-            HINTS
+            PATHS
                 ${MODO_${modo_ver}_QT_BASE_DIR}
+            PATH_SUFFIXES
+                ${QT_LIB}.framework
+            NO_DEFAULT_PATH
         )
-        mark_as_advanced(MODO_${modo_ver}_${QT_LIB}_LIBRARY)
                 
+        mark_as_advanced(MODO_${modo_ver}_${QT_LIB}_LIBRARY)
+                        
         if(MODO_${modo_ver}_${QT_LIB}_LIBRARY)
             list(APPEND MODO_${modo_ver}_QT_LIBRARIES ${MODO_${modo_ver}_${QT_LIB}_LIBRARY})
         endif()
