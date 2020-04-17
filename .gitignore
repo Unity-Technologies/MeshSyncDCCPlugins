@@ -57,6 +57,7 @@ Plugins~/Src/MeshSyncClientBLENDER_*
 Plugins~/Src/MeshSyncClient3DSMAX_*
 Plugins~/Src/MeshSyncClientMOTIONBUILDER_*
 Plugins~/Src/MeshSyncClientMQ_*
+Plugins~/Src/MeshSyncClientMODO_*
 
 # Files to be distributed (Build results)
 Plugins~/Dist/UnityMeshSync_**
