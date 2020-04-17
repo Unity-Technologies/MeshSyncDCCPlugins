@@ -48,6 +48,7 @@ Plugins~/Build/MeshSyncDCCPlugins.build/**
 Plugins~/Build/.vs
 Plugins~/Build/x64
 Plugins~/.vs
+Plugins~/Src/.vs
 Plugins~/*.vcxproj**
 
 # Symbolic links
