@@ -7,12 +7,12 @@ set(meshsync_client_modo "MeshSyncClientModo${modo_version}")
 include(Modo)
 setup_modo(${modo_version})
 
-
-
+# Get sources
+file(TO_CMAKE_PATH $ENV{MODO_SDK} modo_sdk_path)
 file(GLOB sources 
     *.cpp 
     *.h 
-    "$ENV{MODO_SDK}/common/*.cpp"
+    "${modo_sdk_path}/common/*.cpp"
 )
 list(FILTER sources EXCLUDE REGEX "initialize.cpp") 
 list(FILTER sources EXCLUDE REGEX "clean.cpp") 
