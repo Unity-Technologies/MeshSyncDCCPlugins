@@ -32,7 +32,7 @@ target_include_directories(${meshsync_client_modo} PUBLIC
     ${MESHSYNC_PLUGIN_SRC_ROOT}    
 )
 
-#target_precompile_headers(${meshsync_client_modo}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
+target_precompile_headers(${meshsync_client_modo}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_link_libraries(${meshsync_client_modo} MeshSync MeshUtils ${Poco_LIBRARIES} ${MODO_${modo_version}_QT_LIBRARIES})
 
 if(ENABLE_ZSTD)
