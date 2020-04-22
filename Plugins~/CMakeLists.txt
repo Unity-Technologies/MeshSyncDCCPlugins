@@ -219,7 +219,7 @@ endif()
 foreach(CUR_MODO_VER IN LISTS MODO_VERSIONS)
 	option(BUILD_${CUR_MODO_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MODO_VER}" OFF)
 	if (BUILD_${CUR_MODO_VER}_PLUGIN)
-		add_subdirectory_link(MeshSyncClient${CUR_MODO_VER} MeshSyncClientMODO)
+		add_subdirectory_link(MeshSyncClient${CUR_MODO_VER} MeshSyncClientModo)
 	endif()
 endforeach(CUR_MODO_VER)   
 
