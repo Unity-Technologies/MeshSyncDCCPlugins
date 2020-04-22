@@ -123,7 +123,7 @@ Steps to uninstall:
 
 ### Caveat
 
-When installing a newer version of the plugin, the existing version must be removed first if it exists.
+When installing a newer version of the plugin, the existing version must be removed first if it exists.  
 Steps to remove:
 1. Close all UnityMeshSync views.
 1. Restart Modo.
