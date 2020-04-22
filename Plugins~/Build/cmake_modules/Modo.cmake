@@ -36,6 +36,53 @@ function(setup_modo_win modo_ver)
 endfunction()
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Setup Modo on Linux. Sets the following to cache:
+# * ${MODO_${modo_ver}_QT_INCLUDE_DIRS}
+# * ${MODO_${modo_ver}_QT_LIBRARIES}
+function(setup_modo_linux modo_ver)
+
+    # Qt include dirs
+    file(TO_CMAKE_PATH $ENV{QT_4_8_SDK} qt_sdk_path)
+    set(MODO_${modo_ver}_QT_INCLUDE_DIRS
+        "${qt_sdk_path}/include"
+        "${qt_sdk_path}/include/QtCore"
+        "${qt_sdk_path}/include/QtGui"
+        CACHE PATH "Qt include dirs for Modo ${modo_ver}"
+    )
+        
+    set(MODO_QT_LIBRARY_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
+    set(MODO_QT_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+    #Qt libraries
+    list(APPEND qt_libraries_list QtCore QtGui)            
+        
+    # Qt libraries
+    foreach(QT_LIB IN LISTS qt_libraries_list)
+
+        find_file(MODO_${modo_ver}_${QT_LIB}_LIBRARY 
+            NAMES
+                ${CMAKE_SHARED_LIBRARY_PREFIX}${QT_LIB}${CMAKE_SHARED_LIBRARY_SUFFIX}
+            PATHS
+                $ENV{MODO_APP_${modo_ver}}        
+                "~/Modo${modo_ver}.2v2"
+                "~/Modo${modo_ver}.2v1"
+                "~/Modo${modo_ver}.0v1"        
+            PATH_SUFFIXES
+            NO_DEFAULT_PATH
+        )
+                        
+        mark_as_advanced(MODO_${modo_ver}_${QT_LIB}_LIBRARY)
+                        
+        if(MODO_${modo_ver}_${QT_LIB}_LIBRARY)
+            list(APPEND MODO_${modo_ver}_QT_LIBRARIES ${MODO_${modo_ver}_${QT_LIB}_LIBRARY})
+        endif()
+    endforeach()
+
+
+    set(MODO_${modo_ver}_QT_LIBRARIES ${MODO_${modo_ver}_QT_LIBRARIES} CACHE STRING "Modo ${modo_ver} libraries")
+endfunction()
+
+#-----------------------------------------------------------------------------------------------------------------------
 
 # Set the following to cache:
 # * ${MODO_${modo_ver}_QT_INCLUDE_DIRS}
@@ -45,65 +92,44 @@ endfunction()
 # If not found, then MODO_APP_${modo_ver} environment variable is required. Examples:
 # - MODO_APP_14
 # - MODO_APP_13
-function(setup_modo_mac_linux modo_ver)
+function(setup_modo_mac modo_ver)
     list(APPEND MODO_APP_SRC_PATHS
         $ENV{MODO_APP_${modo_ver}}        
         "/Applications/Modo${modo_ver}.2v2.app"        
         "/Applications/Modo${modo_ver}.2v1.app"        
-        "/Applications/Modo${modo_ver}.0v1.app"        
+        "/Applications/Modo${modo_ver}.0v1.app"
     )
-    
-    # Possible paths for linux:
-    # set(CMAKE_PREFIX_PATH
-    #     "~/Modo13.0v1"
-    #     "~/Modo12.2v2"
-    # )
     
     
     # Library prefix/suffix and include dirs
-    set(modo_qt_library_prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
-    set(modo_qt_library_suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
-    if(APPLE)
-        # Only try to find from Frameworks automatically as the last resort
-        SET(CMAKE_FIND_FRAMEWORK LAST)
-        
-        # Qt include dirs
-        find_path(MODO_${modo_ver}_QT_BASE_DIR
-            NAMES
-                QtCore.framework
-            HINTS
-                ${MODO_APP_SRC_PATHS}
-            PATH_SUFFIXES 
-                "Contents/Frameworks"
-            NO_DEFAULT_PATH            
-        )    
-        mark_as_advanced(MODO_${modo_ver}_QT_BASE_DIR)
-
-        set(MODO_${modo_ver}_QT_INCLUDE_DIRS
-            "${MODO_${modo_ver}_QT_BASE_DIR}/QtCore.framework/Headers"
-            "${MODO_${modo_ver}_QT_BASE_DIR}/QtGui.framework/Headers"
-            CACHE PATH "Qt include dirs for Modo ${modo_ver}"
-        )
-
-        list(APPEND qt_libraries_list QtCore QtGui)            
-        set(modo_qt_library_prefix "")
-        set(modo_qt_library_suffix "")
-
-        
-
-    else()
-        # Linux
+    # Only try to find from Frameworks automatically as the last resort
+    SET(CMAKE_FIND_FRAMEWORK LAST)
     
-    endif()    
-    
-        
+    # Qt include dirs
+    find_path(MODO_${modo_ver}_QT_BASE_DIR
+        NAMES
+            QtCore.framework
+        HINTS
+            ${MODO_APP_SRC_PATHS}
+        PATH_SUFFIXES 
+            "Contents/Frameworks"
+        NO_DEFAULT_PATH            
+    )    
+    mark_as_advanced(MODO_${modo_ver}_QT_BASE_DIR)
 
+    set(MODO_${modo_ver}_QT_INCLUDE_DIRS
+        "${MODO_${modo_ver}_QT_BASE_DIR}/QtCore.framework/Headers"
+        "${MODO_${modo_ver}_QT_BASE_DIR}/QtGui.framework/Headers"
+        CACHE PATH "Qt include dirs for Modo ${modo_ver}"
+    )
+
+    list(APPEND qt_libraries_list QtCore QtGui)            
+        
     # Qt libraries
     foreach(QT_LIB IN LISTS qt_libraries_list)
-        message("Library ${QT_LIB}: " ${modo_qt_library_prefix}${QT_LIB}${modo_qt_library_suffix})
         find_file(MODO_${modo_ver}_${QT_LIB}_LIBRARY 
             NAMES
-                ${modo_qt_library_prefix}${QT_LIB}${modo_qt_library_suffix}
+                ${QT_LIB}
             PATHS
                 ${MODO_${modo_ver}_QT_BASE_DIR}
             PATH_SUFFIXES
@@ -131,8 +157,10 @@ endfunction()
 function(setup_modo modo_ver)
     
     include(FindPackageHandleStandardArgs)
-    if(APPLE OR LINUX)
-        setup_modo_mac_linux(${modo_ver})
+    if(APPLE)
+        setup_modo_mac(${modo_ver})
+    elseif(LINUX)
+        setup_modo_linux(${modo_ver})
     else()
         # Windows, use Qt DLL
         setup_modo_win(${modo_ver})    
