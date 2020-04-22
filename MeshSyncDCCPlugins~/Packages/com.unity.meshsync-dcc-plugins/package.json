@@ -1,5 +1,5 @@
 {
-	"name": "com.unity.meshsync-dcc-plugins",
+	"name": "com.unity.meshsync.dcc-plugins",
 	"displayName":"MeshSync DCC Plugins",
 	"version": "0.0.1-preview",
 	"unity": "2019.3",
