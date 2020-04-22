@@ -5,6 +5,7 @@
 1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
 1. [Metasequoia](#metasequoia)
+1. [Modo](#modo)
 
 ## Maya
 
@@ -108,3 +109,36 @@ Blender のプラグインをインストールする時、古いバージョン
    
 ![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
   
+
+
+## Modo
+
+1. Modo のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. Modo を起動する。
+2. System -> Add Plug-in をクリックし、Modo のバージョンと該当する *MeshSyncClientModo.lx* を選択する。
+4. Modo のタブ UI で、*+* をクリックし、Application -> Custom View -> UnityMeshSync を選択する。
+1. UnityMeshSync のビューが追加されたのを確認する。
+
+![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+
+### 注意
+
+古いバージョンのプラグインがあれば、事前にそれを削除する必要があります。  
+削除の手順：
+1. 開いた UnityMeshSync のビューをすべて閉じる。
+1. Modo を再起動する。
+
+上記の手順をやったにもかかわらず、新しいバージョンのプラグインをインストールできない場合は、
+Modo を終了してから、手動の削除を試して下さい。
+1. Windows の場合：
+   - テキストエディターで設定ファイルを開く。  
+     例： `C:\Users\<user_name>\AppData\Roaming\Luxology\MODO<modo_version>.CFG`
+   - 下記のような UnityMeshSync の項目を削除する:
+     ```
+     <hash type="Server" key="12345678-abcd-1234-abcd-111122223333:UnityMeshSync">
+       <atom type="Module">C:\ModoPlugins\Modo14\MeshSyncClientModo.lx</atom>
+       <atom type="Direct">1</atom>
+     </hash>
+     ```
+   - 設定ファイルを保存し、Modo を起動する。
+

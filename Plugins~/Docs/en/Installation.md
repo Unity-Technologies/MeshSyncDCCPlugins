@@ -5,6 +5,7 @@
 1. [MotionBuilder](#motionbuilder)
 1. [Blender](#blender)
 1. [Metasequoia](#metasequoia)
+1. [Modo](#modo)
 
 ## Maya
 
@@ -108,6 +109,39 @@ Steps to uninstall:
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
 ![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
+
+
+## Modo
+
+1. Due to Modo's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Start Modo.
+3. Go to System -> Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
+4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
+1. Confirm that UnityMeshSync view is added in the tabs UI.
+
+![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+
+### Caveat
+
+When installing a newer version of the plugin, the existing version must be removed first if it exists.
+Steps to remove:
+1. Close all UnityMeshSync views.
+1. Restart Modo.
+
+If installing a newer version still fails even after doing the above steps, 
+then please try to remove manually after closing Modo.
+1. Windows:
+   - Open settings file using a text editor.  
+     Example: `C:\Users\<user_name>\AppData\Roaming\Luxology\MODO<modo_version>.CFG`
+   - Remove UnityMeshSync items like the following:
+     ```
+     <hash type="Server" key="12345678-abcd-1234-abcd-111122223333:UnityMeshSync">
+       <atom type="Module">C:\ModoPlugins\Modo14\MeshSyncClientModo.lx</atom>
+       <atom type="Direct">1</atom>
+     </hash>
+     ```
+   - Save the settings file, and restart Modo.
+
 
 
 
