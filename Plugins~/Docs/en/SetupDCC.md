@@ -47,11 +47,6 @@ Based on the version of [MotionBuilder](https://www.autodesk.com/products/motion
 1. Get [Modo Developer SDK](https://www.foundry.com/products/modo/download) and extract.
 1. Add `MODO_SDK` environment variable to point to the path of the SDK.
 
-### Additional Steps on Mac
-
-If Modo is installed in a non-default path, 
-then set `MODO_APP_<MODO_VERSION>` to point to where Modo is installed.
-
 
 ### Additional Steps on Windows
 
@@ -74,6 +69,27 @@ Required steps on Windows, mostly to build Qt 4.8.7 64-bit libraries:
    configure -platform win32-msvc2015
    nmake
    ```
+
+### Additional Steps on Mac
+
+If Modo is installed in a non-default path, 
+then set `MODO_APP_<MODO_VERSION>` to point to where Modo is installed.
+
+### Additional Steps on Linux
+
+Required steps on Linux, mostly to configure Qt 4.8.7 64-bit libraries:
+1. Choose the appropriate [Qt license](https://www.qt.io/licensing).
+1. Download Qt 4.8.7 source from [qt.io](https://download.qt.io/archive/qt/4.8/4.8.7/), and extract.  
+   Example: `unzip -a qt-everywhere-opensource-src-4.8.7.zip` 
+1. Add environment variables:
+   - `QT_4_8_SDK` : the path to the Qt source folder.
+   - `MODO_APP_<MODO_VERSION>` : the path where Modo is installed.
+1. Open a terminal, and execute the following:
+   ```
+   cd ~/qt/sdk/path
+   ./configure -platform linux-g++-64
+   ```
+
 
 
 
