@@ -49,7 +49,7 @@ Plugins~/Build/.vs
 Plugins~/Build/x64
 Plugins~/.vs
 Plugins~/Src/.vs
-Plugins~/*.vcxproj**
+Plugins~/Src/*.vcxproj**
 
 # Symbolic links
 Plugins~/Src/MeshSyncClientMAYA_*
