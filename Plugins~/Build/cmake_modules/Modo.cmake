@@ -50,13 +50,10 @@ function(setup_modo_linux modo_ver)
         CACHE PATH "Qt include dirs for Modo ${modo_ver}"
     )
         
-    set(MODO_QT_LIBRARY_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
-    set(MODO_QT_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-
     #Qt libraries
     list(APPEND qt_libraries_list QtCore QtGui)            
         
-    # Qt libraries
+    # Qt libraries. Use shared libraries inside Modo app
     foreach(QT_LIB IN LISTS qt_libraries_list)
 
         find_file(MODO_${modo_ver}_${QT_LIB}_LIBRARY 
@@ -162,7 +159,6 @@ function(setup_modo modo_ver)
     elseif(LINUX)
         setup_modo_linux(${modo_ver})
     else()
-        # Windows, use Qt DLL
         setup_modo_win(${modo_ver})    
     endif()    
 
