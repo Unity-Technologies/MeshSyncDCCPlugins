@@ -2,7 +2,7 @@
 #include "MeshSync/MeshSync.h"
 #include "msmodoContext.h"
 
-//#define msmodoEnableQt
+#define msmodoEnableQt
 
 #ifdef msmodoEnableQt
 #include <QApplication>
@@ -22,10 +22,6 @@
 #include <QCloseEvent>
 #include <QScrollArea>
 
-#ifdef _WIN32
-    #pragma comment(lib, "QtCore4.lib")
-    #pragma comment(lib, "QtGui4.lib")
-#endif
 
 
 class msmodoSettingsWidget : public QWidget

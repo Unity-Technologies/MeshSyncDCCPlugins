@@ -1,0 +1,167 @@
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/clucene/src/CLucene/StdHeader.h qt-src-4.8.7/src/3rdparty/clucene/src/CLucene/StdHeader.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/clucene/src/CLucene/StdHeader.h	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/clucene/src/CLucene/StdHeader.h	2016-03-23 10:05:39.819032300 +1100
+@@ -123,6 +123,9 @@
+ #endif
+ 
+ #if !defined(LUCENE_DISABLE_HASHING) && defined(_CL_HAVE_HASH_MAP) && defined(_CL_HAVE_HASH_SET)
++	#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++	#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
++	#endif
+ 	//hashing is all or nothing!
+ 	#include <hash_map>
+ 	#include <hash_set>
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/clucene/src/CLucene/util/VoidMap.h qt-src-4.8.7/src/3rdparty/clucene/src/CLucene/util/VoidMap.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/clucene/src/CLucene/util/VoidMap.h	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/clucene/src/CLucene/util/VoidMap.h	2016-03-23 10:07:30.676025400 +1100
+@@ -222,12 +222,22 @@
+ 	typename _KeyDeletor=CL_NS(util)::Deletor::Dummy,
+ 	typename _ValueDeletor=CL_NS(util)::Deletor::Dummy>
+ class CLSet:public __CLMap<_kt,_vt,
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++	CL_NS_STD(map)<_kt,_vt>,
++#else
+ 	CL_NS_STD(map)<_kt,_vt, _Compare>,
++#endif
+ 	_KeyDeletor,_ValueDeletor>
+ {
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++	typedef typename CL_NS_STD(map)<_kt,_vt> _base;
++	typedef __CLMap<_kt, _vt, CL_NS_STD(map)<_kt,_vt>,
++		_KeyDeletor,_ValueDeletor> _this;
++#else
+ 	typedef typename CL_NS_STD(map)<_kt,_vt,_Compare> _base;
+ 	typedef __CLMap<_kt, _vt, CL_NS_STD(map)<_kt,_vt, _Compare>,
+ 		_KeyDeletor,_ValueDeletor> _this;
++#endif
+ public:
+ 	CLSet ( const bool deleteKey=false, const bool deleteValue=false )
+ 	{
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h	2016-03-23 10:08:35.476483400 +1100
+@@ -172,7 +172,9 @@
+         void operator delete[](void*);
+ 
+         void* operator new(size_t, void*);
++#if !(defined(_MSC_VER) && (_MSC_VER >= 1900))
+         void operator delete(void*, size_t);
++#endif
+     };
+ 
+     class ArgList {
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h	2016-03-23 10:09:39.683091600 +1100
+@@ -36,6 +36,7 @@
+ #if COMPILER(MSVC)
+ // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
+ 
++#if (_MSC_VER < 1900)
+ inline int snprintf(char* buffer, size_t count, const char* format, ...) 
+ {
+     int result;
+@@ -45,6 +46,7 @@
+     va_end(args);
+     return result;
+ }
++#endif
+ 
+ #if COMPILER(MSVC7) || OS(WINCE)
+ 
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h	2016-03-23 10:10:37.381597300 +1100
+@@ -170,8 +170,16 @@
+ 
+     // GCC's libstdc++ 20070724 and later supports C++ TR1 type_traits in the std namespace.
+     // VC10 (VS2010) and later support C++ TR1 type_traits in the std::tr1 namespace.
++    // VC14 (VS2015) and later support C++11 type_traits in the std namespace, but old TR1 names
++    // have been removed. See https://msdn.microsoft.com/en-us/library/vstudio/bb531344(v=vs.140).aspx
++    // for details.
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++    template<typename T> struct HasTrivialConstructor : public std::is_trivially_default_constructible<T> { };
++    template<typename T> struct HasTrivialDestructor : public std::is_trivially_destructible<T> { };
++#else
+     template<typename T> struct HasTrivialConstructor : public std::tr1::has_trivial_constructor<T> { };
+     template<typename T> struct HasTrivialDestructor : public std::tr1::has_trivial_destructor<T> { };
++#endif
+ 
+ #else
+ 
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/WebKit.pri qt-src-4.8.7/src/3rdparty/javascriptcore/WebKit.pri
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/javascriptcore/WebKit.pri	2015-05-07 16:14:48.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/javascriptcore/WebKit.pri	2016-03-23 10:11:28.949760100 +1100
+@@ -22,7 +22,7 @@
+ 
+ DEFINES += BUILDING_QT__=1
+ building-libs {
+-    win32-msvc*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
++    win32-msvc200*|win32-msvc2010*|win32-msvc2012*|win32-msvc2013*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
+ } else {
+     CONFIG(QTDIR_build) {
+         QT += webkit
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h	2015-05-07 16:14:46.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h	2016-03-23 10:12:18.631802300 +1100
+@@ -174,7 +174,9 @@
+         void operator delete[](void*);
+ 
+         void* operator new(size_t, void*);
++#if !(defined(_MSC_VER) && (_MSC_VER >= 1900))
+         void operator delete(void*, size_t);
++#endif
+     };
+ 
+     class ArgList {
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h	2015-05-07 16:14:46.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h	2016-03-23 10:13:35.639305900 +1100
+@@ -37,6 +37,7 @@
+ #if COMPILER(MSVC)
+ // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
+ 
++#if (_MSC_VER < 1900)
+ inline int snprintf(char* buffer, size_t count, const char* format, ...) 
+ {
+     int result;
+@@ -52,6 +53,7 @@
+ 
+     return result;
+ }
++#endif
+ 
+ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_list args)
+ {
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h	2015-05-07 16:14:46.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h	2016-03-23 10:14:15.788643700 +1100
+@@ -183,8 +183,16 @@
+ 
+     // GCC's libstdc++ 20070724 and later supports C++ TR1 type_traits in the std namespace.
+     // VC10 (VS2010) and later support C++ TR1 type_traits in the std::tr1 namespace.
++    // VC14 (VS2015) and later support C++11 type_traits in the std namespace, but old TR1 names
++    // have been removed. See https://msdn.microsoft.com/en-us/library/vstudio/bb531344(v=vs.140).aspx
++    // for details.
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++    template<typename T> struct HasTrivialConstructor : public std::is_trivially_default_constructible<T> { };
++    template<typename T> struct HasTrivialDestructor : public std::is_trivially_destructible<T> { };
++#else
+     template<typename T> struct HasTrivialConstructor : public std::tr1::has_trivial_constructor<T> { };
+     template<typename T> struct HasTrivialDestructor : public std::tr1::has_trivial_destructor<T> { };
++#endif
+ 
+ #else
+ 
+diff -Naur qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/WebKit.pri qt-src-4.8.7/src/3rdparty/webkit/Source/WebKit.pri
+--- qt-everywhere-opensource-src-4.8.7/src/3rdparty/webkit/Source/WebKit.pri	2015-05-07 16:14:46.000000000 +1000
++++ qt-src-4.8.7/src/3rdparty/webkit/Source/WebKit.pri	2016-03-23 10:15:01.345491800 +1100
+@@ -38,7 +38,7 @@
+ 
+ DEFINES += BUILDING_QT__=1
+ building-libs {
+-    win32-msvc*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
++    win32-msvc200*|win32-msvc2010*|win32-msvc2012*|win32-msvc2013*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
+ } else {
+     CONFIG(QTDIR_build) {
+         QT += webkit

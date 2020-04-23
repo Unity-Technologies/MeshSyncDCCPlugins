@@ -42,5 +42,54 @@ Based on the version of [MotionBuilder](https://www.autodesk.com/products/motion
 
 > On Linux, no setup is necessary if MotionBuilder is installed in the default location.
 
+## Modo
+
+1. Get [Modo Developer SDK](https://www.foundry.com/products/modo/download) and extract.
+1. Add `MODO_SDK` environment variable to point to the path of the SDK.
+
+
+### Additional Steps on Windows
+
+Required steps on Windows, mostly to build Qt 4.8.7 64-bit libraries:
+1. Choose the appropriate [Qt license](https://www.qt.io/licensing).
+1. Install a `patch` command-line tool, for example by using [Cygwin](https://www.cygwin.com/).
+1. Download Qt 4.8.7 source from [qt.io](https://download.qt.io/archive/qt/4.8/4.8.7/), and extract.
+1. Add `QT_4_8_SDK` environment variable to point to the Qt source folder.
+1. Copy [Qt 4.8.7 patch](../../External/Patches/qt-4.8.7-win.patch) 
+   (thanks to [github.com/sandym](https://github.com/sandym/qt-patches/tree/master/windows/qt-4.8.7
+   )) 
+   to the Qt source folder.      
+1. Patch Qt source code by executing `patch -p1 < qt-4.8.7-win.patch`  
+1. Add the path to *rc.exe* to `PATH` environment variable.  
+   Example: `C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64`
+1. Open Developer Command Prompt for Visual Studio 2017, and execute the following:
+   ```
+   VC\Auxiliary\Build\vcvars64.bat
+   cd c:\qt\sdk\path
+   configure -platform win32-msvc2015
+   nmake
+   ```
+
+### Additional Steps on Mac
+
+If Modo is installed in a non-default path, 
+then set `MODO_APP_<MODO_VERSION>` to point to where Modo is installed.
+
+### Additional Steps on Linux
+
+Required steps on Linux, mostly to configure Qt 4.8.7 64-bit libraries:
+1. Choose the appropriate [Qt license](https://www.qt.io/licensing).
+1. Download Qt 4.8.7 source from [qt.io](https://download.qt.io/archive/qt/4.8/4.8.7/), and extract.  
+   Example: `unzip -a qt-everywhere-opensource-src-4.8.7.zip` 
+1. Add environment variables:
+   - `QT_4_8_SDK` : the path to the Qt source folder.
+   - `MODO_APP_<MODO_VERSION>` : the path where Modo is installed.
+1. Open a terminal, and execute the following:
+   ```
+   cd ~/qt/sdk/path
+   ./configure -platform linux-g++-64
+   ```
+
+
 
 
