@@ -352,31 +352,35 @@ template<typename Self>
 static inline bool get_bool(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
-    ptr.id.data = ptr.data = self;
-
+	ptr.data = self;
+	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+	
     return ((BoolPropertyRNA*)prop)->get(&ptr) != 0;
 }
 template<typename Self>
 static inline int get_int(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
-    ptr.id.data = ptr.data = self;
-
+	ptr.data = self;
+	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+	
     return ((IntPropertyRNA*)prop)->get(&ptr);
 }
 template<typename Self>
 static inline float get_float(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
-    ptr.id.data = ptr.data = self;
-
+	ptr.data = self;
+	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+	
     return ((FloatPropertyRNA*)prop)->get(&ptr);
 }
 template<typename Self>
 static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 {
     PointerRNA ptr;
-    ptr.id.data = ptr.data = self;
+	ptr.data = self;
+	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
 
     ((FloatPropertyRNA*)prop)->getarray(&ptr, dst);
 }
@@ -384,8 +388,9 @@ template<typename Self>
 static inline void* get_pointer(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
-    ptr.id.data = ptr.data = self;
-
+	ptr.data = self;
+	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+	
     PointerRNA ret = ((PointerPropertyRNA*)prop)->get(&ptr);
     return ret.data;
 }
