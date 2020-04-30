@@ -3,7 +3,7 @@
 
 # Clean dist
 rm -Rf ../Dist/*
-cmake -DBUILD_TYPE=MinSizeRel -P cmake_install.cmake
+cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 
 cd ../Dist
        
