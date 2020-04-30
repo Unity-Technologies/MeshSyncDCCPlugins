@@ -34,8 +34,25 @@ with commands described in the following sections.
 ## Blender
 
 * All supported Blender versions: `-DBUILD_BLENDER_ALL=ON`
-* Blender 2.79: `-DBLENDER_2.79_PLUGIN=ON`
-* Blender 2.80: `-DBLENDER_2.80_PLUGIN=ON`
+* Blender 2.79: `-DBUILD_BLENDER_2.79_PLUGIN=ON`
+* Blender 2.80: `-DBUILD_BLENDER_2.80_PLUGIN=ON`
+* Blender 2.81: `-DBUILD_BLENDER_2.81_PLUGIN=ON`
+* Blender 2.82: `-DBUILD_BLENDER_2.82_PLUGIN=ON`
+
+## Modo
+
+* All supported Blender versions: `-DBUILD_MODO_ALL=ON`
+* MODO_12: `-DBUILD_MODO_12_PLUGIN=ON`
+* MODO_13: `-DBUILD_MODO_13_PLUGIN=ON`
+* MODO_14: `-DBUILD_MODO_14_PLUGIN=ON`
+
+## Metasequoia
+
+* All supported Blender versions: `-DBUILD_METASEQUOIA_ALL=ON`
+* Metasequoia 4.72 and up: `-DBUILD_MQ_472_PLUGIN=ON`
+* Metasequoia 4.71: `-DBUILD_MQ_471_PLUGIN=ON`
+* Metasequoia 4.70: `-DBUILD_MQ_470_PLUGIN=ON`
+
 
 # Tips
 
