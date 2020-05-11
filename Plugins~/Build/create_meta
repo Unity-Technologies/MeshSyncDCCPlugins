@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+       
+# List all zip files and their md5
+echo "{ \"FileSignatures\" : ["
+find . -maxdepth 1 -mindepth 1 -type f -name '*.zip'| while read filename; do
+    md5=`md5 ${filename} | awk '{ print $4 }'`
+    echo "    {"
+    echo "        \"FileName\" : \"${filename##*/}\","
+    echo "        \"MD5\"      : \"${md5}\""
+    echo "    },"
+done
+
+# Final elementß
+echo "    {"
+echo "        \"FileName\" : \"END\","
+echo "        \"MD5\"      : \"0\""
+echo "    }"
+
+
+echo "] }"
+
