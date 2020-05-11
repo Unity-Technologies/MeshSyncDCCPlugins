@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
        
+md5_cmd="md5sum"
+col_number=1
+
+#Mac 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    md5_cmd = "md5"
+    col_number=4
+fi
+       
 # List all zip files and their md5
 echo "{ \"FileSignatures\" : ["
 find . -maxdepth 1 -mindepth 1 -type f -name '*.zip'| while read filename; do
-    md5=`md5 ${filename} | awk '{ print $4 }'`
+    md5=`${md5_cmd} ${filename} | awk -v col="$col_number" '{ print $col }'`
+    
     echo "    {"
     echo "        \"FileName\" : \"${filename##*/}\","
     echo "        \"MD5\"      : \"${md5}\""
     echo "    },"
 done
 
-# Final elementß
+# Final element
 echo "    {"
 echo "        \"FileName\" : \"END\","
 echo "        \"MD5\"      : \"0\""
