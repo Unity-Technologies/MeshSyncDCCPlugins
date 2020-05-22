@@ -12,16 +12,6 @@ import subprocess
 
 
 LIB_TO_LICENSES_DICT = {
-    'Autodesk': ['autodesk/LICENSE.txt'],
-    'Blender': ['blender/LICENSE.txt'],
-    'glew': ['glew/LICENSE.txt'],
-    'pybind11': ['pybind11/LICENSE'],
-    'python35': ['python35/LICENSE'],
-    'python36': ['python36/LICENSE'],
-    'python37': ['python37/LICENSE'],
-    'WTL': ['WTL/MS-PL.txt'],
-    'MeshSync': ['MeshSync/LICENSE.md'],
-    'ispc': ['ispc/LICENSE.txt'],
     'Poco': ['Poco/LICENSE.txt'],
     'zstd': ['zstd/LICENSE'],       
 }
