@@ -5,7 +5,7 @@ col_number=1
 
 #Mac 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    md5_cmd = "md5"
+    md5_cmd="md5"
     col_number=4
 fi
        
@@ -28,4 +28,5 @@ echo "    }"
 
 
 echo "] }"
+
 
