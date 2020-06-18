@@ -23,5 +23,11 @@ Follow these steps to allow symbolic link creations:
 
 ![LocalSecurityPolicy](../Images/CreateSymbolicLinks_SelectUsers.jpg)
 
+4. Configure git to allow symbolic links. For example, by typing the following in Git Bash:
+
+```
+git config --local core.symlinks true
+git config --global core.symlinks true
+```
 
 

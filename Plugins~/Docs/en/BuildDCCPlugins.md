@@ -5,6 +5,7 @@
 1. [Linux](#building-on-linux)
 1. [Installation](#installation)
 1. [Tips](#tips)
+1. [Creating a Github Release](#creating-a-github-release)
 
 ## Building on Windows
 
@@ -202,4 +203,20 @@ $ rm CMakeCache.txt
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration Release build
 ```
+
+## Creating a Github Release
+
+When creating a new release, please do the following, either via CI or manually.
+
+1. Build files for distribution (zip) on all supported platforms: 
+    ``` 
+    $ ./clean_and_build_dist
+    ``` 
+
+1. Gather all the zip files for distribution in one folder and execute `./create_meta > meta.txt` in the folder to generate the meta file.
+1. Upload all the zip files and the meta file to Github
+
+
+
+
 
