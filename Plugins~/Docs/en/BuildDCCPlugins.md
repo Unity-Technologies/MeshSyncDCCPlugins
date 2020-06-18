@@ -213,7 +213,7 @@ When creating a new release, please do the following, either via CI or manually.
     $ ./clean_and_build_dist
     ``` 
 
-1. Gather all the zip files for distribution in one folder and execute `./create_meta` in the folder to generate the meta file.
+1. Gather all the zip files for distribution in one folder and execute `./create_meta > meta.txt` in the folder to generate the meta file.
 1. Upload all the zip files and the meta file to Github
 
 
