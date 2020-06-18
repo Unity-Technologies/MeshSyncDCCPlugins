@@ -10,7 +10,7 @@ which  is a package for synchronizing meshes/models editing in DCC tools into Un
 This allows devs to immediately see how things will look in-game while modelling.  
 
 Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps to install the plugin to one of the 
-[supported DCC tools](Plugins~/Docs/index.md).
+[supported DCC tools](Documentation~/index.md).
 
 
 # Building
