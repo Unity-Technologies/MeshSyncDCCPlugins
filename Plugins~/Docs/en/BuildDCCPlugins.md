@@ -111,7 +111,6 @@ $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
 $ cd MeshSyncDCCPlugins/Plugins~/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ xcodebuild -alltargets -configuration Release build
-$ ./clean_and_build_dist 
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
@@ -175,7 +174,6 @@ $ cd MeshSyncDCCPlugins/Plugins~/Build
 $ ./make_meshsync_dcc_plugin <meshsync_version> [Custom Arguments]
 $ cmake --build . 
 $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
-$ ./clean_and_build_dist 
 ```
 
 `make_meshsync_dcc_plugin` has two parameters:  
