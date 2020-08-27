@@ -17,6 +17,8 @@
    
 1. Install Visual Studio 2017, together with the following components:
    * Windows 8.1 SDK
+   * Windows Universal CRT SDK
+   
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
 1. Build [Poco](https://pocoproject.org) (static libraries).  
    * Download [Poco 1.10.1](https://github.com/pocoproject/poco/archive/poco-1.10.1-release.zip) and extract the file in a folder.
