@@ -1,6 +1,6 @@
 # Make: Optional Arguments
 
-The build process is setup so that all MeshSync plugins for [all supported DCC tools](../../Readme.md) 
+The build process is setup so that all MeshSync plugins for [all supported DCC tools](../../../Documentation~/index.md) 
 will be built by default.
 
 To build plugins for only specific DCC tools, 
