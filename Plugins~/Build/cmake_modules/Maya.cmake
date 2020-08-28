@@ -5,6 +5,8 @@ function(setup_maya maya_version)
     list(APPEND MAYA${maya_version}_PATHS
         $ENV{MAYA_SDK_${maya_version}}
         $ENV{MAYA_SDK_${maya_version}}/devkitBase
+        $ENV{MAYA_APP_${maya_version}}
+        $ENV{MAYA_APP_${maya_version}}/devkitBase
         "/Applications/Autodesk/maya${maya_version}"
         "/Applications/Autodesk/maya${maya_version}/Maya.app/Contents"
         "/usr/autodesk/maya${maya_version}"

@@ -1,6 +1,6 @@
 # Make: Optional Arguments
 
-The build process is setup so that all MeshSync plugins for [all supported DCC tools](../../Readme.md) 
+The build process is setup so that all MeshSync plugins for [all supported DCC tools](../../../Documentation~/index.md) 
 will be built by default.
 
 To build plugins for only specific DCC tools, 
@@ -38,6 +38,7 @@ with commands described in the following sections.
 * Blender 2.80: `-DBUILD_BLENDER_2.80_PLUGIN=ON`
 * Blender 2.81: `-DBUILD_BLENDER_2.81_PLUGIN=ON`
 * Blender 2.82: `-DBUILD_BLENDER_2.82_PLUGIN=ON`
+* Blender 2.83: `-DBUILD_BLENDER_2.83_PLUGIN=ON`
 
 ## Modo
 
