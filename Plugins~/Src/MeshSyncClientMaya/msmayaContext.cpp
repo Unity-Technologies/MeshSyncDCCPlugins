@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "msmayaUtils.h"
 #include "msmayaContext.h"
+#include "msmayaUtils.h"
 #include "msmayaCommand.h"
 #include <cstdarg>
 
@@ -1251,16 +1251,18 @@ ms::MeshPtr msmayaContext::exportMesh(TreeNode *n)
                 doExtractMeshData(dst, n);
 
             if (m_settings.bake_transform) {
-                dst.refine_settings.flags.local2world = 1;
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 dst.refine_settings.local2world = dst.world_matrix;
             }
 
-            if (dst.normals.empty())
-                dst.refine_settings.flags.gen_normals = 1;
-            if (dst.tangents.empty())
-                dst.refine_settings.flags.gen_tangents = 1;
-            dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
-            dst.refine_settings.flags.flip_faces = 1;
+            if (dst.normals.empty()) {
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
+            }
+            if (dst.tangents.empty()) {
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+            }
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
         }
         else {
             if (!m_settings.bake_deformers && m_settings.sync_blendshapes)
@@ -1371,7 +1373,7 @@ void msmayaContext::doExtractMeshDataImpl(ms::Mesh& dst, MFnMesh &mmesh, MFnMesh
         mmesh.getUVSetNames(uvsets);
 
         if (uvsets.length() > 0 && mmesh.numUVs(uvsets[0]) > 0) {
-            dst.uv0.resize_zeroclear(index_count);
+            dst.m_uv[0].resize_zeroclear(index_count);
 
             MFloatArray u;
             MFloatArray v;
@@ -1386,7 +1388,7 @@ void msmayaContext::doExtractMeshDataImpl(ms::Mesh& dst, MFnMesh &mmesh, MFnMesh
                 for (int i = 0; i < count; ++i) {
                     int iu;
                     if (it_poly.getUVIndex(i, iu, &uvsets[0]) == MStatus::kSuccess && iu >= 0)
-                        dst.uv0[ii] = mu::float2{ u_ptr[iu], v_ptr[iu] };
+                        dst.m_uv[0][ii] = mu::float2{ u_ptr[iu], v_ptr[iu] };
                     ++ii;
                 }
                 it_poly.next();
@@ -1522,7 +1524,7 @@ void msmayaContext::doExtractMeshData(ms::Mesh& dst, TreeNode *n)
                             mu::float2 v;
                             p2.child(0).getValue(v.x);
                             p2.child(1).getValue(v.y);
-                            dst.uv0[li] += v;
+                            dst.m_uv[0][li] += v;
                         }
                     }
                 }
@@ -1639,7 +1641,7 @@ void msmayaContext::doExtractMeshData(ms::Mesh& dst, TreeNode *n)
     // get skinning data
     if (m_settings.sync_bones && !fn_skin.object().isNull()) {
         // request bake TRS
-        dst.refine_settings.flags.local2world = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         dst.refine_settings.local2world = n->maya_transform;
 
         // get bone data
@@ -1705,7 +1707,7 @@ void msmayaContext::doExtractMeshData(ms::Mesh& dst, TreeNode *n)
     }
     else {
         // apply pivot
-        dst.refine_settings.flags.local2world = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         dst.refine_settings.local2world = n->model_transform;
     }
 
@@ -1732,7 +1734,7 @@ void msmayaContext::doExtractMeshDataBaked(ms::Mesh& dst, TreeNode *n)
     doExtractMeshDataImpl(dst, mmesh, mmesh);
 
     // apply pivot
-    dst.refine_settings.flags.local2world = 1;
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
     dst.refine_settings.local2world = n->model_transform;
 }
 

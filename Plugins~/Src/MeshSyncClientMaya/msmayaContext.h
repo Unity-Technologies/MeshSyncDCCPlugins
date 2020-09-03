@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include "msmayaUtils.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
 
 namespace ms {
 
@@ -13,6 +14,8 @@ public:
         return getIDImpl((void*&)o);
     }
 };
+
+
 
 } // namespace ms
 
