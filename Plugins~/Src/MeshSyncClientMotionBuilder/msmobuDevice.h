@@ -2,6 +2,8 @@
 
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msLight.h"
+#include "MeshSync/SceneGraph/msCamera.h"
 
 struct SyncSettings
 {
