@@ -2,6 +2,8 @@
 #include "msmqContext.h"
 #include "msmqUtils.h"
 
+#include "MeshSync/SceneGraph/msCamera.h"
+
 
 void SyncSettings::validate()
 {
@@ -460,10 +462,10 @@ bool msmqContext::importMeshes(MQDocument doc)
     ms::GetMessage gd;
     gd.scene_settings.handedness = ms::Handedness::Right;
     gd.scene_settings.scale_factor = m_settings.scale_factor;
-    gd.refine_settings.flags.local2world = 1;
-    gd.refine_settings.flags.flip_v = 1;
-    gd.refine_settings.flags.bake_skin = m_settings.bake_skin;
-    gd.refine_settings.flags.bake_cloth = m_settings.bake_cloth;
+    gd.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
+    gd.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_V, true);
+    gd.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_BAKE_SKIN, m_settings.bake_skin);
+    gd.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_BAKE_CLOTH, m_settings.bake_cloth);
 
     auto ret = client.send(gd);
     if (!ret) {
@@ -644,25 +646,25 @@ MQObject msmqContext::createMesh(MQDocument doc, const ms::Mesh& data, const cha
             ret->AddFace(3, const_cast<int*>(&data.indices[i]));
         }
     }
-    if(!data.uv0.empty()) {
+    if(!data.m_uv[0].empty()) {
         float2 uv[3];
-        size_t nfaces = data.indices.size() / 3;
+        const size_t nfaces = data.indices.size() / 3;
         for (size_t i = 0; i < nfaces; ++i) {
-            uv[0] = data.uv0[data.indices[i * 3 + 0]];
-            uv[1] = data.uv0[data.indices[i * 3 + 1]];
-            uv[2] = data.uv0[data.indices[i * 3 + 2]];
+            uv[0] = data.m_uv[0][data.indices[i * 3 + 0]];
+            uv[1] = data.m_uv[0][data.indices[i * 3 + 1]];
+            uv[2] = data.m_uv[0][data.indices[i * 3 + 2]];
             ret->SetFaceCoordinateArray((int)i, (MQCoordinate*)uv);
         }
     }
     if (!data.colors.empty()) {
-        size_t nfaces = data.indices.size() / 3;
+        const size_t nfaces = data.indices.size() / 3;
         for (size_t i = 0; i < nfaces; ++i) {
             ret->SetFaceVertexColor((int)i, 0, mu::Float4ToColor32(data.colors[data.indices[i * 3 + 0]]));
             ret->SetFaceVertexColor((int)i, 1, mu::Float4ToColor32(data.colors[data.indices[i * 3 + 1]]));
             ret->SetFaceVertexColor((int)i, 2, mu::Float4ToColor32(data.colors[data.indices[i * 3 + 2]]));
         }
         // enable vertex color flag on assigned materials
-        auto mids = data.material_ids;
+        SharedVector<int> mids = data.material_ids;
         mids.erase(std::unique(mids.begin(), mids.end()), mids.end());
         for (auto mid : mids) {
             if (mid >= 0) {
@@ -671,7 +673,7 @@ MQObject msmqContext::createMesh(MQDocument doc, const ms::Mesh& data, const cha
         }
     }
     if (!data.material_ids.empty()) {
-        size_t nfaces = data.indices.size() / 3;
+        const size_t nfaces = data.indices.size() / 3;
         for (size_t i = 0; i < nfaces; ++i) {
             ret->SetFaceMaterial((int)i, data.material_ids[i]);
         }
@@ -681,35 +683,35 @@ MQObject msmqContext::createMesh(MQDocument doc, const ms::Mesh& data, const cha
 
 void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
 {
-    dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
-    dst.refine_settings.flags.gen_tangents = 1;
-    dst.refine_settings.flags.flip_v = 1;
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_V, true);
     if (obj->GetMirrorType() != MQOBJECT_MIRROR_NONE) {
         int axis = obj->GetMirrorAxis();
-        dst.refine_settings.flags.mirror_x = (axis & MQOBJECT_MIRROR_AXIS_X) ? 1 : 0;
-        dst.refine_settings.flags.mirror_y = (axis & MQOBJECT_MIRROR_AXIS_Y) ? 1 : 0;
-        dst.refine_settings.flags.mirror_z = (axis & MQOBJECT_MIRROR_AXIS_Z) ? 1 : 0;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, (axis & MQOBJECT_MIRROR_AXIS_X) ? 1 : 0);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Y, (axis & MQOBJECT_MIRROR_AXIS_Y) ? 1 : 0);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Z, (axis & MQOBJECT_MIRROR_AXIS_Z) ? 1 : 0);
         if (obj->GetMirrorType() == MQOBJECT_MIRROR_JOIN) {
-            dst.refine_settings.flags.mirror_x_weld = dst.refine_settings.flags.mirror_x;
-            dst.refine_settings.flags.mirror_y_weld = dst.refine_settings.flags.mirror_y;
-            dst.refine_settings.flags.mirror_z_weld = dst.refine_settings.flags.mirror_z;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X_WELD, dst.refine_settings.flags.Get(ms::MESH_REFINE_FLAG_MIRROR_X));
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Y_WELD, dst.refine_settings.flags.Get(ms::MESH_REFINE_FLAG_MIRROR_Y));
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Z_WELD, dst.refine_settings.flags.Get(ms::MESH_REFINE_FLAG_MIRROR_Z));
         }
     }
 
     // transform
     {
-        dst.refine_settings.flags.world2local = 1;
-        auto ite = m_host_meshes.find(dst.host_id);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_WORLD2LOCAL,true);
+        const std::map<int, std::shared_ptr<ms::Mesh>>::iterator ite = m_host_meshes.find(dst.host_id);
         if (ite != m_host_meshes.end()) {
             dst.refine_settings.world2local = ite->second->refine_settings.world2local;
-            dst.td_flags.has_position = 0;
-            dst.td_flags.has_rotation = 0;
-            dst.td_flags.has_scale= 0;
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_POSITION, false);
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_ROTATION, false);
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_SCALE, false);
         }
         else {
-            dst.td_flags.has_position = 1;
-            dst.td_flags.has_rotation = 1;
-            dst.td_flags.has_scale = 1;
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_POSITION, true);
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_ROTATION, true);
+            dst.td_flags.Set(ms::TRANSFORM_DATA_FLAG_HAS_SCALE, true);
             ExtractLocalTransform(obj, dst.position, dst.rotation, dst.scale);
             dst.refine_settings.world2local = invert(ExtractGlobalMatrix(doc, obj));
         }
@@ -732,10 +734,10 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
 
     // indices, uv, material ID
     dst.indices.resize_discard(nindices);
-    dst.uv0.resize_discard(nindices);
+    dst.m_uv[0].resize_discard(nindices);
     dst.material_ids.resize_discard(nfaces);
-    auto *indices = dst.indices.data();
-    auto *uv = dst.uv0.data();
+    int* indices = dst.indices.data();
+    tvec2<float>* uv = dst.m_uv[0].data();
     for (int fi = 0; fi < nfaces; ++fi) {
         dst.material_ids[fi] = getMaterialID(obj->GetFaceMaterial(fi));
 
@@ -752,9 +754,9 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
     // vertex colors
     if (m_settings.sync_vertex_color) {
         dst.colors.resize_discard(nindices);
-        auto *colors = dst.colors.data();
+        tvec4<float>* colors = dst.colors.data();
         for (int fi = 0; fi < nfaces; ++fi) {
-            int count = dst.counts[fi];
+            const int count = dst.counts[fi];
             //if (obj->GetFaceVisible(fi))
             {
                 for (int ci = 0; ci < count; ++ci) {
@@ -770,7 +772,7 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
         dst.normals.resize_discard(nindices);
         auto *normals = dst.normals.data();
         for (int fi = 0; fi < nfaces; ++fi) {
-            int count = dst.counts[fi];
+            const int count = dst.counts[fi];
             BYTE flags;
             //if (obj->GetFaceVisible(fi))
             {
@@ -782,7 +784,7 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
     else
 #endif
     {
-        dst.refine_settings.flags.gen_normals_with_smooth_angle = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS_WITH_SMOOTH_ANGLE, true);
         dst.refine_settings.smooth_angle = obj->GetSmoothAngle();
     }
 }

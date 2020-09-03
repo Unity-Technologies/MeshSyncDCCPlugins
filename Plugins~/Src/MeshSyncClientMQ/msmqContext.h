@@ -2,6 +2,7 @@
 
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msCamera.h"
 
 using namespace mu;
 
