@@ -2,6 +2,7 @@
 
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msLight.h"
 #include "msmaxUtils.h"
 
 #define msmaxAPI extern "C" __declspec(dllexport)
