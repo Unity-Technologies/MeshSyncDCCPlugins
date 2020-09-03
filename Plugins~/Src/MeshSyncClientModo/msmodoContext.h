@@ -1,6 +1,8 @@
 #pragma once
 
 #include "msmodoInterface.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
 
 namespace ms {
 
