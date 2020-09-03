@@ -2,6 +2,8 @@
 #include "MeshUtils/MeshUtils.h"
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
 #include "msblenBinder.h"
 
 struct SyncSettings;
