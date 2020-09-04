@@ -6,6 +6,13 @@
 
 
 
+#include "MeshSync/SceneCache/msSceneCacheSettings.h"
+#include "MeshSync/SceneGraph/msAnimation.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
+
 bool DAGNode::isInstanced() const
 {
     return branches.size() > 1;
@@ -915,7 +922,7 @@ void msmayaContext::exportMaterials()
             auto& stdmat = ms::AsStandardMaterial(*tmp);
             if (GetColorAndTexture(fn, "color", color, texpath)) {
                 if (!texpath.empty()) {
-                    stdmat.setColor(ms::float4::one());
+                    stdmat.setColor(mu::float4::one());
                     stdmat.setColorMap(m_settings.sync_textures ? exportTexture(texpath) : findTexture(texpath));
                 }
                 else {
@@ -1095,7 +1102,7 @@ void msmayaContext::extractTransformData(TreeNode *n,
         else
             fbx_compatible_transform_extraction();
 
-        auto& td = n->transform_data;
+        TransformData& td = n->transform_data;
         t = td.translation + td.pivot + td.pivot_offset;
         r = td.rotation;
         s = td.scale;
@@ -1124,7 +1131,7 @@ void msmayaContext::extractCameraData(TreeNode *n,
     ortho = mcam.isOrtho();
     near_plane = (float)mcam.nearClippingPlane();
     far_plane = (float)mcam.farClippingPlane();
-    fov = (float)mcam.verticalFieldOfView() * ms::RadToDeg;
+    fov = (float)mcam.verticalFieldOfView() * mu::RadToDeg;
 
     focal_length = (float)mcam.focalLength();
     sensor_size.x = (float)(mcam.horizontalFilmAperture() * mu::InchToMillimeter_d);
