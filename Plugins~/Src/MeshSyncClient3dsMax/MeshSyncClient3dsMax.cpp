@@ -71,7 +71,7 @@ Value* ServerStatus_cf(Value** arg_list, int count)
         if (k == L"isAvailable")
             return bool_result(msmaxGetContext().isServerAvailable());
         else if (k == L"errorMessage")
-            return new String(ms::ToWCS(msmaxGetContext().getErrorMessage()).c_str());
+            return new String(mu::ToWCS(msmaxGetContext().getErrorMessage()).c_str());
     }
     return &undefined;
 }
