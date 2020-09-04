@@ -2,6 +2,13 @@
 #include "msblenContext.h"
 #include "msblenUtils.h"
 
+#include "MeshSync/SceneGraph/msSceneSettings.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+#include "MeshSync/msLog.h" //msTrace
+
 
 void SyncSettings::validate()
 {
@@ -837,7 +844,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
             if (arm_mod) {
                 // request bake TRS
                 dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
-                dst.refine_settings.local2world = ms::transform(dst.position, invert(dst.rotation), dst.scale);
+                dst.refine_settings.local2world = mu::transform(dst.position, invert(dst.rotation), dst.scale);
 
                 auto *arm_obj = arm_mod->object;
                 int group_index = 0;

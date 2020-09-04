@@ -3,6 +3,8 @@
 #include "msblenUtils.h"
 #include "msblenBinder.h"
 
+#include "MeshSync/msLog.h"
+
 namespace blender
 {
 

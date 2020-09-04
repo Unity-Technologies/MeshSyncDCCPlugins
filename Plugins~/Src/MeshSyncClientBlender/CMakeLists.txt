@@ -34,6 +34,7 @@ target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_S
 target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     "${EXTERNAL_ROOT}"
     ${BLENDER_INCLUDE_DIRS}
+    ${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include
     ${MESHSYNC_PLUGIN_SRC_ROOT}
 
 )
