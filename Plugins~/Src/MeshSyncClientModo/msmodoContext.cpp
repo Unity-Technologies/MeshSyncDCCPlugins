@@ -2,6 +2,9 @@
 #include "msmodoContext.h"
 #include "msmodoUtils.h"
 
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
+#include "MeshSync/SceneGraph/msMesh.h"
 
 void SyncSettings::validate()
 {

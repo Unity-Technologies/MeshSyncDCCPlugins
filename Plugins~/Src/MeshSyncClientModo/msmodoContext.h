@@ -1,8 +1,24 @@
 #pragma once
 
 #include "msmodoInterface.h"
+#include "MeshSync/msClient.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msLight.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msIDGenerator.h"
+
+#include "MeshSync/Utils/msEntityManager.h"
+#include "MeshSync/Utils/msMaterialManager.h"
+#include "MeshSync/Utils/msTextureManager.h"
+
+#include "MeshUtils/muMisc.h" //mu::noncopyable
+
+msDeclClassPtr(AnimationClip)
+msDeclClassPtr(Camera)
+msDeclClassPtr(Light)
+msDeclClassPtr(Material)
+msDeclClassPtr(Mesh)
+msDeclClassPtr(TransformAnimation)
 
 namespace ms {
 

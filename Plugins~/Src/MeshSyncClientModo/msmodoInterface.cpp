@@ -3,6 +3,7 @@
 #include "msmodoUtils.h"
 #include "msmodoCompat.h"
 
+#include "MeshSync/msLog.h"
 
 class msmodoEventListener :
     public CLxImpl_SelectionListener,
