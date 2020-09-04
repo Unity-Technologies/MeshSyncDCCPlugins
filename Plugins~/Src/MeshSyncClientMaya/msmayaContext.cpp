@@ -4,8 +4,6 @@
 #include "msmayaCommand.h"
 #include <cstdarg>
 
-
-
 #include "MeshSync/SceneCache/msSceneCacheSettings.h"
 #include "MeshSync/SceneGraph/msAnimation.h"
 #include "MeshSync/SceneGraph/msMesh.h"
