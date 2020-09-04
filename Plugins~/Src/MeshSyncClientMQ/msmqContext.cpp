@@ -4,6 +4,8 @@
 
 #include "MeshSync/SceneGraph/msCamera.h"
 
+#include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 void SyncSettings::validate()
 {
@@ -99,7 +101,7 @@ bool msmqContext::startRecording(std::string& path)
     if (!m_cache_writer.open(m_cache_settings.path.c_str(), oscs))
         return false;
 
-    m_cache_settings.time_start = ms::Now();
+    m_cache_settings.time_start = mu::Now();
     m_settings.recording = true;
     return true;
 }
@@ -135,7 +137,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
         return false;
     }
     m_pending_send_meshes = false;
-    m_time = ms::Now();
+    m_time = mu::Now();
 
     m_settings.validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
@@ -230,7 +232,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
                 MQPoint base_pos;
                 bone_manager.GetBasePos(bid, base_pos);
                 brec.pose_pos = to_float3(base_pos);
-                brec.bindpose = mu::invert(mu::transform(brec.pose_pos, quatf::identity(), float3::one()));
+                brec.bindpose = mu::invert(mu::transform(brec.pose_pos, mu::quatf::identity(), mu::float3::one()));
 
                 if (m_settings.sync_poses) {
                     MQMatrix rot;
@@ -238,7 +240,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
                     brec.pose_rot = mu::invert(mu::to_quat(to_float4x4(rot)));
                 }
                 else {
-                    brec.pose_rot = quatf::identity();
+                    brec.pose_rot = mu::quatf::identity();
                 }
 #else
                 MQPoint base_pos;
@@ -492,7 +494,7 @@ bool msmqContext::importMeshes(MQDocument doc)
         }
         for (int i = 0; i < (int)material.size(); ++i) {
             auto dst = doc->GetMaterial(i);
-            dst->SetName(ms::ToANSI(names[i]).c_str());
+            dst->SetName(mu::ToANSI(names[i]).c_str());
 
             auto& stdmat = ms::AsStandardMaterial(*material[i]);
             dst->SetColor(to_MQColor(stdmat.getColor()));
@@ -508,7 +510,7 @@ bool msmqContext::importMeshes(MQDocument doc)
             // create name that includes ID
             char name[MaxNameBuffer];
             dst.getName(tmp_name);
-            sprintf(name, "%s [id:%08x]", ms::ToANSI(tmp_name).c_str(), dst.host_id);
+            sprintf(name, "%s [id:%08x]", mu::ToANSI(tmp_name).c_str(), dst.host_id);
 
             if (auto obj = findMesh(doc, name)) {
                 doc->DeleteObject(doc->GetObjectIndex(obj));
@@ -532,7 +534,7 @@ void msmqContext::kickAsyncExport()
             sender->client_settings = m_settings.client_settings;
         }
         else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
-            writer->time = ms::NS2S(m_time - m_cache_settings.time_start);
+            writer->time = mu::NS2S(m_time - m_cache_settings.time_start);
         }
 
         auto& t = *exporter;
@@ -647,7 +649,7 @@ MQObject msmqContext::createMesh(MQDocument doc, const ms::Mesh& data, const cha
         }
     }
     if(!data.m_uv[0].empty()) {
-        float2 uv[3];
+        mu::float2 uv[3];
         const size_t nfaces = data.indices.size() / 3;
         for (size_t i = 0; i < nfaces; ++i) {
             uv[0] = data.m_uv[0][data.indices[i * 3 + 0]];
@@ -737,7 +739,7 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
     dst.m_uv[0].resize_discard(nindices);
     dst.material_ids.resize_discard(nfaces);
     int* indices = dst.indices.data();
-    tvec2<float>* uv = dst.m_uv[0].data();
+    mu::tvec2<float>* uv = dst.m_uv[0].data();
     for (int fi = 0; fi < nfaces; ++fi) {
         dst.material_ids[fi] = getMaterialID(obj->GetFaceMaterial(fi));
 
@@ -754,13 +756,13 @@ void msmqContext::extractMeshData(MQDocument doc, MQObject obj, ms::Mesh& dst)
     // vertex colors
     if (m_settings.sync_vertex_color) {
         dst.colors.resize_discard(nindices);
-        tvec4<float>* colors = dst.colors.data();
+        mu::tvec4<float>* colors = dst.colors.data();
         for (int fi = 0; fi < nfaces; ++fi) {
             const int count = dst.counts[fi];
             //if (obj->GetFaceVisible(fi))
             {
                 for (int ci = 0; ci < count; ++ci) {
-                    *(colors++) = Color32ToFloat4(obj->GetFaceVertexColor(fi, ci));
+                    *(colors++) = mu::Color32ToFloat4(obj->GetFaceVertexColor(fi, ci));
                 }
             }
         }

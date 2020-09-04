@@ -1,10 +1,27 @@
 #pragma once
 
-#include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
-#include "MeshSync/SceneGraph/msCamera.h"
+//[TODO-sin:2020-9-4] Temporary hack
+#include "MeshUtils/muRawVector.h" //SharedVector
+#include "MeshUtils/muMath.h" //mu::float4x4
+#include "MeshUtils/muSIMD.h" //SumInt32
+#include "MeshSync/msMisc.h" //nanosec
 
-using namespace mu;
+#include "MeshSync/MeshSync.h"
+#include "MeshSync/msClient.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utils/msEntityManager.h"
+#include "MeshSync/Utils/msMaterialManager.h"
+#include "MeshSync/Utils/msTextureManager.h"
+
+msDeclClassPtr(AnimationClip)
+msDeclClassPtr(Camera)
+msDeclClassPtr(Light)
+msDeclClassPtr(Material)
+msDeclClassPtr(Mesh)
+msDeclClassPtr(TransformAnimation)
+
+msDeclStructPtr(BlendShapeData)
 
 struct SyncSettings
 {
@@ -32,7 +49,7 @@ struct SyncSettings
 struct CacheSettings
 {
     std::string path;
-    ms::nanosec time_start = 0;
+    mu::nanosec time_start = 0;
 
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
 
@@ -90,9 +107,9 @@ private:
         UINT bone_id = -1;
         UINT parent_id = -1;
         std::string name;
-        float3 pose_pos = float3::zero();
-        quatf pose_rot = quatf::identity();
-        float4x4 bindpose = float4x4::identity();
+        mu::float3 pose_pos = mu::float3::zero();
+        mu::quatf pose_rot = mu::quatf::identity();
+        mu::float4x4 bindpose = mu::float4x4::identity();
         ms::TransformPtr dst = ms::Transform::create();
     };
 
@@ -134,5 +151,5 @@ private:
     ms::AsyncSceneCacheWriter m_cache_writer;
     bool m_pending_send_meshes = false;
 
-    ms::nanosec m_time = 0;
+    mu::nanosec m_time = 0;
 };

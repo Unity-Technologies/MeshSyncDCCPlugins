@@ -24,7 +24,7 @@ msmqSettingsDlg::msmqSettingsDlg(MeshSyncClientPlugin *plugin, MQWindowBase& par
         MQFrame *hf = CreateHorizontalFrame(vf);
         CreateLabel(hf, L"Server : Port");
         m_edit_server = CreateEdit(hf);
-        m_edit_server->SetText(ToWCS(s.client_settings.server));
+        m_edit_server->SetText(mu::ToWCS(s.client_settings.server));
         m_edit_server->AddChangedEvent(this, &msmqSettingsDlg::OnServerChange);
 
         swprintf(buf, buf_len, L"%d", (int)s.client_settings.port);
@@ -94,7 +94,7 @@ msmqSettingsDlg::msmqSettingsDlg(MeshSyncClientPlugin *plugin, MQWindowBase& par
         space->SetWidth(32);
         CreateLabel(m_frame_camera_path, L"Camera Path");
         m_edit_camera_path = CreateEdit(m_frame_camera_path);
-        m_edit_camera_path->SetText(ToWCS(s.host_camera_path));
+        m_edit_camera_path->SetText(mu::ToWCS(s.host_camera_path));
         m_edit_camera_path->AddChangedEvent(this, &msmqSettingsDlg::OnCameraPathChange);
         m_edit_camera_path->SetHorzLayout(LAYOUT_FILL);
         m_frame_camera_path->SetVisible(m_check_camera->GetChecked());
@@ -143,7 +143,7 @@ msmqSettingsDlg::msmqSettingsDlg(MeshSyncClientPlugin *plugin, MQWindowBase& par
         vf->SetInSpace(inner_margin);
 
         std::string plugin_version = "Plugin Version: " msPluginVersionStr;
-        CreateLabel(vf, ToWCS(plugin_version));
+        CreateLabel(vf, mu::ToWCS(plugin_version));
     }
 
     {
@@ -151,7 +151,7 @@ msmqSettingsDlg::msmqSettingsDlg(MeshSyncClientPlugin *plugin, MQWindowBase& par
         vf->SetOutSpace(outer_margin);
         vf->SetInSpace(inner_margin);
 
-        m_log = CreateLabel(vf, ToWCS(""));
+        m_log = CreateLabel(vf, mu::ToWCS(""));
     }
 
     this->AddHideEvent(this, &msmqSettingsDlg::OnHide);
@@ -171,22 +171,22 @@ BOOL msmqSettingsDlg::OnHide(MQWidgetBase *sender, MQDocument doc)
 
 BOOL msmqSettingsDlg::OnServerChange(MQWidgetBase * sender, MQDocument doc)
 {
-    auto v = ToMBS(m_edit_server->GetText());
+    std::string v = mu::ToMBS(m_edit_server->GetText());
     getSettings().client_settings.server = v;
     return 0;
 }
 
 BOOL msmqSettingsDlg::OnPortChange(MQWidgetBase * sender, MQDocument doc)
 {
-    auto v = ToMBS(m_edit_port->GetText());
+    std::string v = mu::ToMBS(m_edit_port->GetText());
     getSettings().client_settings.server = std::atoi(v.c_str());
     return 0;
 }
 
 BOOL msmqSettingsDlg::OnScaleChange(MQWidgetBase * sender, MQDocument doc)
 {
-    auto v = ToMBS(m_edit_scale->GetText());
-    auto f = std::atof(v.c_str());
+    std::string v = mu::ToMBS(m_edit_scale->GetText());
+    double f = std::atof(v.c_str());
     if (f != 0.0) {
         getSettings().scale_factor = (float)f;
         m_plugin->AutoSyncMeshes();
@@ -255,7 +255,7 @@ BOOL msmqSettingsDlg::OnSyncCameraChange(MQWidgetBase * sender, MQDocument doc)
 
 BOOL msmqSettingsDlg::OnCameraPathChange(MQWidgetBase *sender, MQDocument doc)
 {
-    getSettings().host_camera_path = ToMBS(m_edit_camera_path->GetText());
+    getSettings().host_camera_path = mu::ToMBS(m_edit_camera_path->GetText());
     return 0;
 }
 
@@ -342,5 +342,5 @@ BOOL msmqSettingsDlg::OnImportClicked(MQWidgetBase * sender, MQDocument doc)
 
 void msmqSettingsDlg::LogInfo(const char *message)
 {
-    m_log->SetText(ToWCS(message));
+    m_log->SetText(mu::ToWCS(message));
 }
