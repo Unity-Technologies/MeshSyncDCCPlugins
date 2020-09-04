@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MeshSync/MeshSync.h"
+#include "MeshSync/msLog.h" //msTrace
 
 TimeValue GetTime();
 float ToSeconds(TimeValue tics);

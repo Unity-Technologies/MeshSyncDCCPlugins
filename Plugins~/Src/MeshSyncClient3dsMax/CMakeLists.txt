@@ -18,6 +18,7 @@ target_include_directories(${MESHSYNC_CLIENT_3DSMAX} PRIVATE
     "${CMAKE_SOURCE_DIR}" 
     "${3DSMAX${3DSMAX_VERSION}_INCLUDE_DIR}"
     "${3DSMAX${3DSMAX_VERSION}_INCLUDE_DIR}/../samples"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 

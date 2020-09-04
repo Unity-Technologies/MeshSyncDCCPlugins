@@ -4,6 +4,9 @@
 #include "msmaxCallbacks.h"
 
 #include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
@@ -677,7 +680,7 @@ void msmaxContext::exportMaterials()
             dst->index = material_index++;
             dst->name = GetName(mtl);
 
-            auto& dstmat = ms::AsStandardMaterial(*dst);
+            ms::StandardMaterial& dstmat = ms::AsStandardMaterial(*dst);
             dstmat.setColor(to_color(mtl->GetDiffuse()));
 
             // export textures
@@ -1349,8 +1352,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (!m_settings.bake_modifiers && m_settings.sync_bones) {
             auto *mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
-                auto skin = (ISkin*)mod->GetInterface(I_SKIN);
-                auto ctx = skin->GetContextInterface(n);
+                ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
+                ISkinContextData* ctx = skin->GetContextInterface(n);
                 int num_bones = skin->GetNumBones();
                 int num_vertices = ctx->GetNumPoints();
                 if (num_vertices != dst.points.size()) {
@@ -1362,11 +1365,11 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     Matrix3 skin_matrix;
                     skin->GetSkinInitTM(n, skin_matrix);
                     for (int bi = 0; bi < num_bones; ++bi) {
-                        auto bone = skin->GetBone(bi);
+                        INode* bone = skin->GetBone(bi);
                         Matrix3 bone_matrix;
                         skin->GetBoneInitTM(bone, bone_matrix);
 
-                        auto bd = ms::BoneData::create();
+                        std::shared_ptr<ms::BoneData> bd = ms::BoneData::create();
                         dst.bones.push_back(bd);
                         bd->bindpose = to_float4x4(skin_matrix) * mu::invert(to_float4x4(bone_matrix));
                         bd->weights.resize_zeroclear(dst.points.size()); // allocate weights
