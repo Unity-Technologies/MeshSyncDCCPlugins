@@ -1,9 +1,28 @@
 #pragma once
 
+
+//[TODO-sin:2020-9-4] Temporary hack
+#include "MeshUtils/muRawVector.h" //SharedVector
+#include "MeshUtils/muMath.h" //mu::float4x4
+#include "MeshUtils/muSIMD.h" //SumInt32
+#include "MeshSync/msMisc.h" //nanosec
+
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/msClient.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+
+#include "MeshSync/Utils/msEntityManager.h"
+#include "MeshSync/Utils/msMaterialManager.h"
+#include "MeshSync/Utils/msTextureManager.h"
+
+msDeclClassPtr(AnimationClip)
+msDeclClassPtr(Camera)
+msDeclClassPtr(Light)
+msDeclClassPtr(Material)
+msDeclClassPtr(Mesh)
+msDeclClassPtr(TransformAnimation)
 
 struct SyncSettings
 {

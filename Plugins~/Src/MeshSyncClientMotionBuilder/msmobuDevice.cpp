@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "msmobuDevice.h"
 #include "msmobuUtils.h"
+#include "MeshSync/SceneGraph/msAnimation.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 
 FBDeviceImplementation(msmobuDevice);

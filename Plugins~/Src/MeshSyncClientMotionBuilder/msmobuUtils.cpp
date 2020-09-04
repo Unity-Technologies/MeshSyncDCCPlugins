@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "msmobuUtils.h"
 
+#include "MeshUtils/muDebugTimer.h"
+
 bool IsNull(FBModel * src)
 {
     return src && src->Is(FBModelNull::TypeInfo);
