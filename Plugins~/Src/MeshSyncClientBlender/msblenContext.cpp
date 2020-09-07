@@ -849,7 +849,8 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
         };
 
         if (m_settings.sync_bones) {
-            auto *arm_mod = (const ArmatureModifierData*)find_modofier(obj, eModifierType_Armature);
+            const ArmatureModifierData* arm_mod = (const ArmatureModifierData*)find_modofier(
+                obj, eModifierType_Armature);
             if (arm_mod) {
                 // request bake TRS
                 dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
