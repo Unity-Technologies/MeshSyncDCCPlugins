@@ -211,7 +211,7 @@ $ xcodebuild -alltargets -configuration Release build
 
 When creating a new release, please do the following, either via CI or manually.
 
-1. Go to the `Build` folder and build files for distribution (zip) on all supported platforms: 
+1. Go to the `Dist` folder and build files for distribution (zip) on all supported platforms: 
     ``` 
     $ cd Plugins~/Dist
     $ ./clean_and_build_dist
@@ -219,7 +219,6 @@ When creating a new release, please do the following, either via CI or manually.
 
 1. Gather all the zip files for distribution in the `Dist` folder and generate the meta file of the release.
     ``` 
-    $ cd Plugins~/Dist
     $ ./create_meta > meta.txt
     ``` 
  
