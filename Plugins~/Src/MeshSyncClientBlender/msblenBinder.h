@@ -156,7 +156,7 @@ namespace blender
         barray_range<mu::float3> normals();
         barray_range<MLoopUV> uv();
         barray_range<MLoopCol> colors();
-        MLoopUV* BMesh::GetUV(const int index) const;
+        MLoopUV* GetUV(const int index) const;
 
 
         void calc_normals_split();

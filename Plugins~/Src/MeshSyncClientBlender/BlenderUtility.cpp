@@ -7,7 +7,7 @@
 #include "MeshUtils/muMath.h" //mu::float2
 #include "MeshUtils/muRawVector.h" //SharedVector
 
-#include "msBlenBinder.h" //BMesh
+#include "msblenBinder.h" //BMesh
 
 namespace blender {
 
