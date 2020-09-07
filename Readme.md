@@ -26,6 +26,12 @@ This document is currently being reorganized.
 The previous version of the document is put below for reference.
 
 
+# Features
+
+|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
+| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
+| Multi UV            | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
+
 
 
 ## Guides
