@@ -213,19 +213,17 @@ When creating a new release, please do the following, either via CI or manually.
 
 1. Go to the `Build` folder and build files for distribution (zip) on all supported platforms: 
     ``` 
-    $ cd Plugins~/Build 
+    $ cd Plugins~/Dist
     $ ./clean_and_build_dist
     ``` 
 
-1. Gather all the zip files for distribution in the `Dist` folder and execute the following to generate the meta file.
+1. Gather all the zip files for distribution in the `Dist` folder and generate the meta file of the release.
     ``` 
     $ cd Plugins~/Dist
     $ ./create_meta > meta.txt
     ``` 
  
 1. Upload all the zip files and the meta file to Github
-
-
 
 
 
