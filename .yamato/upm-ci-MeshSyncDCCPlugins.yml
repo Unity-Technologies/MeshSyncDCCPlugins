@@ -1,10 +1,10 @@
 yamato_name: MeshSyncDCCPlugins
 test_editors:
-  - version: 2019.3
+  - version: 2019.4
 platforms:
   - name: win
     type: Unity::VM
-    image:         package-ci/win10:stable
+    image: package-ci/win10:stable
     flavor: b1.large
     plugin_path: Runtime/Plugins/x86_64/**
 

@@ -61,6 +61,7 @@ Plugins~/Src/MeshSyncClientMODO_*
 
 # Files to be distributed (Build results)
 Plugins~/Dist/UnityMeshSync_**
+Plugins~/Dist/meta.txt
 
 # Sample Project
 MeshSyncDCCPlugins~/Library/**
