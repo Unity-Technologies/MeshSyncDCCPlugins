@@ -8,6 +8,8 @@
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
+#include "BlenderUtility.h" //ApplyMeshUV
+
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -821,17 +823,13 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
 
     // uv
     if (m_settings.sync_uvs) {
-        blender::barray_range<struct MLoopUV> loop_uv = bmesh.uv();
-        if (!loop_uv.empty()) {
-            dst.m_uv[0].resize_discard(num_indices);
-            for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.m_uv[0][ii] = reinterpret_cast<mu::float2&>(loop_uv[ii].uv);
-        }
+
+        ms::BlenderUtility::ApplyBlenderMeshUVToMesh(&bmesh, num_indices, &dst);
     }
 
     // colors
     if (m_settings.sync_colors) {
-        auto colors = bmesh.colors();
+        blender::barray_range<struct MLoopCol> colors = bmesh.colors();
         if (!colors.empty()) {
             dst.colors.resize_discard(num_indices);
             for (size_t ii = 0; ii < num_indices; ++ii)
@@ -1035,16 +1033,21 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
 
     // uv
     if (m_settings.sync_uvs) {
-        const int offset = emesh.uv_data_offset();
-        if (offset != -1) {
-            dst.m_uv[0].resize_discard(num_indices);
-            size_t ii = 0;
-            for (size_t ti = 0; ti < num_triangles; ++ti) {
-                auto& triangle = triangles[ti];
-                for (auto *idx : triangle)
-                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
-            }
-        }
+        //const int offset = emesh.uv_data_offset();
+        //if (offset != -1) {
+        //    dst.m_uv[0].resize_discard(num_indices);
+        //    size_t ii = 0;
+        //    for (size_t ti = 0; ti < num_triangles; ++ti) {
+        //        auto& triangle = triangles[ti];
+        //        for (auto *idx : triangle)
+        //            dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+        //    }
+        //}
+        //
+        //
+        //
+        ms::BlenderUtility::ApplyBlenderMeshUVToMesh(&bmesh, num_indices, &dst);
+
     }
 }
 
