@@ -22,6 +22,7 @@ void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_
         curUV.resize_discard(numIndices);
         for (size_t ii = 0; ii < numIndices; ++ii) {
             curUV[ii] = (mu::float2&)loopUV->uv;
+            ++loopUV;
         }
     }
 
