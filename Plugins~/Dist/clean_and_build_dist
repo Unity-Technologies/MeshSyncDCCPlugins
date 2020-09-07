@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
 
-# Clean dist
-rm -Rf ../Dist/*
+# Clean all folders in Dist, zips, and meta file
+rm -rf */
+rm -Rf *.zip
+rm -f meta.txt
+
+cd ../Build
 cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 
 cd ../Dist
@@ -24,3 +28,4 @@ done
 for d in */ ; do
      zip -r "${d%?}.zip" "$d"
 done
+
