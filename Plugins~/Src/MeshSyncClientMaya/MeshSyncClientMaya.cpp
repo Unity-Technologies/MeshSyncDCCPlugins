@@ -1,7 +1,4 @@
 ﻿#include "pch.h"
-#include "msmayaUtils.h"
-#include "msmayaContext.h"
-#include "msmayaCommand.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Foundation.lib")

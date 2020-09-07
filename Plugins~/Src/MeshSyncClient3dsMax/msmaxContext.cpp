@@ -3,6 +3,11 @@
 #include "msmaxUtils.h"
 #include "msmaxCallbacks.h"
 
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
 #pragma comment(lib, "geom.lib")
@@ -675,7 +680,7 @@ void msmaxContext::exportMaterials()
             dst->index = material_index++;
             dst->name = GetName(mtl);
 
-            auto& dstmat = ms::AsStandardMaterial(*dst);
+            ms::StandardMaterial& dstmat = ms::AsStandardMaterial(*dst);
             dstmat.setColor(to_color(mtl->GetDiffuse()));
 
             // export textures
@@ -1051,9 +1056,9 @@ ms::TransformPtr msmaxContext::exportInstance(TreeNode& n, ms::TransformPtr base
 
 ms::TransformPtr msmaxContext::exportCamera(TreeNode& n)
 {
-    auto t = GetTime();
-    auto ret = createEntity<ms::Camera>(n);
-    auto& dst = *ret;
+    TimeValue t = GetTime();
+    std::shared_ptr<ms::Camera> ret = createEntity<ms::Camera>(n);
+    ms::Camera& dst = *ret;
     extractTransform(n, t, dst);
     extractCameraData(n, t,
         dst.is_ortho, dst.fov, dst.near_plane, dst.far_plane, dst.focal_length, dst.sensor_size, dst.lens_shift,
@@ -1250,7 +1255,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (m_settings.bake_transform) {
             // in this case transform is applied to vertices (dst.position/rotation/scale is identity)
             dst.refine_settings.local2world = to_float4x4(n->GetObjTMAfterWSM(t));
-            dst.refine_settings.flags.local2world = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         }
         else {
             if (m_settings.bake_modifiers) {
@@ -1259,12 +1264,12 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     dst.refine_settings.local2world *= mu::invert(dst.toMatrix());
                 else
                     dst.refine_settings.local2world *= mu::invert(dst.world_matrix);
-                dst.refine_settings.flags.local2world = 1;
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
             }
             else {
                 // handle pivot
                 dst.refine_settings.local2world = getPivotMatrix(n);
-                dst.refine_settings.flags.local2world = 1;
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
             }
         }
 
@@ -1305,7 +1310,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         // points
-        int num_vertices = mesh->numVerts;
+        const int num_vertices = mesh->numVerts;
         dst.points.resize_discard(num_vertices);
         dst.points.assign((mu::float3*)mesh->verts, (mu::float3*)mesh->verts + num_vertices);
 
@@ -1316,14 +1321,14 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
         // uv
         if (m_settings.sync_uvs) {
-            int num_uv = mesh->numTVerts;
-            auto *uv_faces = mesh->tvFace;
-            auto *uv_vertices = mesh->tVerts;
-            if (num_uv && uv_faces && uv_vertices) {
-                dst.uv0.resize_discard(num_indices);
+            const int num_uv = mesh->numTVerts;
+            TVFace* uv_Faces = mesh->tvFace;
+            UVVert* uv_vertices = mesh->tVerts;
+            if (num_uv && uv_Faces && uv_vertices) {
+                dst.m_uv[0].resize_discard(num_indices);
                 for (int fi = 0; fi < num_faces; ++fi) {
                     for (int i = 0; i < 3; ++i) {
-                        dst.uv0[fi * 3 + i] = to_float2(uv_vertices[uv_faces[fi].t[i]]);
+                        dst.m_uv[0][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
                     }
                 }
             }
@@ -1347,8 +1352,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (!m_settings.bake_modifiers && m_settings.sync_bones) {
             auto *mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
-                auto skin = (ISkin*)mod->GetInterface(I_SKIN);
-                auto ctx = skin->GetContextInterface(n);
+                ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
+                ISkinContextData* ctx = skin->GetContextInterface(n);
                 int num_bones = skin->GetNumBones();
                 int num_vertices = ctx->GetNumPoints();
                 if (num_vertices != dst.points.size()) {
@@ -1360,11 +1365,11 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     Matrix3 skin_matrix;
                     skin->GetSkinInitTM(n, skin_matrix);
                     for (int bi = 0; bi < num_bones; ++bi) {
-                        auto bone = skin->GetBone(bi);
+                        INode* bone = skin->GetBone(bi);
                         Matrix3 bone_matrix;
                         skin->GetBoneInitTM(bone, bone_matrix);
 
-                        auto bd = ms::BoneData::create();
+                        std::shared_ptr<ms::BoneData> bd = ms::BoneData::create();
                         dst.bones.push_back(bd);
                         bd->bindpose = to_float4x4(skin_matrix) * mu::invert(to_float4x4(bone_matrix));
                         bd->weights.resize_zeroclear(dst.points.size()); // allocate weights
@@ -1434,12 +1439,12 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
     {
         if (dst.normals.empty())
-            dst.refine_settings.flags.gen_normals = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
         if (dst.tangents.empty())
-            dst.refine_settings.flags.gen_tangents = 1;
-        dst.refine_settings.flags.flip_faces = m_settings.flip_faces;
-        dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
-        dst.md_flags.has_face_groups = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, m_settings.flip_faces);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
+        dst.md_flags.Set(ms::MESH_DATA_FLAG_HAS_FACE_GROUPS, true);
     }
 }
 

@@ -2,6 +2,22 @@
 #include "msblenContext.h"
 #include "msblenUtils.h"
 
+#include "MeshSync/SceneGraph/msSceneSettings.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
+
+#ifdef mscDebug
+#define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
+#define mscTraceW(...) ::mu::Print(L"MeshSync trace: " __VA_ARGS__)
+#else
+#define mscTrace(...)
+#define mscTraceW(...)
+#endif
+
+namespace bl = blender;
 
 void SyncSettings::validate()
 {
@@ -498,7 +514,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
                     dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
-                dst_mesh.refine_settings.flags.local2world = 1;
+                dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 m_entity_manager.add(dst);
             };
             if (m_settings.multithreaded)
@@ -686,11 +702,11 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
         if (!m_settings.bake_modifiers && !is_editing) {
             // mirror
             if (auto *mirror = (const MirrorModifierData*)find_modofier(obj, eModifierType_Mirror)) {
-                if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.mirror_x = 1;
-                if (mirror->flag & MOD_MIR_AXIS_Y) dst.refine_settings.flags.mirror_y = 1;
-                if (mirror->flag & MOD_MIR_AXIS_Z) dst.refine_settings.flags.mirror_z = 1;
+                if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, true);
+                if (mirror->flag & MOD_MIR_AXIS_Y) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Y, true);
+                if (mirror->flag & MOD_MIR_AXIS_Z) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Z, true);
                 if (mirror->mirror_ob) {
-                    dst.refine_settings.flags.mirror_basis = 1;
+                    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_BASIS, true);
                     mu::float4x4 wm = bobj.matrix_world();
                     mu::float4x4 mm = bl::BObject(mirror->mirror_ob).matrix_world();
                     dst.refine_settings.mirror_basis = wm * mu::invert(mm);
@@ -699,7 +715,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
         }
         if (m_settings.bake_transform) {
             dst.refine_settings.local2world = world;
-            dst.refine_settings.flags.local2world = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         }
     }
     else {
@@ -709,11 +725,11 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
     }
 
     if (dst.normals.empty())
-        dst.refine_settings.flags.gen_normals = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
     if (dst.tangents.empty())
-        dst.refine_settings.flags.gen_tangents = 1;
-    dst.refine_settings.flags.flip_faces = 1;
-    dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
 }
 
 void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh *data)
@@ -805,11 +821,11 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
 
     // uv
     if (m_settings.sync_uvs) {
-        auto loop_uv = bmesh.uv();
+        blender::barray_range<struct MLoopUV> loop_uv = bmesh.uv();
         if (!loop_uv.empty()) {
-            dst.uv0.resize_discard(num_indices);
+            dst.m_uv[0].resize_discard(num_indices);
             for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.uv0[ii] = (mu::float2&)loop_uv[ii].uv;
+                dst.m_uv[0][ii] = reinterpret_cast<mu::float2&>(loop_uv[ii].uv);
         }
     }
 
@@ -827,7 +843,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
         // bones
 
         auto extract_bindpose = [](auto *bone) {
-            auto mat_bone = (mu::float4x4&)bone->arm_mat * g_arm_to_world;
+            mu::tmat4x4<float> mat_bone = (mu::float4x4&)bone->arm_mat * g_arm_to_world;
             // armature-space to world-space
             return mu::invert(mu::swap_yz(mu::flip_z(mat_bone)));
         };
@@ -836,8 +852,8 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
             auto *arm_mod = (const ArmatureModifierData*)find_modofier(obj, eModifierType_Armature);
             if (arm_mod) {
                 // request bake TRS
-                dst.refine_settings.flags.local2world = 1;
-                dst.refine_settings.local2world = ms::transform(dst.position, invert(dst.rotation), dst.scale);
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
+                dst.refine_settings.local2world = mu::transform(dst.position, invert(dst.rotation), dst.scale);
 
                 auto *arm_obj = arm_mod->object;
                 int group_index = 0;
@@ -1018,14 +1034,14 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
 
     // uv
     if (m_settings.sync_uvs) {
-        int offset = emesh.uv_data_offset();
+        const int offset = emesh.uv_data_offset();
         if (offset != -1) {
-            dst.uv0.resize_discard(num_indices);
+            dst.m_uv[0].resize_discard(num_indices);
             size_t ii = 0;
             for (size_t ti = 0; ti < num_triangles; ++ti) {
                 auto& triangle = triangles[ti];
                 for (auto *idx : triangle)
-                    dst.uv0[ii++] = *(mu::float2*)((char*)idx->head.data + offset);
+                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
             }
         }
     }

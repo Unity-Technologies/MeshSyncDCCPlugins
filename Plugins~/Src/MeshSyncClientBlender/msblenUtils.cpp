@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "msblenContext.h"
 #include "msblenUtils.h"
-#include "msblenBinder.h"
+
+namespace bl = blender;
 
 std::string get_name(const Material *obj)
 {

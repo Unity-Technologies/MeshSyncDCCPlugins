@@ -2,6 +2,9 @@
 #include "msmodoContext.h"
 #include "msmodoUtils.h"
 
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
+#include "MeshSync/SceneGraph/msMesh.h"
 
 void SyncSettings::validate()
 {
@@ -796,7 +799,7 @@ ms::TransformPtr msmodoContext::exportMeshInstance(TreeNode& n)
         dst.index = n.index;
         extractTransformData(n, dst);
         dst.refine_settings.local2world = dst.world_matrix;
-        dst.refine_settings.flags.local2world = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         m_entity_manager.add(n.dst_obj);
         return ret;
     }
@@ -981,7 +984,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
                 dst_array.resize_discard(num_indices);
                 auto *write_ptr = dst_array.data();
 
-                auto mmid = mmap.ID();
+                LXtMeshMapID mmid = mmap.ID();
                 LXtPointID pid;
                 mu::float2 v;
                 for (int fi = 0; fi < num_faces; ++fi) {
@@ -1000,9 +1003,9 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
 
             auto map_names = GetMapNames(mmap, LXi_VMAP_TEXTUREUV);
             if (map_names.size() > 0)
-                do_extract(map_names[0], dst.uv0);
+                do_extract(map_names[0], dst.m_uv[0]);
             if (map_names.size() > 1)
-                do_extract(map_names[1], dst.uv1);
+                do_extract(map_names[1], dst.m_uv[1]);
         }
 
         // vertex color
@@ -1014,12 +1017,12 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
                 dst_array.resize_discard(num_indices);
                 auto *write_ptr = dst_array.data();
 
-                auto mmid = mmap.ID();
+                LXtMeshMapID mmid = mmap.ID();
                 LXtPointID pid;
                 mu::float4 v;
                 for (int fi = 0; fi < num_faces; ++fi) {
                     polygons.SelectByIndex(fi);
-                    int count = dst.counts[fi];
+                    const int count = dst.counts[fi];
                     for (int ci = 0; ci < count; ++ci) {
                         polygons.VertexByIndex(ci, &pid);
                         if (LXx_FAIL(polygons.MapEvaluate(mmid, pid, &v[0]))) {
@@ -1031,7 +1034,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
                 }
             };
 
-            auto map_names = GetMapNames(mmap, LXi_VMAP_RGBA);
+            std::vector<const char*> map_names = GetMapNames(mmap, LXi_VMAP_RGBA);
             if (map_names.size() > 0)
                 do_extract(map_names[0], dst.colors);
         }
@@ -1045,7 +1048,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
                 dst_array.resize_discard(num_points);
                 auto *write_ptr = dst_array.data();
 
-                auto mmid = mmap.ID();
+                LXtMeshMapID mmid = mmap.ID();
                 float v;
                 for (int pi = 0; pi < num_points; ++pi) {
                     points.SelectByIndex(pi);
@@ -1061,11 +1064,11 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
             eachSkinDeformer(n.item, [&](CLxUser_Item& def) {
                 mdmodoSkinDeformer skin(*this, def);
 
-                auto joint = skin.getEffector();
+                CLxUser_Item joint = skin.getEffector();
                 if (!joint || !joint.IsA(tLocator))
                     return;
 
-                auto dst_bone = ms::BoneData::create();
+                std::shared_ptr<ms::BoneData> dst_bone = ms::BoneData::create();
                 dst_bone->path = GetPath(joint);
                 {
                     // bindpose
@@ -1079,7 +1082,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
                 });
 
             if (!dst.bones.empty()) {
-                dst.refine_settings.flags.local2world = 1;
+                dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 dst.refine_settings.local2world = dst.toMatrix();
             }
         }
@@ -1135,14 +1138,14 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
 
     if (m_settings.sync_meshes) {
         if (dst.normals.empty())
-            dst.refine_settings.flags.gen_normals = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
         if (dst.tangents.empty())
-            dst.refine_settings.flags.gen_tangents = 1;
-        dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
-        dst.refine_settings.flags.flip_faces = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
 
         if (m_settings.bake_transform) {
-            dst.refine_settings.flags.local2world = 1;
+            dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
             dst.refine_settings.local2world = dst.world_matrix;
         }
     }
@@ -1151,11 +1154,11 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
         // resolve materials (name -> id)
         if (!n.material_names.empty()) {
             auto& materials = m_materials;
-            int num_faces = (int)dst.counts.size();
+            const int num_faces = (int)dst.counts.size();
 
             dst.material_ids.resize_discard(num_faces);
             for (int fi = 0; fi < num_faces; ++fi) {
-                auto mname = n.material_names[fi];
+                const char* mname = n.material_names[fi];
                 int mid = 0;
                 auto it = std::lower_bound(materials.begin(), materials.end(), mname,
                     [](const ms::MaterialPtr& mp, const char *name) { return std::strcmp(mp->name.c_str(), name) < 0; });
@@ -1214,7 +1217,7 @@ ms::TransformPtr msmodoContext::exportReplicator(TreeNode& n)
             r.visibility = { (bool)dst.visibility.visible_in_render, true, true };
             r.world_matrix = matrix * dst.world_matrix;
             r.refine_settings.local2world = r.world_matrix;
-            r.refine_settings.flags.local2world = 1;
+            r.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
 
             n.replicas.push_back(rp);
             m_entity_manager.add(rp);

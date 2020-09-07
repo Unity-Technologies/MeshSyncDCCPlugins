@@ -1,6 +1,16 @@
 #pragma once
 
 #include "msmodoInterface.h"
+#include "MeshSync/msClient.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msIDGenerator.h"
+
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
+
 
 namespace ms {
 

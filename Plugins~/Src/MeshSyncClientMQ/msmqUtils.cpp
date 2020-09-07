@@ -1,20 +1,22 @@
 #include "pch.h"
 #include "msmqUtils.h"
 
+#include "MeshUtils/muDebugTimer.h"
+
 std::string GetName(MQObject obj)
 {
     char name[MaxNameBuffer];
     obj->GetName(name, sizeof(name));
-    SanitizeNodeName(name);
-    return ms::ToUTF8(name);
+    mu::SanitizeNodeName(name);
+    return mu::ToUTF8(name);
 }
 
 std::string GetName(MQMaterial obj)
 {
     char name[MaxNameBuffer];
     obj->GetName(name, sizeof(name));
-    SanitizeNodeName(name);
-    return ms::ToUTF8(name);
+    mu::SanitizeNodeName(name);
+    return mu::ToUTF8(name);
 }
 
 static std::string GetPathImpl(MQDocument doc, MQObject obj)
@@ -25,7 +27,7 @@ static std::string GetPathImpl(MQDocument doc, MQObject obj)
 
     char name[MaxNameBuffer];
     obj->GetName(name, sizeof(name));
-    SanitizeNodeName(name);
+    mu::SanitizeNodeName(name);
 
     ret += "/";
     ret += name;
@@ -33,7 +35,7 @@ static std::string GetPathImpl(MQDocument doc, MQObject obj)
 }
 std::string GetPath(MQDocument doc, MQObject obj)
 {
-    return ms::ToUTF8(GetPathImpl(doc, obj));
+    return mu::ToUTF8(GetPathImpl(doc, obj));
 }
 
 bool ExtractID(const char *name, int& id)
@@ -46,17 +48,17 @@ bool ExtractID(const char *name, int& id)
     return false;
 }
 
-float3 ToEular(const MQAngle& ang, bool flip_head)
+mu::float3 ToEular(const MQAngle& ang, bool flip_head)
 {
     if (flip_head) {
-        return float3{
+        return mu::float3{
             ang.pitch,
             -ang.head + 180.0f, // I can't explain why this modification is needed...
             ang.bank
         } *mu::DegToRad;
     }
     else {
-        return float3{
+        return mu::float3{
             ang.pitch,
             ang.head,
             ang.bank
@@ -64,19 +66,19 @@ float3 ToEular(const MQAngle& ang, bool flip_head)
     }
 }
 
-quatf ToQuaternion(const MQAngle& ang)
+mu::quatf ToQuaternion(const MQAngle& ang)
 {
     return rotate_zxy(ToEular(ang));
 }
 
-void ExtractLocalTransform(MQObject obj, float3& pos, quatf& rot, float3& scale)
+void ExtractLocalTransform(MQObject obj, mu::float3& pos, mu::quatf& rot, mu::float3& scale)
 {
     pos = to_float3(obj->GetTranslation());
     rot = ToQuaternion(obj->GetRotation());
     scale = to_float3(obj->GetScaling());
 }
 
-float4x4 ExtractGlobalMatrix(MQDocument doc, MQObject obj)
+mu::float4x4 ExtractGlobalMatrix(MQDocument doc, MQObject obj)
 {
     auto mat = to_float4x4(obj->GetLocalMatrix());
     if (auto parent = doc->GetParentObject(obj)) {

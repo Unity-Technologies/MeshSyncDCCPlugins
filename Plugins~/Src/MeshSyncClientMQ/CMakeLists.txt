@@ -34,7 +34,8 @@ set_source_files_properties(sdk_StringUtil.mm
 target_include_directories(${meshsync_client_metasequoia} PRIVATE 
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "${MQSDK_${MQ_VERSION}_DIR}"
-    ${MESHSYNC_PLUGIN_SRC_ROOT}    
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"    
+    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 target_link_libraries(${meshsync_client_metasequoia} 

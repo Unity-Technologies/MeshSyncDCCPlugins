@@ -1,8 +1,14 @@
 ﻿#pragma once
 
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msLight.h"
 #include "msmaxUtils.h"
+#include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
+#include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
+
 
 #define msmaxAPI extern "C" __declspec(dllexport)
 

@@ -28,8 +28,9 @@ add_dependencies(${meshsync_client_modo}
 target_include_directories(${meshsync_client_modo} PUBLIC
     "${CMAKE_SOURCE_DIR}"
     "$ENV{MODO_SDK}/include"
-    ${MODO_${modo_version}_QT_INCLUDE_DIRS}
-    ${MESHSYNC_PLUGIN_SRC_ROOT}    
+    "${MODO_${modo_version}_QT_INCLUDE_DIRS}"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 # pch doesn't work currently because we are compiling MODO_SDK at the same time, so the dependencies get mixed up.

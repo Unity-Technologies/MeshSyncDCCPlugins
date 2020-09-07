@@ -44,11 +44,12 @@
 #include <lxw_customview.hpp>
 #ifdef _WIN32
     #pragma warning(pop)
+#define NOMAXMIN
+#define NOMINMAX
+#include <windows.h>
 #endif
 
-
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
 #ifdef GetObject
     #undef GetObject
 #endif

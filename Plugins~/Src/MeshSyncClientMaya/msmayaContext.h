@@ -1,6 +1,18 @@
 ﻿#pragma once
 
-#include "msmayaUtils.h"
+#include "MeshSync/msClient.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
+#include "MeshSync/SceneGraph/msTexture.h" //TextureType
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msIDGenerator.h"
+
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
+
+#include "MeshUtils/muMisc.h" //mu::noncopyable
+#include "MeshUtils/muMath.h" //float4, etc
 
 namespace ms {
 
@@ -13,6 +25,8 @@ public:
         return getIDImpl((void*&)o);
     }
 };
+
+
 
 } // namespace ms
 
@@ -63,8 +77,8 @@ struct TreeNode : public mu::noncopyable
     ms::TransformPtr dst_obj;
     ms::TransformAnimationPtr dst_anim;
     TransformData transform_data;
-    ms::float4x4 model_transform;
-    ms::float4x4 maya_transform;
+    mu::float4x4 model_transform;
+    mu::float4x4 maya_transform;
 
     ms::Identifier getIdentifier() const;
     void clearState();

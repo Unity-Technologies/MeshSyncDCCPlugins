@@ -1,9 +1,11 @@
 #pragma once
 
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
-
-using namespace mu;
+#include "MeshSync/msClient.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
 struct SyncSettings
 {
@@ -31,7 +33,7 @@ struct SyncSettings
 struct CacheSettings
 {
     std::string path;
-    ms::nanosec time_start = 0;
+    mu::nanosec time_start = 0;
 
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
 
@@ -89,9 +91,9 @@ private:
         UINT bone_id = -1;
         UINT parent_id = -1;
         std::string name;
-        float3 pose_pos = float3::zero();
-        quatf pose_rot = quatf::identity();
-        float4x4 bindpose = float4x4::identity();
+        mu::float3 pose_pos = mu::float3::zero();
+        mu::quatf pose_rot = mu::quatf::identity();
+        mu::float4x4 bindpose = mu::float4x4::identity();
         ms::TransformPtr dst = ms::Transform::create();
     };
 
@@ -133,5 +135,5 @@ private:
     ms::AsyncSceneCacheWriter m_cache_writer;
     bool m_pending_send_meshes = false;
 
-    ms::nanosec m_time = 0;
+    mu::nanosec m_time = 0;
 };

@@ -1,13 +1,19 @@
 #pragma once
 #include "MeshUtils/MeshUtils.h"
+
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/SceneGraph/msLight.h"
+
 #include "msblenBinder.h"
+#include "MeshSync/msClient.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
 struct SyncSettings;
 class msblenContext;
-namespace bl = blender;
-
 
 enum class ExportTarget : int
 {

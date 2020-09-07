@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "msblenContext.h"
 
+namespace bl = blender;
+
 static bool msblenSend(msblenContext& self, ExportTarget target, ObjectScope scope)
 {
     if (!self.isServerAvailable()) {

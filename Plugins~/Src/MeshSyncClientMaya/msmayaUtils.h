@@ -1,5 +1,7 @@
 #pragma  once
 
+#include "MeshUtils/muMath.h" //float4, etc
+
 std::string GetName(const MObject& node);
 std::string ToString(const MDagPath& path);
 std::string RemoveNamespace(const std::string& path);

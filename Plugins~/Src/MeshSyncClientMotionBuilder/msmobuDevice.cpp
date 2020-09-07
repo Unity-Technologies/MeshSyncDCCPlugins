@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "msmobuDevice.h"
 #include "msmobuUtils.h"
+#include "MeshSync/SceneGraph/msAnimation.h"
+#include "MeshSync/SceneGraph/msMesh.h"
+
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 
 FBDeviceImplementation(msmobuDevice);
@@ -569,20 +573,20 @@ void msmobuDevice::doExtractMesh(ms::Mesh& dst, FBModel * src)
         if (uv_) {
             auto type = vd->GetUVSetArrayFormat();
             if (type == kFBGeometryArrayElementType_Float2) {
-                auto uv = (const mu::float2*)uv_;
-                dst.uv0.assign(uv, uv + num_vertices);
+                const mu::float2* uv = (const mu::float2*)uv_;
+                dst.m_uv[0].assign(uv, uv + num_vertices);
             }
             else if (type == kFBGeometryArrayElementType_Float3) {
-                auto uv = (const mu::float3*)uv_;
-                dst.uv0.resize_discard(num_vertices);
+                const mu::float3* uv = (const mu::float3*)uv_;
+                dst.m_uv[0].resize_discard(num_vertices);
                 for (int vi = 0; vi < num_vertices; ++vi)
-                    dst.uv0[vi] = (mu::float2&)uv[vi];
+                    dst.m_uv[0][vi] = (mu::float2&)uv[vi];
             }
             else if (type == kFBGeometryArrayElementType_Float4) {
-                auto uv = (const mu::float4*)uv_;
-                dst.uv0.resize_discard(num_vertices);
+                const mu::float4* uv = (const mu::float4*)uv_;
+                dst.m_uv[0].resize_discard(num_vertices);
                 for (int vi = 0; vi < num_vertices; ++vi)
-                    dst.uv0[vi] = (mu::float2&)uv[vi];
+                    dst.m_uv[0][vi] = (mu::float2&)uv[vi];
             }
         }
     }
@@ -591,12 +595,12 @@ void msmobuDevice::doExtractMesh(ms::Mesh& dst, FBModel * src)
     if (auto colors_ = vd->GetVertexArray(kFBGeometryArrayID_Color, m_settings.bake_deformars)) {
         auto type = vd->GetVertexArrayType(kFBGeometryArrayID_Color);
         if (type == kFBGeometryArrayElementType_Float4) {
-            auto colors = (const mu::float4*)colors_;
+            const mu::float4* colors = (const mu::float4*)colors_;
             dst.colors.assign(colors, colors + num_vertices);
         }
         else if (type == kFBGeometryArrayElementType_Float3) {
             dst.colors.resize_discard(num_vertices);
-            auto colors = (const mu::float3*)colors_;
+            const mu::float3* colors = (const mu::float3*)colors_;
             for (int vi = 0; vi < num_vertices; ++vi) {
                 auto t = colors[vi];
                 dst.colors[vi] = { t[0], t[1], t[2], 1.0f };
@@ -752,11 +756,11 @@ void msmobuDevice::doExtractMesh(ms::Mesh& dst, FBModel * src)
     }
 
     if (dst.normals.empty())
-        dst.refine_settings.flags.gen_normals = 1;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
     if (dst.tangents.empty())
-        dst.refine_settings.flags.gen_tangents = 1;
-    dst.refine_settings.flags.flip_faces = 1;
-    dst.refine_settings.flags.make_double_sided = m_settings.make_double_sided;
+        dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
+    dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
 }
 
 

@@ -823,7 +823,7 @@ void msmaxContext::openCacheWindow()
 
         if (ifs->DoMaxSaveAsDialog(ifs->GetMAXHWnd(), L"Export Scene Cache", filename, dir, filter_list)) {
             // save path
-            msmaxGetCacheSettings().path = ms::ToMBS(filename);
+            msmaxGetCacheSettings().path = mu::ToMBS(filename);
 
             // open cache export settings window
             CreateDialogParam(g_msmax_hinstance, MAKEINTRESOURCE(IDD_CACHE_WINDOW),

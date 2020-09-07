@@ -1,7 +1,13 @@
 #pragma once
 
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
+#include "MeshSync/msClient.h"
+#include "MeshSync/SceneGraph/msLight.h"
+#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
 struct SyncSettings
 {

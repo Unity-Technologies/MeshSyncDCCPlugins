@@ -26,9 +26,13 @@
     namespace concurrency = tbb;
 #endif
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+
 // this must be before maya includes
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/MeshSyncUtils.h"
 
 // avoid multiple definition of `MApiVersion'
 #define _MApiVersion
@@ -98,7 +102,3 @@
 #include <maya/MArgParser.h>
 #include <maya/MAnimUtil.h>
 
-#ifdef _WIN32
-    #define NOMINMAX
-    #include <windows.h>
-#endif

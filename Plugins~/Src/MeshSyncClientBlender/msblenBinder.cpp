@@ -3,6 +3,10 @@
 #include "msblenUtils.h"
 #include "msblenBinder.h"
 
+#include "MeshUtils/muLog.h"
+
+namespace bl = blender;
+
 namespace blender
 {
 
@@ -712,7 +716,7 @@ std::string abspath(const std::string& path)
         return (py::str)local["ret"];
     }
     catch (py::error_already_set& e) {
-        msLogError("%s\n", e.what());
+        muLogError("%s\n", e.what());
         return path;
     }
 }
