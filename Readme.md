@@ -33,7 +33,6 @@ The previous version of the document is put below for reference.
 | Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 
 
-
 ## Guides
 1. [Maya](#maya)
 2. [Maya LT](#maya-lt)
