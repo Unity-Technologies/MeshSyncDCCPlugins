@@ -824,7 +824,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
     // uv
     if (m_settings.sync_uvs) {
 
-        ms::BlenderUtility::ApplyBlenderMeshUVToMesh(&bmesh, num_indices, &dst);
+        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
     }
 
     // colors
@@ -1046,7 +1046,7 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
         //
         //
         //
-        ms::BlenderUtility::ApplyBlenderMeshUVToMesh(&bmesh, num_indices, &dst);
+        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
 
     }
 }
