@@ -1,6 +1,8 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 PROJECT(MeshSyncDCCPlugins)
 
+# allow CMake to organize files by folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
