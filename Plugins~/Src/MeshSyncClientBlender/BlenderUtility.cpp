@@ -1,7 +1,6 @@
+#include "pch.h"
 
 #include "BlenderUtility.h"
-
-#include "pch.h"
 
 #include "MeshSync/msConstants.h" //msConstants::MAX_UV
 #include "MeshSync/SceneGraph/msMesh.h"
@@ -12,7 +11,7 @@
 
 namespace blender {
 
-void BlenderUtility::ApplyBlenderMeshUVToMesh(const blender::BMesh* bMesh, const size_t numIndices, ms::Mesh* dest) {
+void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_t numIndices, ms::Mesh* dest) {
 
     for (uint32_t uvIndex=0;uvIndex<ms::msConstants::MAX_UV;++uvIndex) {
         MLoopUV* loopUV = bMesh->GetUV(uvIndex);
