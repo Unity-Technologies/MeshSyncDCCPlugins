@@ -3,7 +3,7 @@
 #include "msmodoUtils.h"
 #include "msmodoCompat.h"
 
-#include "MeshSync/msLog.h"
+#include "MeshUtils/muLog.h"
 
 class msmodoEventListener :
     public CLxImpl_SelectionListener,
@@ -335,7 +335,7 @@ void msmodoInterface::dbgDumpItem(CLxUser_Item item)
         auto t = item.Type();
         const char *tname;
         m_svc_scene.ItemTypeName(t, &tname);
-        msLogInfo("%s (%s)\n", path.c_str(), tname);
+        muLogInfo("%s (%s)\n", path.c_str(), tname);
     }
 
     uint32_t n;
@@ -346,7 +346,7 @@ void msmodoInterface::dbgDumpItem(CLxUser_Item item)
         item.ChannelName(i, &name);
         item.ChannelLookup(name, &ch);
         m_ch_read.TypeName(item, ch, &tname);
-        msLogInfo(" - %s (%s)\n", name, tname);
+        muLogInfo(" - %s (%s)\n", name, tname);
     }
 }
 

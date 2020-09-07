@@ -8,19 +8,12 @@
 #include "msblenBinder.h"
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
-#include "MeshSync/Utils/msEntityManager.h"
-#include "MeshSync/Utils/msMaterialManager.h"
-#include "MeshSync/Utils/msTextureManager.h"
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
 struct SyncSettings;
 class msblenContext;
-namespace bl = blender;
-
-msDeclClassPtr(Camera)
-msDeclClassPtr(Light)
-msDeclClassPtr(Mesh)
-msDeclClassPtr(TransformAnimation)
-
 
 enum class ExportTarget : int
 {

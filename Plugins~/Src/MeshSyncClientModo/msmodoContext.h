@@ -7,18 +7,10 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
 
-#include "MeshSync/Utils/msEntityManager.h"
-#include "MeshSync/Utils/msMaterialManager.h"
-#include "MeshSync/Utils/msTextureManager.h"
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
-#include "MeshUtils/muMisc.h" //mu::noncopyable
-
-msDeclClassPtr(AnimationClip)
-msDeclClassPtr(Camera)
-msDeclClassPtr(Light)
-msDeclClassPtr(Material)
-msDeclClassPtr(Mesh)
-msDeclClassPtr(TransformAnimation)
 
 namespace ms {
 

@@ -49,12 +49,6 @@
 #include <windows.h>
 #endif
 
-//[TODO-sin:2020-9-4] Temporary hack
-#include "MeshUtils/muRawVector.h" //SharedVector
-#include "MeshUtils/muMath.h" //mu::float4x4
-#include "MeshUtils/muSIMD.h" //SumInt32
-#include "MeshSync/msMisc.h" //nanosec
-
 #include "MeshSync/MeshSync.h"
 #ifdef GetObject
     #undef GetObject

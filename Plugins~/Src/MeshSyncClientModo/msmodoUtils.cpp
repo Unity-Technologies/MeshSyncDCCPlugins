@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "msmodoUtils.h"
 
+#include "MeshSync/msClient.h" //SanitizeNodeName
+
 CLxUser_Item GetParent(CLxUser_Item& obj)
 {
     CLxUser_Item parent;

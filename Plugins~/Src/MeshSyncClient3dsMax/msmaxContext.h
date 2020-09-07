@@ -1,23 +1,14 @@
 ﻿#pragma once
 
-//[TODO-sin:2020-9-4] Temporary hack
-#include "MeshUtils/muRawVector.h" //SharedVector
-#include "MeshUtils/muMath.h" //mu::float4x4
-#include "MeshUtils/muMisc.h" //mu::noncopyable
-#include "MeshUtils/muSIMD.h" //SumInt32
-
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "msmaxUtils.h"
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
+#include "MeshSync/Utility/msEntityManager.h"
+#include "MeshSync/Utility/msMaterialManager.h"
+#include "MeshSync/Utility/msTextureManager.h"
 
-#include "MeshSync/Utils/msEntityManager.h"
-#include "MeshSync/Utils/msMaterialManager.h"
-#include "MeshSync/Utils/msTextureManager.h"
-
-
-msDeclClassPtr(TransformAnimation)
 
 #define msmaxAPI extern "C" __declspec(dllexport)
 

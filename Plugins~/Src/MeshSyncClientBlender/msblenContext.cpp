@@ -7,8 +7,17 @@
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
-#include "MeshSync/msLog.h" //msTrace
 
+
+#ifdef mscDebug
+#define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
+#define mscTraceW(...) ::mu::Print(L"MeshSync trace: " __VA_ARGS__)
+#else
+#define mscTrace(...)
+#define mscTraceW(...)
+#endif
+
+namespace bl = blender;
 
 void SyncSettings::validate()
 {

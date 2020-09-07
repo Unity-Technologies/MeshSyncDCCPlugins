@@ -1,7 +1,14 @@
 #pragma once
 
-#include "MeshSync/msLog.h" //msTrace
 #include "MeshUtils/muMath.h" //mu::float2, etc
+
+#ifdef mscDebug
+#define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
+#define mscTraceW(...) ::mu::Print(L"MeshSync trace: " __VA_ARGS__)
+#else
+#define mscTrace(...)
+#define mscTraceW(...)
+#endif
 
 TimeValue GetTime();
 float ToSeconds(TimeValue tics);
