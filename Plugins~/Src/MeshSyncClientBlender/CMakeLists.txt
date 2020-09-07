@@ -25,17 +25,19 @@ set(BLENDER_INCLUDE_DIRS
     ${PYTHON_${BLENDER_PYTHON_VERSION}_INCLUDE_DIRS}
 )
 
-file(GLOB sources *.cpp *.h *.c)
+file(GLOB_RECURSE sources *.cpp *.h *.c)
 add_library(${MESHSYNC_CLIENT_BLENDER}  SHARED ${sources})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources})
 
 add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshUtils MeshSync)
 
 target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     "${EXTERNAL_ROOT}"
-    ${BLENDER_INCLUDE_DIRS}
-    ${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include
-    ${MESHSYNC_PLUGIN_SRC_ROOT}
+    "${BLENDER_INCLUDE_DIRS}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 
 )
 target_link_libraries(${MESHSYNC_CLIENT_BLENDER} 

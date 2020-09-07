@@ -520,12 +520,18 @@ barray_range<mu::float3> BMesh::normals()
 }
 barray_range<MLoopUV> BMesh::uv()
 {
-    auto layer_data = (CustomDataLayer*)get_pointer(m_ptr, UVLoopLayers_active);
+    CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
     if (layer_data && layer_data->data)
-        return { (MLoopUV*)layer_data->data, (size_t)m_ptr->totloop };
+        return { static_cast<MLoopUV*>(layer_data->data), static_cast<size_t>(m_ptr->totloop) };
     else
         return { nullptr, (size_t)0 };
 }
+
+MLoopUV* BMesh::GetUV(const int index) const {
+    return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
+}
+
+
 barray_range<MLoopCol> BMesh::colors()
 {
     auto layer_data = (CustomDataLayer*)get_pointer(m_ptr, LoopColors_active);
@@ -560,6 +566,10 @@ barray_range<BMTriangle> BEditMesh::triangles()
 int BEditMesh::uv_data_offset() const
 {
     return CustomData_get_offset(m_ptr->bm->ldata, CD_MLOOPUV);
+}
+
+MLoopUV* BEditMesh::GetUV(const int index) const {
+    return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
 
