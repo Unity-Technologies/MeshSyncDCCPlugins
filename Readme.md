@@ -30,7 +30,7 @@ The previous version of the document is put below for reference.
 
 |                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
 | --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| Multi UV            | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
+| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 
 
 

@@ -27,7 +27,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 |                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
 | --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| マルチ UV            | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
+| マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 
 
 ## 使い方
