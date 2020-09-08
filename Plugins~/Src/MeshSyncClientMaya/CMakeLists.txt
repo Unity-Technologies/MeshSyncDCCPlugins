@@ -18,6 +18,7 @@ target_include_directories(${MESHSYNC_CLIENT_MAYA} PRIVATE
     "${CMAKE_SOURCE_DIR}" 
     "${MAYA${MAYA_VERSION}_INCLUDE_DIR}"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 

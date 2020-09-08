@@ -37,6 +37,7 @@ target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     "${BLENDER_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 
 )

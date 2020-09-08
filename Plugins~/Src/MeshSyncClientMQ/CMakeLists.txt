@@ -35,6 +35,7 @@ target_include_directories(${meshsync_client_metasequoia} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}" 
     "${MQSDK_${MQ_VERSION}_DIR}"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"    
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"    
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
