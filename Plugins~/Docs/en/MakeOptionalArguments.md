@@ -38,7 +38,7 @@ with commands described in the following sections.
 * Blender 2.80: `-DBUILD_BLENDER_2.80_PLUGIN=ON`
 * Blender 2.81: `-DBUILD_BLENDER_2.81_PLUGIN=ON`
 * Blender 2.82: `-DBUILD_BLENDER_2.82_PLUGIN=ON`
-* Blender 2.83: `-DBUILD_BLENDER_2.83_PLUGIN=ON`
+* Blender 2.83.5: `-DBUILD_BLENDER_2.83.5_PLUGIN=ON`
 
 ## Modo
 

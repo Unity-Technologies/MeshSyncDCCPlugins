@@ -4,8 +4,6 @@ MeshSync DCC Plugins は DCC ツール上のモデルの編集をリアルタイ
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインの格納するパッケージです。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
-サポートされている DCC ツールにインストールする手順については [インストール](Docs/jp/Installation.md) を参照して下さい。
-
 ## サポートされている DCC ツール
 
 |                     | Windows            | Mac                | Linux              | 
@@ -27,7 +25,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Blender 2.81        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Blender 2.82        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.83        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.83.5      | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
