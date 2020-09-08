@@ -2,7 +2,7 @@
 
 #include "BlenderUtility.h"
 
-#include "MeshSync/msConstants.h" //msConstants::MAX_UV
+#include "MeshSync/MeshSyncConstants.h" //msConstants::MAX_UV
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshUtils/muMath.h" //mu::float2
 #include "MeshUtils/muRawVector.h" //SharedVector
@@ -13,7 +13,7 @@ namespace blender {
 
 void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_t numIndices, ms::Mesh* dest) {
 
-    for (uint32_t uvIndex=0;uvIndex<ms::msConstants::MAX_UV;++uvIndex) {
+    for (uint32_t uvIndex=0;uvIndex<ms::MeshSyncConstants::MAX_UV;++uvIndex) {
         MLoopUV* loopUV = bMesh->GetUV(uvIndex);
         if (nullptr == loopUV)
             continue;

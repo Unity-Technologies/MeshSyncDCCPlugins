@@ -30,6 +30,7 @@ target_include_directories(${meshsync_client_modo} PUBLIC
     "$ENV{MODO_SDK}/include"
     "${MODO_${modo_version}_QT_INCLUDE_DIRS}"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 

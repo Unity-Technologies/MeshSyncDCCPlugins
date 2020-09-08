@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3-preview] - 2020-09-8
+* chore: modify code to conform to MeshSync@0.3.3-preview
+* chore: update the zip files for MeshSync@0.3.3-preview
+
 ## [0.3.2-preview] - 2020-09-7
 * feat: add multi UV support for Blender
 * chore: modify code to conform to MeshSync@0.3.2-preview
