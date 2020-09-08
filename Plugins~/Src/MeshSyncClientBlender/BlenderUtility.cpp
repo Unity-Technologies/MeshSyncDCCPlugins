@@ -2,7 +2,7 @@
 
 #include "BlenderUtility.h"
 
-#include "MeshSync/msConstants.h" //msConstants::MAX_UV
+#include "MeshSync/MeshSyncConstants.h" //msConstants::MAX_UV
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshUtils/muMath.h" //mu::float2
 #include "MeshUtils/muRawVector.h" //SharedVector
