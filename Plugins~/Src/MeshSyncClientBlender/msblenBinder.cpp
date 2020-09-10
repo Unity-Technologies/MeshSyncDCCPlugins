@@ -5,8 +5,6 @@
 
 #include "MeshUtils/muLog.h"
 
-namespace bl = blender;
-
 namespace blender
 {
 
