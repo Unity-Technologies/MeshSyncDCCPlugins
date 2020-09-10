@@ -1,5 +1,8 @@
 //TODO-sin: 2020-8-28: This file holds picked functions from Blender source code that are used to build MeshSync plugin.
 //It should be possible to download and use Blender source directly.
+//Paths of the original source code:
+//- source\blender\blenkernel\intern\customdata.c
+
 
 #include "pch.h"
 
