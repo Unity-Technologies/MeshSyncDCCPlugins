@@ -12,8 +12,8 @@ static bContext *g_context;
 
 
 #define Def(T) StructRNA* T::s_type
-#define Func(T, F) static FunctionRNA* T##_##F
 #define Prop(T, F) static PropertyRNA* T##_##F
+#define Func(T, F) static FunctionRNA* T##_##F
 
 Def(BID);
 Prop(BID, is_updated);
