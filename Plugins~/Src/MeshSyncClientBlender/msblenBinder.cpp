@@ -11,12 +11,10 @@ namespace blender
 static bContext *g_context;
 
 
-#define Func(T, F) static FunctionRNA* T##_##F
-
 StructRNA* BID::s_type;
 static PropertyRNA* BID_is_updated;
 static PropertyRNA* BID_is_updated_data;
-Func(BID, evaluated_get);
+static FunctionRNA* BID_evaluated_get;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -25,12 +23,12 @@ static PropertyRNA* BObject_hide;
 static PropertyRNA* BObject_hide_viewport;
 static PropertyRNA* BObject_hide_render;
 static PropertyRNA* BObject_select;
-Func(BObject, select_get);
-Func(BObject, to_mesh);
-Func(BObject, to_mesh_clear);
+static FunctionRNA* BObject_select_get;
+static FunctionRNA* BObject_to_mesh;
+static FunctionRNA* BObject_to_mesh_clear;
 
 StructRNA* BMesh::s_type;
-Func(BMesh, calc_normals_split);
+static FunctionRNA* BMesh_calc_normals_split;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
@@ -54,7 +52,7 @@ StructRNA* BScene::s_type;
 static PropertyRNA* BScene_frame_start;
 static PropertyRNA* BScene_frame_end;
 static PropertyRNA* BScene_frame_current;
-Func(BScene, frame_set);
+static FunctionRNA* BScene_frame_set;
 
 StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
@@ -63,7 +61,7 @@ static FunctionRNA* BlendDataMeshes_remove;
 StructRNA* BContext::s_type;
 static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
-Func(BContext, evaluated_depsgraph_get);
+static FunctionRNA* BContext_evaluated_depsgraph_get;
 
 #undef Func
 
