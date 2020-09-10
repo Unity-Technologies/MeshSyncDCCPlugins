@@ -12,21 +12,20 @@ static bContext *g_context;
 
 
 #define Def(T) StructRNA* T::s_type
-#define Prop(T, F) static PropertyRNA* T##_##F
 #define Func(T, F) static FunctionRNA* T##_##F
 
 Def(BID);
-Prop(BID, is_updated);
-Prop(BID, is_updated_data);
+static PropertyRNA* BID_is_updated;
+static PropertyRNA* BID_is_updated_data;
 Func(BID, evaluated_get);
 
 Def(BObject);
-Prop(BObject, matrix_local);
-Prop(BObject, matrix_world);
-Prop(BObject, hide);
-Prop(BObject, hide_viewport);
-Prop(BObject, hide_render);
-Prop(BObject, select);
+static PropertyRNA* BObject_matrix_local;
+static PropertyRNA* BObject_matrix_world;
+static PropertyRNA* BObject_hide;
+static PropertyRNA* BObject_hide_viewport;
+static PropertyRNA* BObject_hide_render;
+static PropertyRNA* BObject_select;
 Func(BObject, select_get);
 Func(BObject, to_mesh);
 Func(BObject, to_mesh_clear);
@@ -37,25 +36,25 @@ static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
 Def(BMaterial);
-Prop(BMaterial, use_nodes);
-Prop(BMaterial, active_node_material);
+static PropertyRNA* BMaterial_use_nodes;
+static PropertyRNA* BMaterial_active_node_material;
 
 Def(BCamera);
-Prop(BCamera, clip_start);
-Prop(BCamera, clip_end);
-Prop(BCamera, angle_x);
-Prop(BCamera, angle_y);
-Prop(BCamera, lens);
-Prop(BCamera, sensor_fit);
-Prop(BCamera, sensor_width);
-Prop(BCamera, sensor_height);
-Prop(BCamera, shift_x);
-Prop(BCamera, shift_y);
+static PropertyRNA* BCamera_clip_start;
+static PropertyRNA* BCamera_clip_end;
+static PropertyRNA* BCamera_angle_x;
+static PropertyRNA* BCamera_angle_y;
+static PropertyRNA* BCamera_lens;
+static PropertyRNA* BCamera_sensor_fit;
+static PropertyRNA* BCamera_sensor_width;
+static PropertyRNA* BCamera_sensor_height;
+static PropertyRNA* BCamera_shift_x;
+static PropertyRNA* BCamera_shift_y;
 
 Def(BScene);
-Prop(BScene, frame_start);
-Prop(BScene, frame_end);
-Prop(BScene, frame_current);
+static PropertyRNA* BScene_frame_start;
+static PropertyRNA* BScene_frame_end;
+static PropertyRNA* BScene_frame_current;
 Func(BScene, frame_set);
 
 Def(BData);
@@ -63,8 +62,8 @@ static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
 Def(BContext);
-Prop(BContext, blend_data);
-Prop(BContext, scene);
+static PropertyRNA* BContext_blend_data;
+static PropertyRNA* BContext_scene;
 Func(BContext, evaluated_depsgraph_get);
 
 #undef Prop
