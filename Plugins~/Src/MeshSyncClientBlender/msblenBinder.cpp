@@ -456,7 +456,7 @@ bool blender::BObject::is_selected() const
 #if BLENDER_VERSION < 280
 Mesh* BObject::to_mesh() const
 {
-    auto scene = bl::BContext::get().scene();
+    auto scene = blender::BContext::get().scene();
     return call<Object, Mesh*, Scene*, int, int, int, int>(m_ptr, BObject_to_mesh, scene, 1, 1, 1, 0);
 }
 #else
