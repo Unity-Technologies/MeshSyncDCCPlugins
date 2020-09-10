@@ -9,7 +9,7 @@
     Type(py::object p) : m_ptr(rna_data<::BType*>(p)) {}\
     ::BType* ptr() {return m_ptr; }
 
-#define MSBLEN_BOILERPLATE(Type) Boilerplate2(B##Type, Type)
+#define MSBLEN_BOILERPLATE(Type) MSBLEN_BOILERPLATE2(B##Type, Type)
 
 #define MSBLEN_COMPATIBLE(Type)\
     operator Type() { return *(Type*)this; }\
