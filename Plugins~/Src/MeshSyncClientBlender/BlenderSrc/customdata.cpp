@@ -35,3 +35,15 @@ void *CustomData_get_layer_n(const CustomData *data, int type, int n)
 
     return data->layers[layer_index].data;
 }
+
+int CustomData_number_of_layers(const CustomData *data, int type)
+{
+    int i, number = 0;
+    for (i = 0; i < data->totlayer; i++) {
+        if (data->layers[i].type == type) {
+            number++;
+        }
+    }
+
+    return number;
+}

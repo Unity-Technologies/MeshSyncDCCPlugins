@@ -511,13 +511,16 @@ barray_range<MVert> BMesh::vertices()
 }
 barray_range<mu::float3> BMesh::normals()
 {
-    if (CustomData_number_of_layers(m_ptr->ldata, CD_NORMAL) > 0) {
+    if (CustomData_number_of_layers(&m_ptr->ldata, CD_NORMAL) > 0) {
         auto data = (mu::float3*)CustomData_get(m_ptr->ldata, CD_NORMAL);
         if (data != nullptr)
             return { data, (size_t)m_ptr->totloop };
     }
     return { nullptr, (size_t)0 };
 }
+
+//----------------------------------------------------------------------------------------------------------------------
+
 barray_range<MLoopUV> BMesh::uv()
 {
     CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
@@ -530,6 +533,8 @@ barray_range<MLoopUV> BMesh::uv()
 MLoopUV* BMesh::GetUV(const int index) const {
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
 }
+
+//----------------------------------------------------------------------------------------------------------------------
 
 
 barray_range<MLoopCol> BMesh::colors()
@@ -677,15 +682,6 @@ const void* CustomData_get(const CustomData& data, int type)
         return nullptr;
     layer_index = layer_index + data.layers[layer_index].active;
     return data.layers[layer_index].data;
-}
-
-int CustomData_number_of_layers(const CustomData& data, int type)
-{
-    int i, number = 0;
-    for (i = 0; i < data.totlayer; i++)
-        if (data.layers[i].type == type)
-            number++;
-    return number;
 }
 
 int CustomData_get_offset(const CustomData& data, int type)

@@ -12,7 +12,6 @@ namespace blender
     bool ready();
     void setup(py::object bpy_context);
     const void* CustomData_get(const CustomData& data, int type);
-    int CustomData_number_of_layers(const CustomData& data, int type);
     int CustomData_get_offset(const CustomData& data, int type);
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
@@ -143,8 +142,9 @@ namespace blender
 #endif
     };
 
-    class BMesh
-    {
+//----------------------------------------------------------------------------------------------------------------------
+
+    class BMesh {
     public:
         Boilerplate(Mesh)
         Compatible(BID)
@@ -157,10 +157,15 @@ namespace blender
         barray_range<MLoopUV> uv();
         barray_range<MLoopCol> colors();
         MLoopUV* GetUV(const int index) const;
-
+        inline uint32_t GetNumUVs() const;
 
         void calc_normals_split();
     };
+
+    uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
+
+
+//----------------------------------------------------------------------------------------------------------------------
 
     using BMTriangle = BMLoop*[3];
     class BEditMesh
