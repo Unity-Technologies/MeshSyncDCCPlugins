@@ -11,15 +11,14 @@ namespace blender
 static bContext *g_context;
 
 
-#define Def(T) StructRNA* T::s_type
 #define Func(T, F) static FunctionRNA* T##_##F
 
-Def(BID);
+StructRNA* BID::s_type;
 static PropertyRNA* BID_is_updated;
 static PropertyRNA* BID_is_updated_data;
 Func(BID, evaluated_get);
 
-Def(BObject);
+StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
 static PropertyRNA* BObject_matrix_world;
 static PropertyRNA* BObject_hide;
@@ -30,16 +29,16 @@ Func(BObject, select_get);
 Func(BObject, to_mesh);
 Func(BObject, to_mesh_clear);
 
-Def(BMesh);
+StructRNA* BMesh::s_type;
 Func(BMesh, calc_normals_split);
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
-Def(BMaterial);
+StructRNA* BMaterial::s_type;
 static PropertyRNA* BMaterial_use_nodes;
 static PropertyRNA* BMaterial_active_node_material;
 
-Def(BCamera);
+StructRNA* BCamera::s_type;
 static PropertyRNA* BCamera_clip_start;
 static PropertyRNA* BCamera_clip_end;
 static PropertyRNA* BCamera_angle_x;
@@ -51,24 +50,22 @@ static PropertyRNA* BCamera_sensor_height;
 static PropertyRNA* BCamera_shift_x;
 static PropertyRNA* BCamera_shift_y;
 
-Def(BScene);
+StructRNA* BScene::s_type;
 static PropertyRNA* BScene_frame_start;
 static PropertyRNA* BScene_frame_end;
 static PropertyRNA* BScene_frame_current;
 Func(BScene, frame_set);
 
-Def(BData);
+StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-Def(BContext);
+StructRNA* BContext::s_type;
 static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
 Func(BContext, evaluated_depsgraph_get);
 
-#undef Prop
 #undef Func
-#undef Def
 
 
 bool ready()
