@@ -1,5 +1,7 @@
 #pragma once
 
+#include "msblenMacros.h"
+
 #if BLENDER_VERSION < 280
 using Collection = Group;
 using CollectionObject = GroupObject;
@@ -94,25 +96,10 @@ namespace blender
 
 
 
-#define Boilerplate2(Type, BType)\
-    using btype = ::BType;\
-    static StructRNA *s_type;\
-    ::BType *m_ptr;\
-    static StructRNA* type() { return s_type; }\
-    Type(const void *p) : m_ptr((::BType*)p) {}\
-    Type(py::object p) : m_ptr(rna_data<::BType*>(p)) {}\
-    ::BType* ptr() {return m_ptr; }
-
-#define Boilerplate(Type) Boilerplate2(B##Type, Type)
-
-#define Compatible(Type)\
-    operator Type() { return *(Type*)this; }\
-    operator Type() const { return *(const Type*)this; }
-
     class BID
     {
     public:
-        Boilerplate(ID)
+        MSBLEN_BOILERPLATE(ID)
 
         const char *name() const;
         bool is_updated() const;
@@ -123,8 +110,8 @@ namespace blender
     class BObject
     {
     public:
-        Boilerplate(Object)
-        Compatible(BID)
+        MSBLEN_BOILERPLATE(Object)
+        MSBLEN_COMPATIBLE(BID)
 
         blist_range<ModifierData> modifiers();
         blist_range<bDeformGroup> deform_groups();
@@ -146,8 +133,8 @@ namespace blender
 
     class BMesh {
     public:
-        Boilerplate(Mesh)
-        Compatible(BID)
+        MSBLEN_BOILERPLATE(Mesh)
+        MSBLEN_COMPATIBLE(BID)
 
         barray_range<MLoop> indices();
         barray_range<MEdge> edges();
@@ -171,7 +158,7 @@ namespace blender
     class BEditMesh
     {
     public:
-        Boilerplate2(BEditMesh, BMEditMesh)
+        MSBLEN_BOILERPLATE2(BEditMesh, BMEditMesh)
 
         barray_range<BMFace*> polygons();
         barray_range<BMVert*> vertices();
@@ -184,8 +171,8 @@ namespace blender
     class BMaterial
     {
     public:
-        Boilerplate(Material)
-        Compatible(BID)
+        MSBLEN_BOILERPLATE(Material)
+        MSBLEN_COMPATIBLE(BID)
 
         const char *name() const;
         const mu::float3& color() const;
@@ -196,8 +183,8 @@ namespace blender
     class BCamera
     {
     public:
-        Boilerplate(Camera)
-        Compatible(BID)
+        MSBLEN_BOILERPLATE(Camera)
+        MSBLEN_COMPATIBLE(BID)
 
         float clip_start() const;
         float clip_end() const;
@@ -219,8 +206,8 @@ namespace blender
     class BScene
     {
     public:
-        Boilerplate(Scene)
-        Compatible(BID)
+        MSBLEN_BOILERPLATE(Scene)
+        MSBLEN_COMPATIBLE(BID)
 
         int fps();
         int frame_start();
@@ -270,7 +257,7 @@ namespace blender
     class BData
     {
     public:
-        Boilerplate2(BData, Main)
+        MSBLEN_BOILERPLATE2(BData, Main)
 
         blist_range<Object>   objects();
         blist_range<Mesh>     meshes();
@@ -283,7 +270,7 @@ namespace blender
     class BContext
     {
     public:
-        Boilerplate2(BContext, bContext)
+        MSBLEN_BOILERPLATE2(BContext, bContext)
 
         static BContext get();
         Main* data();
@@ -291,7 +278,4 @@ namespace blender
         Depsgraph* evaluated_depsgraph_get();
     };
 
-#undef Compatible
-#undef Boilerplate
-#undef Boilerplate2
 } // namespace blender
