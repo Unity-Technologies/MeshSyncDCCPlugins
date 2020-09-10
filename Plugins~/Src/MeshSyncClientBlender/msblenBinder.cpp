@@ -63,9 +63,6 @@ static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
 static FunctionRNA* BContext_evaluated_depsgraph_get;
 
-#undef Func
-
-
 bool ready()
 {
     return g_context != nullptr;
