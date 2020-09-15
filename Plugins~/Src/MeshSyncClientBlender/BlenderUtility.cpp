@@ -13,7 +13,9 @@ namespace blender {
 
 void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_t numIndices, ms::Mesh* dest) {
 
-    for (uint32_t uvIndex=0;uvIndex<ms::MeshSyncConstants::MAX_UV;++uvIndex) {
+    const uint32_t numUVs = std::min(bMesh->GetNumUVs(), ms::MeshSyncConstants::MAX_UV);
+
+    for (uint32_t uvIndex=0;uvIndex<numUVs;++uvIndex) {
         MLoopUV* loopUV = bMesh->GetUV(uvIndex);
         if (nullptr == loopUV)
             continue;

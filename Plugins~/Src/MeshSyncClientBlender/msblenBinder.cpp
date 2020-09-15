@@ -5,74 +5,63 @@
 
 #include "MeshUtils/muLog.h"
 
-namespace bl = blender;
-
 namespace blender
 {
 
 static bContext *g_context;
 
 
-#define Def(T) StructRNA* T::s_type
-#define Func(T, F) static FunctionRNA* T##_##F
-#define Prop(T, F) static PropertyRNA* T##_##F
+StructRNA* BID::s_type;
+static PropertyRNA* BID_is_updated;
+static PropertyRNA* BID_is_updated_data;
+static FunctionRNA* BID_evaluated_get;
 
-Def(BID);
-Prop(BID, is_updated);
-Prop(BID, is_updated_data);
-Func(BID, evaluated_get);
+StructRNA* BObject::s_type;
+static PropertyRNA* BObject_matrix_local;
+static PropertyRNA* BObject_matrix_world;
+static PropertyRNA* BObject_hide;
+static PropertyRNA* BObject_hide_viewport;
+static PropertyRNA* BObject_hide_render;
+static PropertyRNA* BObject_select;
+static FunctionRNA* BObject_select_get;
+static FunctionRNA* BObject_to_mesh;
+static FunctionRNA* BObject_to_mesh_clear;
 
-Def(BObject);
-Prop(BObject, matrix_local);
-Prop(BObject, matrix_world);
-Prop(BObject, hide);
-Prop(BObject, hide_viewport);
-Prop(BObject, hide_render);
-Prop(BObject, select);
-Func(BObject, select_get);
-Func(BObject, to_mesh);
-Func(BObject, to_mesh_clear);
-
-Def(BMesh);
-Func(BMesh, calc_normals_split);
+StructRNA* BMesh::s_type;
+static FunctionRNA* BMesh_calc_normals_split;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
-Def(BMaterial);
-Prop(BMaterial, use_nodes);
-Prop(BMaterial, active_node_material);
+StructRNA* BMaterial::s_type;
+static PropertyRNA* BMaterial_use_nodes;
+static PropertyRNA* BMaterial_active_node_material;
 
-Def(BCamera);
-Prop(BCamera, clip_start);
-Prop(BCamera, clip_end);
-Prop(BCamera, angle_x);
-Prop(BCamera, angle_y);
-Prop(BCamera, lens);
-Prop(BCamera, sensor_fit);
-Prop(BCamera, sensor_width);
-Prop(BCamera, sensor_height);
-Prop(BCamera, shift_x);
-Prop(BCamera, shift_y);
+StructRNA* BCamera::s_type;
+static PropertyRNA* BCamera_clip_start;
+static PropertyRNA* BCamera_clip_end;
+static PropertyRNA* BCamera_angle_x;
+static PropertyRNA* BCamera_angle_y;
+static PropertyRNA* BCamera_lens;
+static PropertyRNA* BCamera_sensor_fit;
+static PropertyRNA* BCamera_sensor_width;
+static PropertyRNA* BCamera_sensor_height;
+static PropertyRNA* BCamera_shift_x;
+static PropertyRNA* BCamera_shift_y;
 
-Def(BScene);
-Prop(BScene, frame_start);
-Prop(BScene, frame_end);
-Prop(BScene, frame_current);
-Func(BScene, frame_set);
+StructRNA* BScene::s_type;
+static PropertyRNA* BScene_frame_start;
+static PropertyRNA* BScene_frame_end;
+static PropertyRNA* BScene_frame_current;
+static FunctionRNA* BScene_frame_set;
 
-Def(BData);
+StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-Def(BContext);
-Prop(BContext, blend_data);
-Prop(BContext, scene);
-Func(BContext, evaluated_depsgraph_get);
-
-#undef Prop
-#undef Func
-#undef Def
-
+StructRNA* BContext::s_type;
+static PropertyRNA* BContext_blend_data;
+static PropertyRNA* BContext_scene;
+static FunctionRNA* BContext_evaluated_depsgraph_get;
 
 bool ready()
 {
@@ -467,7 +456,7 @@ bool blender::BObject::is_selected() const
 #if BLENDER_VERSION < 280
 Mesh* BObject::to_mesh() const
 {
-    auto scene = bl::BContext::get().scene();
+    auto scene = blender::BContext::get().scene();
     return call<Object, Mesh*, Scene*, int, int, int, int>(m_ptr, BObject_to_mesh, scene, 1, 1, 1, 0);
 }
 #else
@@ -511,13 +500,16 @@ barray_range<MVert> BMesh::vertices()
 }
 barray_range<mu::float3> BMesh::normals()
 {
-    if (CustomData_number_of_layers(m_ptr->ldata, CD_NORMAL) > 0) {
+    if (CustomData_number_of_layers(&m_ptr->ldata, CD_NORMAL) > 0) {
         auto data = (mu::float3*)CustomData_get(m_ptr->ldata, CD_NORMAL);
         if (data != nullptr)
             return { data, (size_t)m_ptr->totloop };
     }
     return { nullptr, (size_t)0 };
 }
+
+//----------------------------------------------------------------------------------------------------------------------
+
 barray_range<MLoopUV> BMesh::uv()
 {
     CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
@@ -530,6 +522,8 @@ barray_range<MLoopUV> BMesh::uv()
 MLoopUV* BMesh::GetUV(const int index) const {
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
 }
+
+//----------------------------------------------------------------------------------------------------------------------
 
 
 barray_range<MLoopCol> BMesh::colors()
@@ -677,15 +671,6 @@ const void* CustomData_get(const CustomData& data, int type)
         return nullptr;
     layer_index = layer_index + data.layers[layer_index].active;
     return data.layers[layer_index].data;
-}
-
-int CustomData_number_of_layers(const CustomData& data, int type)
-{
-    int i, number = 0;
-    for (i = 0; i < data.totlayer; i++)
-        if (data.layers[i].type == type)
-            number++;
-    return number;
 }
 
 int CustomData_get_offset(const CustomData& data, int type)
