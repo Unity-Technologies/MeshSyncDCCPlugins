@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0-preview] - 2020-09-29
+* feat: add support for Blender 2.90 
+* fix: check the number of UV sets in blender before getting the data
+* chore: modify code to conform to MeshSync@0.4.0-preview
+* chore: update the zip files for MeshSync@0.4.0-preview
+
 ## [0.3.3-preview] - 2020-09-8
 * chore: modify code to conform to MeshSync@0.3.3-preview
 * chore: update the zip files for MeshSync@0.3.3-preview
