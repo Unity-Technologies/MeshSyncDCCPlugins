@@ -1,6 +1,8 @@
 yamato_name: MeshSyncDCCPlugins
 test_editors:
   - version: 2019.4
+  - version: 2020.2
+  - version: trunk
 platforms:
   - name: win
     type: Unity::VM
