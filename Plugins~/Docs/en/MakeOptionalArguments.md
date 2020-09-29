@@ -34,11 +34,12 @@ with commands described in the following sections.
 ## Blender
 
 * All supported Blender versions: `-DBUILD_BLENDER_ALL=ON`
-* Blender 2.79: `-DBUILD_BLENDER_2.79_PLUGIN=ON`
-* Blender 2.80: `-DBUILD_BLENDER_2.80_PLUGIN=ON`
-* Blender 2.81: `-DBUILD_BLENDER_2.81_PLUGIN=ON`
-* Blender 2.82: `-DBUILD_BLENDER_2.82_PLUGIN=ON`
-* Blender 2.83: `-DBUILD_BLENDER_2.83_PLUGIN=ON`
+* Blender 2.79  : `-DBUILD_BLENDER_2.79_PLUGIN=ON`
+* Blender 2.80  : `-DBUILD_BLENDER_2.80_PLUGIN=ON`
+* Blender 2.81  : `-DBUILD_BLENDER_2.81_PLUGIN=ON`
+* Blender 2.82  : `-DBUILD_BLENDER_2.82_PLUGIN=ON`
+* Blender 2.83.6: `-DBUILD_BLENDER_2.83.6_PLUGIN=ON`
+* Blender 2.90.1: `-DBUILD_BLENDER_2.90.1_PLUGIN=ON`
 
 ## Modo
 
