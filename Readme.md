@@ -5,13 +5,20 @@
 
 # MeshSync DCC Plugins
 
+[![](https://badge-proxy.cds.internal.unity3d.com/b681f940-bd27-45c9-832f-e87e6282aa9f)](https://badges.cds.internal.unity3d.com/packages/com.unity.meshsync.dcc-plugins/build-info?branch=dev&testWorkflow=package-isolation)
+[![](https://badge-proxy.cds.internal.unity3d.com/6b18f37e-3925-4b8d-a243-2582b0077f47)](https://badges.cds.internal.unity3d.com/packages/com.unity.meshsync.dcc-plugins/dependencies-info?branch=dev&testWorkflow=updated-dependencies)
+[![](https://badge-proxy.cds.internal.unity3d.com/0db3f8f4-b2d4-40f8-b08a-0b65bcc02245)](https://badges.cds.internal.unity3d.com/packages/com.unity.meshsync.dcc-plugins/dependants-info)
+[![](https://badge-proxy.cds.internal.unity3d.com/1c9fbd13-0736-40ed-96d5-89f237ce91ca)](https://badges.cds.internal.unity3d.com/packages/com.unity.meshsync.dcc-plugins/warnings-info?branch=dev)
+
+![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/2e9a8300-389b-47be-9806-246c5121830b)
+![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/6f4a7e27-d53f-4ad3-bef5-9d3961bb68fb)
+
 This repository provides the source to build DCC plugins for [MeshSync](https://github.com/unity3d-jp/MeshSync), 
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
 This allows devs to immediately see how things will look in-game while modelling.  
 
 Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps to install the plugin to one of the 
 [supported DCC tools](Documentation~/index.md).
-
 
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
