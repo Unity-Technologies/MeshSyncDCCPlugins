@@ -1,5 +1,4 @@
-yamato_name: AnimeToolbox       
-package_path: Packages/com.unity.anime-toolbox
+yamato_name: MeshSyncDCCPlugins
 
 test_editors:
   - version: 2019.4
