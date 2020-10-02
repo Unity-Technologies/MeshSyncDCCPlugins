@@ -1,0 +1,11 @@
+yamato_name: MeshSyncDCCPlugins
+
+test_editors:
+  - version: 2019.4
+  - version: 2020.2
+  - version: trunk
+test_platforms:
+  - name: linux
+    type: Unity::VM
+    image: package-ci/ubuntu:stable
+    flavor: b1.medium
