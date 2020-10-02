@@ -6,11 +6,11 @@
 * chore: modify code to conform to MeshSync@0.4.0-preview
 * chore: update the zip files for MeshSync@0.4.0-preview
 
-## [0.3.3-preview] - 2020-09-8
+## [0.3.3-preview] - 2020-09-08
 * chore: modify code to conform to MeshSync@0.3.3-preview
 * chore: update the zip files for MeshSync@0.3.3-preview
 
-## [0.3.2-preview] - 2020-09-7
+## [0.3.2-preview] - 2020-09-07
 * feat: add multi UV support for Blender
 * chore: modify code to conform to MeshSync@0.3.2-preview
 * chore: update the zip files for MeshSync@0.3.2-preview
