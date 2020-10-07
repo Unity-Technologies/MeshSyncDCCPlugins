@@ -75,13 +75,11 @@ std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
         });
-    }
-    else if (scope == ObjectScope::Selected) {
+    } else if (scope == ObjectScope::Selected) {
         scene.each_selection([&](Object *obj) {
             ret.push_back(obj);
         });
-    }
-    else if (scope == ObjectScope::Updated) {
+    } else if (scope == ObjectScope::Updated) {
         auto bpy_data = bl::BData(bl::BContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
