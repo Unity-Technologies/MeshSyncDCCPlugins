@@ -85,7 +85,7 @@ std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
 {
     std::vector<Object*> ret;
 
-    auto scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     if (scope == ObjectScope::All) {
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
@@ -95,10 +95,10 @@ std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
             ret.push_back(obj);
         });
     } else if (scope == ObjectScope::Updated) {
-        auto bpy_data = bl::BData(bl::BContext::get().data());
+        bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
-                auto bid = bl::BID(obj);
+                bl::BID bid = bl::BID(obj);
                 if (bid.is_updated() || bid.is_updated_data())
                     ret.push_back(obj);
             });
@@ -199,9 +199,9 @@ mu::float4x4 msblenContext::getWorldMatrix(const Object *obj)
 
 mu::float4x4 msblenContext::getLocalMatrix(const Object *obj)
 {
-    auto r = bl::BObject(obj).matrix_local();
+    mu::float4x4 r = bl::BObject(obj).matrix_local();
     if (obj->parent && obj->partype == PARBONE) {
-        if (auto bone = find_bone(obj->parent, obj->parsubstr)) {
+        if (Bone* bone = find_bone(obj->parent, obj->parsubstr)) {
             r *= mu::translate(mu::float3{ 0.0f, mu::length((mu::float3&)bone->tail - (mu::float3&)bone->head), 0.0f });
             r *= g_world_to_arm;
         }
@@ -216,8 +216,8 @@ mu::float4x4 msblenContext::getLocalMatrix(const Object *obj)
 
 mu::float4x4 msblenContext::getLocalMatrix(const Bone *bone)
 {
-    auto r = (mu::float4x4&)bone->arm_mat;
-    if (auto parent = bone->parent)
+    mu::float4x4 r = (mu::float4x4&)bone->arm_mat;
+    if (struct Bone* parent = bone->parent)
         r *= mu::invert((mu::float4x4&)parent->arm_mat);
     else
         r *= g_arm_to_world;
@@ -227,8 +227,8 @@ mu::float4x4 msblenContext::getLocalMatrix(const Bone *bone)
 
 mu::float4x4 msblenContext::getLocalMatrix(const bPoseChannel *pose)
 {
-    auto r = (mu::float4x4&)pose->pose_mat;
-    if (auto parent = pose->parent)
+    mu::float4x4 r = (mu::float4x4&)pose->pose_mat;
+    if (struct bPoseChannel* parent = pose->parent)
         r *= mu::invert((mu::float4x4&)parent->pose_mat);
     else
         r *= g_arm_to_world;
@@ -251,8 +251,8 @@ void msblenContext::extractTransformData(Object *obj,
 {
     vis = { true, visible_in_render(obj), visible_in_viewport(obj) };
 
-    auto local = getLocalMatrix(obj);
-    auto world = getWorldMatrix(obj);
+    const mu::float4x4 local = getLocalMatrix(obj);
+    const mu::float4x4 world = getWorldMatrix(obj);
     if (dst_world)
         *dst_world = world;
     if (dst_local)
@@ -306,7 +306,7 @@ void msblenContext::extractCameraData(Object *src,
     sensor_size.x = cam.sensor_width();  // in mm
     sensor_size.y = cam.sensor_height(); // in mm
 
-    auto fit = cam.sensor_fit();
+    int fit = cam.sensor_fit();
     if (fit == CAMERA_SENSOR_FIT_AUTO)
         fit = sensor_size.x > sensor_size.y ? CAMERA_SENSOR_FIT_HOR : CAMERA_SENSOR_FIT_VERT;
     const float aspx = sensor_size.x / sensor_size.y;
@@ -322,7 +322,7 @@ void msblenContext::extractLightData(Object *src,
     auto data = (Lamp*)src->data;
     const float energy_to_intensity = 1.0f;
 #else
-    auto data = (Light*)src->data;
+    Light* data = (Light*)src->data;
     const float energy_to_intensity = 0.001f;
 #endif
     color = (mu::float4&)data->r;
@@ -353,7 +353,7 @@ ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
     if (!obj)
         return nullptr;
 
-    auto& rec = touchRecord(obj);
+    msblenContext::ObjectRecord& rec = touchRecord(obj);
     if (rec.dst)
         return rec.dst; // already exported
 
@@ -448,8 +448,8 @@ ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
 
 ms::TransformPtr msblenContext::exportTransform(Object *src)
 {
-    auto ret = ms::Transform::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Transform> ret = ms::Transform::create();
+    ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     m_entity_manager.add(ret);
@@ -458,8 +458,8 @@ ms::TransformPtr msblenContext::exportTransform(Object *src)
 
 ms::TransformPtr msblenContext::exportPose(Object *armature, bPoseChannel *src)
 {
-    auto ret = ms::Transform::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Transform> ret = ms::Transform::create();
+    ms::Transform& dst = *ret;
     dst.path = get_path(armature, src->bone);
     extractTransformData(src, dst.position, dst.rotation, dst.scale);
     m_entity_manager.add(ret);
@@ -468,15 +468,15 @@ ms::TransformPtr msblenContext::exportPose(Object *armature, bPoseChannel *src)
 
 ms::TransformPtr msblenContext::exportArmature(Object *src)
 {
-    auto ret = ms::Transform::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Transform> ret = ms::Transform::create();
+    ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     m_entity_manager.add(ret);
 
-    for (auto pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
-        auto bone = pose->bone;
-        auto& dst = m_bones[bone];
+    for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
+        struct Bone* bone = pose->bone;
+        std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = m_bones[bone];
         dst = exportPose(src, pose);
     }
     return ret;
@@ -484,12 +484,12 @@ ms::TransformPtr msblenContext::exportArmature(Object *src)
 
 ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupContext& ctx)
 {
-    auto& rec = touchRecord(src);
+    msblenContext::ObjectRecord& rec = touchRecord(src);
     if (!rec.dst)
         return nullptr;
 
-    auto local_path = get_path(src);
-    auto path = ctx.dst->path + local_path;
+    const std::string local_path = get_path(src);
+    std::string path = ctx.dst->path + local_path;
 
     ms::TransformPtr dst;
     auto assign_base_params = [&]() {
@@ -503,8 +503,8 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
     if (is_mesh(src)) {
         if (m_settings.bake_transform) {
             dst = ms::Mesh::create();
-            auto& dst_mesh = (ms::Mesh&)*dst;
-            auto& src_mesh = (ms::Mesh&)*rec.dst;
+            ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
+            ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
 
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
@@ -553,18 +553,18 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
 
 ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupContext& ctx)
 {
-    auto group = get_instance_collection(src);
+    Collection* group = get_instance_collection(src);
     if (!group)
         return nullptr;
 
-    auto local_path = std::string("/") + (group->id.name + 2);
-    auto path = ctx.dst->path + local_path;
+    const std::string local_path = std::string("/") + (group->id.name + 2);
+    const std::string path = ctx.dst->path + local_path;
 
-    auto dst = ms::Transform::create();
+    std::shared_ptr<ms::Transform> dst = ms::Transform::create();
     dst->path = path;
     dst->visibility = { true, visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
 
-    auto offset_pos = -get_instance_offset(group);
+    const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = m_settings.bake_transform ? mu::float3::zero() : offset_pos;
     dst->world_matrix = mu::translate(offset_pos) * ctx.dst->world_matrix;
     m_entity_manager.add(dst);
@@ -572,9 +572,9 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
     DupliGroupContext ctx2;
     ctx2.group_host = src;
     ctx2.dst = dst;
-    auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-    for (auto go : gobjects) {
-        auto obj = go->ob;
+    blender::blist_range<struct CollectionObject> gobjects = bl::list_range((CollectionObject*)group->gobject.first);
+    for (struct CollectionObject* go : gobjects) {
+        struct Object* obj = go->ob;
         if (auto t = exportObject(obj, true, false)) {
             bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
@@ -586,8 +586,8 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
 
 ms::CameraPtr msblenContext::exportCamera(Object *src)
 {
-    auto ret = ms::Camera::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Camera> ret = ms::Camera::create();
+    ms::Camera& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
@@ -597,8 +597,8 @@ ms::CameraPtr msblenContext::exportCamera(Object *src)
 
 ms::LightPtr msblenContext::exportLight(Object *src)
 {
-    auto ret = ms::Light::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Light> ret = ms::Light::create();
+    ms::Light& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
