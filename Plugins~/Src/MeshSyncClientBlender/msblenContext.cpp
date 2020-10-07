@@ -21,6 +21,21 @@
 
 namespace bl = blender;
 
+static const mu::float4x4 g_arm_to_world = mu::float4x4{
+    1, 0, 0, 0,
+    0, 0,-1, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+};
+static const mu::float4x4 g_world_to_arm = mu::float4x4{
+    1, 0, 0, 0,
+    0, 0, 1, 0,
+    0,-1, 0, 0,
+    0, 0, 0, 1
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
 void SyncSettings::validate()
 {
     if (!bake_modifiers)
@@ -160,19 +175,6 @@ void msblenContext::exportMaterials()
     m_material_manager.eraseStaleMaterials();
 }
 
-
-static const mu::float4x4 g_arm_to_world = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0,-1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1
-};
-static const mu::float4x4 g_world_to_arm = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0,-1, 0, 0,
-    0, 0, 0, 1
-};
 
 static inline mu::float4x4 camera_correction(const mu::float4x4& v)
 {
