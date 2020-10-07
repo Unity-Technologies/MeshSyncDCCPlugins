@@ -128,7 +128,7 @@ void msblenContext::exportMaterials()
     
     // Blender allows faces to have no material. add dummy material for them.
     {
-        auto dst = ms::Material::create();
+        std::shared_ptr<ms::Material> dst = ms::Material::create();
         dst->id = m_material_ids.getID(nullptr);
         dst->index = midx++;
         dst->name = "Default";
@@ -136,15 +136,15 @@ void msblenContext::exportMaterials()
     }
 
     auto bpy_data = bl::BData(bl::BContext::get().data());
-    for (auto *mat : bpy_data.materials()) {
-        auto ret = ms::Material::create();
+    for (struct Material* mat : bpy_data.materials()) {
+        std::shared_ptr<ms::Material> ret = ms::Material::create();
         ret->name = get_name(mat);
         ret->id = m_material_ids.getID(mat);
         ret->index = midx++;
 
-        auto& stdmat = ms::AsStandardMaterial(*ret);
+        ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
         bl::BMaterial bm(mat);
-        auto color_src = mat;
+        struct Material* color_src = mat;
         if (bm.use_nodes()) {
 #if BLENDER_VERSION < 280
             bl::BMaterial node(bm.active_node_material());
@@ -1357,13 +1357,13 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
         exportMaterials();
 
     if (scope == ObjectScope::Updated) {
-        auto bpy_data = bl::BData(bl::BContext::get().data());
+        bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        auto scene = bl::BScene(bl::BContext::get().scene());
+        bl::BScene scene = bl::BScene(bl::BContext::get().scene());
         scene.each_objects([this](Object *obj) {
-            auto bid = bl::BID(obj);
+            bl::BID bid = bl::BID(obj);
             if (bid.is_updated() || bid.is_updated_data())
                 exportObject(obj, false);
             else
@@ -1372,7 +1372,7 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
         eraseStaleObjects();
     }
     else {
-        for(auto obj : getNodes(scope))
+        for(std::vector<Object*>::value_type obj : getNodes(scope))
             exportObject(obj, true);
         eraseStaleObjects();
     }
@@ -1397,26 +1397,26 @@ bool msblenContext::sendAnimations(ObjectScope scope)
     m_animations.push_back(ms::AnimationClip::create()); // create default clip
 
     auto& clip = *m_animations.back();
-    clip.frame_rate = (float)frame_rate;
+    clip.frame_rate = static_cast<float>(frame_rate);
 
     // list target objects
-    for (auto obj : getNodes(scope))
+    for (std::vector<Object*>::value_type obj : getNodes(scope))
         exportAnimation(obj, false);
 
     // advance frame and record animations
     {
-        int frame_current = scene.frame_current();
-        int frame_start = scene.frame_start();
-        int frame_end = scene.frame_end();
-        int interval = frame_step;
-        int reserve_size = (frame_end - frame_start) / interval + 1;
+        const int frame_current = scene.frame_current();
+        const int frame_start = scene.frame_start();
+        const int frame_end = scene.frame_end();
+        const int interval = frame_step;
+        const int reserve_size = (frame_end - frame_start) / interval + 1;
 
         for (auto& kvp : m_anim_records) {
             kvp.second.dst->reserve(reserve_size);
         };
         for (int f = frame_start;;) {
             scene.frame_set(f);
-            m_anim_time = float(f - frame_start) / frame_rate;
+            m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             mu::parallel_for_each(m_anim_records.begin(), m_anim_records.end(), [this](auto& kvp) {
                 kvp.second(this);
@@ -1447,7 +1447,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
     const int frame_rate = scene.fps();
     const int frame_step = std::max(cache_settings.frame_step, 1);
 
-    auto settings_old = m_settings;
+    SyncSettings settings_old = m_settings;
     m_settings.export_cache = true;
     m_settings.make_double_sided = cache_settings.make_double_sided;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
@@ -1472,8 +1472,8 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    auto material_range = cache_settings.material_frame_range;
-    auto nodes = getNodes(cache_settings.object_scope);
+    MaterialFrameRange material_range = cache_settings.material_frame_range;
+    std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0) {
@@ -1513,12 +1513,12 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
             frame_start = scene.frame_start();
             frame_end = scene.frame_end();
         }
-        int interval = frame_step;
+        const int interval = frame_step;
 
         // record
         for (int f = frame_start;;) {
             scene.frame_set(f);
-            m_anim_time = float(f - frame_start) / frame_rate;
+            m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             do_export();
 
@@ -1547,7 +1547,7 @@ void msblenContext::flushPendingList()
 
 void msblenContext::kickAsyncExport()
 {
-    for (auto& t : m_async_tasks)
+    for (std::vector<std::future<void>>::value_type& t : m_async_tasks)
         t.wait();
     m_async_tasks.clear();
 
@@ -1561,7 +1561,7 @@ void msblenContext::kickAsyncExport()
 }
 #else
     if (!m_meshes_to_clear.empty()) {
-        for (auto *v : m_meshes_to_clear) {
+        for (struct Object* v : m_meshes_to_clear) {
             bl::BObject bobj(v);
             bobj.to_mesh_clear();
         }
@@ -1569,7 +1569,7 @@ void msblenContext::kickAsyncExport()
     }
 #endif
 
-    for (auto& kvp : m_obj_records)
+    for (std::map<void*, ObjectRecord>::value_type& kvp : m_obj_records)
         kvp.second.clearState();
     m_bones.clear();
 
@@ -1578,14 +1578,14 @@ void msblenContext::kickAsyncExport()
 
     // kick async send
     exporter->on_prepare = [this, exporter]() {
-        if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
+        if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
         else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        auto& t = *exporter;
+        ms::AsyncSceneExporter& t = *exporter;
         t.scene_settings = m_settings.scene_settings;
         float scale_factor = 1.0f / m_settings.scene_settings.scale_factor;
         t.scene_settings.scale_factor = 1.0f;
@@ -1601,9 +1601,9 @@ void msblenContext::kickAsyncExport()
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
-            for (auto& obj : t.transforms) { cv.convert(*obj); }
-            for (auto& obj : t.geometries) { cv.convert(*obj); }
-            for (auto& obj : t.animations) { cv.convert(*obj); }
+            for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.transforms) { cv.convert(*obj); }
+            for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
+            for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
         }
     };
     exporter->on_success = [this]() {
