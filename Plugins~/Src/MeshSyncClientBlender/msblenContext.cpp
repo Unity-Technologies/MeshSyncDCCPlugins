@@ -98,7 +98,7 @@ std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
         bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
-                bl::BID bid = bl::BID(obj);
+                const bl::BID bid = bl::BID(obj);
                 if (bid.is_updated() || bid.is_updated_data())
                     ret.push_back(obj);
             });
@@ -135,7 +135,7 @@ void msblenContext::exportMaterials()
         m_material_manager.add(dst);
     }
 
-    auto bpy_data = bl::BData(bl::BContext::get().data());
+    bl::BData bpy_data = bl::BData(bl::BContext::get().data());
     for (struct Material* mat : bpy_data.materials()) {
         std::shared_ptr<ms::Material> ret = ms::Material::create();
         ret->name = get_name(mat);
@@ -189,7 +189,7 @@ static inline mu::float4x4 camera_correction(const mu::float4x4& v)
 
 mu::float4x4 msblenContext::getWorldMatrix(const Object *obj)
 {
-    auto r = bl::BObject(obj).matrix_world();
+    mu::float4x4 r = bl::BObject(obj).matrix_world();
     if (is_camera(obj) || is_light(obj)) {
         // camera/light correction
         r = camera_correction(r);
@@ -575,8 +575,8 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
     blender::blist_range<struct CollectionObject> gobjects = bl::list_range((CollectionObject*)group->gobject.first);
     for (struct CollectionObject* go : gobjects) {
         struct Object* obj = go->ob;
-        if (auto t = exportObject(obj, true, false)) {
-            bool non_lib = obj->id.lib == nullptr;
+        if (ms::TransformPtr t = exportObject(obj, true, false)) {
+            const bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
         }
         exportReference(obj, ctx2);
@@ -640,13 +640,13 @@ ms::MeshPtr msblenContext::exportMesh(Object *src)
     extractTransformData(src, dst);
 
     if (m_settings.sync_meshes) {
-        bool need_convert = 
+        const bool need_convert = 
             (!is_editing && m_settings.bake_modifiers) || !is_mesh(src);
 
         if (need_convert) {
 #if BLENDER_VERSION >= 280
             if (m_settings.bake_modifiers) {
-                auto depsgraph = bl::BContext::get().evaluated_depsgraph_get();
+                Depsgraph* depsgraph = bl::BContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BID(bobj).evaluated_get(depsgraph);
             }
 #endif
@@ -735,7 +735,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
 
 void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh *data)
 {
-    auto& mesh = *data;
+    struct Mesh& mesh = *data;
     if (!m_settings.bake_modifiers) {
         // blend shapes
         if (m_settings.sync_blendshapes && mesh.key) {
@@ -758,7 +758,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
-    auto& mesh = *data;
+    struct Mesh& mesh = *data;
 
     blender::barray_range<struct MLoop> indices = bmesh.indices();
     blender::barray_range<struct MPoly> polygons = bmesh.polygons();
@@ -811,7 +811,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
         }
 #endif
         // per-index
-        auto normals = bmesh.normals();
+        blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
         if (!normals.empty()) {
             dst.normals.resize_discard(num_indices);
             for (size_t ii = 0; ii < num_indices; ++ii)
@@ -895,16 +895,16 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
                     memcpy(basis.data(), kb->data, basis.size() * sizeof(mu::float3));
                 }
                 else {
-                    auto bsd = dst.addBlendShape(kb->name);
+                    ms::BlendShapeDataPtr bsd = dst.addBlendShape(kb->name);
                     bsd->weight = kb->curval * 100.0f;
 
                     bsd->frames.push_back(ms::BlendShapeFrameData::create());
-                    auto& frame = *bsd->frames.back();
+                    ms::BlendShapeFrameData& frame = *bsd->frames.back();
                     frame.weight = 100.0f;
                     frame.points.resize_discard(kb->totelem);
                     memcpy(frame.points.data(), kb->data, basis.size() * sizeof(mu::float3));
 
-                    size_t len = frame.points.size();
+                    const size_t len = frame.points.size();
                     for (size_t i = 0; i < len; ++i) {
                         frame.points[i] -= basis[i];
                     }
@@ -968,15 +968,15 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
     bl::BEditMesh emesh(get_edit_mesh(bmesh.ptr()));
-    auto& mesh = *data;
+    struct Mesh& mesh = *data;
 
     blender::barray_range<struct BMFace*> polygons = emesh.polygons();
     blender::barray_range<struct BMLoop*[3]> triangles = emesh.triangles();
     blender::barray_range<struct BMVert*> vertices = emesh.vertices();
 
-    size_t num_triangles = triangles.size();
-    size_t num_vertices = vertices.size();
-    size_t num_indices = triangles.size() * 3;
+    const size_t num_triangles = triangles.size();
+    const size_t num_vertices = vertices.size();
+    const size_t num_indices = triangles.size() * 3;
 
     std::vector<int> mid_table(mesh.totcol);
     for (int mi = 0; mi < mesh.totcol; ++mi)
@@ -998,16 +998,16 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
 
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
-            auto& triangle = triangles[ti];
+            struct BMLoop*(& triangle)[3] = triangles[ti];
 
             int material_index = 0;
-            int polygon_index = triangle[0]->f->head.index;
+            const int polygon_index = triangle[0]->f->head.index;
             if (polygon_index < polygons.size())
                 material_index = mid_table[polygons[polygon_index]->mat_nr];
             dst.material_ids[ti] = material_index;
 
             dst.counts[ti] = 3;
-            for (auto *idx : triangle)
+            for (struct BMLoop* idx : triangle)
                 dst.indices[ii++] = idx->v->head.index;
         }
     }
