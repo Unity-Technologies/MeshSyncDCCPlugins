@@ -1487,7 +1487,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
                 exportMaterials();
         }
 
-        for (auto& n : nodes)
+        for (std::vector<Object*>::value_type& n : nodes)
             exportObject(n, true);
 
         m_texture_manager.clearDirtyFlags();
