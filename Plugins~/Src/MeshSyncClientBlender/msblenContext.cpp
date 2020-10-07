@@ -1024,8 +1024,8 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
         dst.normals.resize_discard(num_indices);
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
-            auto& triangle = triangles[ti];
-            for (auto *idx : triangle)
+            struct BMLoop*(& triangle)[3] = triangles[ti];
+            for (struct BMLoop* idx : triangle)
                 dst.normals[ii++] = -bl::BM_loop_calc_face_normal(*idx);
         }
     }
@@ -1075,7 +1075,7 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::
     // trace bones
     if (is_armature(obj)) {
         blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
-        for (auto pose : poses) {
+        for (struct bPoseChannel* pose : poses) {
             m_obj_records[pose->bone].touched = true;
             m_entity_manager.touch(base_path + get_path(obj, pose->bone));
         }
@@ -1208,14 +1208,14 @@ void msblenContext::extractTransformAnimationData(ms::TransformAnimation& dst_, 
 
 void msblenContext::extractPoseAnimationData(ms::TransformAnimation& dst_, void *obj)
 {
-    auto& dst = (ms::TransformAnimation&)dst_;
+    ms::TransformAnimation& dst = (ms::TransformAnimation&)dst_;
 
     mu::float3 t;
     mu::quatf r;
     mu::float3 s;
     extractTransformData((bPoseChannel*)obj, t, r, s);
 
-    float time = m_anim_time;
+    const float time = m_anim_time;
     dst.translation.push_back({ time, t });
     dst.rotation.push_back({ time, r });
     dst.scale.push_back({ time, s });
@@ -1266,10 +1266,10 @@ void msblenContext::extractMeshAnimationData(ms::TransformAnimation & dst_, void
 {
     extractTransformAnimationData(dst_, obj);
 
-    auto& dst = (ms::MeshAnimation&)dst_;
+    ms::MeshAnimation& dst = (ms::MeshAnimation&)dst_;
     float t = m_anim_time;
 
-    auto& mesh = *(Mesh*)((Object*)obj)->data;
+    struct Mesh& mesh = *(Mesh*)((Object*)obj)->data;
     if (!get_edit_mesh(&mesh) && mesh.key) {
         // blendshape weight animation
         int bi = 0;
@@ -1389,14 +1389,14 @@ bool msblenContext::sendAnimations(ObjectScope scope)
     m_settings.validate();
     m_ignore_events = true;
 
-    auto scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
     m_animations.clear();
     m_animations.push_back(ms::AnimationClip::create()); // create default clip
 
-    auto& clip = *m_animations.back();
+    ms::AnimationClip& clip = *m_animations.back();
     clip.frame_rate = static_cast<float>(frame_rate);
 
     // list target objects
@@ -1443,7 +1443,7 @@ bool msblenContext::sendAnimations(ObjectScope scope)
 
 bool msblenContext::exportCache(const CacheSettings& cache_settings)
 {
-    auto scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(cache_settings.frame_step, 1);
 
@@ -1538,7 +1538,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
 void msblenContext::flushPendingList()
 {
     if (!m_pending.empty() && !m_sender.isExporting()) {
-        for (auto p : m_pending)
+        for (std::_Tree_const_iterator<std::_Tree_val<std::_Tree_simple_types<struct Object*>>>::value_type p : m_pending)
             exportObject(p, false);
         m_pending.clear();
         kickAsyncExport();
