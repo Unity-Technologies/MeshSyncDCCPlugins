@@ -33,8 +33,7 @@ void msblenContext::NodeRecord::clearState()
     anim_extractor = nullptr;
 }
 
-void msblenContext::NodeRecord::recordAnimation(msblenContext *_this)
-{
+void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
     (_this->*anim_extractor)(*dst_anim, obj);
 }
 

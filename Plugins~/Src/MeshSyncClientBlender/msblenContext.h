@@ -141,7 +141,7 @@ private:
         AnimationExtractor anim_extractor = nullptr;
 
         void clearState();
-        void recordAnimation(msblenContext *_this);
+        void recordAnimation(msblenContext *_this) const;
     };
 
     // note:
