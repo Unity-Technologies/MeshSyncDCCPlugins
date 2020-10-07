@@ -621,9 +621,9 @@ ms::MeshPtr msblenContext::exportMesh(Object *src)
 
     if (m_settings.sync_meshes && data) {
         // check if mesh is dirty
-        if (auto edit_mesh = get_edit_mesh(data)) {
+        if (BMEditMesh* edit_mesh = get_edit_mesh(data)) {
             is_editing = true;
-            auto bm = edit_mesh->bm;
+            struct BMesh* bm = edit_mesh->bm;
             if (bm->elem_table_dirty) {
                 // mesh is editing and dirty. just add to pending list
                 m_pending.insert(src);
@@ -632,8 +632,8 @@ ms::MeshPtr msblenContext::exportMesh(Object *src)
         }
     }
 
-    auto ret = ms::Mesh::create();
-    auto& dst = *ret;
+    std::shared_ptr<ms::Mesh> ret = ms::Mesh::create();
+    ms::Mesh& dst = *ret;
     dst.path = get_path(src);
 
     // transform
@@ -689,7 +689,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
     if (m_settings.sync_meshes) {
         bl::BObject bobj(obj);
         bl::BMesh bmesh(data);
-        bool is_editing = get_edit_mesh(bmesh.ptr()) != nullptr;
+        const bool is_editing = get_edit_mesh(bmesh.ptr()) != nullptr;
 
         // on edit mode, editing is applied to EditMesh and base Mesh is intact. so get data from EditMesh on edit mode.
         // todo: Blender 2.8 displays transparent final mesh on edit mode. extract data from it.
@@ -702,7 +702,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
 
         if (!m_settings.bake_modifiers && !is_editing) {
             // mirror
-            if (auto *mirror = (const MirrorModifierData*)find_modofier(obj, eModifierType_Mirror)) {
+            if (const MirrorModifierData* mirror = (const MirrorModifierData*)find_modofier(obj, eModifierType_Mirror)) {
                 if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, true);
                 if (mirror->flag & MOD_MIR_AXIS_Y) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Y, true);
                 if (mirror->flag & MOD_MIR_AXIS_Z) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Z, true);
@@ -745,7 +745,7 @@ void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh 
                 if (bi == 0) { // Basis
                 }
                 else {
-                    auto bsd = dst.addBlendShape(kb->name);
+                    ms::BlendShapeDataPtr bsd = dst.addBlendShape(kb->name);
                     bsd->weight = kb->curval * 100.0f;
                 }
                 ++bi;
@@ -760,12 +760,12 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
     bl::BMesh bmesh(data);
     auto& mesh = *data;
 
-    auto indices = bmesh.indices();
-    auto polygons = bmesh.polygons();
-    auto vertices = bmesh.vertices();
+    blender::barray_range<struct MLoop> indices = bmesh.indices();
+    blender::barray_range<struct MPoly> polygons = bmesh.polygons();
+    blender::barray_range<struct MVert> vertices = bmesh.vertices();
 
-    size_t num_indices = indices.size();
-    size_t num_polygons = polygons.size();
+    const size_t num_indices = indices.size();
+    const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
     std::vector<int> mid_table(mesh.totcol);
@@ -787,14 +787,14 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
     {
         int ii = 0;
         for (size_t pi = 0; pi < num_polygons; ++pi) {
-            auto& polygon = polygons[pi];
-            int material_index = polygon.mat_nr;
-            int count = polygon.totloop;
+            struct MPoly& polygon = polygons[pi];
+            const int material_index = polygon.mat_nr;
+            const int count = polygon.totloop;
             dst.counts[pi] = count;
             dst.material_ids[pi] = mid_table[material_index];
             dst.indices.resize(dst.indices.size() + count);
 
-            auto *idx = &indices[polygon.loopstart];
+            struct MLoop* idx = &indices[polygon.loopstart];
             for (int li = 0; li < count; ++li) {
                 dst.indices[ii++] = idx[li].v;
             }
@@ -853,22 +853,22 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
                 dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 dst.refine_settings.local2world = mu::transform(dst.position, invert(dst.rotation), dst.scale);
 
-                auto *arm_obj = arm_mod->object;
+                struct Object* arm_obj = arm_mod->object;
                 int group_index = 0;
                 each_deform_group(obj, [&](const bDeformGroup *g) {
                     bool found = false;
-                    auto bone = find_bone(arm_obj, g->name);
+                    Bone* bone = find_bone(arm_obj, g->name);
                     if (bone) {
-                        auto trans = findBone(arm_obj, bone);
+                        ms::TransformPtr trans = findBone(arm_obj, bone);
                         if (trans) {
                             found = true;
-                            auto b = dst.addBone(trans->path);
+                            ms::BoneDataPtr b = dst.addBone(trans->path);
                             b->bindpose = extract_bindpose(bone);
                             b->weights.resize_zeroclear(num_vertices);
 
                             for (int vi = 0; vi < num_vertices; ++vi) {
                                 int num_weights = mesh.dvert[vi].totweight;
-                                auto& dvert = mesh.dvert[vi];
+                                struct MDeformVert& dvert = mesh.dvert[vi];
                                 for (int wi = 0; wi < num_weights; ++wi) {
                                     if (dvert.dw[wi].def_nr == group_index) {
                                         b->weights[vi] = dvert.dw[wi].weight;
@@ -970,9 +970,9 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
     bl::BEditMesh emesh(get_edit_mesh(bmesh.ptr()));
     auto& mesh = *data;
 
-    auto polygons = emesh.polygons();
-    auto triangles = emesh.triangles();
-    auto vertices = emesh.vertices();
+    blender::barray_range<struct BMFace*> polygons = emesh.polygons();
+    blender::barray_range<struct BMLoop*[3]> triangles = emesh.triangles();
+    blender::barray_range<struct BMVert*> vertices = emesh.vertices();
 
     size_t num_triangles = triangles.size();
     size_t num_vertices = vertices.size();
@@ -1052,29 +1052,29 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data
 
 ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
 {
-    auto it = m_bones.find(bone);
+    std::map<struct Bone*, std::shared_ptr<ms::Transform>>::iterator it = m_bones.find(bone);
     return it != m_bones.end() ? it->second : nullptr;
 }
 
 msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::string& base_path, bool children)
 {
-    auto& rec = m_obj_records[obj];
+    std::map<void*, ObjectRecord>::mapped_type& rec = m_obj_records[obj];
     if (rec.touched && base_path.empty())
         return rec; // already touched
 
     rec.touched = true;
 
-    auto local_path = get_path(obj);
+    std::string local_path = get_path(obj);
     if (local_path != rec.path) {
         rec.renamed = true;
         rec.path = local_path;
     }
-    auto path = base_path + local_path;
+    std::string path = base_path + local_path;
     m_entity_manager.touch(path);
 
     // trace bones
     if (is_armature(obj)) {
-        auto poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
+        blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
         for (auto pose : poses) {
             m_obj_records[pose->bone].touched = true;
             m_entity_manager.touch(base_path + get_path(obj, pose->bone));
@@ -1089,12 +1089,12 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::
     }
 
     // trace dupli group
-    if (auto group = get_instance_collection(obj)) {
-        auto group_path = path + '/' + (group->id.name + 2);
+    if (Collection* group = get_instance_collection(obj)) {
+        const std::string group_path = path + '/' + (group->id.name + 2);
         m_entity_manager.touch(group_path);
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-        for (auto go : gobjects)
+        for (struct CollectionObject* go : gobjects)
             touchRecord(go->ob, group_path, true);
     }
     return rec;
@@ -1117,18 +1117,18 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
     if (!obj)
         return;
 
-    auto path = base_path + get_path(obj);
+    std::string path = base_path + get_path(obj);
     if (m_anim_records.find(path) != m_anim_records.end())
         return;
 
-    auto& clip = m_animations.front();
+    std::shared_ptr<ms::AnimationClip>& clip = m_animations.front();
     ms::TransformAnimationPtr dst;
     AnimationRecord::extractor_t extractor = nullptr;
-    auto group = get_instance_collection(obj);
+    Collection* group = get_instance_collection(obj);
 
     auto add_animation = [this, &clip](const std::string& path, void *obj, ms::TransformAnimationPtr dst, AnimationRecord::extractor_t extractor) {
         dst->path = path;
-        auto& rec = m_anim_records[path];
+        std::map<std::basic_string<char>, AnimationRecord>::mapped_type& rec = m_anim_records[path];
         rec.extractor = extractor;
         rec.obj = obj;
         rec.dst = dst;
@@ -1164,8 +1164,8 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
 
         if (obj->type == OB_ARMATURE && (!m_settings.bake_modifiers && m_settings.sync_bones)) {
             // bones
-            auto poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
-            for (auto pose : poses) {
+            blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
+            for (struct bPoseChannel* pose : poses) {
                 auto pose_path = base_path + get_path(obj, pose->bone);
                 add_animation(pose_path, pose, ms::TransformAnimation::create(), &msblenContext::extractPoseAnimationData);
             }
@@ -1176,14 +1176,14 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
 
     // handle dupli group
     if (group) {
-        auto group_path = base_path;
+        std::string group_path = base_path;
         group_path += '/';
         group_path += get_name(obj);
         group_path += '/';
         group_path += (group->id.name + 2);
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-        for (auto go : gobjects) {
+        for (struct CollectionObject* go : gobjects) {
             exportAnimation(go->ob, false, group_path);
         }
     }
@@ -1191,7 +1191,7 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
 
 void msblenContext::extractTransformAnimationData(ms::TransformAnimation& dst_, void *obj)
 {
-    auto& dst = (ms::TransformAnimation&)dst_;
+    ms::TransformAnimation& dst = (ms::TransformAnimation&)dst_;
 
     mu::float3 pos;
     mu::quatf rot;
@@ -1225,7 +1225,7 @@ void msblenContext::extractCameraAnimationData(ms::TransformAnimation& dst_, voi
 {
     extractTransformAnimationData(dst_, obj);
 
-    auto& dst = (ms::CameraAnimation&)dst_;
+    ms::CameraAnimation& dst = (ms::CameraAnimation&)dst_;
 
     bool ortho;
     float near_plane, far_plane, fov, focal_length;
@@ -1245,7 +1245,7 @@ void msblenContext::extractLightAnimationData(ms::TransformAnimation& dst_, void
 {
     extractTransformAnimationData(dst_, obj);
 
-    auto& dst = (ms::LightAnimation&)dst_;
+    ms::LightAnimation& dst = (ms::LightAnimation&)dst_;
 
     ms::Light::LightType ltype;
     ms::Light::ShadowType stype;
