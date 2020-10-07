@@ -1500,7 +1500,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
         do_export();
     }
     else {
-        int frame_current = scene.frame_current();
+        const int frame_current = scene.frame_current();
         int frame_start, frame_end;
         // time range
         if (cache_settings.frame_range == FrameRange::Custom) {
