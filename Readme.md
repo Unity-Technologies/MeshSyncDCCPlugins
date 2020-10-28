@@ -44,7 +44,7 @@ The previous version of the document is put below for reference.
 1. [Maya](#maya)
 2. [Maya LT](#maya-lt)
 3. [3ds Max](#3ds-max)
-4. [Motion Builder](#motion-builder)
+4. [MotionBuilder](#motion-builder)
 5. [Blender](#blender)
 6. [Modo](#modo)
 7. [Metasequoia](#Metaseq)
@@ -114,11 +114,11 @@ Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/45682175-8a919100-bb7a-11e8-96a1-efe2e28146c3.png" height=200>
 
-### Motion Builder
-Confirmed functionality with Motion Builder 2015, 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) 
+### MotionBuilder
+Confirmed functionality with MotionBuilder 2015, 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) 
 - Installation:
   - Copy MeshSyncClientMotionBuilder.dll to the directory registered as a plugin path 
-    - Plugin paths can be added in Motion Builder under Settings -> Preferences -> SDK menu
+    - Plugin paths can be added in MotionBuilder under Settings -> Preferences -> SDK menu
 - After installation an object called UnityMeshSync will be added to the Asset Browser under Templates -> Devices, so add it to the scene  
 - The various settings and features can be accessed in the Navigator by selecting Devices -> UnityMeshSync 
 - While "Auto Sync" is checked, any changes to the Mesh will automatically be reflected in Unity. If Auto Sync is disabled, the "Manual Sync" button can be used to manually reflect changes  

@@ -42,7 +42,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 1. [Maya](#maya)
 2. [Maya LT](#maya-lt)
 3. [3ds Max](#3ds-max)
-4. [Motion Builder](#motion-builder)
+4. [MotionBuilder](#motion-builder)
 5. [Blender](#blender)
 6. [Modo](#modo)
 7. [メタセコイア](#メタセコイア)
@@ -117,11 +117,11 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/45682175-8a919100-bb7a-11e8-96a1-efe2e28146c3.png" height=200>
 
-### Motion Builder
-Motion Builder 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) で動作を確認しています
+### MotionBuilder
+MotionBuilder 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) で動作を確認しています
 - インストール：
   - MeshSyncClientMotionBuilder.dll をプラグイン用パスとして登録されているディレクトリにコピー
-    - プラグイン用パスは Motion Builder 内の Settings -> Preferences -> SDK メニューから追加できます
+    - プラグイン用パスは MotionBuilder 内の Settings -> Preferences -> SDK メニューから追加できます
 - インストール後、Asset Browser 内の Templates -> Devices に UnityMeshSync というオブジェクトが追加されているので、それをシーンに追加します
 - Navigator 内の Devices -> UnityMeshSync を選択することで各種設定や機能にアクセスできます 
 - "Auto Sync" がチェックされている間は編集が自動的に Unity 側に反映されます。Auyo Sync が無効でも "Manual Sync" ボタンを押すことで手動で反映できます
