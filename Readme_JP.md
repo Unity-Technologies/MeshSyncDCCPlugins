@@ -42,7 +42,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 1. [Maya](#maya)
 2. [Maya LT](#maya-lt)
 3. [3ds Max](#3ds-max)
-4. [MotionBuilder](#motion-builder)
+4. [MotionBuilder](#motionbuilder)
 5. [Blender](#blender)
 6. [Modo](#modo)
 7. [メタセコイア](#メタセコイア)
