@@ -141,7 +141,7 @@ private:
         AnimationExtractor anim_extractor = nullptr;
 
         void clearState();
-        void recordAnimation(msblenContext *_this) const;
+        void recordAnimation(msblenContext *_this);
     };
 
     // note:
@@ -189,7 +189,7 @@ private:
     msblenContext();
     ~msblenContext();
 
-    static std::vector<Object*> getNodes(ObjectScope scope);
+    std::vector<Object*> getNodes(ObjectScope scope);
 
     int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
