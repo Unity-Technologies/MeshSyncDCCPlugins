@@ -1538,7 +1538,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
 void msblenContext::flushPendingList()
 {
     if (!m_pending.empty() && !m_sender.isExporting()) {
-        for (std::_Tree_const_iterator<std::_Tree_val<std::_Tree_simple_types<struct Object*>>>::value_type p : m_pending)
+        for (auto p : m_pending)
             exportObject(p, false);
         m_pending.clear();
         kickAsyncExport();
