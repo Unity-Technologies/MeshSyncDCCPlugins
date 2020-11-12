@@ -95,7 +95,7 @@ Steps to uninstall:
 1. Select "Import-Export: Unity Mesh Sync" from the Add-ons menu.
 1. Click "Remove" button.
 1. Restart Blender. 
-1. On Mac, delete the installed plugin files in the following folder:
+1. On Mac OSX, delete the installed plugin files in the following folder:
     ``` 
     ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
     ``` 
