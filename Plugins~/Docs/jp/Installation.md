@@ -93,7 +93,10 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Add-ons メニューから "Import-Export: Unity Mesh Sync" を選択。
 1. "Remove" ボタンをクリック。
 1. Blender を再起動。
-  
+1. Mac OSX の場合、下記のフォルダーにインストールされたプラグインのファイルを削除 :
+    ``` 
+    ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
+    ```   
   
 ## Metasequoia
 1. MeshSync と同じバージョンを持つ最新の Metasequoia プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
