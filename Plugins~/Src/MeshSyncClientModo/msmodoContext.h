@@ -7,9 +7,9 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
 
-#include "MeshSync/Utility/msEntityManager.h"
-#include "MeshSync/Utility/msMaterialManager.h"
-#include "MeshSync/Utility/msTextureManager.h"
+#include "MeshSyncClient/msEntityManager.h"
+#include "MeshSyncClient/msMaterialManager.h"
+#include "MeshSyncClient/msTextureManager.h"
 
 
 namespace ms {
