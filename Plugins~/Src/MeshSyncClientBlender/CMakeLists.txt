@@ -39,9 +39,11 @@ target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
+    "${SRC_ROOT}/MeshSyncClient/Include"
 
 )
 target_link_libraries(${MESHSYNC_CLIENT_BLENDER} 
+    MeshSyncClient
     MeshSync 
     MeshUtils ${Poco_LIBRARIES}
     ${PYTHON_${BLENDER_PYTHON_VERSION}_LIBRARY}    
