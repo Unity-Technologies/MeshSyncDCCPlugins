@@ -23,24 +23,30 @@ list(FILTER sources EXCLUDE REGEX "lxu_geometry_triangulation.cpp")
 
 add_library(${meshsync_client_modo} SHARED ${sources})
 add_dependencies(${meshsync_client_modo} 
-    MeshUtils MeshSync
+    MeshSyncClient
 )
-target_include_directories(${meshsync_client_modo} PUBLIC
-    "${CMAKE_SOURCE_DIR}"
-    "$ENV{MODO_SDK}/include"
-    "${MODO_${modo_version}_QT_INCLUDE_DIRS}"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
+target_include_directories(${meshsync_client_modo} 
+    PRIVATE
+        "${CMAKE_SOURCE_DIR}"
+        "$ENV{MODO_SDK}/include"
+        "${MODO_${modo_version}_QT_INCLUDE_DIRS}"
+        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
+        "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 # pch doesn't work currently because we are compiling MODO_SDK at the same time, so the dependencies get mixed up.
 # target_precompile_headers(${meshsync_client_modo}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
-target_link_libraries(${meshsync_client_modo} MeshSync MeshUtils ${Poco_LIBRARIES} ${MODO_${modo_version}_QT_LIBRARIES})
+target_link_libraries(${meshsync_client_modo} 
+    PRIVATE
+        MeshSyncClient
+        ${Poco_LIBRARIES} 
+        ${MODO_${modo_version}_QT_LIBRARIES}
+)
 
 if(ENABLE_ZSTD)
-    target_link_libraries(${meshsync_client_modo} ${ZSTD_LIBRARY})
+    target_link_libraries(${meshsync_client_modo} PRIVATE ${ZSTD_LIBRARY})
 endif()
 
 # if(LINUX)
