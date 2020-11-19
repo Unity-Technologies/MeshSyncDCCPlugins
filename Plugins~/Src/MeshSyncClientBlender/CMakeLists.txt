@@ -29,33 +29,25 @@ file(GLOB_RECURSE sources *.cpp *.h *.c)
 add_library(${MESHSYNC_CLIENT_BLENDER}  SHARED ${sources})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources})
 
-add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshSyncClient MeshUtils MeshSync)
+add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshSyncClient)
 
 target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
     "${EXTERNAL_ROOT}"
     "${BLENDER_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 
 )
 target_link_libraries(${MESHSYNC_CLIENT_BLENDER} 
-    MeshSyncClient 
-    MeshSync 
-    MeshUtils ${Poco_LIBRARIES}
-    ${PYTHON_${BLENDER_PYTHON_VERSION}_LIBRARY}    
+    PRIVATE
+        MeshSyncClient 
+        ${PYTHON_${BLENDER_PYTHON_VERSION}_LIBRARY}    
 )
   
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} ${ZSTD_LIBRARY})
-endif()
 if(LINUX)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} pthread)
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-x86_64-linux-gnu.so")
 elseif(MAC)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} "-undefined dynamic_lookup")    
+    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} PRIVATE "-undefined dynamic_lookup")    
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-darwin.so")
 elseif(WIN32)
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".pyd")    
