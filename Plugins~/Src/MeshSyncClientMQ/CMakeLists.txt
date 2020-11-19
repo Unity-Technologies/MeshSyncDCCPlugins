@@ -22,7 +22,7 @@ if(APPLE)
     set_target_properties(${meshsync_client_metasequoia} PROPERTIES BUNDLE_EXTENSION "plugin")        
 endif()
 
-add_dependencies(${meshsync_client_metasequoia} MeshUtils MeshSync)
+add_dependencies(${meshsync_client_metasequoia} MeshSyncClient MeshUtils MeshSync)
 
 target_precompile_headers(${meshsync_client_metasequoia}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
@@ -40,7 +40,7 @@ target_include_directories(${meshsync_client_metasequoia} PRIVATE
 )
 
 target_link_libraries(${meshsync_client_metasequoia} 
-    MeshSync MeshUtils ${Poco_LIBRARIES} 
+    MeshSyncClient MeshSync MeshUtils ${Poco_LIBRARIES} 
 #    ${COCOA_LIBRARY}
 )
 

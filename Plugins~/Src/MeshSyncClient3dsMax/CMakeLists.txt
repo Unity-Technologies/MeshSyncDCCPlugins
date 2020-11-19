@@ -10,7 +10,7 @@ file(GLOB sources *.cpp *.h *.rc)
 set_source_files_properties(*.rc PROPERTIES LANGUAGE RC)
 
 add_library(${MESHSYNC_CLIENT_3DSMAX} SHARED ${sources})
-add_dependencies(${MESHSYNC_CLIENT_3DSMAX} MeshUtils MeshSync)
+add_dependencies(${MESHSYNC_CLIENT_3DSMAX} MeshSyncClient MeshUtils MeshSync)
 
 #Include, pch
 target_precompile_headers(${MESHSYNC_CLIENT_3DSMAX}  PRIVATE "${MESHSYNC_PLUGIN_3DSMAX_DIR}/pch.h")
@@ -24,7 +24,7 @@ target_include_directories(${MESHSYNC_CLIENT_3DSMAX} PRIVATE
 )
 
 target_link_libraries(${MESHSYNC_CLIENT_3DSMAX} 
-    MeshSync MeshUtils 
+    MeshSyncClient MeshSync MeshUtils 
     ${Poco_LIBRARIES} 
     ${3DSMAX${3DSMAX_VERSION}_LIBRARIES}
 )

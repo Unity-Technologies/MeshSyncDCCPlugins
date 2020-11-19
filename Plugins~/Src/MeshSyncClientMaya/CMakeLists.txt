@@ -10,7 +10,7 @@ setup_maya(${MAYA_VERSION})
 
 file(GLOB sources *.cpp *.h)
 add_library(${MESHSYNC_CLIENT_MAYA} SHARED ${sources})
-add_dependencies(${MESHSYNC_CLIENT_MAYA} MeshUtils MeshSync)
+add_dependencies(${MESHSYNC_CLIENT_MAYA} MeshSyncClient MeshUtils MeshSync)
 
 #Include, pch
 target_precompile_headers(${MESHSYNC_CLIENT_MAYA}  PRIVATE "${MESHSYNC_PLUGIN_MAYA_DIR}/pch.h")
@@ -23,7 +23,7 @@ target_include_directories(${MESHSYNC_CLIENT_MAYA} PRIVATE
 )
 
 target_link_libraries(${MESHSYNC_CLIENT_MAYA} 
-    MeshSync MeshUtils 
+    MeshSyncClient MeshSync MeshUtils 
     ${Poco_LIBRARIES} 
     ${MAYA${MAYA_VERSION}_LIBRARIES}
 )

@@ -7,7 +7,7 @@ add_definitions(-DMOTIONBUILDER_VERSION=${MOTIONBUILDER_VERSION})
 
 file(GLOB sources *.cpp *.h)
 add_library(${MESHSYNC_CLIENT_MOTIONBUILDER} SHARED ${sources})
-add_dependencies(${MESHSYNC_CLIENT_MOTIONBUILDER} MeshUtils MeshSync)
+add_dependencies(${MESHSYNC_CLIENT_MOTIONBUILDER} MeshSyncClient MeshUtils MeshSync)
 target_precompile_headers(${MESHSYNC_CLIENT_MOTIONBUILDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_MOTIONBUILDER} 
     PUBLIC 
@@ -19,6 +19,7 @@ target_include_directories(${MESHSYNC_CLIENT_MOTIONBUILDER}
 
 # message(abc: ${MOTIONBUILDER${MOTIONBUILDER_VERSION}_LIBRARIES})
 target_link_libraries(${MESHSYNC_CLIENT_MOTIONBUILDER} 
+    MeshSyncClient 
     MeshSync 
     MeshUtils 
     ${Poco_LIBRARIES} 
