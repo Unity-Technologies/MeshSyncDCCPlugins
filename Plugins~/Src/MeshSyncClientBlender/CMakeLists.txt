@@ -33,6 +33,7 @@ add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshSyncClient )
 
 target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
+    "${EXTERNAL_ROOT}"
     "${BLENDER_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
