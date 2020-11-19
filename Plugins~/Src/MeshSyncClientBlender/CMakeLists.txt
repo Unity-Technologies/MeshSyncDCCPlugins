@@ -46,7 +46,7 @@ target_link_libraries(${MESHSYNC_CLIENT_BLENDER}
 if(LINUX)
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-x86_64-linux-gnu.so")
 elseif(MAC)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} "-undefined dynamic_lookup")    
+    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} PRIVATE "-undefined dynamic_lookup")    
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-darwin.so")
 elseif(WIN32)
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".pyd")    
