@@ -64,3 +64,4 @@ install(FILES
 install(FILES python/__init__.py DESTINATION ${PYD_DIR})
 install(TARGETS ${MESHSYNC_CLIENT_BLENDER} DESTINATION ${PYD_DIR})
 
+
