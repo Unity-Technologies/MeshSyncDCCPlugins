@@ -10,6 +10,10 @@ PUBLIC
     "${MeshSyncClient_dir}/Include"
 PRIVATE
     "${MeshSyncClient_dir}"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
+    "${MESHSYNC_PLUGIN_SRC_ROOT}"
+
 )
 
 add_dependencies(MeshSyncClient 
