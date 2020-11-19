@@ -5,9 +5,9 @@
 #include "msmaxUtils.h"
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
-#include "MeshSync/Utility/msEntityManager.h"
-#include "MeshSync/Utility/msMaterialManager.h"
-#include "MeshSync/Utility/msTextureManager.h"
+#include "MeshSyncClient/msEntityManager.h"
+#include "MeshSyncClient/msMaterialManager.h"
+#include "MeshSyncClient/msTextureManager.h"
 
 
 #define msmaxAPI extern "C" __declspec(dllexport)
