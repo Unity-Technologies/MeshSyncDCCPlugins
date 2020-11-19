@@ -1,6 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 PROJECT(MeshSyncDCCPlugins)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
+set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
+set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
+set(EXTERNAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/External)
+
 # allow CMake to organize files by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -41,6 +46,9 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
 endif()
 
+# Custom scripts
+include(AddPlugin)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # Force Unicode character set
@@ -48,10 +56,6 @@ add_definitions(-DUNICODE -D_UNICODE)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
-set(SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Src)
-set(DIST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Dist)
-set(EXTERNAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/External)
 
 # prerequisites. 
 find_package(Poco COMPONENTS Net)
@@ -68,7 +72,7 @@ get_meshsync(${MESHSYNC_VER})
 setup_meshsync(${MESHSYNC_VER})
 
 
-
+add_subdirectory("${SRC_ROOT}/MeshSyncClient")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Call add_subdirectory using symbolic link

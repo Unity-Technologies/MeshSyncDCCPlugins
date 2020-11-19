@@ -22,7 +22,7 @@ if(APPLE)
     set_target_properties(${meshsync_client_metasequoia} PROPERTIES BUNDLE_EXTENSION "plugin")        
 endif()
 
-add_dependencies(${meshsync_client_metasequoia} MeshUtils MeshSync)
+add_dependencies(${meshsync_client_metasequoia} MeshSyncClient MeshUtils MeshSync)
 
 target_precompile_headers(${meshsync_client_metasequoia}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
@@ -40,7 +40,7 @@ target_include_directories(${meshsync_client_metasequoia} PRIVATE
 )
 
 target_link_libraries(${meshsync_client_metasequoia} 
-    MeshSync MeshUtils ${Poco_LIBRARIES} 
+    MeshSyncClient MeshSync MeshUtils ${Poco_LIBRARIES} 
 #    ${COCOA_LIBRARY}
 )
 
@@ -58,3 +58,4 @@ install(TARGETS ${meshsync_client_metasequoia} DESTINATION ${DIST_DIR})
 #install(CODE "execute_process(COMMAND mkdir -p \"${DIST_DIR}/MeshSyncClientMQ4.plugin/\")")
 #install(CODE "execute_process(COMMAND rm -rf \"${DIST_DIR}/MeshSyncClientMQ4.plugin/\")")
 #install(CODE "execute_process(COMMAND cp -r \"${CMAKE_CURRENT_BINARY_DIR}/MeshSyncClientMQ4.bundle\" \"${DIST_DIR}/MeshSyncClientMQ4.plugin\")")
+
