@@ -17,21 +17,13 @@ target_precompile_headers(${MESHSYNC_CLIENT_MAYA}  PRIVATE "${MESHSYNC_PLUGIN_MA
 target_include_directories(${MESHSYNC_CLIENT_MAYA} PRIVATE 
     "${CMAKE_SOURCE_DIR}" 
     "${MAYA${MAYA_VERSION}_INCLUDE_DIR}"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 target_link_libraries(${MESHSYNC_CLIENT_MAYA} 
     PRIVATE
         MeshSyncClient
-        ${Poco_LIBRARIES} 
         ${MAYA${MAYA_VERSION}_LIBRARIES}
 )
-
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_MAYA} PRIVATE ${ZSTD_LIBRARY})
-endif()
 
 if(${MAYA_VERSION} MATCHES "LT")
     add_definitions(-DMAYA_LT=1)
@@ -41,7 +33,6 @@ endif()
 
 set(BASE_DEST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Maya_${PLATFORM}")
 if(LINUX)
-    target_link_libraries(${MESHSYNC_CLIENT_MAYA} pthread "-Wl,--no-undefined")
     set(DEST_DIR "${BASE_DEST_DIR}/modules")
 elseif(MAC)
     set_target_properties(${MESHSYNC_CLIENT_MAYA} PROPERTIES COMPILE_FLAGS -DOSMac_)

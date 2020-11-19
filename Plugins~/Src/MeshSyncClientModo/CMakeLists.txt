@@ -30,9 +30,6 @@ target_include_directories(${meshsync_client_modo}
         "${CMAKE_SOURCE_DIR}"
         "$ENV{MODO_SDK}/include"
         "${MODO_${modo_version}_QT_INCLUDE_DIRS}"
-        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-        "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 # pch doesn't work currently because we are compiling MODO_SDK at the same time, so the dependencies get mixed up.
@@ -41,17 +38,9 @@ target_include_directories(${meshsync_client_modo}
 target_link_libraries(${meshsync_client_modo} 
     PRIVATE
         MeshSyncClient
-        ${Poco_LIBRARIES} 
         ${MODO_${modo_version}_QT_LIBRARIES}
 )
 
-if(ENABLE_ZSTD)
-    target_link_libraries(${meshsync_client_modo} PRIVATE ${ZSTD_LIBRARY})
-endif()
-
-# if(LINUX)
-#     target_link_libraries(${meshsync_client_modo} pthread "-Wl,--no-undefined")
-# endif()
 set_target_properties(${meshsync_client_modo} PROPERTIES PREFIX "")
 set_target_properties(${meshsync_client_modo} PROPERTIES SUFFIX ".lx")
 set_target_properties(${meshsync_client_modo} PROPERTIES OUTPUT_NAME "MeshSyncClientModo")

@@ -33,27 +33,16 @@ add_dependencies(${MESHSYNC_CLIENT_BLENDER} MeshSyncClient )
 
 target_precompile_headers(${MESHSYNC_CLIENT_BLENDER}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 target_include_directories(${MESHSYNC_CLIENT_BLENDER} PRIVATE
-    "${EXTERNAL_ROOT}"
     "${BLENDER_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
-    "${SRC_ROOT}/MeshSyncClient/Include"
-
 )
 target_link_libraries(${MESHSYNC_CLIENT_BLENDER} 
     PRIVATE
         MeshSyncClient
-        ${Poco_LIBRARIES}
         ${PYTHON_${BLENDER_PYTHON_VERSION}_LIBRARY}    
 )
   
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} PRIVATE ${ZSTD_LIBRARY})
-endif()
 if(LINUX)
-    target_link_libraries(${MESHSYNC_CLIENT_BLENDER} PRIVATE pthread)
     set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-x86_64-linux-gnu.so")
 elseif(MAC)
     target_link_libraries(${MESHSYNC_CLIENT_BLENDER} "-undefined dynamic_lookup")    

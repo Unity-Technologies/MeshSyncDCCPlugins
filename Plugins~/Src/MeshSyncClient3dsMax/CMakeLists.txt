@@ -18,21 +18,13 @@ target_include_directories(${MESHSYNC_CLIENT_3DSMAX} PRIVATE
     "${CMAKE_SOURCE_DIR}" 
     "${3DSMAX${3DSMAX_VERSION}_INCLUDE_DIR}"
     "${3DSMAX${3DSMAX_VERSION}_INCLUDE_DIR}/../samples"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 target_link_libraries(${MESHSYNC_CLIENT_3DSMAX} 
     PRIVATE
         MeshSyncClient 
-        ${Poco_LIBRARIES} 
         ${3DSMAX${3DSMAX_VERSION}_LIBRARIES}
 )
-
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_3DSMAX} PRIVATE ${ZSTD_LIBRARY})
-endif()
 
 # Installation
 set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_3DSMAX_${PLATFORM}")

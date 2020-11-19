@@ -12,28 +12,17 @@ target_precompile_headers(${MESHSYNC_CLIENT_MOTIONBUILDER}  PRIVATE "${CMAKE_CUR
 target_include_directories(${MESHSYNC_CLIENT_MOTIONBUILDER} 
     PRIVATE
         "${MOTIONBUILDER${MOTIONBUILDER_VERSION}_INCLUDE_DIR}"     
-        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-        "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-        "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 # message(abc: ${MOTIONBUILDER${MOTIONBUILDER_VERSION}_LIBRARIES})
 target_link_libraries(${MESHSYNC_CLIENT_MOTIONBUILDER} 
     PRIVATE
         MeshSyncClient
-        ${Poco_LIBRARIES} 
         ${MOTIONBUILDER${MOTIONBUILDER_VERSION}_LIBRARIES}
 )
 
 
-
-if(ENABLE_ZSTD)
-    target_link_libraries(${MESHSYNC_CLIENT_MOTIONBUILDER} PRIVATE ${ZSTD_LIBRARY})
-endif()
-
-if(LINUX)
-    target_link_libraries(${MESHSYNC_CLIENT_MOTIONBUILDER} PRIVATE pthread "-Wl,--no-undefined")
-elseif(MAC)
+if(MAC)
     set_target_properties(${MESHSYNC_CLIENT_MOTIONBUILDER} PROPERTIES COMPILE_FLAGS -DOSMac_)
     set_target_properties(${MESHSYNC_CLIENT_MOTIONBUILDER} PROPERTIES SUFFIX ".bundle")
 elseif(WIN32)   

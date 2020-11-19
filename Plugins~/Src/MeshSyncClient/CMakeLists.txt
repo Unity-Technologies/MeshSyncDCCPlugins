@@ -10,13 +10,9 @@ PUBLIC
     "${MeshSyncClient_dir}/Include"
 PRIVATE
     "${MeshSyncClient_dir}"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
-    "${MESHSYNC_PLUGIN_SRC_ROOT}"
 )
 
 add_dependencies(MeshSyncClient 
-    MeshUtils 
     MeshSync
 )
 target_precompile_headers(MeshSyncClient  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
@@ -24,7 +20,6 @@ target_precompile_headers(MeshSyncClient  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/p
 target_link_libraries(MeshSyncClient 
 PUBLIC
     MeshSync 
-    MeshUtils 
 )
 
 
