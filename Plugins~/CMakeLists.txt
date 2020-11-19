@@ -68,7 +68,7 @@ get_meshsync(${MESHSYNC_VER})
 setup_meshsync(${MESHSYNC_VER})
 
 
-
+add_subdirectory("${SRC_ROOT}/MeshSyncClient")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Call add_subdirectory using symbolic link
