@@ -59,12 +59,20 @@ void msblenContext::ObjectRecord::clearState()
     dst = nullptr;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 
-msblenContext& msblenContext::getInstance()
-{
+msblenContext& msblenContext::getInstance() {
     static msblenContext s_instance;
     return s_instance;
 }
+
+void msblenContext::Destroy() {
+    m_texture_manager.clear();
+    m_material_manager.clear();
+    m_entity_manager.clear();
+}
+
+
 
 msblenContext::msblenContext()
 {

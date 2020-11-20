@@ -291,3 +291,10 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
+
+def DestroyMeshSyncContext():
+    msb_context.Destroy()
+
+import atexit
+atexit.register(DestroyMeshSyncContext)
