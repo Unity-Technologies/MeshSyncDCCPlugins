@@ -150,7 +150,6 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
 
             BindMethod(flushPendingList, [](self_t& self) { self->flushPendingList(); })
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
-            BindMethod(destr, [](self_t& self) { self->Destroy(); })
             BindMethod(setup, [](self_t& self, py::object ctx) { bl::setup(ctx); })
             BindMethod(clear, [](self_t& self) { self->clear(); })
             BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(ObjectScope::Updated, false); })
