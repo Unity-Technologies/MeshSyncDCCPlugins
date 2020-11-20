@@ -266,6 +266,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         layout.prop(self, "strip_normals")
         layout.prop(self, "strip_tangents")
 
+# ---------------------------------------------------------------------------------------------------------------------
 
 classes = (
     MESHSYNC_PT_Main,
@@ -289,6 +290,15 @@ def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)        
+
+
+def DestroyMeshSyncContext():
+    msb_context.Destroy()
+
+import atexit
+atexit.register(DestroyMeshSyncContext)
+
+# ---------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     register()
