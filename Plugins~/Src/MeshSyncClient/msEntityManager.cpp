@@ -281,6 +281,8 @@ void EntityManager::setAlwaysMarkDirty(bool v)
 
 void EntityManager::waitTasks()
 {
+    std::unique_lock<std::mutex> lock(m_mutex);
+
     for (auto& p : m_records)
         p.second.waitTask();
 }
