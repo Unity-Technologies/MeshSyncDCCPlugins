@@ -286,6 +286,7 @@ def register():
         bpy.utils.register_class(c)
 
 def unregister():
+    msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
 

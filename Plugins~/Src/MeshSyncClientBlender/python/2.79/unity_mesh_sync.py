@@ -248,6 +248,7 @@ def register():
     bpy.app.handlers.scene_update_post.append(on_scene_update)
 
 def unregister():
+    msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
     bpy.app.handlers.scene_update_post.remove(on_scene_update)

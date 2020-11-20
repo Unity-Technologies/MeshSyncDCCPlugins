@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (2, 83, 0),
+    "blender": (2, 90, 1),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -286,6 +286,7 @@ def register():
         bpy.utils.register_class(c)
 
 def unregister():
+    msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
 
