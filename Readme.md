@@ -20,6 +20,12 @@ This allows devs to immediately see how things will look in-game while modelling
 Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps to install the plugin to one of the 
 [supported DCC tools](Documentation~/index.md).
 
+# Features
+
+|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
+| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
+| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -31,13 +37,6 @@ Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps t
 
 This document is currently being reorganized.
 The previous version of the document is put below for reference.
-
-
-# Features
-
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 
 
 ## Guides

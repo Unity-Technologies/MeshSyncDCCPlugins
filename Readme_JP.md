@@ -19,6 +19,12 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 [サポートされている DCC ツール](Documentation~/jp/index.md)にインストールする手順については [インストール](Plugins~/Docs/jp/Installation.md) を参照して下さい。
 
+# フィーチャー
+
+|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
+| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
+| マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+
 # Building
 - [DCC プラグインをビルド](Plugins~/Docs/en/BuildDCCPlugins.md) (現在英語のみ)
 
@@ -30,13 +36,6 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 このドキュメントは現在整理中です。
 ご参考までに、前のバージョンのドキュメントは下記においてあります。
-
-# フィーチャー
-
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
-
 
 ## 使い方
 1. [Maya](#maya)
