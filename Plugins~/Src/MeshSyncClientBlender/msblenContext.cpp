@@ -1101,6 +1101,7 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::
     return rec;
 }
 
+
 void msblenContext::eraseStaleObjects()
 {
     for (auto i = m_obj_records.begin(); i != m_obj_records.end(); /**/) {
