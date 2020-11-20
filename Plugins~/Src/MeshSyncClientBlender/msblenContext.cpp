@@ -572,15 +572,16 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
     DupliGroupContext ctx2;
     ctx2.group_host = src;
     ctx2.dst = dst;
-    blender::blist_range<struct CollectionObject> gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-    for (struct CollectionObject* go : gobjects) {
-        struct Object* obj = go->ob;
-        if (ms::TransformPtr t = exportObject(obj, true, false)) {
+    auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
+    for (auto go : gobjects) {
+        auto obj = go->ob;
+        if (auto t = exportObject(obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
         }
         exportReference(obj, ctx2);
     }
+
     return dst;
 }
 
@@ -1094,7 +1095,7 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::
         m_entity_manager.touch(group_path);
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-        for (struct CollectionObject* go : gobjects)
+        for (auto go : gobjects)
             touchRecord(go->ob, group_path, true);
     }
     return rec;
@@ -1183,7 +1184,7 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
         group_path += (group->id.name + 2);
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-        for (struct CollectionObject* go : gobjects) {
+        for (auto go : gobjects) {
             exportAnimation(go->ob, false, group_path);
         }
     }
