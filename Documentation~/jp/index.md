@@ -4,6 +4,13 @@ MeshSync DCC Plugins は DCC ツール上のモデルの編集をリアルタイ
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインの格納するパッケージです。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
+## フィーチャー
+
+|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
+| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
+| マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+
+
 ## サポートされている DCC ツール
 
 |                     | Windows            | Mac                | Linux              | 

@@ -4,6 +4,13 @@ MeshSync DCC Plugins is package that contains plugin binaries of DCC tools for u
 which is another package for synchronizing meshes/models editing in DCC tools into Unity in real time.
 This allows devs to immediately see how things will look in-game while modelling.
 
+## Features
+
+|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
+| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
+| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+
+
 ## Supported DCC Tools
 
 |                     | Windows            | Mac                | Linux              | 
