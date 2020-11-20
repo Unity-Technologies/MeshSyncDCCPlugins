@@ -54,11 +54,11 @@ function(configure_python python_ver_no_dots)
 	  )
         if(WIN32)
             execute_process(WORKING_DIRECTORY "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PCbuild" 
-                COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64
+                COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64 --pgo
             )
         else()
             execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
-                COMMAND ./configure
+                COMMAND ./configure --enable-optimizations
             )
         endif()
         set(PYTHON_${python_ver_no_dots}_CONFIGURED ON CACHE INTERNAL "Python ${python_ver_no_dots} configured flag")
