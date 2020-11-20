@@ -1537,8 +1537,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
     return true;
 }
 
-void msblenContext::flushPendingList()
-{
+void msblenContext::flushPendingList() {
     if (!m_pending.empty() && !m_sender.isExporting()) {
         for (auto p : m_pending)
             exportObject(p, false);
