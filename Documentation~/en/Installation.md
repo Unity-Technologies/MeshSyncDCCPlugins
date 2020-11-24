@@ -87,12 +87,12 @@ First, get **MeshSync DCC Plugins** package.
      * Click "Install" at the top right of the window, and select the appropriate **blender-2.xx.zip** file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
      
-     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
   
-![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
+![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
 
 
 #### Caveat
@@ -119,7 +119,7 @@ Steps to uninstall:
 1. Go to Panel -> Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
-![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
 
 
 ### Modo
@@ -131,7 +131,7 @@ Steps to uninstall:
 4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
 1. Confirm that UnityMeshSync view is added in the tabs UI.
 
-![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+![MeshSyncClientModo](../images/MeshSyncClientModo.png)
 
 #### Caveat
 

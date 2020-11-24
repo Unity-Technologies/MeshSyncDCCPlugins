@@ -86,12 +86,12 @@
      * ウィンドウの右上の "Install" をクリックし、該当の **blender-2.xx.zip** を指定する。
      * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する。
 
-     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
 
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
 1. MeshSync パネルが追加されたのを確認する。
   
-![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
+![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
    
   
 #### 注意
@@ -117,7 +117,7 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Panel -> Unity Mesh Sync を開く。  
    このメニューが見つからない場合、 Plug-in ウィンドウに "Unity Mesh Sync" がチェックされているかを確認する。
    
-![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
   
 
 
@@ -130,7 +130,7 @@ Blender のプラグインをインストールする時、古いバージョン
 4. Modo のタブ UI で、*+* をクリックし、Application -> Custom View -> UnityMeshSync を選択する。
 1. UnityMeshSync のビューが追加されたのを確認する。
 
-![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+![MeshSyncClientModo](../images/MeshSyncClientModo.png)
 
 #### 注意
 
