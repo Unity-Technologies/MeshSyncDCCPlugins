@@ -97,7 +97,7 @@ bool EntityManager::eraseThreadSafe(TransformPtr v)
 
 inline void EntityManager::addTransform(TransformPtr obj)
 {
-    auto& rec = lockAndGet(obj->path);
+    EntityManager::Record& rec = lockAndGet(obj->path);
     rec.updated = true;
     rec.waitTask();
 
@@ -111,7 +111,7 @@ inline void EntityManager::addTransform(TransformPtr obj)
     else {
         rec.entity = obj;
 
-        uint64_t checksum = obj->checksumTrans();
+        const uint64_t checksum = obj->checksumTrans();
         if (rec.checksum_trans != checksum) {
             rec.dirty_trans = true;
             rec.checksum_trans = checksum;
@@ -127,7 +127,7 @@ inline void EntityManager::addTransform(TransformPtr obj)
 
 inline void EntityManager::addGeometry(TransformPtr obj)
 {
-    auto& rec = lockAndGet(obj->path);
+    EntityManager::Record& rec = lockAndGet(obj->path);
     rec.updated = true;
     rec.waitTask();
 
@@ -145,8 +145,8 @@ inline void EntityManager::addGeometry(TransformPtr obj)
         rec.entity = obj;
 
         rec.task = std::async(std::launch::async, [this, obj, &rec]() {
-            auto checksum_trans = obj->checksumTrans();
-            auto checksum_geom = obj->checksumGeom();
+            const uint64_t checksum_trans = obj->checksumTrans();
+            const uint64_t checksum_geom = obj->checksumGeom();
             if (rec.checksum_geom != checksum_geom) {
                 rec.dirty_geom = true;
                 rec.checksum_trans = checksum_trans;
@@ -195,10 +195,10 @@ std::vector<TransformPtr> EntityManager::getDirtyTransforms()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        auto& r = p.second;
+        Record& r = p.second;
         if (r.dirty_trans) {
             if (r.entity->isGeometry()) {
-                auto t = Transform::create();
+                std::shared_ptr<Transform> t = Transform::create();
                 *t = *r.entity;
                 ret.push_back(t);
             }
@@ -216,7 +216,7 @@ std::vector<TransformPtr> EntityManager::getDirtyGeometries()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        auto& r = p.second;
+        Record& r = p.second;
         if (r.dirty_geom) {
             ret.push_back(r.entity);
         }
@@ -232,7 +232,7 @@ std::vector<Identifier>& EntityManager::getDeleted()
 void EntityManager::makeDirtyAll()
 {
     for (auto& p : m_records) {
-        auto& r = p.second;
+        Record& r = p.second;
         if(r.entity->isGeometry())
             r.dirty_geom = true;
         else
@@ -243,7 +243,7 @@ void EntityManager::makeDirtyAll()
 void EntityManager::clearDirtyFlags()
 {
     for (auto& p : m_records) {
-        auto& r = p.second;
+        Record& r = p.second;
         r.updated = r.dirty_geom = r.dirty_trans = false;
     }
     m_deleted.clear();
@@ -255,7 +255,7 @@ std::vector<TransformPtr> EntityManager::getStaleEntities()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        auto& r = p.second;
+        Record& r = p.second;
         if (!r.updated)
             ret.push_back(r.entity);
     }

@@ -103,6 +103,7 @@ class msblenContext
 {
 public:
     static msblenContext& getInstance();
+    void Destroy();
 
     SyncSettings& getSettings();
     const SyncSettings& getSettings() const;
