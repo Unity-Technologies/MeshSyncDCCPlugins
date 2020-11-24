@@ -1,5 +1,14 @@
 # Installation
 
+## PackageManager
+
+First, get **MeshSync DCC Plugins** package.
+1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html) 
+2. Click the **+** button, and choose **Add package from git URL** 
+3. Type in `com.unity.meshsync.dcc-plugins`.
+
+## DCC Tools Setup
+
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
 1. [MotionBuilder](#motionbuilder)
@@ -7,7 +16,7 @@
 1. [Metasequoia](#metasequoia)
 1. [Modo](#modo)
 
-## Maya
+### Maya
 
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for Maya.
@@ -28,7 +37,7 @@
   
 ![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
 
-## 3ds Max
+### 3ds Max
 
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for 3ds Max.
@@ -47,7 +56,7 @@
 
 ![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
 
-## MotionBuilder
+### MotionBuilder
 
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for MotionBuilder.
@@ -63,7 +72,7 @@
 
 ![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
 
-## Blender
+### Blender
   
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for Blender.
@@ -86,7 +95,7 @@
 ![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
 
 
-### Caveat
+#### Caveat
 
 When installing a Blender plugin, the older version has to be uninstalled first if it exists.   
 Steps to uninstall:
@@ -99,7 +108,7 @@ Steps to uninstall:
     ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
     ``` 
 
-## Metasequoia
+### Metasequoia
   
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for Metasequoia.
@@ -113,7 +122,7 @@ Steps to uninstall:
 ![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
 
 
-## Modo
+### Modo
 
 1. Follow the instructions in [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
    to build MeshSync plugin for Modo. Due to Modo's licensing, manual building is required at the moment.
@@ -124,7 +133,7 @@ Steps to uninstall:
 
 ![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
 
-### Caveat
+#### Caveat
 
 When installing a newer version of the plugin, the existing version must be removed first if it exists.  
 Steps to remove:

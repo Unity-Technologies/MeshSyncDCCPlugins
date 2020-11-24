@@ -1,5 +1,14 @@
 # Installation
 
+## PackageManager
+
+まず、**MeshSync DCC Plugins ** パッケージを取得する。
+1. [パッケージマネージャー](https://docs.unity3d.com/ja/current/Manual/upm-ui.html)を開く
+2. **+** ボタンをクリックし、**Add package from git URL** を選択する
+3. `com.unity.meshsync.dcc-plugins` を記入する。  
+
+## DCC ツールのセットアップ
+
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
 1. [MotionBuilder](#motionbuilder)
@@ -7,9 +16,7 @@
 1. [Metasequoia](#metasequoia)
 1. [Modo](#modo)
 
-## Maya
-
-
+### Maya
 
 1. ファイルエクスプローラーで `Packages / MeshSync DCC Plugins / Editor / Plugins〜` フォルダーを開き、
    該当の Maya 用の zip ファイルを解凍する。
@@ -30,7 +37,7 @@
 ![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
 
 
-## 3ds Max
+### 3ds Max
 
 1. ファイルエクスプローラーで `Packages / MeshSync DCC Plugins / Editor / Plugins〜` フォルダーを開き、
    該当の 3ds Max 用の zip ファイルを解凍する。
@@ -49,7 +56,7 @@
 
 ![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
 
-## MotionBuilder
+### MotionBuilder
 
 
 1. ファイルエクスプローラーで `Packages / MeshSync DCC Plugins / Editor / Plugins〜` フォルダーを開き、
@@ -64,7 +71,7 @@
 
 ![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
 
-## Blender
+### Blender
    
 1. ファイルエクスプローラーで `Packages / MeshSync DCC Plugins / Editor / Plugins〜` フォルダーを開き、
    該当の Blender 用の zip ファイルを解凍する。
@@ -87,7 +94,7 @@
 ![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
    
   
-### 注意
+#### 注意
 
 Blender のプラグインをインストールする時、古いバージョンのプラグインがあれば、それを事前にアンインストールしておく必要があります。  
 アンインストールの手順：
@@ -100,7 +107,7 @@ Blender のプラグインをインストールする時、古いバージョン
     ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
     ```   
   
-## Metasequoia
+### Metasequoia
 1. ファイルエクスプローラーで `Packages / MeshSync DCC Plugins / Editor / Plugins〜` フォルダーを開き、
    該当の Metasequoia 用の zip ファイルを解凍する。
 1. Metasequoia を起動する。
@@ -114,7 +121,7 @@ Blender のプラグインをインストールする時、古いバージョン
   
 
 
-## Modo
+### Modo
 
 1. [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
    を参考に、Modo 用の MeshSync　プラグインをビルドする。Modo のライセンスにより、現在手動のビルドが必要です。
@@ -125,7 +132,7 @@ Blender のプラグインをインストールする時、古いバージョン
 
 ![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
 
-### 注意
+#### 注意
 
 古いバージョンのプラグインがあれば、事前にそれを削除する必要があります。  
 削除の手順：
