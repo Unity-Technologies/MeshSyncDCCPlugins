@@ -124,7 +124,8 @@ Blender のプラグインをインストールする時、古いバージョン
 ### Modo
 
 1. [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
-   を参考に、Modo 用の MeshSync　プラグインをビルドする。Modo のライセンスにより、現在手動のビルドが必要です。
+   を参考に、Modo 用の MeshSync　プラグインをビルドする。  
+   Modo のライセンスにより、現在手動のビルドが必要です。
 1. Modo を起動する。
 2. System -> Add Plug-in をクリックし、Modo のバージョンと該当する *MeshSyncClientModo.lx* を選択する。
 4. Modo のタブ UI で、*+* をクリックし、Application -> Custom View -> UnityMeshSync を選択する。

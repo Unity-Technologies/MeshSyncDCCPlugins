@@ -125,7 +125,8 @@ Steps to uninstall:
 ### Modo
 
 1. Follow the instructions in [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
-   to build MeshSync plugin for Modo. Due to Modo's licensing, manual building is required at the moment.
+   to build MeshSync plugin for Modo.   
+   Due to Modo's licensing, manual building is required at the moment.
 1. Start Modo.
 3. Go to System -> Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
 4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
