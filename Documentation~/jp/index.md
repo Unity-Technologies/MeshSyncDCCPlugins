@@ -38,7 +38,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
 
-メモ:
+メモ：
 * :white_check_mark: : 対応済み
 * :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
 * empty : これから対応する可能性がある
