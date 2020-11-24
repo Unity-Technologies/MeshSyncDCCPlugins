@@ -42,3 +42,8 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 * :white_check_mark: : 対応済み
 * :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
 * empty : これから対応する可能性がある
+
+# DCC プラグインのインストール方法
+
+[MeshSyncの環境設定](https://docs.unity3d.com/Packages/com.unity.meshsync@0.4/manual/jp/Preferences.html)で、
+いくつかのDCCツールに簡単にインストールできます。 または、[手動インストール](Installation.md)もできます。

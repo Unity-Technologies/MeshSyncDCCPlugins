@@ -17,8 +17,6 @@ DCC ツール上のモデルの編集をリアルタイムに Unity に反映さ
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
-[サポートされている DCC ツール](Documentation~/jp/index.md)にインストールする手順については [インストール](Plugins~/Docs/jp/Installation.md) を参照して下さい。
-
 # フィーチャー
 
 |                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
@@ -57,6 +55,10 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 * :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
 * empty : これから対応する可能性がある
 
+# DCC プラグインのインストール方法
+
+[MeshSyncの環境設定](https://docs.unity3d.com/Packages/com.unity.meshsync@0.4/manual/jp/Preferences.html)で、
+いくつかのDCCツールに簡単にインストールできます。 または、[手動インストール](Documentation~/jp/Installation.md)もできます。
 
  
 # Building
