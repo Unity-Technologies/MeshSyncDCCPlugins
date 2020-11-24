@@ -1,5 +1,14 @@
 # Installation
 
+## PackageManager
+
+まず、**MeshSync DCC Plugins ** パッケージを取得する。
+1. [パッケージマネージャー](https://docs.unity3d.com/ja/current/Manual/upm-ui.html)を開く。
+2. **+** ボタンをクリックし、**Add package from git URL** を選択する。
+3. `com.unity.meshsync.dcc-plugins` を記入する。  
+
+## DCC ツールのセットアップ
+
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
 1. [MotionBuilder](#motionbuilder)
@@ -7,12 +16,10 @@
 1. [Metasequoia](#metasequoia)
 1. [Modo](#modo)
 
-## Maya
+### Maya
 
-<img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
-
-1. MeshSync と同じバージョンを持つ最新の Maya プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+   該当の Maya 用の zip ファイルを解凍する。
 1. プラグインをコピーする
    - Windows:   
      `MAYA_APP_DIR` の環境変数が設定されている場合はそこにコピーする。  
@@ -27,12 +34,13 @@
 1. シェルフ UI に UnityMeshSync が追加されているはずです。  
    歯車アイコンで設定メニューを開き、MeshSync と色々遊んでみましょう。
 
-## 3ds Max
+![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
 
-<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
 
-1. MeshSync と同じバージョンを持つ最新の 3ds Max プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
+### 3ds Max
+
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+   該当の 3ds Max 用の zip ファイルを解凍する。
 1. 3ds Max を起動する。
 1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
    - **(推奨)**　追加されたプラグイン用のパス。このメニューで追加できます：
@@ -46,13 +54,13 @@
    - メニューバーを編集する場合、Action に "UnityMeshSync" カテゴリが追加
      されているので、そちらから MeshSync の機能にアクセスできます。
 
-## MotionBuilder
+![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
+
+### MotionBuilder
 
 
-<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
-
-1. MeshSync と同じバージョンを持つ最新の MotionBuilder プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+   該当の MotionBuilder 用の zip ファイルを解凍する。
 1. MotionBuilder を起動する。
 1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
 1. プラグイン用のパスに、使用されている MotionBuilder のバージョンに該当する *MeshSyncClientMotionBuilder.dll* をコピーする。
@@ -61,31 +69,32 @@
 1. "UnityMeshSync" をシーンに追加する。
 1. Navigator 内の Devices -> UnityMeshSync を選択することで、MeshSync の各種設定や機能にアクセスできます。 
 
-## Blender
-   
-1. MeshSync と同じバージョンを持つ最新の Blender プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
+![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
 
+### Blender
+   
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+   該当の Blender 用の zip ファイルを解凍する。
 1. Blender を起動する。
 1. Blender のバージョンによって、インストールする方法が少々違います
    - Blender 2.79:
      * File -> User Preferences -> Add-ons を開く。
-     * 画面下部の "Install Add-on from file" を押し、プラグインの zip ファイルを指定する。
+     * 画面下部の "Install Add-on from file" を押し、**blender-2.79.zip** を指定する。
      * "Import-Export: Unity Mesh Sync" が追加されたのを確認する。        
    - Blender 2.80 以降:
      * Edit -> User Preferences を開く。 
-     * ウィンドウの右上の "Install" をクリックし、プラグインの zip ファイルを指定する。
+     * ウィンドウの右上の "Install" をクリックし、該当の **blender-2.xx.zip** を指定する。
      * "Import-Export: Unity Mesh Sync" が "Add-ons" タブに追加されたのを確認する。
 
-     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
 
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
 1. MeshSync パネルが追加されたのを確認する。
   
-![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
+![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
    
   
-### 注意
+#### 注意
 
 Blender のプラグインをインストールする時、古いバージョンのプラグインがあれば、それを事前にアンインストールしておく必要があります。  
 アンインストールの手順：
@@ -95,14 +104,12 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Blender を再起動。
 1. Mac OSX の場合、下記のフォルダーにインストールされたプラグインのファイルを削除 :
     ``` 
-    ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
+    ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ```   
   
-## Metasequoia
-1. MeshSync と同じバージョンを持つ最新の Metasequoia プラグインを[リリース](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases)から取得。  
-   見つからない場合は、[手動でビルド](../en/BuildDCCPlugins.md) (現在英語のみ) をするか、[issueを作成し](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new)、ご連絡を下さい。
-
-1. zip ファイルを解凍。
+### Metasequoia
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+   該当の Metasequoia 用の zip ファイルを解凍する。
 1. Metasequoia を起動する。
 1. Help -> About Plug-ins を開き、ウィンドウの左下の "Install" をクリックする。
 1. 解凍した zip ファイルの中から、該当するプラグインファイルを指定する。  
@@ -110,21 +117,23 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Panel -> Unity Mesh Sync を開く。  
    このメニューが見つからない場合、 Plug-in ウィンドウに "Unity Mesh Sync" がチェックされているかを確認する。
    
-![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
   
 
 
-## Modo
+### Modo
 
-1. Modo のライセンスにより、現在[手動のビルド](../en/BuildDCCPlugins.md) (英語のみ) が必要です。
+1. [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
+   を参考に、Modo 用の MeshSync　プラグインをビルドする。  
+   Modo のライセンスにより、現在手動のビルドが必要です。
 1. Modo を起動する。
 2. System -> Add Plug-in をクリックし、Modo のバージョンと該当する *MeshSyncClientModo.lx* を選択する。
 4. Modo のタブ UI で、*+* をクリックし、Application -> Custom View -> UnityMeshSync を選択する。
 1. UnityMeshSync のビューが追加されたのを確認する。
 
-![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+![MeshSyncClientModo](../images/MeshSyncClientModo.png)
 
-### 注意
+#### 注意
 
 古いバージョンのプラグインがあれば、事前にそれを削除する必要があります。  
 削除の手順：

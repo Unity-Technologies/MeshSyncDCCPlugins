@@ -1,7 +1,7 @@
 ![demo](Documentation~/images/Demo.gif)
 
 # Other Languages
-- [日本語](Readme_JP.md)
+- [English](Readme.md)
 
 # MeshSync DCC Plugins
 
@@ -14,10 +14,8 @@
 ![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/6f4a7e27-d53f-4ad3-bef5-9d3961bb68fb)
 
 DCC ツール上のモデルの編集をリアルタイムに Unity に反映させるためのパッケージ: 
-[MeshSync](https://github.com/unity3d-jp/MeshSync) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
-
-[サポートされている DCC ツール](Documentation~/jp/index.md)にインストールする手順については [インストール](Plugins~/Docs/jp/Installation.md) を参照して下さい。
 
 # フィーチャー
 
@@ -25,6 +23,47 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
 | マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 
+## サポートされている DCC ツール
+
+|                     | Windows            | Mac                | Linux              | 
+| --------------------| ------------------ | ------------------ |------------------- | 
+| Maya 2017           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2018           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2019           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2020           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya LT 2019 +      | :white_check_mark: |                    | :x:                | 
+| 3ds Max 2017        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2019        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2020        | :white_check_mark: | :x:                | :x:                | 
+| MotionBuilder 2017  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2018  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2019  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2020  | :white_check_mark: | :x:                | :white_check_mark: | 
+| Blender 2.79b       | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.81        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.82        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.83        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.90        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
+
+メモ：
+* :white_check_mark: : 対応済み
+* :x: : 対応することが不可能 (その OS で、DCC ツールが動作しないなど)
+* empty : これから対応する可能性がある
+
+# DCC プラグインのインストール方法
+
+![MeshSyncPreferences](Documentation~/images/MeshSyncPreferences.png)
+
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) の環境設定で、
+いくつかのDCCツールに簡単にインストールできます。  
+または、[手動インストール](Documentation~/jp/Installation.md)もできます。
+
+ 
 # Building
 - [DCC プラグインをビルド](Plugins~/Docs/en/BuildDCCPlugins.md) (現在英語のみ)
 

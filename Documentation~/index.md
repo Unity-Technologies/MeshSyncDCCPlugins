@@ -42,3 +42,11 @@ Notes:
 * :white_check_mark: : Supported
 * :x: : Impossible to support (platform unsupported by the DCC, etc)
 * empty : May be supported in the future
+
+# DCC Plugin Installation
+
+![MeshSyncPreferences](images/MeshSyncPreferences.png)
+
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
+provides easy installation on several DCC tools.  
+Alternatively, [Manual Installation](en/Installation.md) is also available.

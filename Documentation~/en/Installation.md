@@ -1,5 +1,14 @@
 # Installation
 
+## PackageManager
+
+First, get **MeshSync DCC Plugins** package.
+1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
+2. Click the **+** button, and choose **Add package from git URL**.
+3. Type in `com.unity.meshsync.dcc-plugins`.
+
+## DCC Tools Setup
+
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
 1. [MotionBuilder](#motionbuilder)
@@ -7,13 +16,11 @@
 1. [Metasequoia](#metasequoia)
 1. [Modo](#modo)
 
-## Maya
+### Maya
 
-<img align="right" src="../Images/MeshSyncClientMaya.png" height=400>
-
-1. Get the latest Maya plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).  
-   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new).
-1. Copy the plugins
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+   and uncompress the appropriate zip file for Maya.
+1. Copy the uncompressed files:
    - Windows:   
      If `MAYA_APP_DIR` environment variable is setup, copy the *modules* directory there.  
      If not, go to `%USERPROFILE%\Documents\maya` in Windows Explorer, and copy the *modules* directory there.
@@ -28,12 +35,12 @@
 1. Notice that *UnityMeshSync* should now be available on the shelf UI.  
   Click on the gear icon to open the settings menu and start playing around with MeshSync.
   
-## 3ds Max
+![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
 
-<img align="right" src="../Images/MeshSyncClient3dsMax.png" height=400>
+### 3ds Max
 
-1. Get the latest 3ds Max plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).  
-   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new).
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+   and uncompress the appropriate zip file for 3ds Max.
 1. Start 3ds Max
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
    one of the following directories:
@@ -47,12 +54,12 @@
    > If we change the menu bar, "UnityMeshSync" will be added under Action, which 
    > still allows us to access MeshSync features.
 
-## MotionBuilder
+![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
 
-<img align="right" src="../Images/MeshSyncClientMotionBuilder.png" height=240>
+### MotionBuilder
 
-1. Get the latest MotionBuilder plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).  
-   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new).
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+   and uncompress the appropriate zip file for MotionBuilder.
 1. Start MotionBuilder.
 1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
 1. Copy *MeshSyncClientMotionBuilder.dll* that corresponds to the used version of MotionBuilder into 
@@ -63,31 +70,32 @@
 1. Start playing around with various MeshSync settings and features by 
    selecting Devices -> UnityMeshSync in the Navigator.
 
+![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
 
-## Blender
+### Blender
   
-1. Get the latest Blender plugin with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).  
-   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new).
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+   and uncompress the appropriate zip file for Blender.
 1. Start Blender
 1. Depending on the Blender version, the installation is a bit different.
    - Blender 2.79:
      * Go to File -> User Preferences -> Add-ons
-     * Click "Install Add-on from file" at the bottom of the window, and select the plugin zip file.
+     * Click "Install Add-on from file" at the bottom of the window, and select **blender-2.79.zip** file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the menu.
    - Blender 2.80 or after:
      * Go to Edit -> User Preferences
-     * Click "Install" at the top right of the window, and select the plugin zip file.
+     * Click "Install" at the top right of the window, and select the appropriate **blender-2.xx.zip** file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
      
-     ![MeshSyncClientBlender_Installation](../Images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
   
-![MeshSyncClientBlender](../Images/MeshSyncClientBlender.png)
+![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
 
 
-### Caveat
+#### Caveat
 
 When installing a Blender plugin, the older version has to be uninstalled first if it exists.   
 Steps to uninstall:
@@ -97,15 +105,13 @@ Steps to uninstall:
 1. Restart Blender. 
 1. On Mac OSX, delete the installed plugin files in the following folder:
     ``` 
-    ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
+    ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ``` 
 
-
-## Metasequoia
+### Metasequoia
   
-1. Get the latest Metasequoia plugin zip file with the same MeshSync version on the [release page](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).  
-   If it doesn't exist, please try [manual building](BuildDCCPlugins.md) or contact us by [creating a new issue](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/issues/new).
-1. Extract the zip file.   
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+   and uncompress the appropriate zip file for Metasequoia.
 1. Start Metasequoia.
 1. Go to Help -> About Plug-ins, and click "Install" at the lower left of the Plug-win window.
 1. Select the plugin file from the extracted zip file that corresponds to the version of Metasequoia.  
@@ -113,20 +119,22 @@ Steps to uninstall:
 1. Go to Panel -> Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
-![MeshSyncClientMQ](../Images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
 
 
-## Modo
+### Modo
 
-1. Due to Modo's licensing, [manual building](BuildDCCPlugins.md) is required at the moment.
+1. Follow the instructions in [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
+   to build MeshSync plugin for Modo.   
+   Due to Modo's licensing, manual building is required at the moment.
 1. Start Modo.
 3. Go to System -> Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
 4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
 1. Confirm that UnityMeshSync view is added in the tabs UI.
 
-![MeshSyncClientModo](../Images/MeshSyncClientModo.png)
+![MeshSyncClientModo](../images/MeshSyncClientModo.png)
 
-### Caveat
+#### Caveat
 
 When installing a newer version of the plugin, the existing version must be removed first if it exists.  
 Steps to remove:
