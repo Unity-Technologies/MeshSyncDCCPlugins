@@ -13,18 +13,49 @@
 ![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/2e9a8300-389b-47be-9806-246c5121830b)
 ![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/6f4a7e27-d53f-4ad3-bef5-9d3961bb68fb)
 
-This repository provides the source to build DCC plugins for [MeshSync](https://github.com/unity3d-jp/MeshSync), 
+This repository provides the source to build DCC plugins for [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest), 
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
 This allows devs to immediately see how things will look in-game while modelling.  
-
-Please refer to [Installation](Plugins~/Docs/en/Installation.md) for the steps to install the plugin to one of the 
-[supported DCC tools](Documentation~/index.md).
 
 # Features
 
 |                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
 | --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
 | Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+
+## Supported DCC Tools
+
+|                     | Windows            | Mac                | Linux              | 
+| --------------------| ------------------ | ------------------ |------------------- | 
+| Maya 2017           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2018           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2019           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2020           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya LT 2019 +      | :white_check_mark: |                    | :x:                | 
+| 3ds Max 2017        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2019        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2020        | :white_check_mark: | :x:                | :x:                | 
+| MotionBuilder 2017  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2018  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2019  | :white_check_mark: | :x:                | :white_check_mark: | 
+| MotionBuilder 2020  | :white_check_mark: | :x:                | :white_check_mark: | 
+| Blender 2.79b       | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.81        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.82        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.83        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Blender 2.90        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
+
+Notes:
+* :white_check_mark: : Supported
+* :x: : Impossible to support (platform unsupported by the DCC, etc)
+* empty : May be supported in the future
+  
+
 
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
