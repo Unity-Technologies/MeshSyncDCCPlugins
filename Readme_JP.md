@@ -59,7 +59,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 ![MeshSyncPreferences](Documentation~/images/MeshSyncPreferences.png)
 
-[MeshSyncの環境設定](https://docs.unity3d.com/Packages/com.unity.meshsync@0.4/manual/jp/Preferences.html)で、
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)の環境設定で、
 いくつかのDCCツールに簡単にインストールできます。  
 または、[手動インストール](Documentation~/jp/Installation.md)もできます。
 
