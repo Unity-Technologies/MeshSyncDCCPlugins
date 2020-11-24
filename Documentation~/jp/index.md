@@ -46,4 +46,5 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 # DCC プラグインのインストール方法
 
 [MeshSyncの環境設定](https://docs.unity3d.com/Packages/com.unity.meshsync@0.4/manual/jp/Preferences.html)で、
-いくつかのDCCツールに簡単にインストールできます。 または、[手動インストール](Installation.md)もできます。
+いくつかのDCCツールに簡単にインストールできます。  
+または、[手動インストール](Installation.md)もできます。

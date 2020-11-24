@@ -59,7 +59,7 @@ Notes:
 # DCC Plugin Installation
 
 [MeshSync's Preferences](https://docs.unity3d.com/Packages/com.unity.meshsync@0.4/manual/en/Preferences.html) page
-provides easy installation on several DCC tools. 
+provides easy installation on several DCC tools.  
 Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
 
 # Building
