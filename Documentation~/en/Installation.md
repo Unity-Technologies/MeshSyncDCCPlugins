@@ -105,7 +105,7 @@ Steps to uninstall:
 1. Restart Blender. 
 1. On Mac OSX, delete the installed plugin files in the following folder:
     ``` 
-    ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
+    ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ``` 
 
 ### Metasequoia

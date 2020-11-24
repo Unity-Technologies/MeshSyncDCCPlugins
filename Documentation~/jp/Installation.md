@@ -104,7 +104,7 @@ Blender のプラグインをインストールする時、古いバージョン
 1. Blender を再起動。
 1. Mac OSX の場合、下記のフォルダーにインストールされたプラグインのファイルを削除 :
     ``` 
-    ~/Library/ApplicationSupport/Blender/2.83/scripts/addons/MeshSyncClientBlender
+    ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ```   
   
 ### Metasequoia
