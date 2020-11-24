@@ -196,7 +196,8 @@ If the build is successful, the generated binary files will be located in this f
 Dist/MeshSyncClient_<meshsync_version>_<DCC_Tool>
 ``` 
 
-Refer to the [installation guide](Installation.md) to install the plugin for each DCC tool.
+Refer to the [installation guide](../../../Documentation~/en/Installation.md) 
+to install the plugin for each DCC tool.
 
 ## Tips
 
