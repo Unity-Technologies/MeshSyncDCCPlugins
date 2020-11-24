@@ -3,8 +3,8 @@
 ## PackageManager
 
 First, get **MeshSync DCC Plugins** package.
-1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html) 
-2. Click the **+** button, and choose **Add package from git URL** 
+1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
+2. Click the **+** button, and choose **Add package from git URL**.
 3. Type in `com.unity.meshsync.dcc-plugins`.
 
 ## DCC Tools Setup
