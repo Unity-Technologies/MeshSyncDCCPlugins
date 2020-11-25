@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.4-preview] - 2020-11-25
+* fix: plugin for Maya 2017 (initializePlugin failed)
+* fix: use com.unity.meshsync@0.5.4-preview with its fixes 
+
 ## [0.5.3-preview] - 2020-11-24
 * fix: update the source of ISPC library and update to use ISPC 1.14.1 
 * fix: Blender plugin causing crash when quitting application on Mac
