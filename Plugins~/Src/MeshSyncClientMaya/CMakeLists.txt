@@ -19,6 +19,10 @@ target_include_directories(${MESHSYNC_CLIENT_MAYA} PRIVATE
         "${CMAKE_SOURCE_DIR}" 
         "${MAYA${MAYA_VERSION}_INCLUDE_DIR}"
 )
+target_compile_definitions(${MESHSYNC_CLIENT_MAYA}
+    PRIVATE 
+        MAYA_YEAR=${MAYA_YEAR}
+)
 
 target_link_libraries(${MESHSYNC_CLIENT_MAYA} 
     PRIVATE
