@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.3-preview] - 2020-11-24
+* fix: update the source of ISPC library and update to use ISPC 1.14.1 
+* fix: Blender plugin causing crash when quitting application on Mac
+* fix: build pipeline for XCode 12 and update the docs for installing/removing Blender plugin
+* chore: apply changes to the plugin source code in com.unity.meshsync@0.5.3
+* chore: update Blender support to Blender 2.83.9 and enable Python optimization
+* chore: update contributing policy according to the license 
+
+
 ## [0.4.0-preview] - 2020-09-29
 * feat: add support for Blender 2.90 
 * fix: check the number of UV sets in blender before getting the data
