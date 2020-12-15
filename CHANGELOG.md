@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.0-preview] - 2020-12-15
+* feat: support Blender 2.91.0 and 2.83.10 
+
 ## [0.5.4-preview] - 2020-11-25
 * fix: plugin for Maya 2017 (initializePlugin failed)
 * fix: use com.unity.meshsync@0.5.4-preview with its fixes 
