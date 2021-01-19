@@ -28,7 +28,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | 負のスケール                  | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
 | マルチ UV                     |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export           | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
-| Non-polygon shape            |                      |                      |                      |                      |                      |                      |  
+| ポリゴン以外の形状データ       |                      |                      |                      |                      |                      |                      |  
 
 ## 注意
 
@@ -122,7 +122,6 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
   - これら以外のデフォーマも適用を試みますが、前後に SkinCluster があった場合などに正しく適用されない可能性があります。
   - "Bake Deformers" をチェックすると、デフォーマを全て適用した結果を同期します。Maya 側と Unity 側で Mesh の内容がほぼ一致するようになりますが、代償として Skinning や Blendshape の情報が失われます。
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Deformers" が有効なときのみ有効です。
-- NURBS などポリゴン以外の形状データは対応していません。
 - インスタンシングは対応していますが、スキニングされたメッシュのインスタンスは現在未対応です (Unity 側では全て元インスタンスと同じ位置になっていまいます)。
 - MEL にもコマンドが登録されており、全ての機能に MEL 経由でアクセスできるようになっています。こちらの詳細は[ソースコードを参照ください](https://github.com/unity3d-jp/MeshSync/blob/master/Plugin~/MeshSyncClientMaya/msmayaCommands.cpp)。
 
@@ -174,7 +173,6 @@ MotionBuilder 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) で動作を確
 &nbsp;  
 
 - ポリゴンメッシュはスキニング/ボーンと BlendShape もそのまま Unity へ持ってこれるようになっています。
-- NURBS などポリゴン以外の形状データは対応していません
 
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/49272332-79d39480-f4b4-11e8-8ca3-0ce0bc90a965.png" height=400>
