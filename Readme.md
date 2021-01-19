@@ -19,14 +19,22 @@ This allows devs to immediately see how things will look in-game while modelling
 
 # Features
 
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| Polygon mesh sync   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |  
-| Camera sync         | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |  
-| Light sync          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |  
-| Double-sided Mesh   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |  
-| Multi UV            |                    |                    |                     | :heavy_check_mark:  |                     |                     |  
-| Scene Cache Export  | :heavy_check_mark: | :heavy_check_mark: |                     | :heavy_check_mark:  | :heavy_check_mark:  |                     |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
+| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| Multi UV            |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+
+## Caveats
+
+* Negative Scale: partially supported on some DCC Tools.
+  If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
+  Unity will treat the mesh as though every axis has a negative value.
+
 
 ## Supported DCC Tools
 
@@ -113,8 +121,6 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
 - Polygon mesh will carry skinning/bones (SkinCluster) and BlendShapes over to Unity as is.
   - MeshSync will attempt to apply any additional deformers, but if there is a SkinCluster before or after them they may not apply correctly. 
   - Check "Bake Deformers" to sync the results of applying all deformers. This will mostly sync the Mesh on both the Maya and Unity sides, but this will result in loss of Skinning and BlendShape information.
-- Be advised that the negative scale is only partially supported. 
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 - Non-polygon shape data such as NURBS is not supported.
 - Instancing is supported, but instancing for skinned meshes is currently not supported (on the Unity side they all end up in the same position as the original instance). 
 - Commands are also registered to MEL, and all features can be accessed through MEL. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClientMaya/msmayaCommands.cpp) for details.
@@ -145,8 +151,6 @@ Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
   - Morphs and Skins will sync on the Unity side as Blendshapes / Skins.
     - Unity applies them in order of Blendshape -> Skin, so if the order is reversed in Max, unintentional results may occur.
   - If "Bake Deformers" is checked, the results of applying all deformers will be sent to Unity. This will keep the content of the Mesh mostly consistent between Max and Unity, but will also result in the loss of Skinning and Blendshape information.
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 - Commands have also been added to the Max script, so all features can be accessed via the Max script. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClient3dsMax/msmaxEntryPoint.cpp) for details. 
 
 
@@ -165,8 +169,6 @@ Confirmed functionality with MotionBuilder 2015, 2016, 2017, 2018, 2019 + Window
 &nbsp;  
 
 - The Polygon mesh's skinning/bone and BlendShapes will be carried over to Unity unchanged. 
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 - Non-polygon shape data such as NURBS is not supported. 
 
 
@@ -188,8 +190,6 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
 - The polygon mesh's skinning/bone (Armature) and Blendshape will be sent to Unity unchanged. Mirror deformers are also supported. Other deformers will be ignored. 
   - Check "Bake Modifiers" to sync the results of applying all modifiers. This will make the Mesh content mostly consistent between  Blender and Unity, but will also result in the loss of Skinning and Blendshape information.  
 - Use "Convert To Mesh" to convert objects such as Nurbs into polygons, if they are able to, then sync. 
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 
 
 ### Modo
@@ -210,8 +210,6 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
     - MeshSync can only handle Joint + Weight Map skinning, or Morph deformers. Any other deformers will be ignored.
     - Checking "Bake Deformers" will send the results of applying all deformers to Unity. This will mostly synchronize the Mesh on the Unity side even with complex deformer compositions, but comes at the cost of losing skinning and Morph/Blendshape information. 
     - Mesh Instance and Replicator skinning won't display properly in Unity. "Bake Deformers" must be used.
-  - Be advised that the negative scale is only partially supported.
-    - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
   - MeshSync features can also be accessed via commands. Use unity.meshsync.settings to change settings, and unity.meshsync.export to export
 
   &nbsp;
