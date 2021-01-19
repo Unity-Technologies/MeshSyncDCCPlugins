@@ -17,41 +17,58 @@ This repository provides the source to build DCC plugins for [MeshSync](https://
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
 This allows devs to immediately see how things will look in-game while modelling.  
 
-# Features
+## Features
 
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
+| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| Multi UV            |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
+
+
+### Caveats
+
+* Negative Scale: partially supported on some DCC Tools.  
+  If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
+  Unity will treat the mesh as though every axis has a negative value.
+  Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
+  deformer information.
+
 
 ## Supported DCC Tools
 
 |                     | Windows            | Mac                | Linux              | 
 | --------------------| ------------------ | ------------------ |------------------- | 
-| Maya 2017           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Maya 2018           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Maya 2019           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Maya 2020           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Maya LT 2019 +      | :white_check_mark: |                    | :x:                | 
-| 3ds Max 2017        | :white_check_mark: | :x:                | :x:                | 
-| 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
-| 3ds Max 2019        | :white_check_mark: | :x:                | :x:                | 
-| 3ds Max 2020        | :white_check_mark: | :x:                | :x:                | 
-| MotionBuilder 2017  | :white_check_mark: | :x:                | :white_check_mark: | 
-| MotionBuilder 2018  | :white_check_mark: | :x:                | :white_check_mark: | 
-| MotionBuilder 2019  | :white_check_mark: | :x:                | :white_check_mark: | 
-| MotionBuilder 2020  | :white_check_mark: | :x:                | :white_check_mark: | 
-| Blender 2.79b       | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.80        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.81        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.82        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.83        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.90        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Modo 12             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Modo 13             | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Metasequoia 4.x     | :white_check_mark: | :white_check_mark: |                    | 
+| Maya 2017           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Maya 2018           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Maya 2019           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Maya 2020           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Maya LT 2019 +      | :heavy_check_mark: |                    | :x:                | 
+| 3ds Max 2017        | :heavy_check_mark: | :x:                | :x:                | 
+| 3ds Max 2018        | :heavy_check_mark: | :x:                | :x:                | 
+| 3ds Max 2019        | :heavy_check_mark: | :x:                | :x:                | 
+| 3ds Max 2020        | :heavy_check_mark: | :x:                | :x:                | 
+| MotionBuilder 2017  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
+| MotionBuilder 2018  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
+| MotionBuilder 2019  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
+| MotionBuilder 2020  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
+| Blender 2.79b       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Blender 2.80        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Blender 2.81        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Blender 2.82        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Blender 2.83        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Blender 2.90        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Modo 12             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Modo 13             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
+| Metasequoia 4.x     | :heavy_check_mark: | :heavy_check_mark: |                    | 
 
 Notes:
-* :white_check_mark: : Supported
+* :heavy_check_mark: : Supported
 * :x: : Impossible to support (platform unsupported by the DCC, etc)
 * empty : May be supported in the future
   
@@ -101,18 +118,13 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
 - Now that the UnityMeshSync shelf has been added, click on the gear icon to open the settings menu. 
 - While "Auto Sync" is checked, any edits to the mesh will automatically be reflected in Unity. When Auyo Sync is deactivated, click the  "Manual Sync" button to sync changes.
 - Clicking Sync under Animations causes the timer to advance from the first frame to the final frame while baking the animation and sending it to Unity. 
+- The other buttons correspond to their respective manual sync and animation sync functions. 
 
 &nbsp;  
 
-- The other buttons correspond to their respective manual sync and animation sync functions. 
-- Polygon mesh, camera, and light sync are supported. 
 - Polygon mesh will carry skinning/bones (SkinCluster) and BlendShapes over to Unity as is.
   - MeshSync will attempt to apply any additional deformers, but if there is a SkinCluster before or after them they may not apply correctly. 
   - Check "Bake Deformers" to sync the results of applying all deformers. This will mostly sync the Mesh on both the Maya and Unity sides, but this will result in loss of Skinning and BlendShape information.
-- Checing "Double Sided" will cause the Mesh to become double-sided on the Unity side
-- Be advised that the negative scale is only partially supported. 
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
-- Non-polygon shape data such as NURBS is not supported.
 - Instancing is supported, but instancing for skinned meshes is currently not supported (on the Unity side they all end up in the same position as the original instance). 
 - Commands are also registered to MEL, and all features can be accessed through MEL. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClientMaya/msmayaCommands.cpp) for details.
 
@@ -135,7 +147,6 @@ Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
 
 &nbsp;  
 
-- Polygon mesh, camera, and light sync are supported. 
 - Modifiers are mostly supported, but there are a few cases where they are not. Use the following rules.  
   - When there is no Morph or Skin, all modifiers will be applied during sync. 
   - If there is a Morph or Skin, all modifiers before them will be applied during sync.  
@@ -143,9 +154,6 @@ Confirmed functionality with 3ds Max 2016, 2017, 2018, 2019, 2020 + Windows.
   - Morphs and Skins will sync on the Unity side as Blendshapes / Skins.
     - Unity applies them in order of Blendshape -> Skin, so if the order is reversed in Max, unintentional results may occur.
   - If "Bake Deformers" is checked, the results of applying all deformers will be sent to Unity. This will keep the content of the Mesh mostly consistent between Max and Unity, but will also result in the loss of Skinning and Blendshape information.
-- Checking "Double Sided" will make the Mesh double-sided in Unity.
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 - Commands have also been added to the Max script, so all features can be accessed via the Max script. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClient3dsMax/msmaxEntryPoint.cpp) for details. 
 
 
@@ -163,12 +171,7 @@ Confirmed functionality with MotionBuilder 2015, 2016, 2017, 2018, 2019 + Window
 
 &nbsp;  
 
-- Polygon mesh, camera, and lighting sync are supported.
 - The Polygon mesh's skinning/bone and BlendShapes will be carried over to Unity unchanged. 
-- Checking "Double Sided" causes the Mesh to become double-sided in Unity. 
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
-- Non-polygon shape data such as NURBS is not supported. 
 
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/49272332-79d39480-f4b4-11e8-8ca3-0ce0bc90a965.png" height=400>
@@ -186,13 +189,9 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
 
 &nbsp;  
 
-- Polygon mesh, camera, and lighting sync are supported.
 - The polygon mesh's skinning/bone (Armature) and Blendshape will be sent to Unity unchanged. Mirror deformers are also supported. Other deformers will be ignored. 
   - Check "Bake Modifiers" to sync the results of applying all modifiers. This will make the Mesh content mostly consistent between  Blender and Unity, but will also result in the loss of Skinning and Blendshape information.  
 - Use "Convert To Mesh" to convert objects such as Nurbs into polygons, if they are able to, then sync. 
-- Check the "Double Sided" option to make the Mesh double-sided in Unity.
-- Be advised that the negative scale is only partially supported.
-  - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
 
 
 ### Modo
@@ -208,14 +207,11 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
 
   &nbsp;
 
-  - Polygon mesh, camera, and light sync are supported. Portions of Mesh Instance and Replicator are also supported.
+  - Portions of Mesh Instance and Replicator are also supported.
   - Polygon mesh Skinning/Joints and Morph will carry over to Unity, but be aware of how deformers are handled.
     - MeshSync can only handle Joint + Weight Map skinning, or Morph deformers. Any other deformers will be ignored.
     - Checking "Bake Deformers" will send the results of applying all deformers to Unity. This will mostly synchronize the Mesh on the Unity side even with complex deformer compositions, but comes at the cost of losing skinning and Morph/Blendshape information. 
     - Mesh Instance and Replicator skinning won't display properly in Unity. "Bake Deformers" must be used.
-  - Clicking "Double Sided" will cause the Mesh to be double-sided in Unity. 
-  - Be advised that the negative scale is only partially supported.
-    - If XYZ all have negative values, the Mesh will sync properly, however if only one axis has a negative value Unity will treat the Mesh as though every axis has a negative value.
   - MeshSync features can also be accessed via commands. Use unity.meshsync.settings to change settings, and unity.meshsync.export to export
 
   &nbsp;
@@ -234,7 +230,6 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
   - **If older versions are already installed, remove them manually before hand**. Delete the appropriate files before starting Metasequoia. 
 - Panel -> Unity Mesh Sync will be added after installation, open this and check "Auto Sync".
 - While "Auto Sync" is checked, changes to the mesh will automatically be reflected in Unity. If Auto Sync is disabled, use the "Manual Sync" button to sync changes. 
-- Checking "Double Sided" will cause the Mesh to be double-sided in Unity.
 - Checking "Sync Camera" will sync the camera in Metasequoia. "Camera Path" is the camera path in Unity.
 - Clicking "Import Unity Scene" will import the currently open Unity scene. Changes made to the scene can be reflected in real time. 
 

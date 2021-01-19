@@ -6,10 +6,22 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 ## フィーチャー
 
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| マルチ UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+|                              | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
+| -----------------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
+| ポリゴンメッシュの同期         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| カメラの同期                  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| ライトの同期                  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| 両面 (Double-sided) メッシュ  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| 負のスケール                  | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| マルチ UV                     |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| Scene Cache を出力            | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+| ポリゴン以外の形状データ       |                      |                      |                      |                      |                      |                      |  
 
+### 注意
+
+* 負のスケール：一部の DCC ツールにサポートされています.  
+  XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。
+  DCC ツールによっては、この場合でもメッシュを同期できる *Bake Transform* オプションがありますが、デフォーマの情報は失われます。
 
 ## サポートされている DCC ツール
 
