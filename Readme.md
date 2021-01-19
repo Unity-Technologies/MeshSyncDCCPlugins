@@ -36,6 +36,8 @@ This allows devs to immediately see how things will look in-game while modelling
 * Negative Scale: partially supported on some DCC Tools.  
   If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
   Unity will treat the mesh as though every axis has a negative value.
+  Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
+  deformer information.
 
 
 ## Supported DCC Tools
