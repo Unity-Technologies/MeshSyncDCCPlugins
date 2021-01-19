@@ -10,3 +10,4 @@ enum class ExportTarget : int {
 };
 
 } // namespace MeshSyncClient
+
