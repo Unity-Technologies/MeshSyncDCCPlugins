@@ -5,6 +5,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSyncClient/FrameRange.h"
 
 void SyncSettings::validate()
 {
@@ -503,7 +504,7 @@ bool msmodoContext::exportCache(const CacheSettings& cache_settings)
         ++scene_index;
     };
 
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         do_export();
     }

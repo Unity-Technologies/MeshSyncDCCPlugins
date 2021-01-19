@@ -80,9 +80,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindConst(SCOPE_UPDATED, (int)ObjectScope::Updated)
             BindConst(SCOPE_SELECTED, (int)ObjectScope::Selected)
 
-            BindConst(FRANGE_CURRENT, (int)FrameRange::Current)
-            BindConst(FRANGE_ALL, (int)FrameRange::All)
-            BindConst(FRANGE_CUSTOM, (int)FrameRange::Custom)
+            BindConst(FRANGE_CURRENT, (int)MeshSyncClient::FrameRange::Current)
+            BindConst(FRANGE_ALL, (int)MeshSyncClient::FrameRange::All)
+            BindConst(FRANGE_CUSTOM, (int)MeshSyncClient::FrameRange::Custom)
 
             BindConst(MFRANGE_NONE, (int)MeshSyncClient::MaterialFrameRange::None)
             BindConst(MFRANGE_ONE, (int)MeshSyncClient::MaterialFrameRange::One)
@@ -166,7 +166,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, int v) { self->getCacheSettings().object_scope = (ObjectScope)v; })
             BindProperty(frame_range,
                 [](const self_t& self) { return (int)self->getCacheSettings().frame_range; },
-                [](self_t& self, int v) { self->getCacheSettings().frame_range = (FrameRange)v; })
+                [](self_t& self, int v) { self->getCacheSettings().frame_range = (MeshSyncClient::FrameRange)v; })
             BindProperty(material_frame_range,
                 [](const self_t& self) { return (int)self->getCacheSettings().material_frame_range; },
                 [](self_t& self, int v) { self->getCacheSettings().material_frame_range = (MeshSyncClient::MaterialFrameRange)v; })

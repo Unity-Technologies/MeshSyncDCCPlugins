@@ -6,6 +6,7 @@
 #include "MeshSync/SceneGraph/msTexture.h" //TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
+#include "MeshSyncClient/FrameRange.h"
 
 #include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
@@ -112,13 +113,6 @@ enum class ObjectScope : int
     Updated,
 };
 
-enum class FrameRange : int
-{
-    Current,
-    All,
-    Custom,
-};
-
 struct SyncSettings
 {
     ms::ClientSettings client_settings;
@@ -156,7 +150,7 @@ struct CacheSettings
 {
     std::string path;
     ObjectScope object_scope = ObjectScope::All;
-    FrameRange frame_range = FrameRange::All;
+    MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
     int frame_begin = 0;
     int frame_end = 100;
     float frame_step = 1.0f;

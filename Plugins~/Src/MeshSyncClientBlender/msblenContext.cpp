@@ -1507,7 +1507,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
         ++scene_index;
     };
 
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         do_export();
     }
@@ -1515,7 +1515,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
         const int frame_current = scene.frame_current();
         int frame_start, frame_end;
         // time range
-        if (cache_settings.frame_range == FrameRange::Custom) {
+        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
             // custom frame range
             frame_start = cache_settings.frame_begin;
             frame_end = cache_settings.frame_end;

@@ -443,7 +443,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
     };
 
     auto *ifs = GetCOREInterface();
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         m_current_time_tick = ifs->GetTime();
         do_export();
@@ -453,7 +453,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
 
         TimeValue time_start = 0, time_end = 0, interval = 0;
 
-        if (cache_settings.frame_range == FrameRange::Custom) {
+        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
             // custom frame range
             time_start = cache_settings.frame_begin * ::GetTicksPerFrame();
             time_end = cache_settings.frame_end * ::GetTicksPerFrame();

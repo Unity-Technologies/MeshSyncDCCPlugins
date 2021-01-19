@@ -683,7 +683,7 @@ bool msmayaContext::exportCache(const CacheSettings& cache_settings)
         ++scene_index;
     };
 
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         do_export();
     }
@@ -693,7 +693,7 @@ bool msmayaContext::exportCache(const CacheSettings& cache_settings)
         MTime time_start, time_end;
 
         // time range
-        if (cache_settings.frame_range == FrameRange::Custom) {
+        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
             // custom frame range
             time_start = MTime(cache_settings.frame_begin, MTime::uiUnit());
             time_end = MTime(cache_settings.frame_end, MTime::uiUnit());
