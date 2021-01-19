@@ -6,9 +6,25 @@ This allows devs to immediately see how things will look in-game while modelling
 
 ## Features
 
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
+| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| Multi UV            |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
+
+
+### Caveats
+
+* Negative Scale: partially supported on some DCC Tools.  
+  If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
+  Unity will treat the mesh as though every axis has a negative value.
+  Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
+  deformer information.
 
 
 ## Supported DCC Tools
