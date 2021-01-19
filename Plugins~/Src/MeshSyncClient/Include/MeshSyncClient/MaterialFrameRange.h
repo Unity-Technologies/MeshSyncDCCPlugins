@@ -8,4 +8,4 @@ enum class MaterialFrameRange : int {
     All,
 };
 
-} // namespace ms
+} // namespace MeshSyncClient
