@@ -28,10 +28,12 @@ This allows devs to immediately see how things will look in-game while modelling
 | Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
 | Multi UV            |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
+
 
 ## Caveats
 
-* Negative Scale: partially supported on some DCC Tools.
+* Negative Scale: partially supported on some DCC Tools.  
   If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
   Unity will treat the mesh as though every axis has a negative value.
 
@@ -121,7 +123,6 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
 - Polygon mesh will carry skinning/bones (SkinCluster) and BlendShapes over to Unity as is.
   - MeshSync will attempt to apply any additional deformers, but if there is a SkinCluster before or after them they may not apply correctly. 
   - Check "Bake Deformers" to sync the results of applying all deformers. This will mostly sync the Mesh on both the Maya and Unity sides, but this will result in loss of Skinning and BlendShape information.
-- Non-polygon shape data such as NURBS is not supported.
 - Instancing is supported, but instancing for skinned meshes is currently not supported (on the Unity side they all end up in the same position as the original instance). 
 - Commands are also registered to MEL, and all features can be accessed through MEL. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClientMaya/msmayaCommands.cpp) for details.
 
@@ -169,7 +170,6 @@ Confirmed functionality with MotionBuilder 2015, 2016, 2017, 2018, 2019 + Window
 &nbsp;  
 
 - The Polygon mesh's skinning/bone and BlendShapes will be carried over to Unity unchanged. 
-- Non-polygon shape data such as NURBS is not supported. 
 
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/49272332-79d39480-f4b4-11e8-8ca3-0ce0bc90a965.png" height=400>
