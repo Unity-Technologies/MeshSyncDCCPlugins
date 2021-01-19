@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ms {
+namespace MeshSyncClient {
 
 enum class MaterialFrameRange : int {
     None,

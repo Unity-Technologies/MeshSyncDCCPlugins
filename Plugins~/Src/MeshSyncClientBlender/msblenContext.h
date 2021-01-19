@@ -75,7 +75,7 @@ struct CacheSettings
     int frame_begin = 0;
     int frame_end = 100;
     int frame_step = 1;
-    ms::MaterialFrameRange material_frame_range = ms::MaterialFrameRange::One;
+    MeshSyncClient::MaterialFrameRange material_frame_range = MeshSyncClient::MaterialFrameRange::One;
 
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
 
