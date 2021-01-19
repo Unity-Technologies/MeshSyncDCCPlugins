@@ -24,7 +24,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Polygon mesh sync   | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
 | Camera sync         | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
 | Light sync          | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
-| Double-sided Mesh   | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |                     |  
+| Double-sided Mesh   | :white_check_mark: | :white_check_mark: | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  |  
 | Multi UV            |                    |                    |                     | :white_check_mark:  |                     |                     |  
 | Scene Cache Export  | :white_check_mark: | :white_check_mark: |                     | :white_check_mark:  | :white_check_mark:  |                     |  
 
@@ -230,7 +230,6 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
   - **If older versions are already installed, remove them manually before hand**. Delete the appropriate files before starting Metasequoia. 
 - Panel -> Unity Mesh Sync will be added after installation, open this and check "Auto Sync".
 - While "Auto Sync" is checked, changes to the mesh will automatically be reflected in Unity. If Auto Sync is disabled, use the "Manual Sync" button to sync changes. 
-- Checking "Double Sided" will cause the Mesh to be double-sided in Unity.
 - Checking "Sync Camera" will sync the camera in Metasequoia. "Camera Path" is the camera path in Unity.
 - Clicking "Import Unity Scene" will import the currently open Unity scene. Changes made to the scene can be reflected in real time. 
 
