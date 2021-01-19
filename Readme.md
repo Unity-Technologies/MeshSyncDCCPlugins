@@ -17,7 +17,7 @@ This repository provides the source to build DCC plugins for [MeshSync](https://
 which  is a package for synchronizing meshes/models editing in DCC tools into Unity in real time.  
 This allows devs to immediately see how things will look in-game while modelling.  
 
-# Features
+## Features
 
 |                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
 | --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
@@ -31,7 +31,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
 
 
-## Caveats
+### Caveats
 
 * Negative Scale: partially supported on some DCC Tools.  
   If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,

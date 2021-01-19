@@ -17,7 +17,7 @@ DCC ツール上のモデルの編集をリアルタイムに Unity に反映さ
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest) と連携するための DCC プラグインのソースをこのリポジトリで提供します。  
 MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう見えるかをその場で確認しながらモデリングすることができます。
 
-# フィーチャー
+## フィーチャー
 
 |                              | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
 | -----------------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
@@ -30,7 +30,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | Scene Cache を出力            | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | ポリゴン以外の形状データ       |                      |                      |                      |                      |                      |                      |  
 
-## 注意
+### 注意
 
 * 負のスケール：一部の DCC ツールにサポートされています.  
   XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。
