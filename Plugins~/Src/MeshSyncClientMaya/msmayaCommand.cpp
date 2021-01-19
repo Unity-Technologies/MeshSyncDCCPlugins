@@ -198,7 +198,7 @@ MStatus CmdSettings::doIt(const MArgList& args_)
         else {\
             get_arg(settings.Value, Name, args);\
             if (settings.auto_sync && Sync)\
-                msmayaGetContext().sendObjects(ObjectScope::All, false);\
+                msmayaGetContext().sendObjects(MeshSyncClient::ObjectScope::All, false);\
         }\
     }
 
@@ -255,7 +255,7 @@ MStatus CmdSend::doIt(const MArgList& args_)
     MArgParser args(syntax(), args_, &status);
 
     auto target = ExportTarget::Objects;
-    auto scope = ObjectScope::All;
+    MeshSyncClient::ObjectScope scope = MeshSyncClient::ObjectScope::All;
 
     // parse args
     if (args.isFlagSet("target")) {
@@ -274,11 +274,11 @@ MStatus CmdSend::doIt(const MArgList& args_)
         std::string s;
         get_arg(s, "scope", args);
         if (s == "all")
-            scope = ObjectScope::All;
+            scope = MeshSyncClient::ObjectScope::All;
         else if (s == "selection")
-            scope = ObjectScope::Selected;
+            scope = MeshSyncClient::ObjectScope::Selected;
         else if (s == "updated")
-            scope = ObjectScope::Updated;
+            scope = MeshSyncClient::ObjectScope::Updated;
     }
 
     // do send

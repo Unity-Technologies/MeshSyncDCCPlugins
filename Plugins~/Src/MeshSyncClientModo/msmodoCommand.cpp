@@ -93,7 +93,7 @@ public:
         auto& settings = msmodoGetSettings();
 #define Handler(Name, Type, Member, Sync)\
         if(getArg(Name, Member) && settings.auto_sync && Sync)\
-            msmodoGetContext().sendObjects(ObjectScope::All, true);
+            msmodoGetContext().sendObjects(MeshSyncClient::ObjectScope::All, true);
 
         EachParam(Handler)
 #undef Handler
@@ -131,7 +131,7 @@ public:
     {
         auto target = ExportTarget::Objects;
         cmd_read_arg("target", (int&)target);
-        msmodoExport(target, ObjectScope::All);
+        msmodoExport(target, MeshSyncClient::ObjectScope::All);
     }
 };
 

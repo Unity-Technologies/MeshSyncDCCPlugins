@@ -93,7 +93,7 @@ void msmodoContext::wait()
 
 void msmodoContext::update()
 {
-    if (m_pending_scope != ObjectScope::None) {
+    if (m_pending_scope != MeshSyncClient::ObjectScope::None) {
         sendObjects(m_pending_scope, false);
     }
 }
@@ -101,7 +101,7 @@ void msmodoContext::update()
 void msmodoContext::onItemAdd(CLxUser_Item& item)
 {
     if (m_settings.auto_sync)
-        m_pending_scope = ObjectScope::All;
+        m_pending_scope = MeshSyncClient::ObjectScope::All;
 }
 
 void msmodoContext::onItemRemove(CLxUser_Item& item)
@@ -112,7 +112,7 @@ void msmodoContext::onItemRemove(CLxUser_Item& item)
         m_tree_nodes.erase(it);
 
         if (m_settings.auto_sync)
-            m_pending_scope = ObjectScope::All;
+            m_pending_scope = MeshSyncClient::ObjectScope::All;
     }
 }
 
@@ -125,8 +125,8 @@ void msmodoContext::onItemUpdate(CLxUser_Item& item)
     if (it != m_tree_nodes.end()) {
         it->second.dirty = true;
 
-        if (m_settings.auto_sync && m_pending_scope == ObjectScope::None)
-            m_pending_scope = ObjectScope::Updated;
+        if (m_settings.auto_sync && m_pending_scope == MeshSyncClient::ObjectScope::None)
+            m_pending_scope = MeshSyncClient::ObjectScope::Updated;
     }
     else {
         //dbgDumpItem(item);
@@ -136,13 +136,13 @@ void msmodoContext::onItemUpdate(CLxUser_Item& item)
 void msmodoContext::onTreeRestructure()
 {
     if (m_settings.auto_sync)
-        m_pending_scope = ObjectScope::All;
+        m_pending_scope = MeshSyncClient::ObjectScope::All;
 }
 
 void msmodoContext::onTimeChange()
 {
     if (m_settings.auto_sync)
-        sendObjects(ObjectScope::All, false);
+        sendObjects(MeshSyncClient::ObjectScope::All, false);
 }
 
 void msmodoContext::onIdle()
@@ -376,13 +376,13 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msmodoContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting()) {
         m_pending_scope = scope;
         return false;
     }
-    m_pending_scope = ObjectScope::None;
+    m_pending_scope = MeshSyncClient::ObjectScope::None;
 
     m_settings.validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
@@ -405,7 +405,7 @@ bool msmodoContext::sendObjects(ObjectScope scope, bool dirty_all)
         exportMaterials();
 
     // entities
-    if (scope == ObjectScope::All) {
+    if (scope == MeshSyncClient::ObjectScope::All) {
         auto do_export = [this](CLxUser_Item& obj) { exportObject(obj, true); };
 
         eachCamera(do_export);
@@ -415,7 +415,7 @@ bool msmodoContext::sendObjects(ObjectScope scope, bool dirty_all)
         eachMeshInstance(do_export);
         eachReplicator(do_export);
     }
-    else if (scope == ObjectScope::Updated) {
+    else if (scope == MeshSyncClient::ObjectScope::Updated) {
         int num_exported = 0;
         for (auto& kvp : m_tree_nodes) {
             auto& n = kvp.second;
@@ -433,7 +433,7 @@ bool msmodoContext::sendObjects(ObjectScope scope, bool dirty_all)
     return true;
 }
 
-bool msmodoContext::sendAnimations(ObjectScope scope)
+bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     if (!prepare() || m_sender.isExporting())
         return false;
@@ -619,21 +619,21 @@ ms::MaterialPtr msmodoContext::exportMaterial(CLxUser_Item obj)
     return ret;
 }
 
-std::vector<CLxUser_Item> msmodoContext::getNodes(ObjectScope scope)
+std::vector<CLxUser_Item> msmodoContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<CLxUser_Item> ret;
 
-    if (scope == ObjectScope::All) {
+    if (scope == MeshSyncClient::ObjectScope::All) {
         eachLocator([&](CLxUser_Item& obj) {
             ret.push_back(obj);
         });
     }
-    else if (scope == ObjectScope::Selected) {
+    else if (scope == MeshSyncClient::ObjectScope::Selected) {
         eachSelection([&](CLxUser_Item& obj) {
             ret.push_back(obj);
         });
     }
-    else if (scope == ObjectScope::Updated) {
+    else if (scope == MeshSyncClient::ObjectScope::Updated) {
         int num_exported = 0;
         for (auto& kvp : m_tree_nodes) {
             auto& n = kvp.second;
@@ -1265,7 +1265,7 @@ ms::TransformPtr msmodoContext::exportReplicator(TreeNode& n)
 // animation export
 // 
 
-int msmodoContext::exportAnimations(ObjectScope scope)
+int msmodoContext::exportAnimations(MeshSyncClient::ObjectScope scope)
 {
     const float frame_rate = (float)getFrameRate();
     const float frame_step = std::max(m_settings.frame_step, 0.1f);
@@ -1557,7 +1557,7 @@ void msmodoContext::kickAsyncExport()
     exporter->kick();
 }
 
-bool msmodoExport(ExportTarget target, ObjectScope scope)
+bool msmodoExport(ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     auto& ctx = msmodoGetContext();
     if (!ctx.isServerAvailable()) {

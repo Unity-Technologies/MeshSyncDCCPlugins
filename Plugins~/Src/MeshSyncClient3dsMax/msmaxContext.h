@@ -10,6 +10,7 @@
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msTextureManager.h"
+#include "MeshSyncClient/ObjectScope.h"
 
 
 #define msmaxAPI extern "C" __declspec(dllexport)
@@ -20,14 +21,6 @@ enum class ExportTarget : int
     Materials,
     Animations,
     Everything,
-};
-
-enum class ObjectScope : int
-{
-    None = -1,
-    All,
-    Selected,
-    Updated,
 };
 
 struct SyncSettings
@@ -68,7 +61,7 @@ struct SyncSettings
 struct CacheSettings
 {
     std::string path;
-    ObjectScope object_scope = ObjectScope::All;
+    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
     MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
     int frame_begin = 0;
     int frame_end = 100;
@@ -118,9 +111,9 @@ public:
 
     void wait();
     void update();
-    bool sendObjects(ObjectScope scope, bool dirty_all);
+    bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendMaterials(bool dirty_all);
-    bool sendAnimations(ObjectScope scope);
+    bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool exportCache(const CacheSettings& cache_settings);
 
     bool recvScene();
@@ -182,7 +175,7 @@ private:
 
     void updateRecords(bool track_delete = true);
     TreeNode& getNodeRecord(INode *n);
-    std::vector<TreeNode*> getNodes(ObjectScope scope);
+    std::vector<TreeNode*> getNodes(MeshSyncClient::ObjectScope scope);
 
     void kickAsyncExport();
 
@@ -233,7 +226,7 @@ private:
 
     bool m_dirty = true;
     bool m_scene_updated = true;
-    ObjectScope m_pending_request = ObjectScope::None;
+    MeshSyncClient::ObjectScope m_pending_request = MeshSyncClient::ObjectScope::None;
 
     std::map<INode*, AnimationRecord> m_anim_records;
     TimeValue m_current_time_tick;
@@ -254,5 +247,5 @@ private:
 #define msmaxGetContext() msmaxContext::getInstance()
 #define msmaxGetSettings() msmaxGetContext().getSettings()
 #define msmaxGetCacheSettings() msmaxGetContext().getCacheSettings()
-bool msmaxSendScene(ExportTarget target, ObjectScope scope);
+bool msmaxSendScene(ExportTarget target, MeshSyncClient::ObjectScope scope);
 bool msmaxExportCache(const CacheSettings& cache_settings);

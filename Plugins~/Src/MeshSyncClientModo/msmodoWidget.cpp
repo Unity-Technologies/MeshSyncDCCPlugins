@@ -271,12 +271,12 @@ msmodoSettingsWidget::msmodoSettingsWidget(QWidget *parent)
 
 static bool msmodoSendObjects()
 {
-    return msmodoExport(ExportTarget::Objects, ObjectScope::All);
+    return msmodoExport(ExportTarget::Objects, MeshSyncClient::ObjectScope::All);
 }
 
 static bool msmodoSendAnimations()
 {
-    return msmodoExport(ExportTarget::Animations, ObjectScope::All);
+    return msmodoExport(ExportTarget::Animations, MeshSyncClient::ObjectScope::All);
 }
 
 void msmodoSettingsWidget::onEditServer(const QString& v)

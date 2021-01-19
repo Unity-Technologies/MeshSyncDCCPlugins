@@ -207,12 +207,12 @@ void msmayaContext::onSceneLoadEnd()
 void msmayaContext::onTimeChange(const MTime & time)
 {
     if (m_settings.auto_sync) {
-        m_pending_scope = ObjectScope::All;
+        m_pending_scope = MeshSyncClient::ObjectScope::All;
         // timer callback won't be fired while scrubbing time slider. so call update() immediately
         update();
 
         // for timer callback
-        m_pending_scope = ObjectScope::All;
+        m_pending_scope = MeshSyncClient::ObjectScope::All;
     }
 }
 
@@ -421,16 +421,16 @@ void msmayaContext::removeNodeCallbacks()
     }
 }
 
-std::vector<TreeNode*> msmayaContext::getNodes(ObjectScope scope, bool include_children)
+std::vector<TreeNode*> msmayaContext::getNodes(MeshSyncClient::ObjectScope scope, bool include_children)
 {
     std::vector<TreeNode*> ret;
-    if (scope == ObjectScope::All) {
+    if (scope == MeshSyncClient::ObjectScope::All) {
         size_t n = m_tree_nodes.size();
         ret.resize(n);
         for (size_t i = 0; i < n; ++i)
             ret[i] = m_tree_nodes[i].get();
     }
-    else if (scope == ObjectScope::Selected) {
+    else if (scope == MeshSyncClient::ObjectScope::Selected) {
         MSelectionList selected;
         MGlobal::getActiveSelectionList(selected);
         uint32_t n = selected.length();
@@ -466,7 +466,7 @@ std::vector<TreeNode*> msmayaContext::getNodes(ObjectScope scope, bool include_c
             }
         }
     }
-    else if (scope == ObjectScope::Updated) {
+    else if (scope == MeshSyncClient::ObjectScope::Updated) {
         for (auto& kvp : m_dag_nodes) {
             auto& rec = kvp.second;
             if (rec.dirty) {
@@ -582,15 +582,15 @@ bool msmayaContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msmayaContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msmayaContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (m_sender.isExporting()) {
         m_pending_scope = scope;
         return false;
     }
-    m_pending_scope = ObjectScope::None;
+    m_pending_scope = MeshSyncClient::ObjectScope::None;
 
-    if (scope != ObjectScope::Updated)
+    if (scope != MeshSyncClient::ObjectScope::Updated)
         m_entity_manager.clearEntityRecords();
 
     m_settings.validate();
@@ -602,7 +602,7 @@ bool msmayaContext::sendObjects(ObjectScope scope, bool dirty_all)
         exportMaterials();
 
     int num_exported = 0;
-    bool handle_parents = scope != ObjectScope::Updated;
+    bool handle_parents = scope != MeshSyncClient::ObjectScope::Updated;
     for (auto n : getNodes(scope)) {
         if (exportObject(n, handle_parents))
             ++num_exported;
@@ -618,7 +618,7 @@ bool msmayaContext::sendObjects(ObjectScope scope, bool dirty_all)
     }
 }
 
-bool msmayaContext::sendAnimations(ObjectScope scope)
+bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     if (m_sender.isExporting())
         return false;
@@ -742,15 +742,15 @@ void msmayaContext::update()
         constructTree();
         registerNodeCallbacks();
         if (m_settings.auto_sync) {
-            m_pending_scope = ObjectScope::All;
+            m_pending_scope = MeshSyncClient::ObjectScope::All;
         }
     }
 
-    if (m_pending_scope != ObjectScope::None) {
+    if (m_pending_scope != MeshSyncClient::ObjectScope::None) {
         sendObjects(m_pending_scope, false);
     }
     else if (m_settings.auto_sync) {
-        sendObjects(ObjectScope::Updated, false);
+        sendObjects(MeshSyncClient::ObjectScope::Updated, false);
     }
 }
 
@@ -1750,7 +1750,7 @@ void msmayaContext::AnimationRecord::operator()(msmayaContext *_this)
 }
 
 
-int msmayaContext::exportAnimations(ObjectScope scope)
+int msmayaContext::exportAnimations(MeshSyncClient::ObjectScope scope)
 {
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(m_settings.frame_step, 0.1f);

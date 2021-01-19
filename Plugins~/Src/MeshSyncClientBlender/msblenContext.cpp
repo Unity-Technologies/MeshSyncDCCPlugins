@@ -91,20 +91,20 @@ const SyncSettings& msblenContext::getSettings() const { return m_settings; }
 CacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
 const CacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
-std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
+std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<Object*> ret;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
-    if (scope == ObjectScope::All) {
+    if (scope == MeshSyncClient::ObjectScope::All) {
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
         });
-    } else if (scope == ObjectScope::Selected) {
+    } else if (scope == MeshSyncClient::ObjectScope::Selected) {
         scene.each_selection([&](Object *obj) {
             ret.push_back(obj);
         });
-    } else if (scope == ObjectScope::Updated) {
+    } else if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
@@ -1355,7 +1355,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
@@ -1368,7 +1368,7 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
     if (m_settings.sync_meshes)
         exportMaterials();
 
-    if (scope == ObjectScope::Updated) {
+    if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
@@ -1393,7 +1393,7 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
     return true;
 }
 
-bool msblenContext::sendAnimations(ObjectScope scope)
+bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;

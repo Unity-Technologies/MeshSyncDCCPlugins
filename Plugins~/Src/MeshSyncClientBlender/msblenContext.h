@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MeshUtils/MeshUtils.h"
 
 #include "MeshSync/MeshSync.h"
@@ -11,6 +12,7 @@
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
+#include "MeshSyncClient/ObjectScope.h"
 
 struct SyncSettings;
 class msblenContext;
@@ -21,14 +23,6 @@ enum class ExportTarget : int
     Materials,
     Animations,
     Everything,
-};
-
-enum class ObjectScope : int
-{
-    None = -1,
-    All,
-    Selected,
-    Updated,
 };
 
 struct SyncSettings
@@ -64,7 +58,7 @@ struct SyncSettings
 struct CacheSettings
 {
     std::string path;
-    ObjectScope object_scope = ObjectScope::All;
+    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
     MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
     int frame_begin = 0;
     int frame_end = 100;
@@ -105,8 +99,8 @@ public:
     bool prepare();
 
     bool sendMaterials(bool dirty_all);
-    bool sendObjects(ObjectScope scope, bool dirty_all);
-    bool sendAnimations(ObjectScope scope);
+    bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
+    bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool exportCache(const CacheSettings& cache_settings);
 
     void flushPendingList();
@@ -176,7 +170,7 @@ private:
     msblenContext();
     ~msblenContext();
 
-    static std::vector<Object*> getNodes(ObjectScope scope);
+    static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
     int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);

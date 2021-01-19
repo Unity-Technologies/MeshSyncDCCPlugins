@@ -155,7 +155,7 @@ void msmaxContext::onSceneUpdated()
 void msmaxContext::onTimeChanged()
 {
     if (m_settings.auto_sync)
-        m_pending_request = ObjectScope::All;
+        m_pending_request = MeshSyncClient::ObjectScope::All;
 }
 
 void msmaxContext::onNodeAdded(INode * n)
@@ -246,21 +246,21 @@ void msmaxContext::update()
         updateRecords();
         m_scene_updated = false;
         if (m_settings.auto_sync) {
-            m_pending_request = ObjectScope::All;
+            m_pending_request = MeshSyncClient::ObjectScope::All;
         }
     }
-    if (m_settings.auto_sync && m_pending_request == ObjectScope::None && m_dirty) {
-        m_pending_request = ObjectScope::Updated;
+    if (m_settings.auto_sync && m_pending_request == MeshSyncClient::ObjectScope::None && m_dirty) {
+        m_pending_request = MeshSyncClient::ObjectScope::Updated;
     }
 
-    if (m_pending_request != ObjectScope::None) {
+    if (m_pending_request != MeshSyncClient::ObjectScope::None) {
         if (sendObjects(m_pending_request, false)) {
-            m_pending_request = ObjectScope::None;
+            m_pending_request = MeshSyncClient::ObjectScope::None;
         }
     }
 }
 
-bool msmaxContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (m_sender.isExporting())
         return false;
@@ -320,7 +320,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msmaxContext::sendAnimations(ObjectScope scope)
+bool msmaxContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     m_sender.wait();
     m_settings.validate();
@@ -565,24 +565,24 @@ msmaxContext::TreeNode& msmaxContext::getNodeRecord(INode *n)
     return rec;
 }
 
-std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(ObjectScope scope)
+std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<TreeNode*> ret;
     ret.reserve(m_node_records.size());
 
     switch (scope)
     {
-    case ObjectScope::All:
+    case MeshSyncClient::ObjectScope::All:
         for (auto& kvp : m_node_records)
             ret.push_back(&kvp.second);
         break;
-    case ObjectScope::Updated:
+    case MeshSyncClient::ObjectScope::Updated:
         for (auto& kvp : m_node_records) {
             if (kvp.second.dirty_trans || kvp.second.dirty_geom)
                 ret.push_back(&kvp.second);
         }
         break;
-    case ObjectScope::Selected:
+    case MeshSyncClient::ObjectScope::Selected:
         for (auto& kvp : m_node_records) {
             if (kvp.second.node->Selected())
                 ret.push_back(&kvp.second);
@@ -1612,7 +1612,7 @@ TimeValue msmaxContext::getExportTime() const
 }
 
 
-bool msmaxSendScene(ExportTarget target, ObjectScope scope)
+bool msmaxSendScene(ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     auto& ctx = msmaxGetContext();
     if (!ctx.isServerAvailable()) {
