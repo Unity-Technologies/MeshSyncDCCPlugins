@@ -412,7 +412,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
     auto nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
-        if (scene_index == 0 || material_range == MaterialFrameRange::All) {
+        if (scene_index == 0 || material_range == ms::MaterialFrameRange::All) {
             // exportMaterials() is needed to export material IDs in meshes
             exportMaterials();
             m_material_manager.clearDirtyFlags();
@@ -433,8 +433,8 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
             export_objects();
         }
 
-        if (material_range == MaterialFrameRange::None ||
-            (material_range == MaterialFrameRange::One && scene_index != 0))
+        if (material_range == ms::MaterialFrameRange::None ||
+            (material_range == ms::MaterialFrameRange::One && scene_index != 0))
             m_material_manager.clearDirtyFlags();
         m_texture_manager.clearDirtyFlags();
         kickAsyncExport();

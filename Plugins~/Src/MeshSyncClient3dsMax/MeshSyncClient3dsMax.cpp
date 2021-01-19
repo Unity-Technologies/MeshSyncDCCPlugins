@@ -198,7 +198,7 @@ Value* ExportCache_cf(Value** arg_list, int count)
             if      (name == L"path")                   settings.path = mu::ToMBS(arg_list[i++]->to_string());
             else if (name == L"objectScope")            settings.object_scope = (ObjectScope)arg_list[i++]->to_int();
             else if (name == L"frameRange")             settings.frame_range = (FrameRange)arg_list[i++]->to_int();
-            else if (name == L"materialFrameRange")     settings.material_frame_range = (MaterialFrameRange)arg_list[i++]->to_int();
+            else if (name == L"materialFrameRange")     settings.material_frame_range = (ms::MaterialFrameRange)arg_list[i++]->to_int();
             else if (name == L"frameBegin")             settings.frame_begin = arg_list[i++]->to_int();
             else if (name == L"frameEnd")               settings.frame_end = arg_list[i++]->to_int();
             else if (name == L"frameStep")              settings.frame_step = arg_list[i++]->to_float();
