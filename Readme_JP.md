@@ -25,10 +25,17 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | カメラの同期                  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
 | ライトの同期                  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
 | 両面 (Double-sided) メッシュ  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Negative Scale               | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| 負のスケール                  | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
 | マルチ UV                     |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export           | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | Non-polygon shape            |                      |                      |                      |                      |                      |                      |  
+
+## 注意
+
+* 負のスケール：一部の DCC ツールにサポートされています.  
+  XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。
+  DCC ツールによって、*Bake Transform* オプションが存在し、このオプションで Mesh は一致するようになりますが、
+  デフォーマの情報が失われます。
 
 ## サポートされている DCC ツール
 
@@ -115,8 +122,6 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
   - これら以外のデフォーマも適用を試みますが、前後に SkinCluster があった場合などに正しく適用されない可能性があります。
   - "Bake Deformers" をチェックすると、デフォーマを全て適用した結果を同期します。Maya 側と Unity 側で Mesh の内容がほぼ一致するようになりますが、代償として Skinning や Blendshape の情報が失われます。
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Deformers" が有効なときのみ有効です。
-- 負のスケールは部分的にしかサポートしていないので注意が必要です。
-  - XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。"Bake Transform" オプションを使うとそのようなケースでも Mesh は一致するようになりますが、デフォーマの情報が失われます。
 - NURBS などポリゴン以外の形状データは対応していません。
 - インスタンシングは対応していますが、スキニングされたメッシュのインスタンスは現在未対応です (Unity 側では全て元インスタンスと同じ位置になっていまいます)。
 - MEL にもコマンドが登録されており、全ての機能に MEL 経由でアクセスできるようになっています。こちらの詳細は[ソースコードを参照ください](https://github.com/unity3d-jp/MeshSync/blob/master/Plugin~/MeshSyncClientMaya/msmayaCommands.cpp)。
@@ -151,8 +156,6 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Modifiers" が有効なときのみ有効です。
   - "Use Render Meshes" をチェックすると、レンダリング用の Mesh からデータを抽出します。例えば Turbo Smooth は viewport 用とレンダリング用で別の Iteration を指定できますが、レンダリング用の設定が Unity 側に反映されるようになります。また、Fluid などのレンダリング時にしか現れない Mesh や、Space Warps なども正しく反映されるようになります。
 - "Ignore Non-Rebderable" をチェックすると、renderable ではない Mesh を無視します。例えばボーンの viewport の表示の四角錐のような形状などが renderable ではない Mesh に該当します。
-- 負のスケールは部分的にしかサポートしていないので注意が必要です。
-  - XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。"Bake Transform" オプションを使うとそのようなケースでも Mesh は一致するようになりますが、モディファイアの情報が失われます。
 - Max script にもコマンドが追加されており、全ての機能に Max script 経由でアクセスできるようになっています。こちらの詳細は[ソースコードを参照ください](https://github.com/unity3d-jp/MeshSync/blob/master/Plugin~/MeshSyncClient3dsMax/msmaxEntryPoint.cpp)
 
 
@@ -171,8 +174,6 @@ MotionBuilder 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) で動作を確
 &nbsp;  
 
 - ポリゴンメッシュはスキニング/ボーンと BlendShape もそのまま Unity へ持ってこれるようになっています。
-- 負のスケールは部分的にしかサポートしていないので注意が必要です
-  - XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます
 - NURBS などポリゴン以外の形状データは対応していません
 
 
@@ -197,8 +198,6 @@ Blender 2.79b, 2.80 + Windows, Mac, Linux (CentOS 7) で動作を確認してい
   - "Bake Modifiers" をチェックすると、モディファイアを全て適用した結果を同期します。Blender 側と Unity 側で Mesh の内容がほぼ一致するようになりますが、代償として Skinning や Blendshape の情報が失われます。
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Modifiers" が有効なときのみ有効です。
 - "Curves as Mesh" をチェックすると、Curve や Text などポリゴンに変換可能なオブジェクトを変換して同期します。
-- 負のスケールは部分的にしかサポートしていないので注意が必要です
-  - XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。"Bake Transform" オプションを使うとそのようなケースでも Mesh は一致するようになりますが、モディファイアの情報が失われます。
 
 
 ### Modo
@@ -221,8 +220,6 @@ Modo 12, 13 + Windows, Mac, Linux (CentOS 7) で動作を確認しています�
   - "Bake Deformers" をチェックすると、デフォーマを全て適用した結果を送ります。複雑なデフォーマ構成であっても Unity 側の Mesh の内容がほぼ一致するようになりますが、代償としてスキニングや Morph/Blendshape の情報が失われます。
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Deformers" が有効なときのみ有効です。
   - Mesh Instance や Replicator のスキニングは正しく Unity 側に反映できません。"Bake Deformers" を使う必要があります。
-- 負のスケールは部分的にしかサポートしていないので注意が必要です
-  - XYZ 全てが負の場合は正しく同期できますが、X だけ、Y だけ負のような場合も Unity 側では XYZ 全てが負として扱われてしまいます。"Bake Transform" オプションを使うとそのようなケースでも Mesh は一致するようになりますが、デフォーマの情報が失われます。
 - コマンドからも MeshSync の機能にアクセスできます。unity.meshsync.settings で設定の変更、unity.meshsync.export でエクスポートできます
 - "Export Cache" で全フレームのデータをファイルにエクスポートできます。エクスポートしたファイルは Unity で再生できます。より詳しくは [Scene Cache](Documentation~/SceneCache.md) を参照ください。
 
