@@ -1,7 +1,9 @@
 #include "pch.h"
+#include "msblenBinder.h"
 #include "msblenContext.h"
 #include "msblenUtils.h"
 
+#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msSceneSettings.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
@@ -1482,18 +1484,18 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    MaterialFrameRange material_range = cache_settings.material_frame_range;
+    ms::MaterialFrameRange material_range = cache_settings.material_frame_range;
     std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0) {
             // exportMaterials() is needed to export material IDs in meshes
             exportMaterials();
-            if (material_range == MaterialFrameRange::None)
+            if (material_range == ms::MaterialFrameRange::None)
                 m_material_manager.clearDirtyFlags();
         }
         else {
-            if (material_range == MaterialFrameRange::All)
+            if (material_range == ms::MaterialFrameRange::All)
                 exportMaterials();
         }
 

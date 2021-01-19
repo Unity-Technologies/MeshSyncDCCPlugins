@@ -1,6 +1,6 @@
 #pragma once
 #include "MeshUtils/MeshUtils.h"
-
+#include "msblenBinder.h" //Collection
 
 std::string get_name(const Material *obj);
 std::string get_name(const Object *obj);

@@ -705,7 +705,7 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
             break;
         case IDC_MATERIAL_RANGE:
             handle_combo([&]() {
-                s.material_frame_range = (MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
+                s.material_frame_range = (ms::MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
             });
             break;
 

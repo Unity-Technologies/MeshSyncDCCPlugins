@@ -667,11 +667,11 @@ bool msmayaContext::exportCache(const CacheSettings& cache_settings)
         if (scene_index == 0) {
             // exportMaterials() is needed to export material IDs in meshes
             exportMaterials();
-            if (material_range == MaterialFrameRange::None)
+            if (material_range == ms::MaterialFrameRange::None)
                 m_material_manager.clearDirtyFlags();
         }
         else {
-            if (material_range == MaterialFrameRange::All)
+            if (material_range == ms::MaterialFrameRange::All)
                 exportMaterials();
         }
 

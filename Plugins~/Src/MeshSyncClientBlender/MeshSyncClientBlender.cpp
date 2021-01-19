@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "msblenBinder.h"
 #include "msblenContext.h"
 
 namespace bl = blender;
@@ -83,9 +84,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindConst(FRANGE_ALL, (int)FrameRange::All)
             BindConst(FRANGE_CUSTOM, (int)FrameRange::Custom)
 
-            BindConst(MFRANGE_NONE, (int)MaterialFrameRange::None)
-            BindConst(MFRANGE_ONE, (int)MaterialFrameRange::One)
-            BindConst(MFRANGE_ALL, (int)MaterialFrameRange::All)
+            BindConst(MFRANGE_NONE, (int)ms::MaterialFrameRange::None)
+            BindConst(MFRANGE_ONE, (int)ms::MaterialFrameRange::One)
+            BindConst(MFRANGE_ALL, (int)ms::MaterialFrameRange::All)
 
             BindConst(is_server_available, self->isServerAvailable())
             BindConst(error_message, self->getErrorMessage())
@@ -168,7 +169,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, int v) { self->getCacheSettings().frame_range = (FrameRange)v; })
             BindProperty(material_frame_range,
                 [](const self_t& self) { return (int)self->getCacheSettings().material_frame_range; },
-                [](self_t& self, int v) { self->getCacheSettings().material_frame_range = (MaterialFrameRange)v; })
+                [](self_t& self, int v) { self->getCacheSettings().material_frame_range = (ms::MaterialFrameRange)v; })
             BindProperty(frame_begin,
                 [](const self_t& self) { return self->getCacheSettings().frame_begin; },
                 [](self_t& self, int v) { self->getCacheSettings().frame_begin = v; })

@@ -7,6 +7,7 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
 
+#include "MeshSyncClient/msMaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -118,13 +119,6 @@ enum class FrameRange : int
     Custom,
 };
 
-enum class MaterialFrameRange : int
-{
-    None,
-    One,
-    All,
-};
-
 struct SyncSettings
 {
     ms::ClientSettings client_settings;
@@ -166,7 +160,7 @@ struct CacheSettings
     int frame_begin = 0;
     int frame_end = 100;
     float frame_step = 1.0f;
-    MaterialFrameRange material_frame_range = MaterialFrameRange::One;
+    ms::MaterialFrameRange material_frame_range = ms::MaterialFrameRange::One;
 
     bool remove_namespace = true;
     int zstd_compression_level = 3; // (min) 0 - 22 (max)

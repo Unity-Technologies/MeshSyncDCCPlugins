@@ -2,12 +2,11 @@
 #include "MeshUtils/MeshUtils.h"
 
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msLight.h"
 
-#include "msblenBinder.h"
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSyncClient/msMaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -36,13 +35,6 @@ enum class FrameRange : int
     Current,
     All,
     Custom,
-};
-
-enum class MaterialFrameRange : int
-{
-    None,
-    One,
-    All,
 };
 
 struct SyncSettings
@@ -83,7 +75,7 @@ struct CacheSettings
     int frame_begin = 0;
     int frame_end = 100;
     int frame_step = 1;
-    MaterialFrameRange material_frame_range = MaterialFrameRange::One;
+    ms::MaterialFrameRange material_frame_range = ms::MaterialFrameRange::One;
 
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
 

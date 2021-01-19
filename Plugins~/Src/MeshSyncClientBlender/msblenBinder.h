@@ -1,6 +1,7 @@
 #pragma once
 
 #include "msblenMacros.h"
+#include "MeshUtils/muMath.h" //mu::float3
 
 #if BLENDER_VERSION < 280
 using Collection = Group;
