@@ -6,7 +6,7 @@
 
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
-#include "MeshSyncClient/msMaterialFrameRange.h"
+#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"

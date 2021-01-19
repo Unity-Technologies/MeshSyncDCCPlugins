@@ -9,7 +9,7 @@
 
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
-#include "MeshSyncClient/msMaterialFrameRange.h"
+#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msTextureManager.h"
 
 
