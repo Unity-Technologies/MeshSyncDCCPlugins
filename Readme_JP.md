@@ -19,9 +19,16 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 
 # フィーチャー
 
-|                     | Maya               | 3ds Max            | MotionBuilder       | Blender             | Modo                | Metasequoia         | 
-| --------------------| ------------------ | ------------------ | ------------------- | ------------------- | ------------------- | ------------------- | 
-| マルチ UV            |                    |                    |                     | :heavy_check_mark:  |                     |                     |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
+| ポリゴンメッシュの同期| :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| カメラの同期         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| ライトの同期         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
+| マルチ UV            |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
+| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
 
 ## サポートされている DCC ツール
 
@@ -100,11 +107,10 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
 - "Auto Sync" がチェックされている間は編集が自動的に Unity 側に反映されます。Auyo Sync が無効でも "Manual Sync" ボタンを押すことで手動で反映できます。
 - Animations の Sync を押すと、開始フレームから終了フレームまで時間を進めつつアニメーションをベイクして Unity に送ります。
 - "Export Cache" で全フレームのデータをファイルにエクスポートできます。エクスポートしたファイルは Unity で再生できます。より詳しくは [Scene Cache](Documentation~/SceneCache.md) を参照ください。
+- 歯車アイコン以外のボタンはそれぞれ手動同期、アニメーション同期相当のボタンになっています。
 
 &nbsp;  
 
-- 歯車アイコン以外のボタンはそれぞれ手動同期、アニメーション同期相当のボタンになっています。
-- ポリゴンメッシュ、カメラ、ライトの同期に対応しています。
 - ポリゴンメッシュはスキニング/ボーン (SkinCluster) と BlendShape もそのまま Unity へ持ってこれるようになっています。
   - これら以外のデフォーマも適用を試みますが、前後に SkinCluster があった場合などに正しく適用されない可能性があります。
   - "Bake Deformers" をチェックすると、デフォーマを全て適用した結果を同期します。Maya 側と Unity 側で Mesh の内容がほぼ一致するようになりますが、代償として Skinning や Blendshape の情報が失われます。
@@ -136,7 +142,6 @@ Maya 2016, 2016.5, 2017, 2018, 2019 + Windows, Mac, Linux (CentOS 7) で動作�
 
 &nbsp;  
 
-- ポリゴンメッシュ、カメラ、ライトの同期に対応しています。
 - モディファイアは大体対応していますが、対応できないケースもあります。以下のルールに従います。
   - Morph も Skin もない場合、全てのモディファイアを適用した状態で同期します。
   - Morph か Skin がある場合、その一つ前までのモディファイアを適用した状態で同期します。
@@ -167,7 +172,6 @@ MotionBuilder 2016, 2017, 2018, 2019 + Windows, Linux (CentOS 7) で動作を確
 
 &nbsp;  
 
-- ポリゴンメッシュ、カメラ、ライトの同期に対応しています。
 - ポリゴンメッシュはスキニング/ボーンと BlendShape もそのまま Unity へ持ってこれるようになっています。
 - "Double Sided" をチェックすると Unity 側で Mesh が両面化されます。
 - 負のスケールは部分的にしかサポートしていないので注意が必要です
@@ -192,7 +196,6 @@ Blender 2.79b, 2.80 + Windows, Mac, Linux (CentOS 7) で動作を確認してい
 
 &nbsp;  
 
-- ポリゴンメッシュ、カメラ、ライトの同期に対応しています。
 - ポリゴンメッシュはスキニング/ボーン (Armature) と BlendShape もそのまま Unity へ持ってこれるようになっています。Mirror デフォーマも対応しています。これら以外のモディファイアは無視されます。
   - "Bake Modifiers" をチェックすると、モディファイアを全て適用した結果を同期します。Blender 側と Unity 側で Mesh の内容がほぼ一致するようになりますが、代償として Skinning や Blendshape の情報が失われます。
   - "Bake Transform" をチェックすると、位置/回転/スケールを Mesh の頂点に適用し、Unity 側の Transform は初期値になります。pivot が絡む複雑な Transform は Unity では再現できないことがありますが、そのような場合でもこのオプションを使うと Mesh の見た目は一致するようになります。このオプションは "Bake Modifiers" が有効なときのみ有効です。
@@ -216,7 +219,7 @@ Modo 12, 13 + Windows, Mac, Linux (CentOS 7) で動作を確認しています�
 
 &nbsp;
 
-- ポリゴンメッシュ、カメラ、ライトの同期に対応しています。Mesh Instance や Replicator も部分的にサポートしています。
+- Mesh Instance や Replicator も部分的にサポートしています。
 - ポリゴンメッシュはスキニング / Joint と Morph も Unity へ持ってこれるようになっていますが、デフォーマの扱いには注意が必要です。
   - MeshSync が解釈できるデフォーマは Joint + Weight Map 方式のスキニング、および Morph のみです。それ以外のデフォーマは無視されます。
   - "Bake Deformers" をチェックすると、デフォーマを全て適用した結果を送ります。複雑なデフォーマ構成であっても Unity 側の Mesh の内容がほぼ一致するようになりますが、代償としてスキニングや Morph/Blendshape の情報が失われます。
