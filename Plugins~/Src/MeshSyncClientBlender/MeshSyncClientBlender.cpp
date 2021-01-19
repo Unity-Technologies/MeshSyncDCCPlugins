@@ -2,28 +2,30 @@
 #include "msblenBinder.h"
 #include "msblenContext.h"
 
+#include "MeshSyncClient/ExportTarget.h"
+
 namespace bl = blender;
 
-static bool msblenSend(msblenContext& self, ExportTarget target, MeshSyncClient::ObjectScope scope)
+static bool msblenSend(msblenContext& self, MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     if (!self.isServerAvailable()) {
         self.logInfo("MeshSync: Server not available. %s", self.getErrorMessage().c_str());
         return false;
     }
 
-    if (target == ExportTarget::Objects) {
+    if (target == MeshSyncClient::ExportTarget::Objects) {
         self.wait();
         self.sendObjects(MeshSyncClient::ObjectScope::All, true);
     }
-    else if (target == ExportTarget::Materials) {
+    else if (target == MeshSyncClient::ExportTarget::Materials) {
         self.wait();
         self.sendMaterials(true);
     }
-    else if (target == ExportTarget::Animations) {
+    else if (target == MeshSyncClient::ExportTarget::Animations) {
         self.wait();
         self.sendAnimations(MeshSyncClient::ObjectScope::All);
     }
-    else if (target == ExportTarget::Everything) {
+    else if (target == MeshSyncClient::ExportTarget::Everything) {
         self.wait();
         self.sendMaterials(true);
         self.wait();
@@ -71,10 +73,10 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindConst(PLUGIN_VERSION, std::string(msPluginVersionStr))
             BindConst(PROTOCOL_VERSION, std::to_string(msProtocolVersion))
 
-            BindConst(TARGET_OBJECTS, (int)ExportTarget::Objects)
-            BindConst(TARGET_MATERIALS, (int)ExportTarget::Materials)
-            BindConst(TARGET_ANIMATIONS, (int)ExportTarget::Animations)
-            BindConst(TARGET_EVERYTHING, (int)ExportTarget::Everything)
+            BindConst(TARGET_OBJECTS, (int)MeshSyncClient::ExportTarget::Objects)
+            BindConst(TARGET_MATERIALS, (int)MeshSyncClient::ExportTarget::Materials)
+            BindConst(TARGET_ANIMATIONS, (int)MeshSyncClient::ExportTarget::Animations)
+            BindConst(TARGET_EVERYTHING, (int)MeshSyncClient::ExportTarget::Everything)
 
             BindConst(SCOPE_ALL, (int)MeshSyncClient::ObjectScope::All)
             BindConst(SCOPE_UPDATED, (int)MeshSyncClient::ObjectScope::Updated)
@@ -154,7 +156,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindMethod(setup, [](self_t& self, py::object ctx) { bl::setup(ctx); })
             BindMethod(clear, [](self_t& self) { self->clear(); })
             BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); })
-            BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
+            BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
             ;
     }
     {

@@ -8,6 +8,7 @@
 #include "MeshSync/Utility/msIDGenerator.h"
 #include "MeshSyncClient/FrameRange.h"
 
+#include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/MaterialFrameRange.h"
@@ -42,14 +43,6 @@ struct LxItemKey
 
 class msmodoContext;
 
-
-enum class ExportTarget : int
-{
-    Objects,
-    Materials,
-    Animations,
-    Everything,
-};
 
 struct SyncSettings
 {
@@ -232,4 +225,4 @@ private:
 #define msmodoGetContext() msmodoContext::getInstance()
 #define msmodoGetSettings() msmodoGetContext().getSettings()
 #define msmodoGetCacheSettings() msmodoGetContext().getCacheSettings()
-bool msmodoExport(ExportTarget target, MeshSyncClient::ObjectScope scope);
+bool msmodoExport(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);

@@ -116,7 +116,7 @@ public:
             pop->popup_add("Materials");
             pop->popup_add("Animations");
             pop->popup_add("Everything");
-            static_assert((int)ExportTarget::Everything == 3, "SendTarget enum and uivalue mismatch");
+            static_assert((int)MeshSyncClient::ExportTarget::Everything == 3, "SendTarget enum and uivalue mismatch");
             return pop;
         }
     };
@@ -129,7 +129,7 @@ public:
 
     void execute() override
     {
-        auto target = ExportTarget::Objects;
+        MeshSyncClient::ExportTarget target = MeshSyncClient::ExportTarget::Objects;
         cmd_read_arg("target", (int&)target);
         msmodoExport(target, MeshSyncClient::ObjectScope::All);
     }

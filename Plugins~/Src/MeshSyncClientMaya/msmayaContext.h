@@ -9,6 +9,7 @@
 #include "MeshSync/Utility/msIDGenerator.h"
 #include "MeshSyncClient/FrameRange.h"
 
+#include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
@@ -98,14 +99,6 @@ struct TreeNode : public mu::noncopyable
 };
 using TreeNodePtr = std::unique_ptr<TreeNode>;
 
-
-enum class ExportTarget : int
-{
-    Objects,
-    Materials,
-    Animations,
-    Everything,
-};
 
 struct SyncSettings
 {

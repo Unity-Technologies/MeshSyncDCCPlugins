@@ -17,14 +17,6 @@
 struct SyncSettings;
 class msblenContext;
 
-enum class ExportTarget : int
-{
-    Objects,
-    Materials,
-    Animations,
-    Everything,
-};
-
 struct SyncSettings
 {
     ms::ClientSettings client_settings;

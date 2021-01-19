@@ -1557,7 +1557,9 @@ void msmodoContext::kickAsyncExport()
     exporter->kick();
 }
 
-bool msmodoExport(ExportTarget target, MeshSyncClient::ObjectScope scope)
+//----------------------------------------------------------------------------------------------------------------------
+
+bool msmodoExport(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     auto& ctx = msmodoGetContext();
     if (!ctx.isServerAvailable()) {
@@ -1565,19 +1567,19 @@ bool msmodoExport(ExportTarget target, MeshSyncClient::ObjectScope scope)
         return false;
     }
 
-    if (target == ExportTarget::Objects) {
+    if (target == MeshSyncClient::ExportTarget::Objects) {
         ctx.wait();
         ctx.sendObjects(scope, true);
     }
-    else if (target == ExportTarget::Materials) {
+    else if (target == MeshSyncClient::ExportTarget::Materials) {
         ctx.wait();
         ctx.sendMaterials(true);
     }
-    else if (target == ExportTarget::Animations) {
+    else if (target == MeshSyncClient::ExportTarget::Animations) {
         ctx.wait();
         ctx.sendAnimations(scope);
     }
-    else if (target == ExportTarget::Everything) {
+    else if (target == MeshSyncClient::ExportTarget::Everything) {
         ctx.wait();
         ctx.sendMaterials(true);
         ctx.wait();

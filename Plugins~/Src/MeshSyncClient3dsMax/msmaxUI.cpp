@@ -81,7 +81,7 @@ public:
 
     BOOL ExecuteAction() override
     {
-        return msmaxSendScene(ExportTarget::Objects, MeshSyncClient::ObjectScope::All);
+        return msmaxSendScene(MeshSyncClient::ExportTarget::Objects, MeshSyncClient::ObjectScope::All);
     }
 };
 
@@ -100,7 +100,7 @@ public:
 
     BOOL ExecuteAction() override
     {
-        return msmaxSendScene(ExportTarget::Animations, MeshSyncClient::ObjectScope::All);
+        return msmaxSendScene(MeshSyncClient::ExportTarget::Animations, MeshSyncClient::ObjectScope::All);
     }
 };
 
@@ -500,10 +500,10 @@ static INT_PTR CALLBACK msmaxSettingWindowCB(HWND hDlg, UINT msg, WPARAM wParam,
             });
             break;
         case IDC_MANUAL_SYNC:
-            handle_button([&]() { msmaxSendScene(ExportTarget::Objects, MeshSyncClient::ObjectScope::All); });
+            handle_button([&]() { msmaxSendScene(MeshSyncClient::ExportTarget::Objects, MeshSyncClient::ObjectScope::All); });
             break;
         case IDC_SYNC_ANIMATIONS:
-            handle_button([&]() { msmaxSendScene(ExportTarget::Animations, MeshSyncClient::ObjectScope::All); });
+            handle_button([&]() { msmaxSendScene(MeshSyncClient::ExportTarget::Animations, MeshSyncClient::ObjectScope::All); });
             break;
 
         case IDC_BUTTON_EXPORT_CACHE:

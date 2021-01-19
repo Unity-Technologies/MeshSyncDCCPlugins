@@ -145,7 +145,7 @@ Value* Settings_cf(Value** arg_list, int count)
 
 Value* Send_cf(Value** arg_list, int count)
 {
-    auto target = ExportTarget::Objects;
+    MeshSyncClient::ExportTarget target = MeshSyncClient::ExportTarget::Objects;
     MeshSyncClient::ObjectScope scope = MeshSyncClient::ObjectScope::All;
 
     // parse args
@@ -155,13 +155,13 @@ Value* Send_cf(Value** arg_list, int count)
             if (name == L"target") {
                 std::wstring value = arg_list[i++]->to_string();
                 if (value == L"objects")
-                    target = ExportTarget::Objects;
+                    target = MeshSyncClient::ExportTarget::Objects;
                 else if (value == L"materials")
-                    target = ExportTarget::Materials;
+                    target = MeshSyncClient::ExportTarget::Materials;
                 else if (value == L"animations")
-                    target = ExportTarget::Animations;
+                    target = MeshSyncClient::ExportTarget::Animations;
                 else if (value == L"everything")
-                    target = ExportTarget::Everything;
+                    target = MeshSyncClient::ExportTarget::Everything;
             }
             else if (name == L"scope") {
                 std::wstring value = arg_list[i++]->to_string();

@@ -5,6 +5,8 @@
 #include "msmaxUtils.h"
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
+
+#include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/FrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
@@ -15,13 +17,6 @@
 
 #define msmaxAPI extern "C" __declspec(dllexport)
 
-enum class ExportTarget : int
-{
-    Objects,
-    Materials,
-    Animations,
-    Everything,
-};
 
 struct SyncSettings
 {
@@ -247,5 +242,5 @@ private:
 #define msmaxGetContext() msmaxContext::getInstance()
 #define msmaxGetSettings() msmaxGetContext().getSettings()
 #define msmaxGetCacheSettings() msmaxGetContext().getCacheSettings()
-bool msmaxSendScene(ExportTarget target, MeshSyncClient::ObjectScope scope);
+bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);
 bool msmaxExportCache(const CacheSettings& cache_settings);
