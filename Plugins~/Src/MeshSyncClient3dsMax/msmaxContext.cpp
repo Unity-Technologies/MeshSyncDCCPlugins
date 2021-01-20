@@ -21,12 +21,6 @@
 #pragma comment(lib, "Morpher.lib")
 #endif
 
-void SyncSettings::validate()
-{
-    if (!bake_modifiers)
-        bake_transform = false;
-}
-
 
 static void OnStartup(void *param, NotifyInfo *info)
 {
@@ -101,7 +95,7 @@ msmaxContext::~msmaxContext()
     // releasing resources is done by onShutdown()
 }
 
-SyncSettings& msmaxContext::getSettings()
+MaxSyncSettings& msmaxContext::getSettings()
 {
     return m_settings;
 }
@@ -381,12 +375,12 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     const float frame_rate = (float)::GetFrameRate();
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    auto settings_old = m_settings;
-    m_settings.export_scene_cache = true;
+    MaxSyncSettings settings_old = m_settings;
+    m_settings.ExportSceneCache = true;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
     m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.bake_modifiers = cache_settings.bake_modifiers;
-    m_settings.bake_transform = cache_settings.bake_transform;
+    m_settings.BakeModifiers = cache_settings.bake_modifiers;
+    m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.validate();
@@ -615,7 +609,7 @@ void msmaxContext::kickAsyncExport()
 
     float to_meter = (float)GetMasterScale(UNITS_METERS);
     using Exporter = ms::AsyncSceneExporter;
-    Exporter *exporter = m_settings.export_scene_cache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
+    Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // begin async send
     exporter->on_prepare = [this, to_meter, exporter]() {
@@ -763,7 +757,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
     };
     auto handle_instance = [&]() -> bool {
         // always make per-instance meshes if bake_transform
-        if (m_settings.bake_transform)
+        if (m_settings.BakeTransform)
             return false;
 
         // check if the node is instance
@@ -781,7 +775,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
     if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n))) {
         // export bones
         // this must be before extractMeshData() because meshes can be bones in 3ds Max
-        if (m_settings.sync_bones && !m_settings.bake_modifiers) {
+        if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             EachBone(n, [this](INode *bone) {
                 exportObject(bone, false);
             });
@@ -827,7 +821,7 @@ mu::float4x4 msmaxContext::getWorldMatrix(INode *n, TimeValue t, bool cancel_cam
     bool is_light = IsLight(obj);
 
     mu::float4x4 r;
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         auto get_matrix = [&]() {
             // https://help.autodesk.com/view/3DSMAX/2016/ENU/?guid=__files_GUID_2E4E41D4_1B52_48C8_8ABA_3D3C9910CB2C_htm
             Matrix3 m;
@@ -878,7 +872,7 @@ void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
     };
 
     auto obj = n.node->GetObjectRef();
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         if (IsCamera(obj) || IsLight(obj)) {
             // on camera/light, extract from global matrix
             auto mat = do_extract(getWorldMatrix(n.node, t));
@@ -1202,7 +1196,7 @@ ms::TransformPtr msmaxContext::exportMesh(TreeNode& n)
 
     // send mesh contents even if the node is hidden.
     if (m_settings.sync_meshes) {
-        tri = m_settings.bake_modifiers ?
+        tri = m_settings.BakeModifiers?
             GetFinalMesh(inode, needs_delete) :
             GetSourceMesh(inode, needs_delete);
         if (tri) {
@@ -1252,13 +1246,13 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 {
     auto t = GetTime();
     if (mesh) {
-        if (m_settings.bake_transform) {
+        if (m_settings.BakeTransform) {
             // in this case transform is applied to vertices (dst.position/rotation/scale is identity)
             dst.refine_settings.local2world = to_float4x4(n->GetObjTMAfterWSM(t));
             dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         }
         else {
-            if (m_settings.bake_modifiers) {
+            if (m_settings.BakeModifiers) {
                 dst.refine_settings.local2world = to_float4x4(n->GetObjTMAfterWSM(t));
                 if (m_settings.flatten_hierarchy)
                     dst.refine_settings.local2world *= mu::invert(dst.toMatrix());
@@ -1349,7 +1343,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             }
         }
 
-        if (!m_settings.bake_modifiers && m_settings.sync_bones) {
+        if (!m_settings.BakeModifiers && m_settings.sync_bones) {
             auto *mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
                 ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
@@ -1394,7 +1388,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
     }
 
-    if (!m_settings.bake_modifiers && m_settings.sync_blendshapes) {
+    if (!m_settings.BakeModifiers && m_settings.sync_blendshapes) {
         // handle blendshape
         auto *mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
@@ -1464,7 +1458,7 @@ bool msmaxContext::exportAnimations(INode *n, bool force)
 
     if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n))) {
         exportAnimations(n->GetParentNode(), true);
-        if (m_settings.sync_bones && !m_settings.bake_modifiers) {
+        if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             EachBone(n, [this](INode *bone) {
                 exportAnimations(bone, true);
             });
@@ -1605,7 +1599,7 @@ void msmaxContext::feedDeferredCalls()
 
 TimeValue msmaxContext::getExportTime() const
 {
-    if (m_settings.export_scene_cache)
+    if (m_settings.ExportSceneCache)
         return m_current_time_tick;
     else
         return GetCOREInterface()->GetTime();
