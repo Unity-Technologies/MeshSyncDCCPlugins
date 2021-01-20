@@ -1,34 +1,37 @@
 #include "pch.h"
+#include "msblenBinder.h"
 #include "msblenContext.h"
+
+#include "MeshSyncClient/ExportTarget.h"
 
 namespace bl = blender;
 
-static bool msblenSend(msblenContext& self, ExportTarget target, ObjectScope scope)
+static bool msblenSend(msblenContext& self, MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     if (!self.isServerAvailable()) {
         self.logInfo("MeshSync: Server not available. %s", self.getErrorMessage().c_str());
         return false;
     }
 
-    if (target == ExportTarget::Objects) {
+    if (target == MeshSyncClient::ExportTarget::Objects) {
         self.wait();
-        self.sendObjects(ObjectScope::All, true);
+        self.sendObjects(MeshSyncClient::ObjectScope::All, true);
     }
-    else if (target == ExportTarget::Materials) {
+    else if (target == MeshSyncClient::ExportTarget::Materials) {
         self.wait();
         self.sendMaterials(true);
     }
-    else if (target == ExportTarget::Animations) {
+    else if (target == MeshSyncClient::ExportTarget::Animations) {
         self.wait();
-        self.sendAnimations(ObjectScope::All);
+        self.sendAnimations(MeshSyncClient::ObjectScope::All);
     }
-    else if (target == ExportTarget::Everything) {
+    else if (target == MeshSyncClient::ExportTarget::Everything) {
         self.wait();
         self.sendMaterials(true);
         self.wait();
-        self.sendObjects(ObjectScope::All, true);
+        self.sendObjects(MeshSyncClient::ObjectScope::All, true);
         self.wait();
-        self.sendAnimations(ObjectScope::All);
+        self.sendAnimations(MeshSyncClient::ObjectScope::All);
     }
     return true;
 }
@@ -70,22 +73,22 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindConst(PLUGIN_VERSION, std::string(msPluginVersionStr))
             BindConst(PROTOCOL_VERSION, std::to_string(msProtocolVersion))
 
-            BindConst(TARGET_OBJECTS, (int)ExportTarget::Objects)
-            BindConst(TARGET_MATERIALS, (int)ExportTarget::Materials)
-            BindConst(TARGET_ANIMATIONS, (int)ExportTarget::Animations)
-            BindConst(TARGET_EVERYTHING, (int)ExportTarget::Everything)
+            BindConst(TARGET_OBJECTS, (int)MeshSyncClient::ExportTarget::Objects)
+            BindConst(TARGET_MATERIALS, (int)MeshSyncClient::ExportTarget::Materials)
+            BindConst(TARGET_ANIMATIONS, (int)MeshSyncClient::ExportTarget::Animations)
+            BindConst(TARGET_EVERYTHING, (int)MeshSyncClient::ExportTarget::Everything)
 
-            BindConst(SCOPE_ALL, (int)ObjectScope::All)
-            BindConst(SCOPE_UPDATED, (int)ObjectScope::Updated)
-            BindConst(SCOPE_SELECTED, (int)ObjectScope::Selected)
+            BindConst(SCOPE_ALL, (int)MeshSyncClient::ObjectScope::All)
+            BindConst(SCOPE_UPDATED, (int)MeshSyncClient::ObjectScope::Updated)
+            BindConst(SCOPE_SELECTED, (int)MeshSyncClient::ObjectScope::Selected)
 
-            BindConst(FRANGE_CURRENT, (int)FrameRange::Current)
-            BindConst(FRANGE_ALL, (int)FrameRange::All)
-            BindConst(FRANGE_CUSTOM, (int)FrameRange::Custom)
+            BindConst(FRANGE_CURRENT, (int)MeshSyncClient::FrameRange::Current)
+            BindConst(FRANGE_ALL, (int)MeshSyncClient::FrameRange::All)
+            BindConst(FRANGE_CUSTOM, (int)MeshSyncClient::FrameRange::Custom)
 
-            BindConst(MFRANGE_NONE, (int)MaterialFrameRange::None)
-            BindConst(MFRANGE_ONE, (int)MaterialFrameRange::One)
-            BindConst(MFRANGE_ALL, (int)MaterialFrameRange::All)
+            BindConst(MFRANGE_NONE, (int)MeshSyncClient::MaterialFrameRange::None)
+            BindConst(MFRANGE_ONE, (int)MeshSyncClient::MaterialFrameRange::One)
+            BindConst(MFRANGE_ALL, (int)MeshSyncClient::MaterialFrameRange::All)
 
             BindConst(is_server_available, self->isServerAvailable())
             BindConst(error_message, self->getErrorMessage())
@@ -152,8 +155,8 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
             BindMethod(setup, [](self_t& self, py::object ctx) { bl::setup(ctx); })
             BindMethod(clear, [](self_t& self) { self->clear(); })
-            BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(ObjectScope::Updated, false); })
-            BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (ExportTarget)_target, ObjectScope::All); })
+            BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); })
+            BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
             ;
     }
     {
@@ -162,13 +165,13 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             .def(py::init<>())
             BindProperty(object_scope,
                 [](const self_t& self) { return (int)self->getCacheSettings().object_scope; },
-                [](self_t& self, int v) { self->getCacheSettings().object_scope = (ObjectScope)v; })
+                [](self_t& self, int v) { self->getCacheSettings().object_scope = (MeshSyncClient::ObjectScope)v; })
             BindProperty(frame_range,
                 [](const self_t& self) { return (int)self->getCacheSettings().frame_range; },
-                [](self_t& self, int v) { self->getCacheSettings().frame_range = (FrameRange)v; })
+                [](self_t& self, int v) { self->getCacheSettings().frame_range = (MeshSyncClient::FrameRange)v; })
             BindProperty(material_frame_range,
                 [](const self_t& self) { return (int)self->getCacheSettings().material_frame_range; },
-                [](self_t& self, int v) { self->getCacheSettings().material_frame_range = (MaterialFrameRange)v; })
+                [](self_t& self, int v) { self->getCacheSettings().material_frame_range = (MeshSyncClient::MaterialFrameRange)v; })
             BindProperty(frame_begin,
                 [](const self_t& self) { return self->getCacheSettings().frame_begin; },
                 [](self_t& self, int v) { self->getCacheSettings().frame_begin = v; })

@@ -145,8 +145,8 @@ Value* Settings_cf(Value** arg_list, int count)
 
 Value* Send_cf(Value** arg_list, int count)
 {
-    auto target = ExportTarget::Objects;
-    auto scope = ObjectScope::All;
+    MeshSyncClient::ExportTarget target = MeshSyncClient::ExportTarget::Objects;
+    MeshSyncClient::ObjectScope scope = MeshSyncClient::ObjectScope::All;
 
     // parse args
     for (int i = 0; i < count; /**/) {
@@ -155,22 +155,22 @@ Value* Send_cf(Value** arg_list, int count)
             if (name == L"target") {
                 std::wstring value = arg_list[i++]->to_string();
                 if (value == L"objects")
-                    target = ExportTarget::Objects;
+                    target = MeshSyncClient::ExportTarget::Objects;
                 else if (value == L"materials")
-                    target = ExportTarget::Materials;
+                    target = MeshSyncClient::ExportTarget::Materials;
                 else if (value == L"animations")
-                    target = ExportTarget::Animations;
+                    target = MeshSyncClient::ExportTarget::Animations;
                 else if (value == L"everything")
-                    target = ExportTarget::Everything;
+                    target = MeshSyncClient::ExportTarget::Everything;
             }
             else if (name == L"scope") {
                 std::wstring value = arg_list[i++]->to_string();
                 if (value == L"all")
-                    scope = ObjectScope::All;
+                    scope = MeshSyncClient::ObjectScope::All;
                 else if (value == L"selected")
-                    scope = ObjectScope::Selected;
+                    scope = MeshSyncClient::ObjectScope::Selected;
                 else if (value == L"updated")
-                    scope = ObjectScope::Updated;
+                    scope = MeshSyncClient::ObjectScope::Updated;
             }
         }
     }
@@ -196,9 +196,9 @@ Value* ExportCache_cf(Value** arg_list, int count)
         std::wstring name = arg_list[i++]->to_string();
         if (i + 1 <= count) {
             if      (name == L"path")                   settings.path = mu::ToMBS(arg_list[i++]->to_string());
-            else if (name == L"objectScope")            settings.object_scope = (ObjectScope)arg_list[i++]->to_int();
-            else if (name == L"frameRange")             settings.frame_range = (FrameRange)arg_list[i++]->to_int();
-            else if (name == L"materialFrameRange")     settings.material_frame_range = (MaterialFrameRange)arg_list[i++]->to_int();
+            else if (name == L"objectScope")            settings.object_scope = (MeshSyncClient::ObjectScope)arg_list[i++]->to_int();
+            else if (name == L"frameRange")             settings.frame_range = (MeshSyncClient::FrameRange)arg_list[i++]->to_int();
+            else if (name == L"materialFrameRange")     settings.material_frame_range = (MeshSyncClient::MaterialFrameRange)arg_list[i++]->to_int();
             else if (name == L"frameBegin")             settings.frame_begin = arg_list[i++]->to_int();
             else if (name == L"frameEnd")               settings.frame_end = arg_list[i++]->to_int();
             else if (name == L"frameStep")              settings.frame_step = arg_list[i++]->to_float();

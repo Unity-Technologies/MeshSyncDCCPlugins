@@ -198,7 +198,7 @@ MStatus CmdSettings::doIt(const MArgList& args_)
         else {\
             get_arg(settings.Value, Name, args);\
             if (settings.auto_sync && Sync)\
-                msmayaGetContext().sendObjects(ObjectScope::All, false);\
+                msmayaGetContext().sendObjects(MeshSyncClient::ObjectScope::All, false);\
         }\
     }
 
@@ -254,31 +254,31 @@ MStatus CmdSend::doIt(const MArgList& args_)
     MStatus status;
     MArgParser args(syntax(), args_, &status);
 
-    auto target = ExportTarget::Objects;
-    auto scope = ObjectScope::All;
+    MeshSyncClient::ExportTarget target = MeshSyncClient::ExportTarget::Objects;
+    MeshSyncClient::ObjectScope scope = MeshSyncClient::ObjectScope::All;
 
     // parse args
     if (args.isFlagSet("target")) {
         std::string t;
         get_arg(t, "target", args);
         if (t == "objects")
-            target = ExportTarget::Objects;
+            target = MeshSyncClient::ExportTarget::Objects;
         else if (t == "materials")
-            target = ExportTarget::Materials;
+            target = MeshSyncClient::ExportTarget::Materials;
         else if (t == "animations")
-            target = ExportTarget::Animations;
+            target = MeshSyncClient::ExportTarget::Animations;
         else if (t == "everything")
-            target = ExportTarget::Everything;
+            target = MeshSyncClient::ExportTarget::Everything;
     }
     if (args.isFlagSet("scope")) {
         std::string s;
         get_arg(s, "scope", args);
         if (s == "all")
-            scope = ObjectScope::All;
+            scope = MeshSyncClient::ObjectScope::All;
         else if (s == "selection")
-            scope = ObjectScope::Selected;
+            scope = MeshSyncClient::ObjectScope::Selected;
         else if (s == "updated")
-            scope = ObjectScope::Updated;
+            scope = MeshSyncClient::ObjectScope::Updated;
     }
 
     // do send
@@ -288,19 +288,19 @@ MStatus CmdSend::doIt(const MArgList& args_)
         return MStatus::kFailure;
     }
 
-    if (target == ExportTarget::Objects) {
+    if (target == MeshSyncClient::ExportTarget::Objects) {
         inst.wait();
         inst.sendObjects(scope, true);
     }
-    else if (target == ExportTarget::Materials) {
+    else if (target == MeshSyncClient::ExportTarget::Materials) {
         inst.wait();
         inst.sendMaterials(true);
     }
-    else if (target == ExportTarget::Animations) {
+    else if (target == MeshSyncClient::ExportTarget::Animations) {
         inst.wait();
         inst.sendAnimations(scope);
     }
-    else if (target == ExportTarget::Everything) {
+    else if (target == MeshSyncClient::ExportTarget::Everything) {
         inst.wait();
         inst.sendMaterials(true);
         inst.wait();

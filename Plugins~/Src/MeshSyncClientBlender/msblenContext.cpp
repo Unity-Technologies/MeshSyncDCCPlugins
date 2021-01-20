@@ -1,7 +1,9 @@
 #include "pch.h"
+#include "msblenBinder.h"
 #include "msblenContext.h"
 #include "msblenUtils.h"
 
+#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msSceneSettings.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
@@ -89,20 +91,20 @@ const SyncSettings& msblenContext::getSettings() const { return m_settings; }
 CacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
 const CacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
-std::vector<Object*> msblenContext::getNodes(ObjectScope scope)
+std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<Object*> ret;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
-    if (scope == ObjectScope::All) {
+    if (scope == MeshSyncClient::ObjectScope::All) {
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
         });
-    } else if (scope == ObjectScope::Selected) {
+    } else if (scope == MeshSyncClient::ObjectScope::Selected) {
         scene.each_selection([&](Object *obj) {
             ret.push_back(obj);
         });
-    } else if (scope == ObjectScope::Updated) {
+    } else if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
@@ -1353,7 +1355,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
@@ -1366,7 +1368,7 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
     if (m_settings.sync_meshes)
         exportMaterials();
 
-    if (scope == ObjectScope::Updated) {
+    if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
@@ -1391,7 +1393,7 @@ bool msblenContext::sendObjects(ObjectScope scope, bool dirty_all)
     return true;
 }
 
-bool msblenContext::sendAnimations(ObjectScope scope)
+bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
@@ -1482,18 +1484,18 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    MaterialFrameRange material_range = cache_settings.material_frame_range;
+    MeshSyncClient::MaterialFrameRange material_range = cache_settings.material_frame_range;
     std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0) {
             // exportMaterials() is needed to export material IDs in meshes
             exportMaterials();
-            if (material_range == MaterialFrameRange::None)
+            if (material_range == MeshSyncClient::MaterialFrameRange::None)
                 m_material_manager.clearDirtyFlags();
         }
         else {
-            if (material_range == MaterialFrameRange::All)
+            if (material_range == MeshSyncClient::MaterialFrameRange::All)
                 exportMaterials();
         }
 
@@ -1505,7 +1507,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
         ++scene_index;
     };
 
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         do_export();
     }
@@ -1513,7 +1515,7 @@ bool msblenContext::exportCache(const CacheSettings& cache_settings)
         const int frame_current = scene.frame_current();
         int frame_start, frame_end;
         // time range
-        if (cache_settings.frame_range == FrameRange::Custom) {
+        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
             // custom frame range
             frame_start = cache_settings.frame_begin;
             frame_end = cache_settings.frame_end;

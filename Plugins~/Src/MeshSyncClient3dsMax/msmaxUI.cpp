@@ -81,7 +81,7 @@ public:
 
     BOOL ExecuteAction() override
     {
-        return msmaxSendScene(ExportTarget::Objects, ObjectScope::All);
+        return msmaxSendScene(MeshSyncClient::ExportTarget::Objects, MeshSyncClient::ObjectScope::All);
     }
 };
 
@@ -100,7 +100,7 @@ public:
 
     BOOL ExecuteAction() override
     {
-        return msmaxSendScene(ExportTarget::Animations, ObjectScope::All);
+        return msmaxSendScene(MeshSyncClient::ExportTarget::Animations, MeshSyncClient::ObjectScope::All);
     }
 };
 
@@ -500,10 +500,10 @@ static INT_PTR CALLBACK msmaxSettingWindowCB(HWND hDlg, UINT msg, WPARAM wParam,
             });
             break;
         case IDC_MANUAL_SYNC:
-            handle_button([&]() { msmaxSendScene(ExportTarget::Objects, ObjectScope::All); });
+            handle_button([&]() { msmaxSendScene(MeshSyncClient::ExportTarget::Objects, MeshSyncClient::ObjectScope::All); });
             break;
         case IDC_SYNC_ANIMATIONS:
-            handle_button([&]() { msmaxSendScene(ExportTarget::Animations, ObjectScope::All); });
+            handle_button([&]() { msmaxSendScene(MeshSyncClient::ExportTarget::Animations, MeshSyncClient::ObjectScope::All); });
             break;
 
         case IDC_BUTTON_EXPORT_CACHE:
@@ -654,28 +654,28 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
         switch (cid) {
         case IDC_OBJSCOPE_ALL:
             handle_button([&]() {
-                s.object_scope = ObjectScope::All;
+                s.object_scope = MeshSyncClient::ObjectScope::All;
             });
             break;
         case IDC_OBJSCOPE_SELECTED:
             handle_button([&]() {
-                s.object_scope = ObjectScope::Selected;
+                s.object_scope = MeshSyncClient::ObjectScope::Selected;
             });
             break;
 
         case IDC_FRAMERANGE_SINGLE:
             handle_button([&]() {
-                s.frame_range = FrameRange::Current;
+                s.frame_range = MeshSyncClient::FrameRange::Current;
             });
             break;
         case IDC_FRAMERANGE_ACTIVE:
             handle_button([&]() {
-                s.frame_range = FrameRange::All;
+                s.frame_range = MeshSyncClient::FrameRange::All;
             });
             break;
         case IDC_FRAMERANGE_CUSTOM:
             handle_button([&]() {
-                s.frame_range = FrameRange::Custom;
+                s.frame_range = MeshSyncClient::FrameRange::Custom;
             });
             break;
 
@@ -705,7 +705,7 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
             break;
         case IDC_MATERIAL_RANGE:
             handle_combo([&]() {
-                s.material_frame_range = (MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
+                s.material_frame_range = (MeshSyncClient::MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
             });
             break;
 
@@ -849,22 +849,22 @@ void msmaxContext::updateCacheControls()
     auto& s = m_cache_settings;
 
     switch (s.object_scope) {
-    case ObjectScope::All:
+    case MeshSyncClient::ObjectScope::All:
         CtrlSetCheck(IDC_OBJSCOPE_ALL, true);
         break;
-    case ObjectScope::Selected:
+    case MeshSyncClient::ObjectScope::Selected:
         CtrlSetCheck(IDC_OBJSCOPE_SELECTED, true);
         break;
     }
 
     switch (s.frame_range) {
-    case FrameRange::Current:
+    case MeshSyncClient::FrameRange::Current:
         CtrlSetCheck(IDC_FRAMERANGE_SINGLE, true);
         break;
-    case FrameRange::All:
+    case MeshSyncClient::FrameRange::All:
         CtrlSetCheck(IDC_FRAMERANGE_ACTIVE, true);
         break;
-    case FrameRange::Custom:
+    case MeshSyncClient::FrameRange::Custom:
         CtrlSetCheck(IDC_FRAMERANGE_CUSTOM, true);
         break;
     }

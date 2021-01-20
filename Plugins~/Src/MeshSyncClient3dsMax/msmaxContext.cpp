@@ -155,7 +155,7 @@ void msmaxContext::onSceneUpdated()
 void msmaxContext::onTimeChanged()
 {
     if (m_settings.auto_sync)
-        m_pending_request = ObjectScope::All;
+        m_pending_request = MeshSyncClient::ObjectScope::All;
 }
 
 void msmaxContext::onNodeAdded(INode * n)
@@ -246,21 +246,21 @@ void msmaxContext::update()
         updateRecords();
         m_scene_updated = false;
         if (m_settings.auto_sync) {
-            m_pending_request = ObjectScope::All;
+            m_pending_request = MeshSyncClient::ObjectScope::All;
         }
     }
-    if (m_settings.auto_sync && m_pending_request == ObjectScope::None && m_dirty) {
-        m_pending_request = ObjectScope::Updated;
+    if (m_settings.auto_sync && m_pending_request == MeshSyncClient::ObjectScope::None && m_dirty) {
+        m_pending_request = MeshSyncClient::ObjectScope::Updated;
     }
 
-    if (m_pending_request != ObjectScope::None) {
+    if (m_pending_request != MeshSyncClient::ObjectScope::None) {
         if (sendObjects(m_pending_request, false)) {
-            m_pending_request = ObjectScope::None;
+            m_pending_request = MeshSyncClient::ObjectScope::None;
         }
     }
 }
 
-bool msmaxContext::sendObjects(ObjectScope scope, bool dirty_all)
+bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (m_sender.isExporting())
         return false;
@@ -320,7 +320,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-bool msmaxContext::sendAnimations(ObjectScope scope)
+bool msmaxContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     m_sender.wait();
     m_settings.validate();
@@ -412,7 +412,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
     auto nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
-        if (scene_index == 0 || material_range == MaterialFrameRange::All) {
+        if (scene_index == 0 || material_range == MeshSyncClient::MaterialFrameRange::All) {
             // exportMaterials() is needed to export material IDs in meshes
             exportMaterials();
             m_material_manager.clearDirtyFlags();
@@ -433,8 +433,8 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
             export_objects();
         }
 
-        if (material_range == MaterialFrameRange::None ||
-            (material_range == MaterialFrameRange::One && scene_index != 0))
+        if (material_range == MeshSyncClient::MaterialFrameRange::None ||
+            (material_range == MeshSyncClient::MaterialFrameRange::One && scene_index != 0))
             m_material_manager.clearDirtyFlags();
         m_texture_manager.clearDirtyFlags();
         kickAsyncExport();
@@ -443,7 +443,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
     };
 
     auto *ifs = GetCOREInterface();
-    if (cache_settings.frame_range == FrameRange::Current) {
+    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         m_current_time_tick = ifs->GetTime();
         do_export();
@@ -453,7 +453,7 @@ bool msmaxContext::exportCache(const CacheSettings& cache_settings)
 
         TimeValue time_start = 0, time_end = 0, interval = 0;
 
-        if (cache_settings.frame_range == FrameRange::Custom) {
+        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
             // custom frame range
             time_start = cache_settings.frame_begin * ::GetTicksPerFrame();
             time_end = cache_settings.frame_end * ::GetTicksPerFrame();
@@ -565,24 +565,24 @@ msmaxContext::TreeNode& msmaxContext::getNodeRecord(INode *n)
     return rec;
 }
 
-std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(ObjectScope scope)
+std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<TreeNode*> ret;
     ret.reserve(m_node_records.size());
 
     switch (scope)
     {
-    case ObjectScope::All:
+    case MeshSyncClient::ObjectScope::All:
         for (auto& kvp : m_node_records)
             ret.push_back(&kvp.second);
         break;
-    case ObjectScope::Updated:
+    case MeshSyncClient::ObjectScope::Updated:
         for (auto& kvp : m_node_records) {
             if (kvp.second.dirty_trans || kvp.second.dirty_geom)
                 ret.push_back(&kvp.second);
         }
         break;
-    case ObjectScope::Selected:
+    case MeshSyncClient::ObjectScope::Selected:
         for (auto& kvp : m_node_records) {
             if (kvp.second.node->Selected())
                 ret.push_back(&kvp.second);
@@ -1612,7 +1612,7 @@ TimeValue msmaxContext::getExportTime() const
 }
 
 
-bool msmaxSendScene(ExportTarget target, ObjectScope scope)
+bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
     auto& ctx = msmaxGetContext();
     if (!ctx.isServerAvailable()) {
@@ -1621,19 +1621,19 @@ bool msmaxSendScene(ExportTarget target, ObjectScope scope)
     }
 
     auto body = [&ctx, target, scope]() {
-        if (target == ExportTarget::Objects) {
+        if (target == MeshSyncClient::ExportTarget::Objects) {
             ctx.wait();
             ctx.sendObjects(scope, true);
         }
-        else if (target == ExportTarget::Materials) {
+        else if (target == MeshSyncClient::ExportTarget::Materials) {
             ctx.wait();
             ctx.sendMaterials(true);
         }
-        else if (target == ExportTarget::Animations) {
+        else if (target == MeshSyncClient::ExportTarget::Animations) {
             ctx.wait();
             ctx.sendAnimations(scope);
         }
-        else if (target == ExportTarget::Everything) {
+        else if (target == MeshSyncClient::ExportTarget::Everything) {
             ctx.wait();
             ctx.sendMaterials(true);
             ctx.wait();

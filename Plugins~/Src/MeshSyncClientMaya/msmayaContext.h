@@ -1,15 +1,20 @@
 ﻿#pragma once
 
+
 #include "MeshSync/msClient.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msTexture.h" //TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
+#include "MeshSyncClient/FrameRange.h"
 
+#include "MeshSyncClient/ExportTarget.h"
+#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
+#include "MeshSyncClient/ObjectScope.h"
 
 #include "MeshUtils/muMisc.h" //mu::noncopyable
 #include "MeshUtils/muMath.h" //float4, etc
@@ -95,36 +100,6 @@ struct TreeNode : public mu::noncopyable
 using TreeNodePtr = std::unique_ptr<TreeNode>;
 
 
-enum class ExportTarget : int
-{
-    Objects,
-    Materials,
-    Animations,
-    Everything,
-};
-
-enum class ObjectScope : int
-{
-    None = -1,
-    All,
-    Selected,
-    Updated,
-};
-
-enum class FrameRange : int
-{
-    Current,
-    All,
-    Custom,
-};
-
-enum class MaterialFrameRange : int
-{
-    None,
-    One,
-    All,
-};
-
 struct SyncSettings
 {
     ms::ClientSettings client_settings;
@@ -161,12 +136,12 @@ struct SyncSettings
 struct CacheSettings
 {
     std::string path;
-    ObjectScope object_scope = ObjectScope::All;
-    FrameRange frame_range = FrameRange::All;
+    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
+    MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
     int frame_begin = 0;
     int frame_end = 100;
     float frame_step = 1.0f;
-    MaterialFrameRange material_frame_range = MaterialFrameRange::One;
+    MeshSyncClient::MaterialFrameRange material_frame_range = MeshSyncClient::MaterialFrameRange::One;
 
     bool remove_namespace = true;
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
@@ -207,8 +182,8 @@ public:
     void wait();
     void update();
     bool sendMaterials(bool dirty_all);
-    bool sendObjects(ObjectScope scope, bool dirty_all);
-    bool sendAnimations(ObjectScope scope);
+    bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
+    bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool exportCache(const CacheSettings& cache_settings);
 
     bool recvObjects();
@@ -247,7 +222,7 @@ private:
     void removeGlobalCallbacks();
     void removeNodeCallbacks();
 
-    std::vector<TreeNode*> getNodes(ObjectScope scope, bool include_children = false);
+    std::vector<TreeNode*> getNodes(MeshSyncClient::ObjectScope scope, bool include_children = false);
 
     int exportTexture(const std::string& path, ms::TextureType type = ms::TextureType::Default);
     int findTexture(const std::string& path);
@@ -275,7 +250,7 @@ private:
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
     void extractLightData(TreeNode *n, ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& spot_angle);
 
-    int exportAnimations(ObjectScope scope);
+    int exportAnimations(MeshSyncClient::ObjectScope scope);
     bool exportAnimation(TreeNode *tn, bool force);
     void extractTransformAnimationData(ms::TransformAnimation& dst, TreeNode *n);
     void extractCameraAnimationData(ms::TransformAnimation& dst, TreeNode *n);
@@ -306,7 +281,7 @@ private:
     ms::AsyncSceneSender m_sender;
     ms::AsyncSceneCacheWriter m_cache_writer;
 
-    ObjectScope m_pending_scope = ObjectScope::None;
+    MeshSyncClient::ObjectScope m_pending_scope = MeshSyncClient::ObjectScope::None;
     bool      m_scene_updated = true;
     bool      m_ignore_update = false;
     int       m_index_seed = 0;
