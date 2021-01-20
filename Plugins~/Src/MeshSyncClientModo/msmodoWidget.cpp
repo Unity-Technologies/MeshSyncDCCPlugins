@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "MeshSync/MeshSync.h"
+#include "MeshSync/msClient.h"
 #include "msmodoContext.h"
 
 #define msmodoEnableQt
@@ -156,12 +157,12 @@ msmodoSettingsWidget::msmodoSettingsWidget(QWidget *parent)
         connect(ck_double_sided, SIGNAL(stateChanged(int)), this, SLOT(onToggleDoubleSided(int)));
 
         m_ck_bake_deformers = new QCheckBox("Bake Deformers");
-        m_ck_bake_deformers->setCheckState(to_qcheckstate(settings.bake_deformers));
+        m_ck_bake_deformers->setCheckState(to_qcheckstate(settings.BakeModifiers));
         layout_mesh->addWidget(m_ck_bake_deformers, iy2++, 0);
         connect(m_ck_bake_deformers, SIGNAL(stateChanged(int)), this, SLOT(onToggleBakeDeformers(int)));
 
         m_ck_bake_transform = new QCheckBox("Bake Transform");
-        m_ck_bake_transform->setCheckState(to_qcheckstate(settings.bake_transform));
+        m_ck_bake_transform->setCheckState(to_qcheckstate(settings.BakeTransform));
         layout_mesh->addWidget(m_ck_bake_transform, iy2++, 0);
         connect(m_ck_bake_transform, SIGNAL(stateChanged(int)), this, SLOT(onToggleBakeTransform(int)));
 
@@ -343,10 +344,10 @@ void msmodoSettingsWidget::onToggleDoubleSided(int v)
 void msmodoSettingsWidget::onToggleBakeDeformers(int v)
 {
     auto& settings = msmodoGetSettings();
-    settings.bake_deformers = v;
-    if (!settings.bake_deformers) {
-        settings.bake_transform = false;
-        m_ck_bake_transform->setCheckState(to_qcheckstate(settings.bake_transform));
+    settings.BakeModifiers = v;
+    if (!settings.BakeModifiers) {
+        settings.BakeTransform = false;
+        m_ck_bake_transform->setCheckState(to_qcheckstate(settings.BakeTransform));
     }
 
     if (settings.auto_sync)
@@ -356,10 +357,10 @@ void msmodoSettingsWidget::onToggleBakeDeformers(int v)
 void msmodoSettingsWidget::onToggleBakeTransform(int v)
 {
     auto& settings = msmodoGetSettings();
-    settings.bake_transform = v;
-    if (settings.bake_transform) {
-        settings.bake_deformers = true;
-        m_ck_bake_deformers->setCheckState(to_qcheckstate(settings.bake_deformers));
+    settings.BakeTransform = v;
+    if (settings.BakeTransform) {
+        settings.BakeModifiers = true;
+        m_ck_bake_deformers->setCheckState(to_qcheckstate(settings.BakeModifiers));
     }
     if (settings.auto_sync)
         msmodoSendObjects();

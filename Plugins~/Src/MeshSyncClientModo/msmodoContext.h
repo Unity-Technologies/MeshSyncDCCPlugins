@@ -1,8 +1,6 @@
 #pragma once
 
 #include "msmodoInterface.h"
-#include "MeshSync/msClient.h"
-#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
@@ -14,6 +12,7 @@
 #include "MeshSyncClient/ObjectScope.h"
 
 #include "ModoCacheSettings.h"
+#include "ModoSyncSettings.h"
 
 namespace ms {
 
@@ -40,39 +39,6 @@ struct LxItemKey
     bool operator!=(const LxItemKey& v) const { return key != v.key; }
 };
 
-class msmodoContext;
-
-
-struct SyncSettings
-{
-    ms::ClientSettings client_settings;
-
-    float scale_factor = 1.0f;
-    float frame_step = 1.0f;
-    int  timeout_ms = 5000;
-    bool auto_sync = false;
-    bool sync_meshes = true;
-    bool sync_normals = true;
-    bool sync_uvs = true;
-    bool sync_colors = true;
-    bool make_double_sided = false;
-    bool bake_deformers = false;
-    bool bake_transform = false;
-    bool flatten_hierarchy = false;
-    bool sync_blendshapes = true;
-    bool sync_bones = true;
-    bool sync_mesh_instances = true;
-    bool sync_replicators = true;
-    bool sync_textures = true;
-    bool sync_cameras = true;
-    bool sync_lights = true;
-
-    // cache
-    bool export_cache = false;
-
-    void validate();
-};
-
 
 class msmodoContext : private msmodoInterface
 {
@@ -81,7 +47,7 @@ public:
     static msmodoContext& getInstance();
     static void finalizeInstance();
 
-    SyncSettings& getSettings();
+    ModoSyncSettings& getSettings();
     ModoCacheSettings& getCacheSettings();
 
     using super::logInfo;
@@ -179,7 +145,7 @@ private:
 private:
     static std::unique_ptr<msmodoContext> s_instance;
 
-    SyncSettings m_settings;
+    ModoSyncSettings m_settings;
     ModoCacheSettings m_cache_settings;
     ms::IDGenerator<CLxUser_Item> m_material_ids;
     ms::TextureManager m_texture_manager;

@@ -7,12 +7,6 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSyncClient/FrameRange.h"
 
-void SyncSettings::validate()
-{
-    if (!bake_deformers)
-        bake_transform = false;
-}
-
 void msmodoContext::TreeNode::clearState()
 {
     dst_obj = nullptr;
@@ -62,7 +56,7 @@ msmodoContext::~msmodoContext()
     wait();
 }
 
-SyncSettings& msmodoContext::getSettings()
+ModoSyncSettings & msmodoContext::getSettings()
 {
     return m_settings;
 }
@@ -182,7 +176,7 @@ void msmodoContext::extractTransformData(TreeNode& n,
     };
 
     // extract TRS
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         if (n.item.IsA(tCamera) || n.item.IsA(tLight)) {
             mu::extract_trs(world, t, r, s);
             r = camera_correction(r);
@@ -349,7 +343,7 @@ void msmodoContext::extractReplicaData(
     sprintf(buf, " (%d)", nth++);
     path += buf;
 
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         t = mu::float3::zero();
         r = mu::quatf::identity();
         s = mu::float3::one();
@@ -458,10 +452,10 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     auto settings_old = m_settings;
-    m_settings.export_cache = true;
+    m_settings.ExportSceneCache = true;
     m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.bake_deformers = cache_settings.bake_modifiers;
-    m_settings.bake_transform = cache_settings.bake_transform;
+    m_settings.BakeModifiers = cache_settings.bake_modifiers;
+    m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.validate();
 
@@ -785,7 +779,7 @@ ms::TransformPtr msmodoContext::exportMeshInstance(TreeNode& n)
     if (!src)
         return nullptr;
 
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         auto& nsrc = m_tree_nodes[src];
         if (!nsrc.dst_obj)
             exportObject(src, true, false);
@@ -846,7 +840,7 @@ ms::LightPtr msmodoContext::exportLight(TreeNode& n)
 
 ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
 {
-    CLxUser_Mesh mesh = m_settings.bake_deformers ? getDeformedMesh(n.item) : getBaseMesh(n.item);
+    CLxUser_Mesh mesh = m_settings.BakeModifiers ? getDeformedMesh(n.item) : getBaseMesh(n.item);
     if (!mesh)
         return nullptr;
 
@@ -1041,7 +1035,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
         }
 
         // bone weights
-        if (!m_settings.bake_deformers && m_settings.sync_bones) {
+        if (!m_settings.BakeModifiers && m_settings.sync_bones) {
             auto get_weights = [&](const char *name, auto& dst_array) -> bool {
                 if (!name || LXx_FAIL(mmap.SelectByName(LXi_VMAP_WEIGHT, name)))
                     return false;
@@ -1089,7 +1083,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
         }
 
         // morph
-        if (!m_settings.bake_deformers && m_settings.sync_blendshapes) {
+        if (!m_settings.BakeModifiers && m_settings.sync_blendshapes) {
             auto get_delta = [&](const char *name, auto& dst_array) -> bool {
                 if (!name || LXx_FAIL(mmap.SelectByName(LXi_VMAP_MORPH, name)))
                     return false;
@@ -1145,7 +1139,7 @@ ms::MeshPtr msmodoContext::exportMesh(TreeNode& n)
         dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
         dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
 
-        if (m_settings.bake_transform) {
+        if (m_settings.BakeTransform) {
             dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
             dst.refine_settings.local2world = dst.world_matrix;
         }
@@ -1202,7 +1196,7 @@ ms::TransformPtr msmodoContext::exportReplicator(TreeNode& n)
     // export replica
     int nth = 0;
     n.replicas.clear();
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         // generate independent meshes
         eachReplica(n.item, [&](CLxUser_Item& geom, mu::float4x4 matrix) {
             auto& nsrc = m_tree_nodes[geom];
@@ -1237,7 +1231,7 @@ ms::TransformPtr msmodoContext::exportReplicator(TreeNode& n)
         });
     }
 
-    if (!m_settings.export_cache) {
+    if (!m_settings.ExportSceneCache) {
         // check if there are deleted elements
         m_parallel_tasks.push_back([this, &n]() {
             if (n.replicas.empty() && n.prev_replicas.empty())
@@ -1463,7 +1457,7 @@ void msmodoContext::extractMeshAnimationData(TreeNode& n)
     auto& dst = (ms::MeshAnimation&)*n.dst_anim;
 
     // extract blendshape weights
-    if (!m_settings.bake_deformers && m_settings.sync_blendshapes) {
+    if (!m_settings.BakeModifiers && m_settings.sync_blendshapes) {
         CLxUser_Mesh mesh = getBaseMesh(n.item);
         CLxUser_MeshMap mmap;
         mesh.GetMaps(mmap);
@@ -1524,7 +1518,7 @@ void msmodoContext::kickAsyncExport()
         kvp.second.clearState();
 
     using Exporter = ms::AsyncSceneExporter;
-    Exporter *exporter = m_settings.export_cache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
+    Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // kick async send
     exporter->on_prepare = [this, exporter]() {
