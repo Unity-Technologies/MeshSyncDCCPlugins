@@ -13,49 +13,17 @@
 #include "MeshSyncClient/ObjectScope.h"
 
 #include "BlenderCacheSettings.h"
+#include "BlenderSyncSettings.h"
 
-struct SyncSettings;
 class msblenContext;
-
-struct SyncSettings
-{
-    ms::ClientSettings client_settings;
-    ms::SceneSettings scene_settings;
-    bool sync_meshes = true;
-    bool sync_normals = true;
-    bool sync_uvs = true;
-    bool sync_colors = true;
-    bool make_double_sided = false;
-    bool bake_modifiers = false;
-    bool bake_transform = false;
-    bool curves_as_mesh = true;
-    bool flatten_hierarchy = false;
-    bool sync_bones = true;
-    bool sync_blendshapes = true;
-    bool sync_textures = true;
-    bool sync_cameras = true;
-    bool sync_lights = true;
-    bool calc_per_index_normals = true;
-
-    int frame_step = 1;
-
-    bool multithreaded = true;
-
-    // cache
-    bool export_cache = false;
-
-    void validate();
-};
-
-
 
 class msblenContext {
 public:
     static msblenContext& getInstance();
     void Destroy();
 
-    SyncSettings& getSettings();
-    const SyncSettings& getSettings() const;
+    BlenderSyncSettings& getSettings();
+    const BlenderSyncSettings& getSettings() const;
     BlenderCacheSettings& getCacheSettings();
     const BlenderCacheSettings& getCacheSettings() const;
 
@@ -189,7 +157,7 @@ private:
     void kickAsyncExport();
 
 private:
-    SyncSettings m_settings;
+    BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
     std::set<Object*> m_pending;
     std::map<Bone*, ms::TransformPtr> m_bones;
