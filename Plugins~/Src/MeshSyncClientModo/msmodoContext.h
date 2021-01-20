@@ -6,15 +6,14 @@
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
-#include "MeshSyncClient/FrameRange.h"
 
 #include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
-#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
 
+#include "ModoCacheSettings.h"
 
 namespace ms {
 
@@ -74,27 +73,6 @@ struct SyncSettings
     void validate();
 };
 
-struct CacheSettings
-{
-    std::string path;
-    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
-    MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::Current;
-    int frame_begin = 0;
-    int frame_end = 100;
-    float frame_step = 1.0f;
-    MeshSyncClient::MaterialFrameRange material_frame_range = MeshSyncClient::MaterialFrameRange::One;
-
-    int zstd_compression_level = 3; // (min) 0 - 22 (max)
-    bool make_double_sided = false;
-    bool bake_deformers = true;
-    bool bake_transform = false;
-    bool flatten_hierarchy = false;
-    bool merge_meshes = false;
-
-    bool strip_normals = false;
-    bool strip_tangents = true;
-};
-
 
 class msmodoContext : private msmodoInterface
 {
@@ -104,7 +82,7 @@ public:
     static void finalizeInstance();
 
     SyncSettings& getSettings();
-    CacheSettings& getCacheSettings();
+    ModoCacheSettings& getCacheSettings();
 
     using super::logInfo;
     using super::logError;
@@ -116,7 +94,7 @@ public:
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const CacheSettings& cache_settings);
+    bool exportCache(const ModoCacheSettings& cache_settings);
 
     bool recvObjects();
 
@@ -202,7 +180,7 @@ private:
     static std::unique_ptr<msmodoContext> s_instance;
 
     SyncSettings m_settings;
-    CacheSettings m_cache_settings;
+    ModoCacheSettings m_cache_settings;
     ms::IDGenerator<CLxUser_Item> m_material_ids;
     ms::TextureManager m_texture_manager;
     ms::MaterialManager m_material_manager;

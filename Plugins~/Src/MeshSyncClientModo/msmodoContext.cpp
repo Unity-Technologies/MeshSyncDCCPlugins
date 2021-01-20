@@ -67,7 +67,7 @@ SyncSettings& msmodoContext::getSettings()
     return m_settings;
 }
 
-CacheSettings& msmodoContext::getCacheSettings()
+ModoCacheSettings& msmodoContext::getCacheSettings()
 {
     return m_cache_settings;
 }
@@ -448,7 +448,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     }
 }
 
-bool msmodoContext::exportCache(const CacheSettings& cache_settings)
+bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
 {
     if (!prepare()) {
         return false;
@@ -460,7 +460,7 @@ bool msmodoContext::exportCache(const CacheSettings& cache_settings)
     auto settings_old = m_settings;
     m_settings.export_cache = true;
     m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.bake_deformers = cache_settings.bake_deformers;
+    m_settings.bake_deformers = cache_settings.bake_modifiers;
     m_settings.bake_transform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.validate();

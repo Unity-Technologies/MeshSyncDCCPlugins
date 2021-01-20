@@ -274,7 +274,7 @@ public:
         readArg("materialFrameRange", (int&)settings.material_frame_range);
         readArg("zstdCompressionLevel", settings.zstd_compression_level);
         readArg("makeDoubleSided", settings.make_double_sided);
-        readArg("bakeDeformers", settings.bake_deformers);
+        readArg("bakeDeformers", settings.bake_modifiers);
         readArg("bakeTransform", settings.bake_transform);
         readArg("flattenHierarchy", settings.flatten_hierarchy);
         //readArg("mergeMeshes", settings.merge_meshes);
