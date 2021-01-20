@@ -102,13 +102,6 @@ static TreeNode* FindBranch(const DAGNodeMap& dnmap, const MDagPath& dagpath)
     return nullptr;
 }
 
-void SyncSettings::validate()
-{
-    if (!bake_deformers)
-        bake_transform = false;
-}
-
-
 static void OnIdle(float elapsedTime, float lastTime, void *_this)
 {
     reinterpret_cast<msmayaContext*>(_this)->update();
@@ -301,7 +294,7 @@ msmayaContext& msmayaContext::getInstance()
     return *g_plugin;
 }
 
-SyncSettings& msmayaContext::getSettings()
+MayaSyncSettings& msmayaContext::getSettings()
 {
     return m_settings;
 }
@@ -634,12 +627,12 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    auto settings_old = m_settings;
-    m_settings.export_cache = true;
+    MayaSyncSettings settings_old = m_settings;
+    m_settings.ExportSceneCache = true;
     m_settings.remove_namespace = cache_settings.remove_namespace;
     m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.bake_deformers = cache_settings.bake_modifiers;
-    m_settings.bake_transform = cache_settings.bake_transform;
+    m_settings.BakeModifiers = cache_settings.bake_modifiers;
+    m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.validate();
 
@@ -784,7 +777,7 @@ void msmayaContext::kickAsyncExport()
     }
 
     using Exporter = ms::AsyncSceneExporter;
-    Exporter *exporter = m_settings.export_cache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
+    Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     exporter->on_prepare = [this, to_meter, exporter]() {
         if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
@@ -959,7 +952,7 @@ ms::TransformPtr msmayaContext::exportObject(TreeNode *n, bool parent, bool tip)
 
     // Maya can instantiate any nodes (include its children), but we only care about Meshes (shape).
     auto handle_instance = [&]() -> bool {
-        if (!m_settings.bake_transform && n->isInstanced() && !n->isPrimaryInstance()) {
+        if (!m_settings.BakeTransform && n->isInstanced() && !n->isPrimaryInstance()) {
             n->dst_obj = exportInstance(n);
             return true;
         }
@@ -992,7 +985,7 @@ ms::TransformPtr msmayaContext::exportObject(TreeNode *n, bool parent, bool tip)
             handle_transform();
     }
     else if (shape.hasFn(MFn::kJoint)) {
-        if (m_settings.sync_bones && !m_settings.bake_deformers) {
+        if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             handle_parent();
             n->dst_obj = exportTransform(n);
         }
@@ -1083,7 +1076,7 @@ void msmayaContext::extractTransformData(TreeNode *n,
         return mu::quatf{ -v.z, v.w, v.x, -v.y };
     };
 
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         if (n->shape->node.hasFn(MFn::kCamera) || n->shape->node.hasFn(MFn::kLight)) {
             mu::extract_trs(world, t, r, s);
             r = camera_correction(r);
@@ -1250,12 +1243,12 @@ ms::MeshPtr msmayaContext::exportMesh(TreeNode *n)
 
     auto task = [this, ret, &dst, n]() {
         if (m_settings.sync_meshes) {
-            if (m_settings.bake_deformers)
+            if (m_settings.BakeModifiers)
                 doExtractMeshDataBaked(dst, n);
             else
                 doExtractMeshData(dst, n);
 
-            if (m_settings.bake_transform) {
+            if (m_settings.BakeTransform) {
                 dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 dst.refine_settings.local2world = dst.world_matrix;
             }
@@ -1270,7 +1263,7 @@ ms::MeshPtr msmayaContext::exportMesh(TreeNode *n)
             dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
         }
         else {
-            if (!m_settings.bake_deformers && m_settings.sync_blendshapes)
+            if (!m_settings.BakeModifiers && m_settings.sync_blendshapes)
                 doExtractBlendshapeWeights(dst, n);
         }
         m_entity_manager.add(ret);

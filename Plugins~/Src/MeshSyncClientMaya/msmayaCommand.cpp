@@ -213,8 +213,8 @@ MStatus CmdSettings::doIt(const MArgList& args_)
     Handle("syncUVs", sync_uvs, true);
     Handle("syncColors", sync_colors, true);
     Handle("makeDoubleSided", make_double_sided, true);
-    Handle("bakeDeformers", bake_deformers, true);
-    Handle("bakeTransform", bake_transform, true);
+    Handle("bakeDeformers", BakeModifiers, true);
+    Handle("bakeTransform", BakeTransform, true);
     Handle("applyTweak", apply_tweak, true);
     Handle("syncBlendShapes", sync_blendshapes, true);
     Handle("syncBones", sync_bones, true);

@@ -17,6 +17,7 @@
 #include "MeshUtils/muMath.h" //float4, etc
 
 #include "MayaCacheSettings.h"
+#include "MayaSyncSettings.h"
 
 namespace ms {
 
@@ -99,44 +100,12 @@ struct TreeNode : public mu::noncopyable
 using TreeNodePtr = std::unique_ptr<TreeNode>;
 
 
-struct SyncSettings
-{
-    ms::ClientSettings client_settings;
-
-    float scale_factor = 0.01f;
-    float frame_step = 1.0f;
-    int  timeout_ms = 5000;
-    bool auto_sync = false;
-    bool sync_meshes = true;
-    bool sync_normals = true;
-    bool sync_uvs = true;
-    bool sync_colors = true;
-    bool make_double_sided = false;
-    bool bake_deformers = false;
-    bool bake_transform = false;
-    bool flatten_hierarchy = false;
-    bool apply_tweak = false;
-    bool sync_blendshapes = true;
-    bool sync_bones = true;
-    bool sync_textures = true;
-    bool sync_cameras = true;
-    bool sync_lights = true;
-    bool sync_constraints = false;
-    bool remove_namespace = true;
-    bool multithreaded = false;
-    bool fbx_compatible_transform = true;
-
-    // cache
-    bool export_cache = false;
-
-    void validate();
-};
 
 class msmayaContext
 {
 public:
     static msmayaContext& getInstance();
-    SyncSettings& getSettings();
+    MayaSyncSettings& getSettings();
     MayaCacheSettings& getCacheSettings();
 
     msmayaContext(MObject obj);
@@ -237,7 +206,7 @@ private:
     void kickAsyncExport();
 
 private:
-    SyncSettings m_settings;
+    MayaSyncSettings m_settings;
     MayaCacheSettings m_cache_settings;
 
     MObject m_obj;
