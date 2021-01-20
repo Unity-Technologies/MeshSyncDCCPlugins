@@ -106,7 +106,7 @@ SyncSettings& msmaxContext::getSettings()
     return m_settings;
 }
 
-CacheSettings& msmaxContext::getCacheSettings()
+MaxCacheSettings& msmaxContext::getCacheSettings()
 {
     return m_cache_settings;
 }
@@ -376,7 +376,7 @@ static int ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-bool msmaxContext::exportCache(const CacheSettings& cache_settings)
+bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
 {
     const float frame_rate = (float)::GetFrameRate();
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
@@ -1646,7 +1646,7 @@ bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectS
     return true;
 }
 
-bool msmaxExportCache(const CacheSettings& cache_settings)
+bool msmaxExportCache(const MaxCacheSettings& cache_settings)
 {
     auto& ctx = msmaxGetContext();
     auto body = [&ctx, cache_settings]() {
