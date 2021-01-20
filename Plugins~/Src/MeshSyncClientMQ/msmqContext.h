@@ -7,6 +7,8 @@
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 
+#include "MQCacheSettings.h"
+
 struct SyncSettings
 {
     ms::ClientSettings client_settings;
@@ -30,21 +32,6 @@ struct SyncSettings
     void validate();
 };
 
-struct CacheSettings
-{
-    std::string path;
-    mu::nanosec time_start = 0;
-
-    int zstd_compression_level = 3; // (min) 0 - 22 (max)
-
-    bool make_double_sided = false;
-    bool bake_transform = true;
-    bool flatten_hierarchy = false;
-    bool merge_meshes = false;
-
-    bool strip_normals = false;
-    bool strip_tangents = true;
-};
 
 class msmqContext
 {
@@ -114,7 +101,7 @@ private:
     MQBasePlugin *m_plugin = nullptr;
 
     SyncSettings m_settings;
-    CacheSettings m_cache_settings;
+    MQCacheSettings m_cache_settings;
 
     HostMeshes m_host_meshes;
 
