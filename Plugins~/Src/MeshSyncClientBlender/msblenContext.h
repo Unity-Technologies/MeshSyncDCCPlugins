@@ -49,8 +49,7 @@ struct SyncSettings
 
 
 
-class msblenContext
-{
+class msblenContext {
 public:
     static msblenContext& getInstance();
     void Destroy();
