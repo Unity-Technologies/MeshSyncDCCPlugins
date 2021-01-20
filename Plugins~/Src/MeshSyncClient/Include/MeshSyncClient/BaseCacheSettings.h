@@ -34,4 +34,4 @@ struct BaseCacheSettings {
 
 };
 
-} // namespace ms
+} // namespace MeshSyncClient
