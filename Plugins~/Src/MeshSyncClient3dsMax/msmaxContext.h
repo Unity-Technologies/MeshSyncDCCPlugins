@@ -7,12 +7,12 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
 
 #include "MeshSyncClient/ExportTarget.h"
-#include "MeshSyncClient/FrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
-#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
+
+#include "MaxCacheSettings.h"
 
 
 #define msmaxAPI extern "C" __declspec(dllexport)
@@ -53,29 +53,6 @@ struct SyncSettings
     void validate();
 };
 
-struct CacheSettings
-{
-    std::string path;
-    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
-    MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
-    int frame_begin = 0;
-    int frame_end = 100;
-    float frame_step = 1.0f;
-    MeshSyncClient::MaterialFrameRange material_frame_range = MeshSyncClient::MaterialFrameRange::One;
-
-    int zstd_compression_level = 3; // (min) 0 - 22 (max)
-
-    bool ignore_non_renderable = true;
-    bool make_double_sided = false;
-    bool bake_modifiers = true;
-    bool bake_transform = true;
-    bool use_render_meshes = true;
-    bool flatten_hierarchy = false;
-    bool merge_meshes = false;
-
-    bool strip_normals = false;
-    bool strip_tangents = true;
-};
 
 class msmaxContext : mu::noncopyable
 {
@@ -85,7 +62,7 @@ public:
     msmaxContext();
     ~msmaxContext();
     SyncSettings& getSettings();
-    CacheSettings& getCacheSettings();
+    MaxCacheSettings& getCacheSettings();
 
     void onStartup();
     void onShutdown();
@@ -109,7 +86,7 @@ public:
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendMaterials(bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const CacheSettings& cache_settings);
+    bool exportCache(const MaxCacheSettings& cache_settings);
 
     bool recvScene();
 
@@ -208,7 +185,7 @@ private:
 
 private:
     SyncSettings m_settings;
-    CacheSettings m_cache_settings;
+    MaxCacheSettings m_cache_settings;
     ISceneEventManager::CallbackKey m_cbkey = 0;
 
     std::map<INode*, TreeNode> m_node_records;
@@ -243,4 +220,4 @@ private:
 #define msmaxGetSettings() msmaxGetContext().getSettings()
 #define msmaxGetCacheSettings() msmaxGetContext().getCacheSettings()
 bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);
-bool msmaxExportCache(const CacheSettings& cache_settings);
+bool msmaxExportCache(const MaxCacheSettings& cache_settings);

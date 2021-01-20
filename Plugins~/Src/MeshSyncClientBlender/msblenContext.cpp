@@ -88,8 +88,8 @@ msblenContext::~msblenContext()
 
 SyncSettings& msblenContext::getSettings() { return m_settings; }
 const SyncSettings& msblenContext::getSettings() const { return m_settings; }
-CacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
-const CacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
+BlenderCacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
+const BlenderCacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
 std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
@@ -1453,11 +1453,12 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     return false;
 }
 
-bool msblenContext::exportCache(const CacheSettings& cache_settings)
-{
+//----------------------------------------------------------------------------------------------------------------------
+
+bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
-    const int frame_step = std::max(cache_settings.frame_step, 1);
+    const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
     SyncSettings settings_old = m_settings;
     m_settings.export_cache = true;

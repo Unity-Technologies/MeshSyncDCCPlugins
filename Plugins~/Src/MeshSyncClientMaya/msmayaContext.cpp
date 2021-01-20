@@ -306,7 +306,7 @@ SyncSettings& msmayaContext::getSettings()
     return m_settings;
 }
 
-CacheSettings& msmayaContext::getCacheSettings()
+MayaCacheSettings& msmayaContext::getCacheSettings()
 {
     return m_cache_settings;
 }
@@ -629,7 +629,7 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     return true;
 }
 
-bool msmayaContext::exportCache(const CacheSettings& cache_settings)
+bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 {
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
@@ -638,7 +638,7 @@ bool msmayaContext::exportCache(const CacheSettings& cache_settings)
     m_settings.export_cache = true;
     m_settings.remove_namespace = cache_settings.remove_namespace;
     m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.bake_deformers = cache_settings.bake_deformers;
+    m_settings.bake_deformers = cache_settings.bake_modifiers;
     m_settings.bake_transform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.validate();

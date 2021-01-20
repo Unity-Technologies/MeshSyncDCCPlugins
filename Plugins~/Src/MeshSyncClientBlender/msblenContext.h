@@ -7,12 +7,12 @@
 
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
-#include "MeshSyncClient/FrameRange.h"
-#include "MeshSyncClient/MaterialFrameRange.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
+
+#include "BlenderCacheSettings.h"
 
 struct SyncSettings;
 class msblenContext;
@@ -47,40 +47,17 @@ struct SyncSettings
     void validate();
 };
 
-struct CacheSettings
-{
-    std::string path;
-    MeshSyncClient::ObjectScope object_scope = MeshSyncClient::ObjectScope::All;
-    MeshSyncClient::FrameRange frame_range = MeshSyncClient::FrameRange::All;
-    int frame_begin = 0;
-    int frame_end = 100;
-    int frame_step = 1;
-    MeshSyncClient::MaterialFrameRange material_frame_range = MeshSyncClient::MaterialFrameRange::One;
-
-    int zstd_compression_level = 3; // (min) 0 - 22 (max)
-
-    bool make_double_sided = false;
-    bool bake_modifiers = true;
-    bool bake_transform = true;
-    bool curves_as_mesh = true;
-    bool flatten_hierarchy = false;
-    bool merge_meshes = false;
-
-    bool strip_normals = false;
-    bool strip_tangents = true;
-};
 
 
-class msblenContext
-{
+class msblenContext {
 public:
     static msblenContext& getInstance();
     void Destroy();
 
     SyncSettings& getSettings();
     const SyncSettings& getSettings() const;
-    CacheSettings& getCacheSettings();
-    const CacheSettings& getCacheSettings() const;
+    BlenderCacheSettings& getCacheSettings();
+    const BlenderCacheSettings& getCacheSettings() const;
 
     void logInfo(const char *format, ...);
     bool isServerAvailable();
@@ -93,7 +70,7 @@ public:
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const CacheSettings& cache_settings);
+    bool exportCache(const BlenderCacheSettings& cache_settings);
 
     void flushPendingList();
 
@@ -213,7 +190,7 @@ private:
 
 private:
     SyncSettings m_settings;
-    CacheSettings m_cache_settings;
+    BlenderCacheSettings m_cache_settings;
     std::set<Object*> m_pending;
     std::map<Bone*, ms::TransformPtr> m_bones;
     std::map<void*, ObjectRecord> m_obj_records; // key can be object or bone
