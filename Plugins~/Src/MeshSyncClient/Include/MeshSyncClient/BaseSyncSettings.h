@@ -26,7 +26,7 @@ struct BaseSyncSettings {
     bool flatten_hierarchy = false;
 
     // cache
-    bool ExportSceneCache = false;Å@
+    bool ExportSceneCache = false;
 };
 
 } // namespace MeshSyncClient
