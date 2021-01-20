@@ -2,6 +2,8 @@
 #include "msmayaContext.h"
 #include "msmayaCommand.h"
 
+#include "MeshSyncClient/ExportTarget.h"
+#include "MeshSyncClient/MaterialFrameRange.h"
 
 template<class T> static bool get_arg(T& dst, const char *name, MArgParser& args);
 
@@ -397,7 +399,7 @@ MStatus CmdExportCache::doIt(const MArgList& args_)
     Handle("zstdCompressionLevel", zstd_compression_level);
     Handle("removeNamespace", remove_namespace);
     Handle("makeDoubleSided", make_double_sided);
-    Handle("bakeDeformers", bake_deformers);
+    Handle("bakeDeformers", bake_modifiers);
     Handle("bakeTransform", bake_transform);
     Handle("flattenHierarchy", flatten_hierarchy);
     Handle("mergeMeshes", merge_meshes);
