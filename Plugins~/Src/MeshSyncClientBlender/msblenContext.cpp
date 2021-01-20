@@ -1453,8 +1453,9 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     return false;
 }
 
-bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings)
-{
+//----------------------------------------------------------------------------------------------------------------------
+
+bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
