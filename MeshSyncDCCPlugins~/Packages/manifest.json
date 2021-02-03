@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "com.unity.ide.rider": "1.1.4",
-    "com.unity.ide.vscode": "1.1.4",
+    "com.unity.ide.vscode": "1.2.3",
     "com.unity.package-validation-suite": "0.9.1-preview",
-    "com.unity.test-framework": "1.1.13",
+    "com.unity.test-framework": "1.1.20",
     "com.unity.textmeshpro": "2.0.1",
     "com.unity.timeline": "1.2.14",
     "com.unity.ugui": "1.0.0",

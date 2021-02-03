@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.0-preview] - 2020-02-03
+* chore: support com.unity.meshsync@0.7.0-preview
+
 ## [0.6.0-preview] - 2020-12-15
 * feat: support Blender 2.91.0 and 2.83.10 
 
