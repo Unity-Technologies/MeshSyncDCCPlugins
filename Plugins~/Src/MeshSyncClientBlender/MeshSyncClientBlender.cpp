@@ -121,11 +121,11 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](const self_t& self) { return self->getSettings().make_double_sided; },
                 [](self_t& self, bool v) { self->getSettings().make_double_sided = v; })
             BindProperty(bake_modifiers,
-                [](const self_t& self) { return self->getSettings().bake_modifiers; },
-                [](self_t& self, bool v) { self->getSettings().bake_modifiers = v; })
+                [](const self_t& self) { return self->getSettings().BakeModifiers; },
+                [](self_t& self, bool v) { self->getSettings().BakeModifiers= v; })
             BindProperty(bake_transform,
-                [](const self_t& self) { return self->getSettings().bake_transform; },
-                [](self_t& self, bool v) { self->getSettings().bake_transform = v; })
+                [](const self_t& self) { return self->getSettings().BakeTransform; },
+                [](self_t& self, bool v) { self->getSettings().BakeTransform = v; })
             BindProperty(curves_as_mesh,
                 [](const self_t& self) { return self->getSettings().curves_as_mesh; },
                 [](self_t& self, bool v) { self->getSettings().curves_as_mesh = v; })

@@ -68,8 +68,8 @@ public:
     Handler("syncUVs", LXsTYPE_BOOLEAN, settings.sync_uvs, true)\
     Handler("syncColors", LXsTYPE_BOOLEAN, settings.sync_colors, true)\
     Handler("makeDoubleSided", LXsTYPE_BOOLEAN, settings.make_double_sided, true)\
-    Handler("bakeDeformers", LXsTYPE_BOOLEAN, settings.bake_deformers, true)\
-    Handler("bakeTransform", LXsTYPE_BOOLEAN, settings.bake_transform, true)\
+    Handler("bakeDeformers", LXsTYPE_BOOLEAN, settings.BakeModifiers, true)\
+    Handler("bakeTransform", LXsTYPE_BOOLEAN, settings.BakeTransform, true)\
     Handler("syncBlendShapes", LXsTYPE_BOOLEAN, settings.sync_blendshapes, true)\
     Handler("syncBones", LXsTYPE_BOOLEAN, settings.sync_bones, true)\
     Handler("syncTextures", LXsTYPE_BOOLEAN, settings.sync_textures, true)\

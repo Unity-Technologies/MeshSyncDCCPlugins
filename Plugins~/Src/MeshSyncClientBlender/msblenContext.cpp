@@ -38,12 +38,6 @@ static const mu::float4x4 g_world_to_arm = mu::float4x4{
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void SyncSettings::validate()
-{
-    if (!bake_modifiers)
-        bake_transform = false;
-}
-
 void msblenContext::NodeRecord::clearState()
 {
     dst_anim = nullptr;
@@ -86,8 +80,8 @@ msblenContext::~msblenContext()
     // no wait() because it can cause deadlock...
 }
 
-SyncSettings& msblenContext::getSettings() { return m_settings; }
-const SyncSettings& msblenContext::getSettings() const { return m_settings; }
+BlenderSyncSettings& msblenContext::getSettings() { return m_settings; }
+const BlenderSyncSettings& msblenContext::getSettings() const { return m_settings; }
 BlenderCacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
 const BlenderCacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
@@ -268,7 +262,7 @@ void msblenContext::extractTransformData(Object *obj,
     if (dst_local)
         *dst_local = local;
 
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         if (is_camera(obj) || is_light(obj)) {
             mu::extract_trs(world, t, r, s);
         }
@@ -290,7 +284,7 @@ void msblenContext::extractTransformData(Object *src, ms::Transform& dst)
 
 void msblenContext::extractTransformData(const bPoseChannel *src, mu::float3& t, mu::quatf& r, mu::float3& s)
 {
-    if (m_settings.bake_transform) {
+    if (m_settings.BakeTransform) {
         t = mu::float3::zero();
         r = mu::quatf::identity();
         s = mu::float3::one();
@@ -379,7 +373,7 @@ ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
     switch (obj->type) {
     case OB_ARMATURE:
     {
-        if (!tip || (!m_settings.bake_modifiers && m_settings.sync_bones)) {
+        if (!tip || (!m_settings.BakeModifiers && m_settings.sync_bones)) {
             handle_parent();
             rec.dst = exportArmature(obj);
         }
@@ -389,11 +383,11 @@ ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
     }
     case OB_MESH:
     {
-        if (!m_settings.bake_modifiers && m_settings.sync_bones) {
+        if (!m_settings.BakeModifiers && m_settings.sync_bones) {
             if (auto *arm_mod = (const ArmatureModifierData*)find_modofier(obj, eModifierType_Armature))
                 exportObject(arm_mod->object, parent);
         }
-        if (m_settings.sync_meshes || (!m_settings.bake_modifiers && m_settings.sync_blendshapes)) {
+        if (m_settings.sync_meshes || (!m_settings.BakeModifiers && m_settings.sync_blendshapes)) {
             handle_parent();
             rec.dst = exportMesh(obj);
         }
@@ -511,7 +505,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
     };
 
     if (is_mesh(src)) {
-        if (m_settings.bake_transform) {
+        if (m_settings.BakeTransform) {
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
@@ -521,7 +515,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
 
             auto do_merge = [this, dst, &dst_mesh, &src_mesh]() {
                 dst_mesh.merge(src_mesh);
-                if (m_settings.export_cache)
+                if (m_settings.ExportSceneCache)
                     dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
@@ -575,7 +569,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
     dst->visibility = { true, visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
 
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
-    dst->position = m_settings.bake_transform ? mu::float3::zero() : offset_pos;
+    dst->position = m_settings.BakeTransform ? mu::float3::zero() : offset_pos;
     dst->world_matrix = mu::translate(offset_pos) * ctx.dst->world_matrix;
     m_entity_manager.add(dst);
 
@@ -652,11 +646,11 @@ ms::MeshPtr msblenContext::exportMesh(Object *src)
 
     if (m_settings.sync_meshes) {
         const bool need_convert = 
-            (!is_editing && m_settings.bake_modifiers) || !is_mesh(src);
+            (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
 #if BLENDER_VERSION >= 280
-            if (m_settings.bake_modifiers) {
+            if (m_settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BID(bobj).evaluated_get(depsgraph);
             }
@@ -711,7 +705,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
             doExtractNonEditMeshData(dst, obj, data);
         }
 
-        if (!m_settings.bake_modifiers && !is_editing) {
+        if (!m_settings.BakeModifiers&& !is_editing) {
             // mirror
             if (const MirrorModifierData* mirror = (const MirrorModifierData*)find_modofier(obj, eModifierType_Mirror)) {
                 if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, true);
@@ -725,13 +719,13 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
                 }
             }
         }
-        if (m_settings.bake_transform) {
+        if (m_settings.BakeTransform) {
             dst.refine_settings.local2world = world;
             dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
         }
     }
     else {
-        if (!m_settings.bake_modifiers && m_settings.sync_blendshapes) {
+        if (!m_settings.BakeModifiers&& m_settings.sync_blendshapes) {
             doExtractBlendshapeWeights(dst, obj, data);
         }
     }
@@ -747,7 +741,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
 void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh *data)
 {
     struct Mesh& mesh = *data;
-    if (!m_settings.bake_modifiers) {
+    if (!m_settings.BakeModifiers) {
         // blend shapes
         if (m_settings.sync_blendshapes && mesh.key) {
             RawVector<mu::float3> basis;
@@ -847,7 +841,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
         }
     }
 
-    if (!m_settings.bake_modifiers) {
+    if (!m_settings.BakeModifiers) {
         // bones
 
         auto extract_bindpose = [](auto *bone) {
@@ -1174,7 +1168,7 @@ void msblenContext::exportAnimation(Object *obj, bool force, const std::string& 
         exportAnimation(obj->parent, true, base_path);
         add_animation(path, obj, ms::TransformAnimation::create(), &msblenContext::extractTransformAnimationData);
 
-        if (obj->type == OB_ARMATURE && (!m_settings.bake_modifiers && m_settings.sync_bones)) {
+        if (obj->type == OB_ARMATURE && (!m_settings.BakeModifiers && m_settings.sync_bones)) {
             // bones
             blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
             for (struct bPoseChannel* pose : poses) {
@@ -1345,7 +1339,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials();
@@ -1360,7 +1354,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
@@ -1398,7 +1392,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_ignore_events = true;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
@@ -1460,14 +1454,14 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     const int frame_rate = scene.fps();
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
-    SyncSettings settings_old = m_settings;
-    m_settings.export_cache = true;
+    BlenderSyncSettings settings_old = m_settings;
+    m_settings.ExportSceneCache = true;
     m_settings.make_double_sided = cache_settings.make_double_sided;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    m_settings.bake_modifiers = cache_settings.bake_modifiers;
-    m_settings.bake_transform = cache_settings.bake_transform;
+    m_settings.BakeModifiers = cache_settings.bake_modifiers;
+    m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.validate();
+    m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
     oscs.sample_rate = (float)frame_rate;
@@ -1586,7 +1580,7 @@ void msblenContext::kickAsyncExport()
     m_bones.clear();
 
     using Exporter = ms::AsyncSceneExporter;
-    Exporter *exporter = m_settings.export_cache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
+    Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // kick async send
     exporter->on_prepare = [this, exporter]() {

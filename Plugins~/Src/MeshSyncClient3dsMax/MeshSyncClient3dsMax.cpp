@@ -103,7 +103,7 @@ Value* Settings_cf(Value** arg_list, int count)
         Entry(flip_faces,           bool_result, to_bool);
         Entry(make_double_sided,    bool_result, to_bool);
         Entry(ignore_non_renderable,bool_result, to_bool);
-        Entry(bake_modifiers,       bool_result, to_bool);
+        Entry(BakeModifiers,       bool_result, to_bool);
         Entry(use_render_meshes,    bool_result, to_bool);
         Entry(flatten_hierarchy,    bool_result, to_bool);
 

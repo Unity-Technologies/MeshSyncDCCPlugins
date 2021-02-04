@@ -13,45 +13,12 @@
 #include "MeshSyncClient/ObjectScope.h"
 
 #include "MaxCacheSettings.h"
+#include "MaxSyncSettings.h"
 
 
 #define msmaxAPI extern "C" __declspec(dllexport)
 
 
-struct SyncSettings
-{
-    ms::ClientSettings client_settings;
-
-    int timeout_ms = 5000;
-    float scale_factor = 1.0f;
-    bool auto_sync = false;
-    bool sync_meshes = true;
-    bool sync_normals = true;
-    bool sync_uvs = true;
-    bool sync_colors = true;
-    bool flip_faces = true;
-    bool make_double_sided = false;
-    bool bake_modifiers = false;
-    bool bake_transform = false;
-    bool use_render_meshes = false;
-    bool sync_bones = true;
-    bool sync_blendshapes = true;
-    bool sync_cameras = true;
-    bool sync_lights = true;
-    bool sync_textures = true;
-    bool ignore_non_renderable = true;
-    bool flatten_hierarchy = false;
-
-    float frame_step = 1.0f;
-
-    // parallel mesh extraction.
-    // it seems can cause problems when exporting objects with EvalWorldState()...
-    bool multithreaded = false;
-
-    bool export_scene_cache = false;
-
-    void validate();
-};
 
 
 class msmaxContext : mu::noncopyable
@@ -61,7 +28,7 @@ public:
 
     msmaxContext();
     ~msmaxContext();
-    SyncSettings& getSettings();
+    MaxSyncSettings& getSettings();
     MaxCacheSettings& getCacheSettings();
 
     void onStartup();
@@ -184,7 +151,7 @@ private:
     void extractMeshAnimation(ms::TransformAnimation& dst, TreeNode *n);
 
 private:
-    SyncSettings m_settings;
+    MaxSyncSettings m_settings;
     MaxCacheSettings m_cache_settings;
     ISceneEventManager::CallbackKey m_cbkey = 0;
 
