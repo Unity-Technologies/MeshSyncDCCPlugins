@@ -565,7 +565,7 @@ bool msmayaContext::sendMaterials(bool dirty_all)
         return false;
     }
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials();

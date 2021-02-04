@@ -4,7 +4,7 @@
 
 namespace MeshSyncClient {
 
-void BaseSyncSettings::validate() {
+void BaseSyncSettings::Validate() {
     if (!BakeModifiers)
         BakeTransform = false;
 

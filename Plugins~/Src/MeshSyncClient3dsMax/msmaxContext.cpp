@@ -259,7 +259,7 @@ bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all
     if (m_sender.isExporting())
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy

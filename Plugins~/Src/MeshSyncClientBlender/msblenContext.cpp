@@ -1339,7 +1339,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials();

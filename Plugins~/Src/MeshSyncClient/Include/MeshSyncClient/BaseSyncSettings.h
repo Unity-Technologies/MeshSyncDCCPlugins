@@ -29,7 +29,7 @@ struct BaseSyncSettings {
     // cache
     bool ExportSceneCache = false;
 
-    void validate();
+    void Validate();
 
 };
 

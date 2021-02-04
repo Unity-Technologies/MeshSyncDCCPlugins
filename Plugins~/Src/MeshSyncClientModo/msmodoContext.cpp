@@ -361,7 +361,7 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     if (!prepare() || m_sender.isExporting())
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials();
