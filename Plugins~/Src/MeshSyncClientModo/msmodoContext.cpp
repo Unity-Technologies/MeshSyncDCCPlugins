@@ -5,6 +5,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSyncClient/FrameRange.h"
 
 void msmodoContext::TreeNode::clearState()
