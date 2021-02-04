@@ -18,7 +18,5 @@ struct MaxSyncSettings : public MeshSyncClient::BaseSyncSettings {
     // it seems can cause problems when exporting objects with EvalWorldState()...
     bool multithreaded = false;
 
-
-    void validate();
 };
 

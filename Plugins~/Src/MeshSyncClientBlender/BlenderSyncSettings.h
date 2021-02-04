@@ -9,6 +9,5 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
     bool calc_per_index_normals = true;
     int frame_step = 1;
     bool multithreaded = true;
-    void validate();
 };
 

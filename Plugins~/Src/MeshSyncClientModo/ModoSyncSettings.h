@@ -11,6 +11,5 @@ struct ModoSyncSettings : public MeshSyncClient::BaseSyncSettings {
     bool sync_mesh_instances = true;
     bool sync_replicators = true;
 
-    void validate();
 };
 

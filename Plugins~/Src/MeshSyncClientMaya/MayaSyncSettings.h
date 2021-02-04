@@ -13,6 +13,5 @@ struct MayaSyncSettings : public MeshSyncClient::BaseSyncSettings {
     bool multithreaded = false;
     bool fbx_compatible_transform = true;
 
-    void validate();
 };
 
