@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "MeshSync/SceneGraph/msSceneSettings.h" //SceneSettings
 #include "MeshSyncClient/BaseSyncSettings.h"
 
 struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {

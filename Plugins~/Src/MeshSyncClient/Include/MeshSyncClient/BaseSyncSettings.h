@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MeshSync/msClient.h" //ClientSettings
+#include "MeshSync/msClientSettings.h" //ClientSettings
 
 namespace MeshSyncClient {
 
