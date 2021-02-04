@@ -1354,7 +1354,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
@@ -1392,7 +1392,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_ignore_events = true;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
@@ -1461,7 +1461,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     m_settings.BakeModifiers = cache_settings.bake_modifiers;
     m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.validate();
+    m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
     oscs.sample_rate = (float)frame_rate;

@@ -301,7 +301,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     if (m_sender.isExporting())
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials();
@@ -317,7 +317,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
 bool msmaxContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
     m_sender.wait();
-    m_settings.validate();
+    m_settings.Validate();
 
     const float frame_rate = (float)::GetFrameRate();
     const float frame_step = std::max(m_settings.frame_step, 0.1f);
@@ -383,7 +383,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.validate();
+    m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
     oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);;

@@ -379,7 +379,7 @@ bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
     m_pending_scope = MeshSyncClient::ObjectScope::None;
 
-    m_settings.validate();
+    m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
@@ -433,7 +433,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     if (!prepare() || m_sender.isExporting())
         return false;
 
-    m_settings.validate();
+    m_settings.Validate();
     if (exportAnimations(scope) > 0) {
         kickAsyncExport();
         return true;
@@ -458,7 +458,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     m_settings.BakeModifiers = cache_settings.bake_modifiers;
     m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.validate();
+    m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
     oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);
