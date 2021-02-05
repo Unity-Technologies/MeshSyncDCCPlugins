@@ -458,7 +458,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
 }
 
 void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                                      const std::vector<msmaxContext::TreeNode*> nodes)
+                                      const std::vector<msmaxContext::TreeNode*>& nodes)
 {
     if (sceneIndex == 0 || materialFrameRange == MeshSyncClient::MaterialFrameRange::All) {
         // exportMaterials() is needed to export material IDs in meshes

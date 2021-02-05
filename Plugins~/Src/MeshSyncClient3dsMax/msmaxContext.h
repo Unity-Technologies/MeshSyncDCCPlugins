@@ -152,7 +152,7 @@ private:
 
 
     void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<msmaxContext::TreeNode*> nodes);
+                            const std::vector<msmaxContext::TreeNode*>& nodes);
 
 private:
     MaxSyncSettings m_settings;

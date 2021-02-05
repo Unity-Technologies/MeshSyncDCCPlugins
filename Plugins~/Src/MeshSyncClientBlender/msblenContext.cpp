@@ -1515,7 +1515,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
 }
 
 void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                   const std::vector<Object*> nodes)
+                   const std::vector<Object*>& nodes)
 {
     if (sceneIndex == 0) {
         // exportMaterials() is needed to export material IDs in meshes
