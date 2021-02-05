@@ -100,7 +100,7 @@ private:
 
     struct DupliGroupContext
     {
-        Object *group_host;
+        const Object *group_host;
         ms::TransformPtr dst;
     };
 
@@ -113,38 +113,38 @@ private:
     int getMaterialID(Material *m);
     void exportMaterials();
 
-    ms::TransformPtr exportObject(Object *obj, bool parent, bool tip = true);
-    ms::TransformPtr exportTransform(Object *obj);
-    ms::TransformPtr exportPose(Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(Object *obj);
+    ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
+    ms::TransformPtr exportTransform(const Object *obj);
+    ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj);
+    ms::TransformPtr exportArmature(const Object *obj);
     ms::TransformPtr exportReference(Object *obj, const DupliGroupContext& ctx);
-    ms::TransformPtr exportDupliGroup(Object *obj, const DupliGroupContext& ctx);
-    ms::CameraPtr exportCamera(Object *obj);
-    ms::LightPtr exportLight(Object *obj);
-    ms::MeshPtr exportMesh(Object *obj);
+    ms::TransformPtr exportDupliGroup(const Object *obj, const DupliGroupContext& ctx);
+    ms::CameraPtr exportCamera(const Object *obj);
+    ms::LightPtr exportLight(const Object *obj);
+    ms::MeshPtr exportMesh(const Object *obj);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Bone *bone);
     mu::float4x4 getLocalMatrix(const bPoseChannel *pose);
-    void extractTransformData(Object *src,
+    void extractTransformData(const Object *src,
         mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
         mu::float4x4 *dst_world = nullptr, mu::float4x4 *dst_local = nullptr);
-    void extractTransformData(Object *src, ms::Transform& dst);
+    void extractTransformData(const Object *src, ms::Transform& dst);
     void extractTransformData(const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
 
-    void extractCameraData(Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
+    void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
-    void extractLightData(Object *src,
+    void extractLightData(const Object *src,
         ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle);
 
-    void doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu::float4x4 world);
-    void doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh *data);
-    void doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data);
-    void doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data);
+    void doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world);
+    void doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
 
     ms::TransformPtr findBone(Object *armature, Bone *bone);
-    ObjectRecord& touchRecord(Object *obj, const std::string& base_path = "", bool children = false);
+    ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
     void eraseStaleObjects();
 
     void exportAnimation(Object *obj, bool force, const std::string& base_path = "");
@@ -159,15 +159,15 @@ private:
 private:
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
-    std::set<Object*> m_pending;
+    std::set<const Object*> m_pending;
     std::map<Bone*, ms::TransformPtr> m_bones;
-    std::map<void*, ObjectRecord> m_obj_records; // key can be object or bone
+    std::map<const void*, ObjectRecord> m_obj_records; // key can be object or bone
     std::vector<std::future<void>> m_async_tasks;
 
 #if BLENDER_VERSION < 280
     std::vector<Mesh*> m_tmp_meshes;
 #else
-    std::vector<Object*> m_meshes_to_clear;
+    std::vector<const Object*> m_meshes_to_clear;
 #endif
 
     std::vector<ms::AnimationClipPtr> m_animations;
