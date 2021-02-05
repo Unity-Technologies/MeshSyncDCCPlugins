@@ -9,7 +9,7 @@ std::string get_path(const Object *obj);
 std::string get_path(const Object *arm, const Bone *obj);
 bool visible_in_render(const Object *obj);
 bool visible_in_viewport(const Object *obj);
-const ModifierData* find_modofier(const Object *obj, ModifierType type);
+const ModifierData* FindModifier(const Object *obj, ModifierType type);
 Bone* find_bone_recursive(Bone *bone, const char *name);
 Bone* find_bone(Object *obj, const char *name);
 bPoseChannel* find_pose(Object *obj, const char *name);

@@ -73,7 +73,7 @@ bool visible_in_viewport(const Object *obj)
     return !bl::BObject(obj).hide_viewport();
 }
 
-const ModifierData* find_modofier(const Object *obj, ModifierType type)
+const ModifierData* FindModifier(const Object *obj, ModifierType type)
 {
     for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->type == type)

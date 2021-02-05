@@ -385,7 +385,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     case OB_MESH:
     {
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
-            if (auto *arm_mod = (const ArmatureModifierData*)find_modofier(obj, eModifierType_Armature))
+            if (auto *arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
                 exportObject(arm_mod->object, parent);
         }
         if (m_settings.sync_meshes || (!m_settings.BakeModifiers && m_settings.sync_blendshapes)) {
@@ -615,8 +615,8 @@ ms::LightPtr msblenContext::exportLight(const Object *src)
 ms::MeshPtr msblenContext::exportMesh(const Object *src)
 {
     // ignore particles
-    if (//find_modofier(src, eModifierType_ParticleSystem) ||
-        find_modofier(src, eModifierType_ParticleInstance) )
+    if (//FindModifier(src, eModifierType_ParticleSystem) ||
+        FindModifier(src, eModifierType_ParticleInstance) )
         return nullptr;
 
     bl::BObject bobj(src);
@@ -708,7 +708,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *da
 
         if (!m_settings.BakeModifiers&& !is_editing) {
             // mirror
-            if (const MirrorModifierData* mirror = (const MirrorModifierData*)find_modofier(obj, eModifierType_Mirror)) {
+            if (const MirrorModifierData* mirror = (const MirrorModifierData*)FindModifier(obj, eModifierType_Mirror)) {
                 if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, true);
                 if (mirror->flag & MOD_MIR_AXIS_Y) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Y, true);
                 if (mirror->flag & MOD_MIR_AXIS_Z) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_Z, true);
@@ -852,7 +852,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
         };
 
         if (m_settings.sync_bones) {
-            const ArmatureModifierData* arm_mod = (const ArmatureModifierData*)find_modofier(
+            const ArmatureModifierData* arm_mod = (const ArmatureModifierData*)FindModifier(
                 obj, eModifierType_Armature);
             if (arm_mod) {
                 // request bake TRS
