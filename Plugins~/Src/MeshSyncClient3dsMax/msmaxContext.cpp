@@ -421,7 +421,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
         interval = ToTicks(frame_step / frame_rate);
         time_end = std::max(time_end, time_start); // sanitize
 
-        for (TimeValue t = time_start; t <= time_end; t+= interval) {
+        for (TimeValue t = time_start; t < time_end; t+= interval) {
             m_current_time_tick = t;
             m_anim_time = ToSeconds(t - time_start);
 
