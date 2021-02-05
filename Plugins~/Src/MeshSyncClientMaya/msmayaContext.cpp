@@ -644,37 +644,17 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);
 
-    int scene_index = 0;
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<TreeNode*> nodes = getNodes(cache_settings.object_scope, true);
 
-    auto do_export = [&]() {
-        if (scene_index == 0) {
-            // exportMaterials() is needed to export material IDs in meshes
-            exportMaterials();
-            if (material_range == MeshSyncClient::MaterialFrameRange::None)
-                m_material_manager.clearDirtyFlags();
-        }
-        else {
-            if (material_range == MeshSyncClient::MaterialFrameRange::All)
-                exportMaterials();
-        }
-
-        for (auto& n : nodes)
-            exportObject(n, true);
-
-        m_texture_manager.clearDirtyFlags();
-        kickAsyncExport();
-        ++scene_index;
-    };
-
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
-        do_export();
+        DoExportSceneCache(0, material_range, nodes);
     }
     else {
-        MTime time_current = MAnimControl::currentTime();
-        MTime interval = MTime(frame_step, MTime::uiUnit());
+        int sceneIndex = 0;
+        const MTime time_current = MAnimControl::currentTime();
+        const MTime interval = MTime(frame_step, MTime::uiUnit());
         MTime time_start, time_end;
 
         // time range
@@ -682,8 +662,7 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
             // custom frame range
             time_start = MTime(cache_settings.frame_begin, MTime::uiUnit());
             time_end = MTime(cache_settings.frame_end, MTime::uiUnit());
-        }
-        else {
+        } else {
             // all active frames
             time_start = MAnimControl::minTime();
             time_end = MAnimControl::maxTime();
@@ -695,7 +674,8 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
         for (MTime t = time_start;;) {
             m_anim_time = (float)(t - time_start).as(MTime::kSeconds);
             MGlobal::viewFrame(t);
-            do_export();
+            DoExportSceneCache(sceneIndex, material_range, nodes);
+            ++sceneIndex;
 
             if (t >= time_end)
                 break;
@@ -710,6 +690,28 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     m_cache_writer.close();
     return true;
 }
+
+void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                        const std::vector<TreeNode*>& nodes)
+{
+    if (sceneIndex == 0) {
+        // exportMaterials() is needed to export material IDs in meshes
+        exportMaterials();
+        if (materialFrameRange== MeshSyncClient::MaterialFrameRange::None)
+            m_material_manager.clearDirtyFlags();
+    } else {
+        if (materialFrameRange== MeshSyncClient::MaterialFrameRange::All)
+            exportMaterials();
+    }
+
+    for (const std::vector<TreeNode*>::value_type& n : nodes)
+        exportObject(n, true);
+
+    m_texture_manager.clearDirtyFlags();
+    kickAsyncExport();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 void msmayaContext::wait()
 {

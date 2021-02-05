@@ -204,6 +204,8 @@ private:
     void extractMeshAnimationData(ms::TransformAnimation& dst, TreeNode *n);
 
     void kickAsyncExport();
+    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                            const std::vector<TreeNode*>& nodes);
 
 private:
     MayaSyncSettings m_settings;
