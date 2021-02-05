@@ -250,7 +250,7 @@ static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& 
     s = mu::swap_yz(s);
 }
 
-void msblenContext::extractTransformData(Object *obj,
+void msblenContext::extractTransformData(const Object *obj,
     mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
@@ -278,7 +278,7 @@ void msblenContext::extractTransformData(Object *obj,
     }
 }
 
-void msblenContext::extractTransformData(Object *src, ms::Transform& dst)
+void msblenContext::extractTransformData(const Object *src, ms::Transform& dst)
 {
     extractTransformData(src, dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
 }
@@ -295,7 +295,7 @@ void msblenContext::extractTransformData(const bPoseChannel *src, mu::float3& t,
     }
 }
 
-void msblenContext::extractCameraData(Object *src,
+void msblenContext::extractCameraData(const Object *src,
     bool& ortho, float& near_plane, float& far_plane, float& fov,
     float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift)
 {
@@ -320,7 +320,7 @@ void msblenContext::extractCameraData(Object *src,
     lens_shift.y = cam.shift_y() * (fit == CAMERA_SENSOR_FIT_HOR ? aspx : 1.0f); // 0-1
 }
 
-void msblenContext::extractLightData(Object *src,
+void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
 #if BLENDER_VERSION < 280
@@ -353,7 +353,7 @@ void msblenContext::extractLightData(Object *src,
 }
 
 
-ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
+ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, bool tip)
 {
     if (!obj)
         return nullptr;
@@ -451,7 +451,7 @@ ms::TransformPtr msblenContext::exportObject(Object *obj, bool parent, bool tip)
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportTransform(Object *src)
+ms::TransformPtr msblenContext::exportTransform(const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
@@ -461,7 +461,7 @@ ms::TransformPtr msblenContext::exportTransform(Object *src)
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportPose(Object *armature, bPoseChannel *src)
+ms::TransformPtr msblenContext::exportPose(const Object *armature, bPoseChannel *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
@@ -471,7 +471,7 @@ ms::TransformPtr msblenContext::exportPose(Object *armature, bPoseChannel *src)
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportArmature(Object *src)
+ms::TransformPtr msblenContext::exportArmature(const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
@@ -556,7 +556,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
     return dst;
 }
 
-ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupContext& ctx)
+ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliGroupContext& ctx)
 {
     Collection* group = get_instance_collection(src);
     if (!group)
@@ -590,7 +590,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(Object *src, const DupliGroupCo
     return dst;
 }
 
-ms::CameraPtr msblenContext::exportCamera(Object *src)
+ms::CameraPtr msblenContext::exportCamera(const Object *src)
 {
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
@@ -601,7 +601,7 @@ ms::CameraPtr msblenContext::exportCamera(Object *src)
     return ret;
 }
 
-ms::LightPtr msblenContext::exportLight(Object *src)
+ms::LightPtr msblenContext::exportLight(const Object *src)
 {
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
@@ -612,7 +612,7 @@ ms::LightPtr msblenContext::exportLight(Object *src)
     return ret;
 }
 
-ms::MeshPtr msblenContext::exportMesh(Object *src)
+ms::MeshPtr msblenContext::exportMesh(const Object *src)
 {
     // ignore particles
     if (//find_modofier(src, eModifierType_ParticleSystem) ||
@@ -690,7 +690,7 @@ ms::MeshPtr msblenContext::exportMesh(Object *src)
     return ret;
 }
 
-void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu::float4x4 world)
+void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
 {
     if (m_settings.sync_meshes) {
         bl::BObject bobj(obj);
@@ -739,7 +739,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, Object *obj, Mesh *data, mu
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
 }
 
-void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh *data)
+void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj, Mesh *data)
 {
     struct Mesh& mesh = *data;
     if (!m_settings.BakeModifiers) {
@@ -760,7 +760,7 @@ void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, Object *obj, Mesh 
     }
 }
 
-void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data)
+void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data)
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
@@ -969,7 +969,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, Object *obj, Mesh *d
 #endif
 }
 
-void msblenContext::doExtractEditMeshData(ms::Mesh& dst, Object *obj, Mesh *data)
+void msblenContext::doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data)
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
@@ -1062,7 +1062,7 @@ ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
     return it != m_bones.end() ? it->second : nullptr;
 }
 
-msblenContext::ObjectRecord& msblenContext::touchRecord(Object *obj, const std::string& base_path, bool children)
+msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const std::string& base_path, bool children)
 {
     std::map<void*, ObjectRecord>::mapped_type& rec = m_obj_records[obj];
     if (rec.touched && base_path.empty())
@@ -1560,7 +1560,7 @@ void msblenContext::kickAsyncExport()
 }
 #else
     if (!m_meshes_to_clear.empty()) {
-        for (struct Object* v : m_meshes_to_clear) {
+        for (const struct Object* v : m_meshes_to_clear) {
             bl::BObject bobj(v);
             bobj.to_mesh_clear();
         }
@@ -1568,7 +1568,7 @@ void msblenContext::kickAsyncExport()
     }
 #endif
 
-    for (std::map<void*, ObjectRecord>::value_type& kvp : m_obj_records)
+    for (std::map<const void*, ObjectRecord>::value_type& kvp : m_obj_records)
         kvp.second.clearState();
     m_bones.clear();
 

@@ -9,7 +9,7 @@ std::string get_path(const Object *obj);
 std::string get_path(const Object *arm, const Bone *obj);
 bool visible_in_render(const Object *obj);
 bool visible_in_viewport(const Object *obj);
-ModifierData* find_modofier(Object *obj, ModifierType type);
+const ModifierData* find_modofier(const Object *obj, ModifierType type);
 Bone* find_bone_recursive(Bone *bone, const char *name);
 Bone* find_bone(Object *obj, const char *name);
 bPoseChannel* find_pose(Object *obj, const char *name);
@@ -19,7 +19,7 @@ bool is_camera(const Object *obj);
 bool is_light(const Object *obj);
 bool is_armature(const Object *obj);
 
-inline Collection* get_instance_collection(Object *obj)
+inline Collection* get_instance_collection(const Object *obj)
 {
 #if BLENDER_VERSION < 280
     return obj->dup_group;
@@ -49,7 +49,7 @@ inline BMEditMesh* get_edit_mesh(Mesh *mesh)
 
 // Body: [](const FCurve*) -> void
 template<class Body>
-static inline void each_child(Object *obj, const Body& body)
+static inline void each_child(const Object *obj, const Body& body)
 {
     // Object doesn't have children data. need to enumerate all objects and check its parent...
     auto bpy_data = blender::BData(blender::BContext::get().data());
@@ -81,7 +81,7 @@ inline void each_modifier(Object *obj, const Body& body)
 
 // Body: [](const bDeformGroup*) -> void
 template<class Body>
-static inline void each_deform_group(Object *obj, const Body& body)
+static inline void each_deform_group(const Object *obj, const Body& body)
 {
     for (auto *it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
         body(it);
