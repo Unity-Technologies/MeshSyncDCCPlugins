@@ -11,6 +11,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
+#include "MeshSyncClient/SettingsUtilities.h"
 
 
 #ifdef mscDebug
@@ -1450,25 +1451,17 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 //----------------------------------------------------------------------------------------------------------------------
 
 bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
+    using namespace MeshSyncClient;
+
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
-    BlenderSyncSettings settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
+    const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = (float)frame_rate;
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frame_rate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

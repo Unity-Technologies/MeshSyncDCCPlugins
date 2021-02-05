@@ -9,6 +9,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+#include "MeshSyncClient/SettingsUtilities.h"
 
 
 bool DAGNode::isInstanced() const
@@ -624,25 +625,16 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
 bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 {
+    using namespace MeshSyncClient;
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    MayaSyncSettings settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
+    const MayaSyncSettings settings_old = m_settings;
     m_settings.remove_namespace = cache_settings.remove_namespace;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
-
+    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

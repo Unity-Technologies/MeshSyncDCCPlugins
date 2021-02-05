@@ -7,6 +7,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSyncClient/FrameRange.h"
+#include "MeshSyncClient/SettingsUtilities.h"
 
 void msmodoContext::TreeNode::clearState()
 {
@@ -445,6 +446,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
 bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
 {
+    using namespace MeshSyncClient;
     if (!prepare()) {
         return false;
     }
@@ -452,20 +454,12 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     const float frame_rate = (float)getFrameRate();
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    auto settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    const ModoSyncSettings settings_old = m_settings;
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
+
+    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
