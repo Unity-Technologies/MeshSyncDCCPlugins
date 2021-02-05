@@ -628,7 +628,7 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    MayaSyncSettings settings_old = m_settings;
+    const MayaSyncSettings settings_old = m_settings;
     m_settings.remove_namespace = cache_settings.remove_namespace;
     MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 

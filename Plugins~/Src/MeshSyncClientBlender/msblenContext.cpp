@@ -1455,7 +1455,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     const int frame_rate = scene.fps();
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
-    BlenderSyncSettings settings_old = m_settings;
+    const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
