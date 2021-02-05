@@ -453,7 +453,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     const float frame_rate = (float)getFrameRate();
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
-    auto settings_old = m_settings;
+    const ModoSyncSettings settings_old = m_settings;
     m_settings.ExportSceneCache = true;
     m_settings.make_double_sided = cache_settings.make_double_sided;
     m_settings.BakeModifiers = cache_settings.bake_modifiers;
