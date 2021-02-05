@@ -1471,35 +1471,14 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);
 
-    int scene_index = 0;
-    const MaterialFrameRange material_range = cache_settings.material_frame_range;
+    const MaterialFrameRange materialRange = cache_settings.material_frame_range;
     const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
-
-    auto do_export = [&]() {
-        if (scene_index == 0) {
-            // exportMaterials() is needed to export material IDs in meshes
-            exportMaterials();
-            if (material_range == MeshSyncClient::MaterialFrameRange::None)
-                m_material_manager.clearDirtyFlags();
-        }
-        else {
-            if (material_range == MeshSyncClient::MaterialFrameRange::All)
-                exportMaterials();
-        }
-
-        for (const std::vector<Object*>::value_type& n : nodes)
-            exportObject(n, true);
-
-        m_texture_manager.clearDirtyFlags();
-        kickAsyncExport();
-        ++scene_index;
-    };
 
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
-        do_export();
-    }
-    else {
+        DoExportSceneCache(0, materialRange, nodes);
+    } else {
+        int sceneIndex = 0;
         const int frame_current = scene.frame_current();
         int frame_start, frame_end;
         // time range
@@ -1507,8 +1486,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
             // custom frame range
             frame_start = cache_settings.frame_begin;
             frame_end = cache_settings.frame_end;
-        }
-        else {
+        } else {
             // all active frames
             frame_start = scene.frame_start();
             frame_end = scene.frame_end();
@@ -1520,7 +1498,8 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
             scene.frame_set(f);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
-            do_export();
+            DoExportSceneCache(sceneIndex, materialRange, nodes);
+            ++sceneIndex;
 
             if (f >= frame_end)
                 break;
@@ -1534,6 +1513,29 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     m_cache_writer.close();
     return true;
 }
+
+void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                   const std::vector<Object*> nodes)
+{
+    if (sceneIndex == 0) {
+        // exportMaterials() is needed to export material IDs in meshes
+        exportMaterials();
+        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
+            m_material_manager.clearDirtyFlags();
+    }
+    else {
+        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
+            exportMaterials();
+    }
+
+    for (const std::vector<Object*>::value_type& n : nodes)
+        exportObject(n, true);
+
+    m_texture_manager.clearDirtyFlags();
+    kickAsyncExport();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::flushPendingList() {
     if (!m_pending.empty() && !m_sender.isExporting()) {
