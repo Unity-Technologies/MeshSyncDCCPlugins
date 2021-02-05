@@ -377,14 +377,10 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     MaxSyncSettings settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+
 
     ms::OSceneCacheSettings oscs;
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);

@@ -1456,13 +1456,8 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
     BlenderSyncSettings settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
     ms::OSceneCacheSettings oscs;
     MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(frame_rate, cache_settings, oscs);

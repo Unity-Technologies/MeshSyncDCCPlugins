@@ -629,13 +629,8 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     MayaSyncSettings settings_old = m_settings;
-    m_settings.ExportSceneCache = true;
     m_settings.remove_namespace = cache_settings.remove_namespace;
-    m_settings.make_double_sided = cache_settings.make_double_sided;
-    m_settings.BakeModifiers = cache_settings.bake_modifiers;
-    m_settings.BakeTransform = cache_settings.bake_transform;
-    m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    m_settings.Validate();
+    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
     ms::OSceneCacheSettings oscs;
