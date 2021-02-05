@@ -10,13 +10,13 @@
 
 namespace MeshSyncClient {
 
-void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings& syncSettings) {
-    syncSettings.ExportSceneCache = true;
-    syncSettings.make_double_sided = cacheSettings.make_double_sided;
-    syncSettings.BakeModifiers = cacheSettings.bake_modifiers;
-    syncSettings.BakeTransform = cacheSettings.bake_transform;
-    syncSettings.flatten_hierarchy = cacheSettings.flatten_hierarchy;
-    syncSettings.Validate();
+void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings) {
+    syncSettings->ExportSceneCache = true;
+    syncSettings->make_double_sided = cacheSettings.make_double_sided;
+    syncSettings->BakeModifiers = cacheSettings.bake_modifiers;
+    syncSettings->BakeTransform = cacheSettings.bake_transform;
+    syncSettings->flatten_hierarchy = cacheSettings.flatten_hierarchy;
+    syncSettings->Validate();
 }
 
 //----------------------------------------------------------------------------------------------------------------------

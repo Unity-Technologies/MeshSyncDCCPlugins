@@ -631,7 +631,7 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 
     const MayaSyncSettings settings_old = m_settings;
     m_settings.remove_namespace = cache_settings.remove_namespace;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);

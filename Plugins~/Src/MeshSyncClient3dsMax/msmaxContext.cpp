@@ -380,7 +380,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     const MaxSyncSettings settings_old = m_settings;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
 
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);

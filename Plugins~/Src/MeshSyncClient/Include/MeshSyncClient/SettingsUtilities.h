@@ -12,7 +12,7 @@ struct BaseSyncSettings;
 class SettingsUtilities {
 
 public:
-    static void ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings& syncSettings);
+    static void ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings);
     static ms::OSceneCacheSettings CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings);
 
     

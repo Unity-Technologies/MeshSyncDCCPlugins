@@ -455,7 +455,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     const ModoSyncSettings settings_old = m_settings;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
 
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);

@@ -1459,7 +1459,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
 
     const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frame_rate, cache_settings);
 
