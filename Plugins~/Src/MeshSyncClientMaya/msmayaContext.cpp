@@ -650,8 +650,7 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         DoExportSceneCache(0, material_range, nodes);
-    }
-    else {
+    } else {
         int sceneIndex = 0;
         const MTime time_current = MAnimControl::currentTime();
         const MTime interval = MTime(frame_step, MTime::uiUnit());
