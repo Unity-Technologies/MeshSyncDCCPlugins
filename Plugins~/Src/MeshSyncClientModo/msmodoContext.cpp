@@ -475,8 +475,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         DoExportSceneCache(0, material_range, nodes);
-    }
-    else {
+    } else {
         // advance frame and record
         int sceneIndex = 0;
         double time_current = m_svc_selection.GetTime();
