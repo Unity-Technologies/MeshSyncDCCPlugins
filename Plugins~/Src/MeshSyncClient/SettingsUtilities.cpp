@@ -10,7 +10,7 @@
 
 namespace MeshSyncClient {
 
-void SettingsUtilities::CopyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings& syncSettings) {
+void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings& syncSettings) {
     syncSettings.ExportSceneCache = true;
     syncSettings.make_double_sided = cacheSettings.make_double_sided;
     syncSettings.BakeModifiers = cacheSettings.bake_modifiers;
@@ -21,7 +21,7 @@ void SettingsUtilities::CopyCacheToSyncSettings(const BaseCacheSettings& cacheSe
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void SettingsUtilities::CopyCacheToOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings, 
+void SettingsUtilities::ApplyCacheToOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings, 
                                                   ms::OSceneCacheSettings& outputSettings)
 {
     outputSettings.sample_rate = sampleRate;
