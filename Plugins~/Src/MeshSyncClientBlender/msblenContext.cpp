@@ -1472,8 +1472,8 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    MeshSyncClient::MaterialFrameRange material_range = cache_settings.material_frame_range;
-    std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
+    const MaterialFrameRange material_range = cache_settings.material_frame_range;
+    const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0) {
@@ -1487,7 +1487,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
                 exportMaterials();
         }
 
-        for (std::vector<Object*>::value_type& n : nodes)
+        for (const std::vector<Object*>::value_type& n : nodes)
             exportObject(n, true);
 
         m_texture_manager.clearDirtyFlags();
