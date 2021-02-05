@@ -7,6 +7,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSyncClient/FrameRange.h"
+#include "MeshSyncClient/SettingsUtilities.h"
 
 void msmodoContext::TreeNode::clearState()
 {
@@ -460,12 +461,9 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     m_settings.flatten_hierarchy = cache_settings.flatten_hierarchy;
     m_settings.Validate();
 
+    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
     ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
+    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(sampleRate, cache_settings, oscs);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

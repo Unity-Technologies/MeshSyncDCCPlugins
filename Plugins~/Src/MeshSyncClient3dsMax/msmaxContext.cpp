@@ -7,6 +7,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+#include "MeshSyncClient/SettingsUtilities.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
@@ -386,11 +387,8 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = frame_rate * std::max(1.0f / frame_step, 1.0f);;
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
+    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(sampleRate, cache_settings, oscs);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

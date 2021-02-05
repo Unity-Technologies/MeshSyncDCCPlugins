@@ -11,6 +11,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
+#include "MeshSyncClient/SettingsUtilities.h"
 
 
 #ifdef mscDebug
@@ -1464,11 +1465,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     m_settings.Validate();
 
     ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = (float)frame_rate;
-    oscs.encoder_settings.zstd.compression_level = cache_settings.zstd_compression_level;
-    oscs.flatten_hierarchy = cache_settings.flatten_hierarchy;
-    oscs.strip_normals = cache_settings.strip_normals;
-    oscs.strip_tangents = cache_settings.strip_tangents;
+    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(frame_rate, cache_settings, oscs);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
