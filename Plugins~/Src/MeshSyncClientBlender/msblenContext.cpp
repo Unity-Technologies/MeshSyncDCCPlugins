@@ -1494,17 +1494,12 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
         const int interval = frame_step;
 
         // record
-        for (int f = frame_start;;) {
+        for (int f = frame_start; f < frame_end; f=std::min(f+interval, frame_end)) {
             scene.frame_set(f);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             DoExportSceneCache(sceneIndex, materialRange, nodes);
             ++sceneIndex;
-
-            if (f >= frame_end)
-                break;
-            else
-                f = std::min(f + interval, frame_end);
         }
         scene.frame_set(frame_current);
     }
