@@ -470,8 +470,8 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    auto material_range = cache_settings.material_frame_range;
-    auto nodes = getNodes(cache_settings.object_scope);
+    MeshSyncClient::MaterialFrameRange material_range = cache_settings.material_frame_range;
+    std::vector<CLxUser_Item> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0) {

@@ -396,8 +396,8 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     m_entity_manager.setAlwaysMarkDirty(true);
 
     int scene_index = 0;
-    auto material_range = cache_settings.material_frame_range;
-    auto nodes = getNodes(cache_settings.object_scope);
+    MeshSyncClient::MaterialFrameRange material_range = cache_settings.material_frame_range;
+    std::vector<msmaxContext::TreeNode*> nodes = getNodes(cache_settings.object_scope);
 
     auto do_export = [&]() {
         if (scene_index == 0 || material_range == MeshSyncClient::MaterialFrameRange::All) {
