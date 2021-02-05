@@ -469,46 +469,27 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);
 
-    int scene_index = 0;
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<CLxUser_Item> nodes = getNodes(cache_settings.object_scope);
 
-    auto do_export = [&]() {
-        if (scene_index == 0) {
-            // exportMaterials() is needed to export material IDs in meshes
-            exportMaterials();
-            if (material_range == MeshSyncClient::MaterialFrameRange::None)
-                m_material_manager.clearDirtyFlags();
-        }
-        else {
-            if (material_range == MeshSyncClient::MaterialFrameRange::All)
-                exportMaterials();
-        }
-
-        for (auto n : nodes)
-            exportObject(n, true);
-
-        m_texture_manager.clearDirtyFlags();
-        kickAsyncExport();
-        ++scene_index;
-    };
-
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
-        do_export();
+        DoExportSceneCache(0, material_range, nodes);
     }
     else {
         // advance frame and record
+        int sceneIndex = 0;
         double time_current = m_svc_selection.GetTime();
         double time_start, time_end;
         std::tie(time_start, time_end) = getTimeRange();
-        auto interval = frame_step / frame_rate;
+        const float interval = frame_step / frame_rate;
 
         m_ignore_events = true;
         for (double t = time_start;;) {
             m_anim_time = (float)(t - time_start);
             setChannelReadTime(t);
-            do_export();
+            DoExportSceneCache(sceneIndex, material_range, nodes);
+            ++sceneIndex;
 
             if (t >= time_end)
                 break;
@@ -523,6 +504,29 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     m_cache_writer.close();
     return true;
 }
+
+void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                        const std::vector<CLxUser_Item>& nodes)
+{
+    if (sceneIndex == 0) {
+        // exportMaterials() is needed to export material IDs in meshes
+        exportMaterials();
+        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
+            m_material_manager.clearDirtyFlags();
+    }
+    else {
+        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
+            exportMaterials();
+    }
+
+    for (std::_Vector_const_iterator<std::_Vector_val<std::_Simple_types<CLxUser_Item>>>::value_type n : nodes)
+        exportObject(n, true);
+
+    m_texture_manager.clearDirtyFlags();
+    kickAsyncExport();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 bool msmodoContext::recvObjects()
 {
