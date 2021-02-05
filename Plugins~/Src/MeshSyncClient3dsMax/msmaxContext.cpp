@@ -395,50 +395,18 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);
 
-    int scene_index = 0;
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<msmaxContext::TreeNode*> nodes = getNodes(cache_settings.object_scope);
-
-    auto do_export = [&]() {
-        if (scene_index == 0 || material_range == MeshSyncClient::MaterialFrameRange::All) {
-            // exportMaterials() is needed to export material IDs in meshes
-            exportMaterials();
-            m_material_manager.clearDirtyFlags();
-        }
-
-        auto export_objects = [&]() {
-            for (auto& n : nodes)
-                exportObject(n->node, true);
-        };
-
-        if (m_settings.use_render_meshes) {
-            for (auto& n : nodes)
-                m_render_scope.addNode(n->node);
-            m_render_scope.prepare(GetTime());
-            m_render_scope.scope(export_objects);
-        }
-        else {
-            export_objects();
-        }
-
-        if (material_range == MeshSyncClient::MaterialFrameRange::None ||
-            (material_range == MeshSyncClient::MaterialFrameRange::One && scene_index != 0))
-            m_material_manager.clearDirtyFlags();
-        m_texture_manager.clearDirtyFlags();
-        kickAsyncExport();
-
-        ++scene_index;
-    };
 
     auto *ifs = GetCOREInterface();
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         m_current_time_tick = ifs->GetTime();
-        do_export();
-    }
-    else {
+        DoExportSceneCache(0, material_range, nodes);
+    } else {
         ifs->ProgressStart(L"Exporting Scene Cache", TRUE, CB_Dummy, nullptr);
 
+        int sceneIndex = 0;
         TimeValue time_start = 0, time_end = 0, interval = 0;
 
         if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
@@ -459,9 +427,10 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
             m_current_time_tick = t;
             m_anim_time = ToSeconds(t - time_start);
 
-            do_export();
+            DoExportSceneCache(sceneIndex, material_range, nodes);
+            ++sceneIndex;
 
-            float progress = float(m_current_time_tick - time_start) / float(time_end - time_start) * 100.0f;
+            const float progress = float(m_current_time_tick - time_start) / float(time_end - time_start) * 100.0f;
             ifs->ProgressUpdate((int)progress);
 
             if (t >= time_end) {
@@ -487,6 +456,42 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     m_cache_writer.close();
     return true;
 }
+
+void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                                      const std::vector<msmaxContext::TreeNode*> nodes)
+{
+    if (sceneIndex == 0 || materialFrameRange == MeshSyncClient::MaterialFrameRange::All) {
+        // exportMaterials() is needed to export material IDs in meshes
+        exportMaterials();
+        m_material_manager.clearDirtyFlags();
+    }
+
+    auto export_objects = [&]() {
+        for (const std::vector<msmaxContext::TreeNode*>::value_type& n : nodes)
+            exportObject(n->node, true);
+    };
+
+    if (m_settings.use_render_meshes) {
+        for (const std::vector<msmaxContext::TreeNode*>::value_type& n : nodes)
+            m_render_scope.addNode(n->node);
+        m_render_scope.prepare(GetTime());
+        m_render_scope.scope(export_objects);
+    }
+    else {
+        export_objects();
+    }
+
+    if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None ||
+        (materialFrameRange == MeshSyncClient::MaterialFrameRange::One && sceneIndex != 0)) 
+    {
+        m_material_manager.clearDirtyFlags();
+    }
+
+    m_texture_manager.clearDirtyFlags();
+    kickAsyncExport();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 bool msmaxContext::recvScene()
 {
