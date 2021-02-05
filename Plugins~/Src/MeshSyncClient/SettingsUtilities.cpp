@@ -21,17 +21,15 @@ void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheS
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void SettingsUtilities::ApplyCacheToOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings, 
-                                                  ms::OSceneCacheSettings& outputSettings)
-{
-    outputSettings.sample_rate = sampleRate;
-    outputSettings.encoder_settings.zstd.compression_level = cacheSettings.zstd_compression_level;
-    outputSettings.flatten_hierarchy = cacheSettings.flatten_hierarchy;
-    outputSettings.strip_normals = cacheSettings.strip_normals;
-    outputSettings.strip_tangents = cacheSettings.strip_tangents;
+ms::OSceneCacheSettings SettingsUtilities::CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings) {
+    ms::OSceneCacheSettings oscs;
+    oscs.sample_rate = sampleRate;
+    oscs.encoder_settings.zstd.compression_level = cacheSettings.zstd_compression_level;
+    oscs.flatten_hierarchy = cacheSettings.flatten_hierarchy;
+    oscs.strip_normals = cacheSettings.strip_normals;
+    oscs.strip_tangents = cacheSettings.strip_tangents;
+    return oscs;
 }
-
-
 
 
 } // namespace MeshSyncClient

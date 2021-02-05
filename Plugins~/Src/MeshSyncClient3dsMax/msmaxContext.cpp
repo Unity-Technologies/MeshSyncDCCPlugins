@@ -373,18 +373,18 @@ static int ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 
 bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
 {
+    using namespace MeshSyncClient;
     const float frame_rate = (float)::GetFrameRate();
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     const MaxSyncSettings settings_old = m_settings;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
-    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
 
-    ms::OSceneCacheSettings oscs;
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
-    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(sampleRate, cache_settings, oscs);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

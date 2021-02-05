@@ -625,16 +625,16 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
 bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 {
+    using namespace MeshSyncClient;
     const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
     const float frame_step = std::max(cache_settings.frame_step, 0.1f);
 
     const MayaSyncSettings settings_old = m_settings;
     m_settings.remove_namespace = cache_settings.remove_namespace;
-    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
     const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
-    ms::OSceneCacheSettings oscs;
-    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(sampleRate, cache_settings, oscs);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

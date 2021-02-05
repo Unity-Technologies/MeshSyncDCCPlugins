@@ -1451,16 +1451,17 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 //----------------------------------------------------------------------------------------------------------------------
 
 bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
+    using namespace MeshSyncClient;
+
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
     const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    MeshSyncClient::SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
+    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, m_settings);
 
-    ms::OSceneCacheSettings oscs;
-    MeshSyncClient::SettingsUtilities::ApplyCacheToOutputSettings(frame_rate, cache_settings, oscs);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frame_rate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
