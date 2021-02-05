@@ -670,13 +670,17 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 
         // advance frame and record
         m_ignore_update = true;
-        for (MTime t = time_start; t < time_end; t+=interval) {
-            m_anim_time = static_cast<float>((t - time_start).as(MTime::kSeconds));
+        for (MTime t = time_start;;) {
+            m_anim_time = (float)(t - time_start).as(MTime::kSeconds);
             MGlobal::viewFrame(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
-        }
 
+            if (t >= time_end)
+                break;
+            else
+                t += interval;
+        }
         MGlobal::viewFrame(time_current);
         m_ignore_update = false;
     }

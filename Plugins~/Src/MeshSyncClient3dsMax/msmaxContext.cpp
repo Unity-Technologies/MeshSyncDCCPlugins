@@ -391,6 +391,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
         return false;
     }
 
+
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);
 
@@ -412,16 +413,17 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
             // custom frame range
             time_start = cache_settings.frame_begin * ::GetTicksPerFrame();
             time_end = cache_settings.frame_end * ::GetTicksPerFrame();
-        } else {
+        }
+        else {
             // all active frames
-            const Interval time_range = ifs->GetAnimRange();
+            auto time_range = ifs->GetAnimRange();
             time_start = time_range.Start();
             time_end = time_range.End();
         }
         interval = ToTicks(frame_step / frame_rate);
         time_end = std::max(time_end, time_start); // sanitize
 
-        for (TimeValue t = time_start; t < time_end; t+= interval) {
+        for (TimeValue t = time_start;;) {
             m_current_time_tick = t;
             m_anim_time = ToSeconds(t - time_start);
 
@@ -429,12 +431,19 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
             ++sceneIndex;
 
             const float progress = float(m_current_time_tick - time_start) / float(time_end - time_start) * 100.0f;
-            ifs->ProgressUpdate(static_cast<int>(progress));
+            ifs->ProgressUpdate((int)progress);
 
-            if (ifs->GetCancel()) {
+            if (t >= time_end) {
+                // end of time range
+                break;
+            }
+            else if (ifs->GetCancel()) {
                 // cancel requested
                 ifs->SetCancel(FALSE);
                 break;
+            }
+            else {
+                t += interval;
             }
         }
         ifs->ProgressEnd();

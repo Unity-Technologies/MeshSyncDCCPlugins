@@ -484,11 +484,16 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
         const float interval = frame_step / frame_rate;
 
         m_ignore_events = true;
-        for (double t = time_start; t < time_end; t+=interval) {
-            m_anim_time = static_cast<float>(t - time_start);
+        for (double t = time_start;;) {
+            m_anim_time = (float)(t - time_start);
             setChannelReadTime(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
+
+            if (t >= time_end)
+                break;
+            else
+                t += interval;
         }
         setChannelReadTime();
         m_ignore_events = false;
