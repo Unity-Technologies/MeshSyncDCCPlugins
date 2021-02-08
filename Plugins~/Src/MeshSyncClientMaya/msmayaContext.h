@@ -8,12 +8,12 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msIDGenerator.h"
 
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
 
-#include "MeshUtils/muMisc.h" //mu::noncopyable
 #include "MeshUtils/muMath.h" //float4, etc
 
 #include "MayaCacheSettings.h"
@@ -48,8 +48,9 @@ struct MObjectKey
 
 // note: because of instance, one dag node can belong to multiple tree nodes.
 struct TreeNode;
-struct DAGNode : public mu::noncopyable
-{
+
+struct DAGNode {
+    DEFAULT_NOCOPY_NOASSIGN(DAGNode);
     MObject node;
     std::vector<TreeNode*> branches;
     MCallbackId cid = 0;
@@ -68,8 +69,8 @@ struct TransformData
     mu::float3 scale = mu::float3::zero();
 };
 
-struct TreeNode : public mu::noncopyable
-{
+struct TreeNode {
+    DEFAULT_NOCOPY_NOASSIGN(TreeNode);
     DAGNode *trans = nullptr;
     DAGNode *shape = nullptr;
     std::string name;
@@ -136,8 +137,8 @@ public:
 
 
 private:
-    struct TaskRecord : public mu::noncopyable
-    {
+    struct TaskRecord {
+        DEFAULT_NOCOPY_NOASSIGN(TaskRecord);
         using task_t = std::function<void()>;
         std::vector<std::tuple<TreeNode*, task_t>> tasks;
 
@@ -146,8 +147,8 @@ private:
     };
     using TaskRecords = std::map<TreeNode*, TaskRecord>;
 
-    struct AnimationRecord : public mu::noncopyable
-    {
+    struct AnimationRecord {
+        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmayaContext::*)(ms::TransformAnimation& dst, TreeNode *n);
 
         TreeNode *tn = nullptr;
