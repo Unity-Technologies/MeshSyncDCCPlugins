@@ -10,6 +10,7 @@
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 
 #include "ModoCacheSettings.h"
 #include "ModoSyncSettings.h"
@@ -75,8 +76,9 @@ private:
     struct TreeNode;
     using AnimationExtractor = void (msmodoContext::*)(TreeNode& node);
 
-    struct TreeNode : public mu::noncopyable
-    {
+    struct TreeNode {
+        DEFAULT_NOCOPY_NOASSIGN(TreeNode);
+
         CLxUser_Item item;
 
         std::string name;
@@ -99,6 +101,7 @@ private:
         void doExtractAnimation(msmodoContext *self);
 
         void eraseFromEntityManager(msmodoContext *self);
+
     };
 
     template<class T> friend struct std::default_delete;
