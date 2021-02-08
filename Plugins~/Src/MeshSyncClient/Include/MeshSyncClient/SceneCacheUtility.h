@@ -11,6 +11,7 @@ public:
     //    c:/Users/file.bin
     //    c:/Users/asset.sc
     //    c:/Users/asset (sc will be automatically appended)
+    static std::string BuildFilePath(const std::string& requestedPath);
     static std::string BuildFilePath(const char* requestedPath);
 
 };
