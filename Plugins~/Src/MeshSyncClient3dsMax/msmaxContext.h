@@ -189,6 +189,5 @@ private:
 
 #define msmaxGetContext() msmaxContext::getInstance()
 #define msmaxGetSettings() msmaxGetContext().getSettings()
-#define msmaxGetCacheSettings() msmaxGetContext().getCacheSettings()
 bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);
 bool msmaxExportCache(const MaxCacheSettings& cache_settings);
