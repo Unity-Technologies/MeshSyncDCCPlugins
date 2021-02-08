@@ -26,7 +26,7 @@ struct BaseSyncSettings {
 
     bool flatten_hierarchy = false;
 
-    // cache
+    // cache. [TODO-sin: 2021-2-8] Remove this flag as this is a hack.
     bool ExportSceneCache = false;
 
     void Validate();
