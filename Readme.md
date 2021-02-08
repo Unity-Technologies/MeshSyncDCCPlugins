@@ -116,7 +116,7 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
   - Linux: Copy the modules directory to ~/maya/(Maya version).
 - Start Maya, then go to Windows -> Settings/Preferences -> Plug-in Manager, and activate the plugin by checking Loaded under MeshSyncClient.
 - Now that the UnityMeshSync shelf has been added, click on the gear icon to open the settings menu. 
-- While "Auto Sync" is checked, any edits to the mesh will automatically be reflected in Unity. When Auyo Sync is deactivated, click the  "Manual Sync" button to sync changes.
+- While "Auto Sync" is checked, any edits to the mesh will automatically be reflected in Unity. When Auto Sync is deactivated, click the  "Manual Sync" button to sync changes.
 - Clicking Sync under Animations causes the timer to advance from the first frame to the final frame while baking the animation and sending it to Unity. 
 - The other buttons correspond to their respective manual sync and animation sync functions. 
 
@@ -184,7 +184,7 @@ Functionality confirmed with Blender 2.79(a,b), 2.80 beta (2019-4-23) + Windows,
 - "Import-Export: Unity Mesh Sync" will be added to the menu, so select it to enable it.
 - The MeshSync panel will also be added, where settings and manual sync can be accessed. 
   - The panel's location can be difficult to find in 2.8 versions. Use the screenshot to the right for reference.
-- When "Auto Sync" is selected, changes to the Mesh will automatically be reflected in Unity. If Auyo Sync is disabled, use the "Manual Sync" button to sync changes. 
+- When "Auto Sync" is selected, changes to the Mesh will automatically be reflected in Unity. If Auto Sync is disabled, use the "Manual Sync" button to sync changes. 
 - Pressing the Animations Sync button will cause the timer to advance from the first frame to the final frame while baking the animation, then send it to Unity. 
 
 &nbsp;  
