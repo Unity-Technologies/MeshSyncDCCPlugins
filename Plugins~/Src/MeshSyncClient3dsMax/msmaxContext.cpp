@@ -388,10 +388,10 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
 
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
     if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+        logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
     }
-
 
     m_material_manager.setAlwaysMarkDirty(true);
     m_entity_manager.setAlwaysMarkDirty(true);

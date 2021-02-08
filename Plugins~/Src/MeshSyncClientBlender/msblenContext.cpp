@@ -1464,6 +1464,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
     if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+        logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
     }
