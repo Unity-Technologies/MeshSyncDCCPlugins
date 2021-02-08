@@ -20,6 +20,8 @@ static const ActionTableId      kTableActions = 0xec29063a;
 static const ActionContextId    kTableContext = 0xec29063b;
 static const MenuContextId      kMenuContext  = 0xec29063c;
 
+std::string g_sceneCacheOutputPath;
+
 class msmaxAction_Window : public ActionItem
 {
 public:
@@ -570,7 +572,7 @@ void msmaxContext::updateSettingControls()
 static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     auto& ctx = msmaxGetContext();
-    auto& s = msmaxGetCacheSettings();
+    MaxCacheSettings& cacheSettings = msmaxGetContext().getCacheSettings();
     g_msmax_current_window = hDlg;
 
     INT_PTR ret = FALSE;
@@ -654,90 +656,90 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
         switch (cid) {
         case IDC_OBJSCOPE_ALL:
             handle_button([&]() {
-                s.object_scope = MeshSyncClient::ObjectScope::All;
+                cacheSettings.object_scope = MeshSyncClient::ObjectScope::All;
             });
             break;
         case IDC_OBJSCOPE_SELECTED:
             handle_button([&]() {
-                s.object_scope = MeshSyncClient::ObjectScope::Selected;
+                cacheSettings.object_scope = MeshSyncClient::ObjectScope::Selected;
             });
             break;
 
         case IDC_FRAMERANGE_SINGLE:
             handle_button([&]() {
-                s.frame_range = MeshSyncClient::FrameRange::Current;
+                cacheSettings.frame_range = MeshSyncClient::FrameRange::Current;
             });
             break;
         case IDC_FRAMERANGE_ACTIVE:
             handle_button([&]() {
-                s.frame_range = MeshSyncClient::FrameRange::All;
+                cacheSettings.frame_range = MeshSyncClient::FrameRange::All;
             });
             break;
         case IDC_FRAMERANGE_CUSTOM:
             handle_button([&]() {
-                s.frame_range = MeshSyncClient::FrameRange::Custom;
+                cacheSettings.frame_range = MeshSyncClient::FrameRange::Custom;
             });
             break;
 
         case IDC_FRAME_BEGIN:
             handle_edit([&]() {
-                int tmp = CtrlGetInt(IDC_FRAME_BEGIN, s.frame_begin);
+                int tmp = CtrlGetInt(IDC_FRAME_BEGIN, cacheSettings.frame_begin);
                 tmp = mu::clamp(tmp, 0, INT_MAX);
                 CtrlSetText(IDC_FRAME_BEGIN, tmp);
-                s.frame_begin = tmp;
+                cacheSettings.frame_begin = tmp;
             });
             break;
         case IDC_FRAME_END:
             handle_edit([&]() {
-                int tmp = CtrlGetInt(IDC_FRAME_END, s.frame_end);
+                int tmp = CtrlGetInt(IDC_FRAME_END, cacheSettings.frame_end);
                 tmp = mu::clamp(tmp, 0, INT_MAX);
                 CtrlSetText(IDC_FRAME_END, tmp);
-                s.frame_end = tmp;
+                cacheSettings.frame_end = tmp;
             });
             break;
         case IDC_CACHE_FRAME_STEP:
             handle_edit([&]() {
-                float tmp = CtrlGetFloat(IDC_CACHE_FRAME_STEP, s.frame_step);
+                float tmp = CtrlGetFloat(IDC_CACHE_FRAME_STEP, cacheSettings.frame_step);
                 tmp = mu::clamp(tmp, 0.01f, 100.0f);
                 CtrlSetText(IDC_CACHE_FRAME_STEP, tmp);
-                s.frame_step = tmp;
+                cacheSettings.frame_step = tmp;
             });
             break;
         case IDC_MATERIAL_RANGE:
             handle_combo([&]() {
-                s.material_frame_range = (MeshSyncClient::MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
+                cacheSettings.material_frame_range = (MeshSyncClient::MaterialFrameRange)CtrlComboGetSelection(IDC_MATERIAL_RANGE);
             });
             break;
 
         case IDC_ZSTD_COMPRESSION_LEVEL:
             handle_edit([&]() {
-                int tmp = CtrlGetInt(IDC_ZSTD_COMPRESSION_LEVEL, s.zstd_compression_level);
+                int tmp = CtrlGetInt(IDC_ZSTD_COMPRESSION_LEVEL, cacheSettings.zstd_compression_level);
                 tmp = ms::ClampZSTDCompressionLevel(tmp);
                 CtrlSetText(IDC_ZSTD_COMPRESSION_LEVEL, tmp);
-                s.zstd_compression_level = tmp;
+                cacheSettings.zstd_compression_level = tmp;
             });
             break;
 
         case IDC_MAKE_DOUBLE_SIDED:
             handle_button([&]() {
-                s.make_double_sided = CtrlIsChecked(IDC_MAKE_DOUBLE_SIDED);
+                cacheSettings.make_double_sided = CtrlIsChecked(IDC_MAKE_DOUBLE_SIDED);
             });
             break;
         case IDC_IGNORE_NON_RENDERABLE:
             handle_button([&]() {
-                s.ignore_non_renderable = CtrlIsChecked(IDC_IGNORE_NON_RENDERABLE);
+                cacheSettings.ignore_non_renderable = CtrlIsChecked(IDC_IGNORE_NON_RENDERABLE);
             });
             break;
         case IDC_BAKE_MODIFIERS:
             handle_button([&]() {
-                s.bake_modifiers = CtrlIsChecked(IDC_BAKE_MODIFIERS);
-                if (!s.bake_modifiers) {
+                cacheSettings.bake_modifiers = CtrlIsChecked(IDC_BAKE_MODIFIERS);
+                if (!cacheSettings.bake_modifiers) {
                     if (CtrlIsChecked(IDC_BAKE_TRANSFORM)) {
-                        s.bake_transform = false;
+                        cacheSettings.bake_transform = false;
                         CtrlSetCheck(IDC_BAKE_TRANSFORM, false);
                     }
                     if (CtrlIsChecked(IDC_USE_RENDER_MESHES)) {
-                        s.use_render_meshes = false;
+                        cacheSettings.use_render_meshes = false;
                         CtrlSetCheck(IDC_USE_RENDER_MESHES, false);
                     }
                 }
@@ -746,51 +748,51 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
         case IDC_BAKE_TRANSFORM:
             handle_button([&]() {
                 if (CtrlIsChecked(IDC_BAKE_TRANSFORM)) {
-                    if (!s.bake_modifiers) {
-                        s.bake_modifiers = true;
+                    if (!cacheSettings.bake_modifiers) {
+                        cacheSettings.bake_modifiers = true;
                         CtrlSetCheck(IDC_BAKE_MODIFIERS, true);
                     }
-                    s.bake_transform = true;
+                    cacheSettings.bake_transform = true;
                 }
                 else {
-                    s.bake_transform = false;
+                    cacheSettings.bake_transform = false;
                 }
             });
             break;
         case IDC_USE_RENDER_MESHES:
             handle_button([&]() {
                 if (CtrlIsChecked(IDC_USE_RENDER_MESHES)) {
-                    if (!s.bake_modifiers) {
-                        s.bake_modifiers = true;
+                    if (!cacheSettings.bake_modifiers) {
+                        cacheSettings.bake_modifiers = true;
                         CtrlSetCheck(IDC_BAKE_MODIFIERS, true);
                     }
-                    s.use_render_meshes = true;
+                    cacheSettings.use_render_meshes = true;
                 }
                 else {
-                    s.use_render_meshes = false;
+                    cacheSettings.use_render_meshes = false;
                 }
             });
             break;
 
         case IDC_FLATTEN_HIERARCHY:
             handle_button([&]() {
-                s.flatten_hierarchy = CtrlIsChecked(IDC_FLATTEN_HIERARCHY);
+                cacheSettings.flatten_hierarchy = CtrlIsChecked(IDC_FLATTEN_HIERARCHY);
             });
             break;
 
         case IDC_STRIP_NORMALS:
             handle_button([&]() {
-                s.strip_normals = CtrlIsChecked(IDC_STRIP_NORMALS);
+                cacheSettings.strip_normals = CtrlIsChecked(IDC_STRIP_NORMALS);
             });
             break;
         case IDC_STRIP_TANGENTS:
             handle_button([&]() {
-                s.strip_tangents = CtrlIsChecked(IDC_STRIP_TANGENTS);
+                cacheSettings.strip_tangents = CtrlIsChecked(IDC_STRIP_TANGENTS);
             });
             break;
 
         case IDOK:
-            handle_button([&]() { msmaxExportCache(s); });
+            handle_button([&]() { msmaxExportCache(g_sceneCacheOutputPath, cacheSettings); });
             DestroyWindow(hDlg);
             break;
         case IDCANCEL:
@@ -809,26 +811,27 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
 
 void msmaxContext::openCacheWindow()
 {
-    if (!g_msmax_cache_window) {
-        // open file save dialog
-        auto ifs = GetCOREInterface8();
-        MSTR filename = mu::ToWCS(GetCurrentMaxFileName() + ".sc").c_str();
-        MSTR dir = L"";
+    if (g_msmax_cache_window) 
+        return;
 
-        int filter_index = 0;
-        FilterList filter_list;
-        filter_list.Append(_M("Scene cache files(*.sc)"));
-        filter_list.Append(_M("*.sc"));
-        filter_list.SetFilterIndex(filter_index);
+    using namespace MeshSyncClient;
 
-        if (ifs->DoMaxSaveAsDialog(ifs->GetMAXHWnd(), L"Export Scene Cache", filename, dir, filter_list)) {
-            // save path
-            msmaxGetCacheSettings().path = mu::ToMBS(filename);
+    // open file save dialog
+    auto ifs = GetCOREInterface8();
+    MSTR filename = mu::ToWCS(GetCurrentMaxFileName() + ".sc").c_str();
+    MSTR dir = L"";
 
-            // open cache export settings window
-            CreateDialogParam(g_msmax_hinstance, MAKEINTRESOURCE(IDD_CACHE_WINDOW),
-                ifs->GetMAXHWnd(), msmaxCacheWindowCB, (LPARAM)this);
-        }
+    FilterList filter_list;
+    filter_list.Append(_M("Scene cache files(*.sc)"));
+    filter_list.Append(_M("*.sc"));
+    filter_list.SetFilterIndex(0);
+
+    if (ifs->DoMaxSaveAsDialog(ifs->GetMAXHWnd(), L"Export Scene Cache", filename, dir, filter_list)) {
+        g_sceneCacheOutputPath = mu::ToMBS(filename);
+
+        // open cache export settings window
+        CreateDialogParam(g_msmax_hinstance, MAKEINTRESOURCE(IDD_CACHE_WINDOW),
+            ifs->GetMAXHWnd(), msmaxCacheWindowCB, (LPARAM)this);
     }
 }
 

@@ -209,10 +209,10 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](const self_t& self) { return self->getCacheSettings().strip_tangents; },
                 [](self_t& self, bool v) { self->getCacheSettings().strip_tangents = v; })
 
+
             BindMethod(export, [](self_t& self, std::string path) {
-                auto settings = msblenGetCacheSettings(); // copy
-                settings.path = path;
-                self->exportCache(settings);
+                BlenderCacheSettings settings = msblenContext::getInstance().getCacheSettings(); // copy
+                self->ExportCache(path, settings);
             })
             ;
     }

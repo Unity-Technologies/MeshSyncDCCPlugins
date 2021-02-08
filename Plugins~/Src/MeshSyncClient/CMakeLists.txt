@@ -13,6 +13,7 @@ PRIVATE
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshSync/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}/MeshUtils/Include"
     "${MESHSYNC_PLUGIN_SRC_ROOT}"
+    "${Poco_INCLUDE_DIRS}"
 
 )
 

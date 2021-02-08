@@ -11,7 +11,6 @@ namespace MeshSyncClient {
 
 struct BaseCacheSettings {
 
-    std::string path;
     int zstd_compression_level = 3; // (min) 0 - 22 (max)
 
     //To export SceneCache ?

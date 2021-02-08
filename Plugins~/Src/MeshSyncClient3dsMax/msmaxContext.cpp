@@ -8,6 +8,7 @@
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 #include "MeshSyncClient/SettingsUtility.h"
+#include "MeshSyncClient/SceneCacheUtility.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
@@ -371,7 +372,7 @@ static int ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
+bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& cache_settings)
 {
     using namespace MeshSyncClient;
     const float frameRate = static_cast<float>(::GetFrameRate());
@@ -385,7 +386,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
+    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
@@ -1633,11 +1634,11 @@ bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectS
     return true;
 }
 
-bool msmaxExportCache(const MaxCacheSettings& cache_settings)
+bool msmaxExportCache(const std::string& path, const MaxCacheSettings& cache_settings)
 {
-    auto& ctx = msmaxGetContext();
-    auto body = [&ctx, cache_settings]() {
-        ctx.exportCache(cache_settings);
+    msmaxContext& ctx = msmaxContext::getInstance();
+    auto body = [&ctx, path, cache_settings]() {
+        ctx.ExportCache(path, cache_settings);
     };
     ctx.addDeferredCall(body);
     return true;

@@ -12,6 +12,7 @@
 
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
+#include "MeshSyncClient/SceneCacheUtility.h"
 
 
 #ifdef mscDebug
@@ -1450,7 +1451,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
 //----------------------------------------------------------------------------------------------------------------------
 
-bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
+bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings) {
     using namespace MeshSyncClient;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
@@ -1462,7 +1463,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
 
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
 
-    if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
+    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
