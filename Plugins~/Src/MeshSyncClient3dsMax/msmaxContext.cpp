@@ -374,16 +374,15 @@ static int ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
 {
     using namespace MeshSyncClient;
-    const float frame_rate = (float)::GetFrameRate();
-    const float frame_step = std::max(cache_settings.frame_step, 0.1f);
+    const float frameRate = static_cast<float>(::GetFrameRate());
+    const float frameStep = std::max(cache_settings.frame_step, 0.1f);
 
     const MaxSyncSettings settings_old = m_settings;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
     SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-
-    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
@@ -406,46 +405,41 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     } else {
         ifs->ProgressStart(L"Exporting Scene Cache", TRUE, CB_Dummy, nullptr);
 
-        int sceneIndex = 0;
-        TimeValue time_start = 0, time_end = 0, interval = 0;
+        const int ticksPerFrame = ::GetTicksPerFrame();
+        TimeValue timeStart = cache_settings.frame_begin * ticksPerFrame;
+        TimeValue timeEnd = cache_settings.frame_end * ticksPerFrame;
 
-        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
-            // custom frame range
-            time_start = cache_settings.frame_begin * ::GetTicksPerFrame();
-            time_end = cache_settings.frame_end * ::GetTicksPerFrame();
-        }
-        else {
+        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range ) {
             // all active frames
-            auto time_range = ifs->GetAnimRange();
-            time_start = time_range.Start();
-            time_end = time_range.End();
+            const Interval timeRange = ifs->GetAnimRange();
+            timeStart = timeRange.Start();
+            timeEnd = timeRange.End();
         }
-        interval = ToTicks(frame_step / frame_rate);
-        time_end = std::max(time_end, time_start); // sanitize
+        const TimeValue interval = ToTicks(frameStep / frameRate);
+        timeEnd = std::max(timeEnd, timeStart); // sanitize
 
-        for (TimeValue t = time_start;;) {
+        const TimeValue prevTime = m_current_time_tick;
+
+        int sceneIndex = 0;
+        const float progressPercentage = 1.f / static_cast<float>(timeEnd - timeStart) * 100.0f;
+        for (TimeValue t = timeStart; t <= timeEnd; t = std::min(t + interval, timeEnd)) {
             m_current_time_tick = t;
-            m_anim_time = ToSeconds(t - time_start);
+            const TimeValue timeElapsed = t - timeStart;
+            m_anim_time = ToSeconds(timeElapsed);
 
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
 
-            const float progress = float(m_current_time_tick - time_start) / float(time_end - time_start) * 100.0f;
-            ifs->ProgressUpdate((int)progress);
+            const float progress = static_cast<float>(timeElapsed) * progressPercentage;
+            ifs->ProgressUpdate(static_cast<int>(progress));
 
-            if (t >= time_end) {
-                // end of time range
-                break;
-            }
-            else if (ifs->GetCancel()) {
+            if (ifs->GetCancel()) {
                 // cancel requested
                 ifs->SetCancel(FALSE);
                 break;
             }
-            else {
-                t += interval;
-            }
         }
+        m_current_time_tick = prevTime;
         ifs->ProgressEnd();
     }
 
