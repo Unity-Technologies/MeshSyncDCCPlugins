@@ -171,5 +171,4 @@ private:
 
 #define msmodoGetContext() msmodoContext::getInstance()
 #define msmodoGetSettings() msmodoGetContext().getSettings()
-#define msmodoGetCacheSettings() msmodoGetContext().getCacheSettings()
 bool msmodoExport(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);

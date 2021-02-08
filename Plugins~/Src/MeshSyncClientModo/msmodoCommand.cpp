@@ -263,7 +263,7 @@ public:
 
     void execute() override
     {
-        auto settings = msmodoGetCacheSettings(); // copy
+        ModoCacheSettings settings = msmodoGetContext().getCacheSettings(); // copy
 
         readArg("path", settings.path);
         readArg("objectScope", (int&)settings.object_scope);
