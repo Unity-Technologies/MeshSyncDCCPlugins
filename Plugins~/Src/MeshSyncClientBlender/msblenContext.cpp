@@ -1462,8 +1462,8 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
-
-    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
+    const std::string destPath = SceneCacheUtility::BuildFilePath(path);
+    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
@@ -1498,6 +1498,9 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         }
         scene.frame_set(prevFrame);
     }
+
+    m_asyncTasksController.Wait();
+    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
 
     m_settings = settings_old;
     m_cache_writer.close();
