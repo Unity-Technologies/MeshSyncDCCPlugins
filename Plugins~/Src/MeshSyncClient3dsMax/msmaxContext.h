@@ -6,6 +6,7 @@
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
 
+#include "MeshSyncClient/AsyncTasksController.h"
 #include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
@@ -164,7 +165,7 @@ private:
 
     std::map<INode*, TreeNode> m_node_records;
     std::map<Mtl*, MaterialRecord> m_material_records;
-    std::vector<std::future<void>> m_async_tasks;
+    MeshSyncClient::AsyncTasksController m_asyncTasksController;
     std::vector<TriObject*> m_tmp_triobj;
     std::vector<Mesh*> m_tmp_meshes;
     RenderScope m_render_scope;
