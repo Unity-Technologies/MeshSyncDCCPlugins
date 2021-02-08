@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "msmaxContext.h"
+#include "MeshSyncClient/MeshSyncClientConstants.h"
+#include "MeshSyncClient/PathUtility.h"
 
 HINSTANCE g_msmax_hinstance;
 
@@ -189,6 +191,7 @@ Value* Import_cf(Value** arg_list, int count)
 // e.g. UnityMeshSync.ExportCache path:"C:/tmp/hoge.sc" frame_range:1
 Value* ExportCache_cf(Value** arg_list, int count)
 {
+    using namespace MeshSyncClient;
     MaxCacheSettings settings;
     std::string outputPath = "default.sc"; 
 
@@ -215,6 +218,8 @@ Value* ExportCache_cf(Value** arg_list, int count)
             else if (name == L"stripTangents")          settings.strip_tangents = arg_list[i++]->to_bool();
         }
     }
+
+    outputPath = PathUtility::BuildPathWithExtension(outputPath.c_str(), MeshSyncClientConstants::SCENE_CACHE_EXT);
     msmaxContext::getInstance().ExportCache(outputPath, settings);
     return &ok;
 }
