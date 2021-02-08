@@ -1,10 +1,12 @@
 #pragma once
 
+
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/msClient.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -69,22 +71,22 @@ private:
     using NodeRecords = std::map<FBModel*, NodeRecord>;
     using ExtractTasks = std::vector<std::function<void()>>;
 
-    struct TextureRecord : public mu::noncopyable
-    {
+    struct TextureRecord {
+        DEFAULT_NOCOPY_NOASSIGN(TextureRecord);
         int id = ms::InvalidID;
         ms::Texture *dst = nullptr;
     };
     using TextureRecords = std::map<FBTexture*, TextureRecord>;
 
-    struct MaterialRecord : public mu::noncopyable
-    {
+    struct MaterialRecord  {
+        DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
         int id = 0;
         ms::Material *dst = nullptr;
     };
     using MaterialRecords = std::map<FBMaterial*, MaterialRecord>;
 
-    struct AnimationRecord : public mu::noncopyable
-    {
+    struct AnimationRecord  {
+        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmobuDevice::*)(ms::TransformAnimation& dst, FBModel *src);
 
         ms::TransformAnimationPtr dst;

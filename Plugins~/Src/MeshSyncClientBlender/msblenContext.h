@@ -7,6 +7,7 @@
 
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -44,8 +45,8 @@ public:
 
 private:
     // todo
-    struct NodeRecord : public mu::noncopyable
-    {
+    struct NodeRecord {
+        DEFAULT_NOCOPY_NOASSIGN(NodeRecord);
         NodeRecord *parent = nullptr;
 
         std::string path;
@@ -66,8 +67,8 @@ private:
     // ObjectRecord and Blender's Object is *NOT* 1 on 1 because there is 'dupli group' in Blender.
     // dupli group is a collection of nodes that will be instanced.
     // so, only the path is unique. Object maybe shared by multiple ObjectRecord.
-    struct ObjectRecord : public mu::noncopyable
-    {
+    struct ObjectRecord {
+        DEFAULT_NOCOPY_NOASSIGN(ObjectRecord);
         //std::vector<NodeRecord*> branches; // todo
 
         std::string path;
@@ -84,22 +85,20 @@ private:
         void clearState();
     };
 
-    struct AnimationRecord : public mu::noncopyable
-    {
+    struct AnimationRecord  {
+        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msblenContext::*)(ms::TransformAnimation& dst, void *obj);
 
         void *obj = nullptr;
         ms::TransformAnimationPtr dst;
         extractor_t extractor = nullptr;
 
-        void operator()(msblenContext *_this)
-        {
+        void operator()(msblenContext *_this) {
             (_this->*extractor)(*dst, obj);
         }
     };
 
-    struct DupliGroupContext
-    {
+    struct DupliGroupContext {
         const Object *group_host;
         ms::TransformPtr dst;
     };

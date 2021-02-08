@@ -7,6 +7,7 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
 
 #include "MeshSyncClient/ExportTarget.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -21,8 +22,7 @@
 
 
 
-class msmaxContext : mu::noncopyable
-{
+class msmaxContext {
 public:
     static msmaxContext& getInstance();
 
@@ -78,8 +78,11 @@ public:
     void updateCacheControls();
 
 private:
-    struct TreeNode : public mu::noncopyable
-    {
+
+    NOCOPY_NOASSIGN(msmaxContext);
+
+    struct TreeNode {
+        DEFAULT_NOCOPY_NOASSIGN(TreeNode);
         int index = 0;
         INode *node = nullptr;
         Object *baseobj = nullptr;
@@ -96,8 +99,8 @@ private:
         void clearState();
     };
 
-    struct AnimationRecord : public mu::noncopyable
-    {
+    struct AnimationRecord {
+        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmaxContext::*)(ms::TransformAnimation& dst, TreeNode *n);
         extractor_t extractor = nullptr;
         TreeNode *node = nullptr;
@@ -106,8 +109,8 @@ private:
         void operator()(msmaxContext *_this);
     };
 
-    struct MaterialRecord : public mu::noncopyable
-    {
+    struct MaterialRecord {
+        DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
         int material_id = 0;
         std::vector<int> submaterial_ids;
     };
