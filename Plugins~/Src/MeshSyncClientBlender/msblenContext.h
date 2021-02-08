@@ -189,4 +189,3 @@ private:
 using msblenContextPtr = std::shared_ptr<msblenContext>;
 #define msblenGetContext() msblenContext::getInstance()
 #define msblenGetSettings() msblenContext::getInstance().getSettings()
-#define msblenGetCacheSettings() msblenContext::getInstance().getCacheSettings()
