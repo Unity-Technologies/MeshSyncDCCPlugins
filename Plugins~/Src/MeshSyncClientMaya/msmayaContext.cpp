@@ -637,7 +637,9 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
+    const std::string destPath = SceneCacheUtility::BuildFilePath(path);
+    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+        logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
     }
@@ -675,6 +677,8 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
         MGlobal::viewFrame(prevTime);
         m_ignore_update = false;
     }
+
+    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
 
     m_settings = settings_old;
     m_cache_writer.close();
