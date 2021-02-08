@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "msmaxContext.h"
-#include "MeshSyncClient/MeshSyncClientConstants.h"
-#include "MeshSyncClient/PathUtility.h"
 
 HINSTANCE g_msmax_hinstance;
 
@@ -219,7 +217,6 @@ Value* ExportCache_cf(Value** arg_list, int count)
         }
     }
 
-    outputPath = PathUtility::BuildPathWithExtension(outputPath.c_str(), MeshSyncClientConstants::SCENE_CACHE_EXT);
     msmaxContext::getInstance().ExportCache(outputPath, settings);
     return &ok;
 }

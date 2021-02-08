@@ -2,8 +2,6 @@
 #include "msmaxContext.h"
 #include "msmaxUtils.h"
 #include "resource.h"
-#include "MeshSyncClient/MeshSyncClientConstants.h"
-#include "MeshSyncClient/PathUtility.h"
 
 #define msmaxTitle L"UnityMeshSync"
 
@@ -829,10 +827,7 @@ void msmaxContext::openCacheWindow()
     filter_list.SetFilterIndex(0);
 
     if (ifs->DoMaxSaveAsDialog(ifs->GetMAXHWnd(), L"Export Scene Cache", filename, dir, filter_list)) {
-        g_sceneCacheOutputPath = PathUtility::BuildPathWithExtension(
-            mu::ToMBS(filename).c_str(),
-            MeshSyncClientConstants::SCENE_CACHE_EXT
-        );
+        g_sceneCacheOutputPath = mu::ToMBS(filename);
 
         // open cache export settings window
         CreateDialogParam(g_msmax_hinstance, MAKEINTRESOURCE(IDD_CACHE_WINDOW),
