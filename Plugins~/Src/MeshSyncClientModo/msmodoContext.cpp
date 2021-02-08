@@ -444,7 +444,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     }
 }
 
-bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
+bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings& cache_settings)
 {
     using namespace MeshSyncClient;
     if (!prepare()) {
@@ -461,7 +461,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
+    if (!m_cache_writer.open(path.c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }

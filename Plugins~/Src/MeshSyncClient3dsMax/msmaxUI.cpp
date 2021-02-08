@@ -20,6 +20,8 @@ static const ActionTableId      kTableActions = 0xec29063a;
 static const ActionContextId    kTableContext = 0xec29063b;
 static const MenuContextId      kMenuContext  = 0xec29063c;
 
+std::string g_sceneCacheOutputPath;
+
 class msmaxAction_Window : public ActionItem
 {
 public:
@@ -790,7 +792,7 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
             break;
 
         case IDOK:
-            handle_button([&]() { msmaxExportCache(cacheSettings); });
+            handle_button([&]() { msmaxExportCache(g_sceneCacheOutputPath, cacheSettings); });
             DestroyWindow(hDlg);
             break;
         case IDCANCEL:
@@ -822,8 +824,7 @@ void msmaxContext::openCacheWindow()
         filter_list.SetFilterIndex(filter_index);
 
         if (ifs->DoMaxSaveAsDialog(ifs->GetMAXHWnd(), L"Export Scene Cache", filename, dir, filter_list)) {
-            // save path
-            msmaxGetContext().getCacheSettings().path = mu::ToMBS(filename);
+            g_sceneCacheOutputPath = mu::ToMBS(filename);
 
             // open cache export settings window
             CreateDialogParam(g_msmax_hinstance, MAKEINTRESOURCE(IDD_CACHE_WINDOW),

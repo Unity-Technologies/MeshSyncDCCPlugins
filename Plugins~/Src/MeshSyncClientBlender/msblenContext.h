@@ -38,7 +38,7 @@ public:
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const BlenderCacheSettings& cache_settings);
+    bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
     void flushPendingList();
 

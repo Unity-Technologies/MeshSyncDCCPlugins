@@ -53,7 +53,7 @@ public:
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendMaterials(bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const MaxCacheSettings& cache_settings);
+    bool ExportCache(const std::string& path, const MaxCacheSettings& cache_settings);
 
     bool recvScene();
 
@@ -190,4 +190,4 @@ private:
 #define msmaxGetContext() msmaxContext::getInstance()
 #define msmaxGetSettings() msmaxGetContext().getSettings()
 bool msmaxSendScene(MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope);
-bool msmaxExportCache(const MaxCacheSettings& cache_settings);
+bool msmaxExportCache(const std::string& path, const MaxCacheSettings& cache_settings);

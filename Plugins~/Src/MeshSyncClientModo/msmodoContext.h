@@ -60,7 +60,7 @@ public:
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const ModoCacheSettings& cache_settings);
+    bool ExportCache(const std::string& path, const ModoCacheSettings& cache_settings);
 
     bool recvObjects();
 

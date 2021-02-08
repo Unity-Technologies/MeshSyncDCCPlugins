@@ -374,11 +374,30 @@ MSyntax CmdExportCache::createSyntax()
     return syntax;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
+template<class T> void GetOrSetArg(MArgParser& args, const char* argName, T& argValue) {
+    if (!args.isFlagSet(argName))
+        return;
+
+    if (args.isQuery())
+        //puts the given value into the return value area for a command.
+        set_result(argValue);
+    else
+        get_arg(argValue, argName, args);
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
 MStatus CmdExportCache::doIt(const MArgList& args_)
 {
     MStatus status;
     MArgParser args(syntax(), args_, &status);
     MayaCacheSettings& settings = msmayaGetContext().getCacheSettings();
+
+    std::string outputPath;
+    GetOrSetArg(args, "path", outputPath);
 
 #define Handle(Name, Value, ...)\
     if (args.isFlagSet(Name)) {\
@@ -388,7 +407,6 @@ MStatus CmdExportCache::doIt(const MArgList& args_)
                     get_arg(__VA_ARGS__ settings.Value, Name, args);\
     }
 
-    Handle("path", path);
     Handle("objectScope", object_scope, (int&));
     Handle("frameRange", frame_range, (int&));
     Handle("frameBegin", frame_begin);
@@ -409,8 +427,8 @@ MStatus CmdExportCache::doIt(const MArgList& args_)
 #undef Handle
 
     if (!args.isQuery()) {
-        auto& ctx = msmayaGetContext();
-        if (ctx.exportCache(settings))
+        msmayaContext& ctx = msmayaContext::getInstance();
+        if (ctx.ExportCache(outputPath, settings))
             return MStatus::kSuccess;
         else
             return MStatus::kFailure;

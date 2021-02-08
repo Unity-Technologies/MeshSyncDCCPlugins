@@ -263,9 +263,9 @@ public:
 
     void execute() override
     {
-        ModoCacheSettings settings = msmodoGetContext().getCacheSettings(); // copy
-
-        readArg("path", settings.path);
+        ModoCacheSettings settings = msmodoContext::getInstance().getCacheSettings(); // copy
+        std::string outputPath;
+        readArg("path", outputPath);
         readArg("objectScope", (int&)settings.object_scope);
         readArg("frameRange", (int&)settings.frame_range);
         readArg("frameBegin", settings.frame_begin);
@@ -280,7 +280,7 @@ public:
         //readArg("mergeMeshes", settings.merge_meshes);
         readArg("stripNormals", settings.strip_normals);
         readArg("stripTangents", settings.strip_tangents);
-        msmodoGetContext().exportCache(settings);
+        msmodoContext::getInstance().ExportCache(outputPath, settings);
     }
 };
 

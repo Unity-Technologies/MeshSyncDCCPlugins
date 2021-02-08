@@ -212,8 +212,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
 
             BindMethod(export, [](self_t& self, std::string path) {
                 BlenderCacheSettings settings = msblenContext::getInstance().getCacheSettings(); // copy
-                settings.path = path;
-                self->exportCache(settings);
+                self->ExportCache(path, settings);
             })
             ;
     }

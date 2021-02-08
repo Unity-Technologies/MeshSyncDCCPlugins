@@ -130,7 +130,7 @@ public:
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
-    bool exportCache(const MayaCacheSettings& cache_settings);
+    bool ExportCache(const std::string& path, const MayaCacheSettings& cache_settings);
 
     bool recvObjects();
 
