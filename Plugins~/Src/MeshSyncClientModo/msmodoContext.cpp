@@ -461,7 +461,8 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
+    const std::string destPath = SceneCacheUtility::BuildFilePath(path);
+    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
@@ -494,6 +495,9 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
         setChannelReadTime(prevTime);
         m_ignore_events = false;
     }
+
+    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
+
 
     m_settings = settings_old;
     m_cache_writer.close();
