@@ -587,32 +587,32 @@ void msmaxContext::WaitAndKickAsyncExport()
 {
     m_asyncTasksController.Wait();
 
-    for (auto *t : m_tmp_triobj)
+    for (TriObject* t : m_tmp_triobj)
         t->DeleteMe();
     m_tmp_triobj.clear();
 
-    for (auto *t : m_tmp_meshes)
+    for (Mesh* t : m_tmp_meshes)
         t->DeleteThis();
     m_tmp_meshes.clear();
 
-    for (auto& kvp : m_node_records)
+    for (std::map<INode*, TreeNode>::value_type& kvp : m_node_records)
         kvp.second.clearState();
 
 
-    float to_meter = (float)GetMasterScale(UNITS_METERS);
+    float to_meter = static_cast<float>(GetMasterScale(UNITS_METERS));
     using Exporter = ms::AsyncSceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // begin async send
     exporter->on_prepare = [this, to_meter, exporter]() {
-        if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
+        if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        auto& t = *exporter;
+        ms::AsyncSceneExporter& t = *exporter;
         t.scene_settings.handedness = ms::Handedness::RightZUp;
         t.scene_settings.scale_factor = m_settings.scale_factor / to_meter;
 
