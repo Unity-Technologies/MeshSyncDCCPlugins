@@ -1454,15 +1454,13 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     using namespace MeshSyncClient;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
-    const int frameRate = scene.fps();
+    const float frameRate = static_cast<float>(scene.fps());
 
     const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(
-        static_cast<float>(frameRate), 
-        cache_settings);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frameRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
