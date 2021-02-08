@@ -206,7 +206,7 @@ TriObject* GetSourceMesh(INode * n, bool& needs_delete)
     TriObject *ret = nullptr;
     auto to_triobject = [&needs_delete, &ret](Object *obj) {
         if (obj->CanConvertToType(triObjectClassID)) {
-            auto old = obj;
+            Object* old = obj;
             ret = (TriObject*)obj->ConvertToType(GetTime(), triObjectClassID);
             if (ret != old)
                 needs_delete = true;
@@ -217,7 +217,7 @@ TriObject* GetSourceMesh(INode * n, bool& needs_delete)
         to_triobject(base);
     }
     else if (dobj) {
-        auto os = dobj->Eval(GetTime(), mod_index);
+        ObjectState os = dobj->Eval(GetTime(), mod_index);
         to_triobject(os.obj);
     }
     else {
