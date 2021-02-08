@@ -120,7 +120,7 @@ private:
     TreeNode& getNodeRecord(INode *n);
     std::vector<TreeNode*> getNodes(MeshSyncClient::ObjectScope scope);
 
-    void kickAsyncExport();
+    void WaitAndKickAsyncExport();
 
     int exportTexture(const std::string& path, ms::TextureType type = ms::TextureType::Default);
     void exportMaterials();

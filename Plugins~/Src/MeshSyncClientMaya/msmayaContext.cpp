@@ -573,7 +573,7 @@ bool msmayaContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -605,7 +605,7 @@ bool msmayaContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     if (num_exported > 0 || !m_entity_manager.getDeleted().empty()) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
         return true;
     }
     else {
@@ -620,7 +620,7 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     m_settings.Validate();
     if (exportAnimations(scope) > 0)
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
     return true;
 }
 
@@ -698,7 +698,7 @@ void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -732,7 +732,7 @@ void msmayaContext::update()
 }
 
 
-void msmayaContext::kickAsyncExport()
+void msmayaContext::WaitAndKickAsyncExport()
 {
     // process parallel extract tasks
     if (!m_extract_tasks.empty()) {
@@ -742,7 +742,7 @@ void msmayaContext::kickAsyncExport()
             });
         }
         else {
-            for (auto& kvp : m_extract_tasks) {
+            for (std::map<TreeNode*, TaskRecord>::value_type& kvp : m_extract_tasks) {
                 kvp.second.process();
             }
         }
@@ -750,28 +750,25 @@ void msmayaContext::kickAsyncExport()
     }
 
     // cleanup
-    for (auto& n : m_tree_nodes)
+    for (std::vector<std::unique_ptr<TreeNode>>::value_type& n : m_tree_nodes)
         n->clearState();
 
-    float to_meter = 1.0f;
-    {
-        MDistance dist;
-        dist.setValue(1.0f);
-        to_meter = (float)dist.asMeters();
-    }
+    MDistance dist;
+    dist.setValue(1.0f);
+    const float to_meter = static_cast<float>(dist.asMeters());
 
     using Exporter = ms::AsyncSceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     exporter->on_prepare = [this, to_meter, exporter]() {
-        if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
+        if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        auto& t = *exporter;
+        ms::AsyncSceneExporter& t = *exporter;
         t.scene_settings.handedness = ms::Handedness::Right;
         t.scene_settings.scale_factor = m_settings.scale_factor / to_meter;
 

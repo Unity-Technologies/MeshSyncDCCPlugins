@@ -157,7 +157,7 @@ private:
 
     void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
                             const std::vector<Object*>& nodes);
-    void kickAsyncExport();
+    void WaitAndKickAsyncExport();
 
 private:
     BlenderSyncSettings m_settings;

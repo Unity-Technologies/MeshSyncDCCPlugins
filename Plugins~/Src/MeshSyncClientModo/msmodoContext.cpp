@@ -369,7 +369,7 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -426,7 +426,7 @@ bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -437,7 +437,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     m_settings.Validate();
     if (exportAnimations(scope) > 0) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
         return true;
     }
     else {
@@ -518,7 +518,7 @@ void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1497,7 +1497,7 @@ void msmodoContext::extractReplicatorAnimationData(TreeNode& n)
     });
 }
 
-void msmodoContext::kickAsyncExport()
+void msmodoContext::WaitAndKickAsyncExport()
 {
     // process parallel tasks
     if (!m_parallel_tasks.empty()) {
@@ -1508,7 +1508,7 @@ void msmodoContext::kickAsyncExport()
     }
 
     // cleanup
-    for (auto& kvp : m_tree_nodes)
+    for (std::map<LxItemKey, TreeNode>::value_type& kvp : m_tree_nodes)
         kvp.second.clearState();
 
     using Exporter = ms::AsyncSceneExporter;
@@ -1516,14 +1516,14 @@ void msmodoContext::kickAsyncExport()
 
     // kick async send
     exporter->on_prepare = [this, exporter]() {
-        if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
+        if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        auto& t = *exporter;
+        ms::AsyncSceneExporter& t = *exporter;
         t.scene_settings.handedness = ms::Handedness::Right;
         t.scene_settings.scale_factor = m_settings.scale_factor;
 

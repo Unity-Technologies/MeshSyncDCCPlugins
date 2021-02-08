@@ -143,7 +143,7 @@ private:
     void extractReplicaData(TreeNode& n, CLxUser_Item& geom, int nth, const mu::float4x4& matrix,
         std::string& path, mu::float3& pos, mu::quatf& rot, mu::float3& scale);
 
-    void kickAsyncExport();
+    void WaitAndKickAsyncExport();
     void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
                             const std::vector<CLxUser_Item>& nodes);
 

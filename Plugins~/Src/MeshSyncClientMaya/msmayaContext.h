@@ -204,7 +204,7 @@ private:
     void extractLightAnimationData(ms::TransformAnimation& dst, TreeNode *n);
     void extractMeshAnimationData(ms::TransformAnimation& dst, TreeNode *n);
 
-    void kickAsyncExport();
+    void WaitAndKickAsyncExport();
     void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
                             const std::vector<TreeNode*>& nodes);
 
