@@ -3,14 +3,14 @@
 #include "MeshSync/SceneCache/msSceneCacheSettings.h" //OSceneCacheSettings
 
 
-#include "MeshSyncClient/SettingsUtilities.h"
+#include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/BaseCacheSettings.h"
 #include "MeshSyncClient/BaseSyncSettings.h"
 
 
 namespace MeshSyncClient {
 
-void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings) {
+void SettingsUtility::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings) {
     syncSettings->ExportSceneCache = true;
     syncSettings->make_double_sided = cacheSettings.make_double_sided;
     syncSettings->BakeModifiers = cacheSettings.bake_modifiers;
@@ -21,7 +21,7 @@ void SettingsUtilities::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheS
 
 //----------------------------------------------------------------------------------------------------------------------
 
-ms::OSceneCacheSettings SettingsUtilities::CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings) {
+ms::OSceneCacheSettings SettingsUtility::CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings) {
     ms::OSceneCacheSettings oscs;
     oscs.sample_rate = sampleRate;
     oscs.encoder_settings.zstd.compression_level = cacheSettings.zstd_compression_level;

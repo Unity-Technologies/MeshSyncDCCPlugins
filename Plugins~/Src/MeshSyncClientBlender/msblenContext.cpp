@@ -11,7 +11,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
-#include "MeshSyncClient/SettingsUtilities.h"
+#include "MeshSyncClient/SettingsUtility.h"
 
 
 #ifdef mscDebug
@@ -1458,9 +1458,9 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
 
     const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
+    SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frameRate, cache_settings);
+    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;

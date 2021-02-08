@@ -7,7 +7,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
-#include "MeshSyncClient/SettingsUtilities.h"
+#include "MeshSyncClient/SettingsUtility.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
@@ -380,10 +380,10 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
     const MaxSyncSettings settings_old = m_settings;
     m_settings.ignore_non_renderable = cache_settings.ignore_non_renderable;
     m_settings.use_render_meshes = cache_settings.use_render_meshes;
-    SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
+    SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
-    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
+    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
