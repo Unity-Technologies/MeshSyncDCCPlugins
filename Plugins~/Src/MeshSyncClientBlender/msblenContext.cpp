@@ -1347,7 +1347,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport(&m_sender);
     return true;
 }
 
@@ -1385,7 +1385,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         eraseStaleObjects();
     }
 
-    kickAsyncExport();
+    WaitAndKickAsyncExport(&m_sender);
     return true;
 }
 
@@ -1443,7 +1443,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     // send
     if (!m_animations.empty()) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport(&m_sender);
         return true;
     }
     return false;
@@ -1523,22 +1523,21 @@ void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport(&m_cache_writer);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::flushPendingList() {
     if (!m_pending.empty() && !m_sender.isExporting()) {
-        for (auto p : m_pending)
+        for (const auto p : m_pending)
             exportObject(p, false);
         m_pending.clear();
-        kickAsyncExport();
+        WaitAndKickAsyncExport(&m_sender);
     }
 }
 
-void msblenContext::kickAsyncExport()
-{
+void msblenContext::WaitAndKickAsyncExport(ms::AsyncSceneExporter* exporter) {
     m_asyncTasksController.Wait();
 
     // clear baked meshes
@@ -1563,21 +1562,17 @@ void msblenContext::kickAsyncExport()
         kvp.second.clearState();
     m_bones.clear();
 
-    using Exporter = ms::AsyncSceneExporter;
-    Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
-
     // kick async send
     exporter->on_prepare = [this, exporter]() {
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
         ms::AsyncSceneExporter& t = *exporter;
         t.scene_settings = m_settings.scene_settings;
-        float scale_factor = 1.0f / m_settings.scene_settings.scale_factor;
         t.scene_settings.scale_factor = 1.0f;
 
         t.textures = m_texture_manager.getDirtyTextures();
@@ -1589,6 +1584,7 @@ void msblenContext::kickAsyncExport()
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
 
+        const float scale_factor = 1.0f / m_settings.scene_settings.scale_factor;
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.transforms) { cv.convert(*obj); }
