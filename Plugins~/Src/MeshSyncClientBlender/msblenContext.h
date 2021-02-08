@@ -154,6 +154,9 @@ private:
     void extractLightAnimationData(ms::TransformAnimation& dst, void *obj);
     void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
 
+
+    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                            const std::vector<Object*>& nodes);
     void kickAsyncExport();
 
 private:
