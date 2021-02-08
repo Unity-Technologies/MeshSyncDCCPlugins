@@ -1488,7 +1488,7 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
 
         // record
         int sceneIndex = 0;
-        for (int f = frameStart; f <= frameEnd;f = std::min(f + frameStep, frameEnd)) {
+        for (int f = frameStart; f <= frameEnd; f += frameStep) {
             scene.frame_set(f);
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 

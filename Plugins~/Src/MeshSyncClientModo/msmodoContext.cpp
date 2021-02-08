@@ -485,7 +485,7 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
         // advance frame and record
         int sceneIndex = 0;
         m_ignore_events = true;
-        for (double t = timeStart; t <= timeEnd; t = std::min(t + interval, timeEnd)) {
+        for (double t = timeStart; t <= timeEnd; t += interval) {
             m_anim_time = static_cast<float>(t - timeStart);
             setChannelReadTime(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);

@@ -665,7 +665,7 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
         // advance frame and record
         int sceneIndex = 0;
         m_ignore_update = true;
-        for (MTime t = timeStart; t <= timeEnd; t = std::min(t + interval, timeEnd)) {
+        for (MTime t = timeStart; t <= timeEnd; t += interval) {
             m_anim_time = static_cast<float>((t - timeStart).as(MTime::kSeconds));
             MGlobal::viewFrame(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);

@@ -422,7 +422,7 @@ bool msmaxContext::exportCache(const MaxCacheSettings& cache_settings)
 
         int sceneIndex = 0;
         const float progressPercentage = 1.f / static_cast<float>(timeEnd - timeStart) * 100.0f;
-        for (TimeValue t = timeStart; t <= timeEnd; t = std::min(t + interval, timeEnd)) {
+        for (TimeValue t = timeStart; t <= timeEnd; t += interval) {
             m_current_time_tick = t;
             const TimeValue timeElapsed = t - timeStart;
             m_anim_time = ToSeconds(timeElapsed);
