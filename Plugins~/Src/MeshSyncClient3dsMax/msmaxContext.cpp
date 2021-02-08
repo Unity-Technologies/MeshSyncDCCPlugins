@@ -386,7 +386,8 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
+    const std::string destPath = SceneCacheUtility::BuildFilePath(path);
+    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
@@ -443,6 +444,10 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
         m_current_time_tick = prevTime;
         ifs->ProgressEnd();
     }
+
+    m_asyncTasksController.Wait();
+    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
+
 
     // cleanup intermediate data
     m_material_records.clear();
