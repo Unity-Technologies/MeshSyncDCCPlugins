@@ -9,7 +9,7 @@ namespace MeshSyncClient {
 struct BaseCacheSettings;
 struct BaseSyncSettings;
 
-class SettingsUtilities {
+class SettingsUtility {
 
 public:
     static void ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings);
