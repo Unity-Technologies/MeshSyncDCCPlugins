@@ -1454,14 +1454,13 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
     using namespace MeshSyncClient;
 
     bl::BScene scene = bl::BScene(bl::BContext::get().scene());
-    const int frame_rate = scene.fps();
-    const int frame_step = std::max(static_cast<int>(cache_settings.frame_step), 1);
+    const int frameRate = scene.fps();
 
     const BlenderSyncSettings settings_old = m_settings;
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frame_rate, cache_settings);
+    const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(frameRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
         m_settings = settings_old;
@@ -1478,35 +1477,25 @@ bool msblenContext::exportCache(const BlenderCacheSettings& cache_settings) {
         m_anim_time = 0.0f;
         DoExportSceneCache(0, materialRange, nodes);
     } else {
-        int sceneIndex = 0;
-        const int frame_current = scene.frame_current();
-        int frame_start, frame_end;
-        // time range
-        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
-            // custom frame range
-            frame_start = cache_settings.frame_begin;
-            frame_end = cache_settings.frame_end;
-        } else {
-            // all active frames
-            frame_start = scene.frame_start();
-            frame_end = scene.frame_end();
+        const int prevFrame = scene.frame_current();
+        const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
+        int frameStart = cache_settings.frame_begin;
+        int frameEnd = cache_settings.frame_end;
+        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range) {
+            frameStart = scene.frame_start();
+            frameEnd = scene.frame_end();
         }
-        const int interval = frame_step;
 
         // record
-        for (int f = frame_start;;) {
+        int sceneIndex = 0;
+        for (int f = frameStart; f <= frameEnd;f = std::min(f + frameStep, frameEnd)) {
             scene.frame_set(f);
-            m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
+            m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
             DoExportSceneCache(sceneIndex, materialRange, nodes);
             ++sceneIndex;
-
-            if (f >= frame_end)
-                break;
-            else
-                f = std::min(f + interval, frame_end);
         }
-        scene.frame_set(frame_current);
+        scene.frame_set(prevFrame);
     }
 
     m_settings = settings_old;
