@@ -1,9 +1,13 @@
 #pragma once
 
-// Disallow the copy constructor and operator= functions. 
-// For use in private: declarations 
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+// Create default constructor but disallow copy and assign
+#define DEFAULT_NOCOPY_NOASSIGN(TypeName) \
+    TypeName() = default;      \
     TypeName(const TypeName&) = delete;      \
     void operator=(const TypeName&) = delete
 
+// disallow copy and assign constructors
+#define NOCOPY_NOASSIGN(TypeName) \
+    TypeName(const TypeName&) = delete;      \
+    void operator=(const TypeName&) = delete
 
