@@ -626,14 +626,14 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
 {
     using namespace MeshSyncClient;
-    const float frame_rate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
-    const float frame_step = std::max(cache_settings.frame_step, 0.1f);
+    const float frameRate = (float)MTime(1.0, MTime::kSeconds).as(MTime::uiUnit());
+    const float frameStep = std::max(cache_settings.frame_step, 0.1f);
 
     const MayaSyncSettings settings_old = m_settings;
     m_settings.remove_namespace = cache_settings.remove_namespace;
     SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
@@ -651,37 +651,27 @@ bool msmayaContext::exportCache(const MayaCacheSettings& cache_settings)
         m_anim_time = 0.0f;
         DoExportSceneCache(0, material_range, nodes);
     } else {
-        int sceneIndex = 0;
-        const MTime time_current = MAnimControl::currentTime();
-        const MTime interval = MTime(frame_step, MTime::uiUnit());
-        MTime time_start, time_end;
+        const MTime prevTime = MAnimControl::currentTime();
 
-        // time range
-        if (cache_settings.frame_range == MeshSyncClient::FrameRange::Custom) {
-            // custom frame range
-            time_start = MTime(cache_settings.frame_begin, MTime::uiUnit());
-            time_end = MTime(cache_settings.frame_end, MTime::uiUnit());
-        } else {
-            // all active frames
-            time_start = MAnimControl::minTime();
-            time_end = MAnimControl::maxTime();
-        }
-        time_end = std::max(time_end, time_start); // sanitize
+        const MTime interval = MTime(frameStep, MTime::uiUnit());
+        MTime timeStart = MTime(cache_settings.frame_begin, MTime::uiUnit());
+        MTime timeEnd = MTime(cache_settings.frame_end, MTime::uiUnit());
+        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range ) {
+            timeStart = MAnimControl::minTime();
+            timeEnd = MAnimControl::maxTime();
+        } 
+        timeEnd = std::max(timeEnd, timeStart); // sanitize
 
         // advance frame and record
+        int sceneIndex = 0;
         m_ignore_update = true;
-        for (MTime t = time_start;;) {
-            m_anim_time = (float)(t - time_start).as(MTime::kSeconds);
+        for (MTime t = timeStart; t <= timeEnd; t += interval) {
+            m_anim_time = static_cast<float>((t - timeStart).as(MTime::kSeconds));
             MGlobal::viewFrame(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
-
-            if (t >= time_end)
-                break;
-            else
-                t += interval;
         }
-        MGlobal::viewFrame(time_current);
+        MGlobal::viewFrame(prevTime);
         m_ignore_update = false;
     }
 

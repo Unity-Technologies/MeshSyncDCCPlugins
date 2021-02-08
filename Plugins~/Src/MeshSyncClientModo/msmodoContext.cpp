@@ -451,14 +451,14 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
         return false;
     }
 
-    const float frame_rate = (float)getFrameRate();
-    const float frame_step = std::max(cache_settings.frame_step, 0.1f);
+    const float frameRate = static_cast<float>(getFrameRate());
+    const float frameStep = std::max(cache_settings.frame_step, 0.1f);
 
     const ModoSyncSettings settings_old = m_settings;
     SettingsUtilities::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
 
-    const float sampleRate = frame_rate * std::max(1.0f / frame_step, 1.0f);
+    const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtilities::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
     if (!m_cache_writer.open(cache_settings.path.c_str(), oscs)) {
@@ -476,26 +476,22 @@ bool msmodoContext::exportCache(const ModoCacheSettings& cache_settings)
         m_anim_time = 0.0f;
         DoExportSceneCache(0, material_range, nodes);
     } else {
+        const double prevTime = m_svc_selection.GetTime();
+
+        double timeStart, timeEnd;
+        std::tie(timeStart, timeEnd) = getTimeRange();
+        const double interval = frameStep / frameRate;
+
         // advance frame and record
         int sceneIndex = 0;
-        double time_current = m_svc_selection.GetTime();
-        double time_start, time_end;
-        std::tie(time_start, time_end) = getTimeRange();
-        const float interval = frame_step / frame_rate;
-
         m_ignore_events = true;
-        for (double t = time_start;;) {
-            m_anim_time = (float)(t - time_start);
+        for (double t = timeStart; t <= timeEnd; t += interval) {
+            m_anim_time = static_cast<float>(t - timeStart);
             setChannelReadTime(t);
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
-
-            if (t >= time_end)
-                break;
-            else
-                t += interval;
         }
-        setChannelReadTime();
+        setChannelReadTime(prevTime);
         m_ignore_events = false;
     }
 
