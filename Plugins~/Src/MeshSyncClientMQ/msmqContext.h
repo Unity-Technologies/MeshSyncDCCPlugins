@@ -3,6 +3,7 @@
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -59,22 +60,23 @@ public:
     bool importMeshes(MQDocument doc);
 
 private:
-    struct MorphRecord : public mu::noncopyable
-    {
+    struct MorphRecord {
+        DEFAULT_NOCOPY_NOASSIGN(MorphRecord);
         MQObject base_obj = nullptr;
         MQObject target_obj = nullptr;
         ms::MeshPtr base;
         ms::BlendShapeDataPtr dst;
+
     };
 
-    struct ObjectRecord : public mu::noncopyable
-    {
+    struct ObjectRecord {
+        DEFAULT_NOASSIGN(ObjectRecord);
         MQObject obj = nullptr;
         ms::MeshPtr dst;
     };
 
-    struct BoneRecord : public mu::noncopyable
-    {
+    struct BoneRecord {
+        DEFAULT_NOCOPY_NOASSIGN(BoneRecord);
         UINT bone_id = -1;
         UINT parent_id = -1;
         std::string name;

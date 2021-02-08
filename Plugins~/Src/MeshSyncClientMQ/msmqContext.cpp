@@ -186,7 +186,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
         }
 
         // extract mesh data
-        parallel_for_each(m_obj_records.begin(), m_obj_records.end(), [this, doc](ObjectRecord& rec) {
+        mu::parallel_for_each(m_obj_records.begin(), m_obj_records.end(), [this, doc](ObjectRecord& rec) {
             rec.dst->path = GetPath(doc, rec.obj);
             ExtractID(rec.dst->path.c_str(), rec.dst->host_id);
 
@@ -275,7 +275,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
             }
 
             // get weights
-            parallel_for_each(m_obj_records.begin(), m_obj_records.end(), [this, &bone_manager, &bone_ids](ObjectRecord& rec) {
+            mu::parallel_for_each(m_obj_records.begin(), m_obj_records.end(), [this, &bone_manager, &bone_ids](ObjectRecord& rec) {
                 auto obj = rec.obj;
                 if (!rec.dst->visibility.visible_in_render)
                     return;
@@ -346,7 +346,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
         }
 
         // gen delta in parallel
-        parallel_for_each(m_morph_records.begin(), m_morph_records.end(), [](auto& kvp) {
+        mu::parallel_for_each(m_morph_records.begin(), m_morph_records.end(), [](auto& kvp) {
             auto& morph_record = kvp.second;
             auto target = kvp.second.target_obj;
             auto base = morph_record.base;
