@@ -585,9 +585,7 @@ std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(MeshSyncClient::Obje
 
 void msmaxContext::kickAsyncExport()
 {
-    for (auto& t : m_async_tasks)
-        t.wait();
-    m_async_tasks.clear();
+    m_asyncTasksController.Wait();
 
     for (auto *t : m_tmp_triobj)
         t->DeleteMe();
@@ -1229,7 +1227,7 @@ ms::TransformPtr msmaxContext::exportMesh(TreeNode& n)
     };
 
     if (m_settings.multithreaded)
-        m_async_tasks.push_back(std::async(std::launch::async, task));
+        m_asyncTasksController.AddTask(std::launch::async, task);
     else
         task();
 

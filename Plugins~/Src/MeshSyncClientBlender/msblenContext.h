@@ -15,6 +15,7 @@
 
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
+#include "MeshSyncClient/AsyncTasksController.h"
 
 class msblenContext;
 
@@ -164,7 +165,8 @@ private:
     std::set<const Object*> m_pending;
     std::map<Bone*, ms::TransformPtr> m_bones;
     std::map<const void*, ObjectRecord> m_obj_records; // key can be object or bone
-    std::vector<std::future<void>> m_async_tasks;
+
+    MeshSyncClient::AsyncTasksController m_asyncTasksController;
 
 #if BLENDER_VERSION < 280
     std::vector<Mesh*> m_tmp_meshes;

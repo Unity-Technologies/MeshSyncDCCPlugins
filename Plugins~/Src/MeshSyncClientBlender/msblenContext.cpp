@@ -526,7 +526,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
             };
             if (m_settings.multithreaded)
                 // deferred to execute after extracting src mesh data is completed
-                m_async_tasks.push_back(std::async(std::launch::deferred, do_merge));
+                m_asyncTasksController.AddTask(std::launch::deferred, do_merge);
             else
                 do_merge();
         }
@@ -684,7 +684,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
         };
 
         if (m_settings.multithreaded)
-            m_async_tasks.push_back(std::async(std::launch::async, task));
+            m_asyncTasksController.AddTask(std::launch::async, task);
         else
             task();
     }
@@ -1539,9 +1539,7 @@ void msblenContext::flushPendingList() {
 
 void msblenContext::kickAsyncExport()
 {
-    for (std::vector<std::future<void>>::value_type& t : m_async_tasks)
-        t.wait();
-    m_async_tasks.clear();
+    m_asyncTasksController.Wait();
 
     // clear baked meshes
 #if BLENDER_VERSION < 280
