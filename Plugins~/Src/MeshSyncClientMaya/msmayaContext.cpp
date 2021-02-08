@@ -10,6 +10,7 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 #include "MeshSyncClient/SettingsUtility.h"
+#include "MeshSyncClient/SceneCacheUtility.h"
 
 
 bool DAGNode::isInstanced() const
@@ -636,7 +637,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(path.c_str(), oscs)) {
+    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }

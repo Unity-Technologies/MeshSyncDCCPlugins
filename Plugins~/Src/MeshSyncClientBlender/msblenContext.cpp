@@ -12,6 +12,7 @@
 
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
+#include "MeshSyncClient/SceneCacheUtility.h"
 
 
 #ifdef mscDebug
@@ -1462,7 +1463,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
 
-    if (!m_cache_writer.open(path.c_str(), oscs)) {
+    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }

@@ -8,6 +8,7 @@
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSyncClient/FrameRange.h"
 #include "MeshSyncClient/SettingsUtility.h"
+#include "MeshSyncClient/SceneCacheUtility.h"
 
 void msmodoContext::TreeNode::clearState()
 {
@@ -457,11 +458,10 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
     const ModoSyncSettings settings_old = m_settings;
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
     const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
 
-    if (!m_cache_writer.open(path.c_str(), oscs)) {
+    if (!m_cache_writer.open(SceneCacheUtility::BuildFilePath(path).c_str(), oscs)) {
         m_settings = settings_old;
         return false;
     }
