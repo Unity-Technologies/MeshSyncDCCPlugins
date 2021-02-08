@@ -378,7 +378,7 @@ MStatus CmdExportCache::doIt(const MArgList& args_)
 {
     MStatus status;
     MArgParser args(syntax(), args_, &status);
-    auto& settings = msmayaGetCacheSettings();
+    MayaCacheSettings& settings = msmayaGetContext().getCacheSettings();
 
 #define Handle(Name, Value, ...)\
     if (args.isFlagSet(Name)) {\

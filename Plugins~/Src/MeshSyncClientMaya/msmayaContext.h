@@ -238,4 +238,3 @@ private:
 
 #define msmayaGetContext() msmayaContext::getInstance()
 #define msmayaGetSettings() msmayaGetContext().getSettings()
-#define msmayaGetCacheSettings() msmayaGetContext().getCacheSettings()
