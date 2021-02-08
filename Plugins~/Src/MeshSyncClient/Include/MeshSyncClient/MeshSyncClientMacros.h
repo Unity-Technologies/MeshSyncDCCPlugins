@@ -11,3 +11,8 @@
     TypeName(const TypeName&) = delete;      \
     void operator=(const TypeName&) = delete
 
+
+// Create default constructor but disallow assign
+#define DEFAULT_NOASSIGN(TypeName) \
+    TypeName() = default;      \
+    void operator=(const TypeName&) = delete
