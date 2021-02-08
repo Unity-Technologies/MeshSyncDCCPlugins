@@ -1347,7 +1347,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -1385,7 +1385,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         eraseStaleObjects();
     }
 
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -1443,7 +1443,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     // send
     if (!m_animations.empty()) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
         return true;
     }
     return false;
@@ -1523,7 +1523,7 @@ void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1533,11 +1533,11 @@ void msblenContext::flushPendingList() {
         for (auto p : m_pending)
             exportObject(p, false);
         m_pending.clear();
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
     }
 }
 
-void msblenContext::kickAsyncExport()
+void msblenContext::WaitAndKickAsyncExport()
 {
     m_asyncTasksController.Wait();
 

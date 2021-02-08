@@ -573,7 +573,7 @@ bool msmayaContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -605,7 +605,7 @@ bool msmayaContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     if (num_exported > 0 || !m_entity_manager.getDeleted().empty()) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
         return true;
     }
     else {
@@ -620,7 +620,7 @@ bool msmayaContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     m_settings.Validate();
     if (exportAnimations(scope) > 0)
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
     return true;
 }
 
@@ -698,7 +698,7 @@ void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -732,7 +732,7 @@ void msmayaContext::update()
 }
 
 
-void msmayaContext::kickAsyncExport()
+void msmayaContext::WaitAndKickAsyncExport()
 {
     // process parallel extract tasks
     if (!m_extract_tasks.empty()) {

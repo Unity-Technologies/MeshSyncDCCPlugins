@@ -124,7 +124,7 @@ bool msmqContext::sendMaterials(MQDocument doc, bool dirty_all)
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
     exportMaterials(doc);
 
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -396,7 +396,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
 
     m_entity_manager.eraseStaleEntities();
 
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -522,7 +522,7 @@ bool msmqContext::importMeshes(MQDocument doc)
     return true;
 }
 
-void msmqContext::kickAsyncExport()
+void msmqContext::WaitAndKickAsyncExport()
 {
     using Exporter = ms::AsyncSceneExporter;
     auto *exporter = m_settings.recording ? (Exporter*)&m_cache_writer : (Exporter*)&m_send_meshes;

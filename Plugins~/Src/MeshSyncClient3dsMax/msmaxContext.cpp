@@ -289,7 +289,7 @@ bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all
     }
 
     if (num_exported > 0)
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
 
     // cleanup intermediate data
     m_material_records.clear();
@@ -309,7 +309,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 
     // cleanup intermediate data
     m_material_records.clear();
@@ -360,7 +360,7 @@ bool msmaxContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_anim_records.clear();
 
     if (!m_animations.empty())
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
     return true;
 }
 
@@ -483,7 +483,7 @@ void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient
     }
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -583,7 +583,7 @@ std::vector<msmaxContext::TreeNode*> msmaxContext::getNodes(MeshSyncClient::Obje
     return ret;
 }
 
-void msmaxContext::kickAsyncExport()
+void msmaxContext::WaitAndKickAsyncExport()
 {
     m_asyncTasksController.Wait();
 

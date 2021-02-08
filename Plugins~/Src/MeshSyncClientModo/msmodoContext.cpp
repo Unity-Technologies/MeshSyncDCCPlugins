@@ -369,7 +369,7 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     exportMaterials();
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -426,7 +426,7 @@ bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     // send
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
     return true;
 }
 
@@ -437,7 +437,7 @@ bool msmodoContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     m_settings.Validate();
     if (exportAnimations(scope) > 0) {
-        kickAsyncExport();
+        WaitAndKickAsyncExport();
         return true;
     }
     else {
@@ -518,7 +518,7 @@ void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
-    kickAsyncExport();
+    WaitAndKickAsyncExport();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1497,7 +1497,7 @@ void msmodoContext::extractReplicatorAnimationData(TreeNode& n)
     });
 }
 
-void msmodoContext::kickAsyncExport()
+void msmodoContext::WaitAndKickAsyncExport()
 {
     // process parallel tasks
     if (!m_parallel_tasks.empty()) {
