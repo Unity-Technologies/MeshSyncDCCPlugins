@@ -7,11 +7,11 @@
 
 #include "MeshSync/msClient.h"
 #include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"

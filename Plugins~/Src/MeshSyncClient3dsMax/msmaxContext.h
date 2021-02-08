@@ -7,11 +7,11 @@
 #include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
 
 #include "MeshSyncClient/ExportTarget.h"
+#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 
 #include "MaxCacheSettings.h"
 #include "MaxSyncSettings.h"
