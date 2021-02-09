@@ -519,7 +519,8 @@ void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
             exportMaterials();
     }
 
-    for (std::_Vector_const_iterator<std::_Vector_val<std::_Simple_types<CLxUser_Item>>>::value_type n : nodes)
+    //need to use auto. Different type per platform
+    for (auto n : nodes)
         exportObject(n, true);
 
     m_texture_manager.clearDirtyFlags();
