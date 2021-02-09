@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.1-preview] - 2020-02-09
+* feat: log output after exporting scene cache file 
+* fix: automatically add sc extension when exporting SceneCache
+
+
 ## [0.7.0-preview] - 2020-02-03
 * chore: support com.unity.meshsync@0.7.0-preview
 
