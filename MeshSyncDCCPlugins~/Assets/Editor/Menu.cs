@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ public static class Menu {
 
         string fullPath = Path.GetFullPath("Packages/com.unity.meshsync.dcc-plugins/Editor/Plugins~");
 
-        var files = Directory.EnumerateFiles(fullPath, "*.zip", SearchOption.TopDirectoryOnly);
+        IEnumerable<string> files = Directory.EnumerateFiles(fullPath, "*.zip", SearchOption.TopDirectoryOnly);
         foreach(string fileName in files) {
             string[] tokens = fileName.Split('_');
 
