@@ -54,7 +54,7 @@ function(configure_python python_ver_no_dots)
 	  )
         if(WIN32)
             execute_process(WORKING_DIRECTORY "${PYTHON_${python_ver_no_dots}_SRC_ROOT}/PCbuild" 
-                COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64 --pgo
+                COMMAND cmd.exe /c devenv pcbuild.sln /upgrade && build.bat -p x64 
             )
         else()
             execute_process( WORKING_DIRECTORY ${PYTHON_${python_ver_no_dots}_SRC_ROOT}
