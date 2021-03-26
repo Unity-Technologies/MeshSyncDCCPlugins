@@ -278,6 +278,16 @@ namespace blender
         Main* data();
         Scene* scene();
         Depsgraph* evaluated_depsgraph_get();
+        void EvaluateDepsgraph();
     };
+
+    //class BDepsgraph {
+    //public:
+
+    //    MSBLEN_BOILERPLATE2(BDepsgraph, Depsgraph)
+
+    //    void Update();
+    //};
+
 
 } // namespace blender

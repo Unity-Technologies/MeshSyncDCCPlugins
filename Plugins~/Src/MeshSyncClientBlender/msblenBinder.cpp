@@ -62,6 +62,7 @@ StructRNA* BContext::s_type;
 static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
 static FunctionRNA* BContext_evaluated_depsgraph_get;
+static FunctionRNA* BDepsgraph_update;
 
 bool ready()
 {
@@ -207,6 +208,7 @@ void setup(py::object bpy_context)
         else if (match_type("Depsgraph")) {
             each_func{
                 if (match_func("update")) {
+                    BDepsgraph_update = func;
                     logInfo2("Depsgraph::update() found");
                 }
             }
@@ -662,6 +664,12 @@ Depsgraph* BContext::evaluated_depsgraph_get()
 {
     return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
 }
+
+void BContext::EvaluateDepsgraph() {
+    Depsgraph* depsgraph = evaluated_depsgraph_get();
+    call<Depsgraph, void>(depsgraph, BDepsgraph_update);
+}
+
 
 blist_range<Object> BData::objects()
 {

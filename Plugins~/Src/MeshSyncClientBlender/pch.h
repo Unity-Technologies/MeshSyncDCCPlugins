@@ -64,4 +64,5 @@ namespace py = pybind11;
 #include "intern/rna_internal_types.h"
 #include "intern/bpy_rna.h"
 #include "intern/bmesh_structure.h"
+#include "intern/depsgraph.h"
 #pragma warning( pop ) 
