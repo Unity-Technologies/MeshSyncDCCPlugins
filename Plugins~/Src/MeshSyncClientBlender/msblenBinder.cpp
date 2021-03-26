@@ -68,6 +68,19 @@ bool ready()
     return g_context != nullptr;
 }
 
+void logInfo2(const char * format, ...)
+{
+    const int MaxBuf = 2048;
+    char buf[MaxBuf];
+
+    va_list args;
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    puts(buf);
+    va_end(args);
+}
+
+
 // context: bpi.context in python
 void setup(py::object bpy_context)
 {
@@ -194,9 +207,10 @@ void setup(py::object bpy_context)
         else if (match_type("Depsgraph")) {
             each_func{
                 if (match_func("update")) {
-                    muLogInfo("Depsgraph::update() found");
+                    logInfo2("Depsgraph::update() found");
                 }
             }
+            logInfo2("Depsgraph found");
         }
 
     }
@@ -209,6 +223,8 @@ void setup(py::object bpy_context)
 
     // test
     //auto scene = BContext::get().scene();
+    //
+    logInfo2("Logging Done");
 }
 
 template<class R>
