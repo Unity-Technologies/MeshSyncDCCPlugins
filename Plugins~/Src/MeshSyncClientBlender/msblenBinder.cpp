@@ -191,6 +191,14 @@ void setup(py::object bpy_context)
                 if (match_func("evaluated_depsgraph_get")) BContext_evaluated_depsgraph_get = func;
             }
         }
+        else if (match_type("Depsgraph")) {
+            each_func{
+                if (match_func("update")) {
+                    muLogInfo("Depsgraph::update() found");
+                }
+            }
+        }
+
     }
 #undef each_iprop
 #undef each_nprop
