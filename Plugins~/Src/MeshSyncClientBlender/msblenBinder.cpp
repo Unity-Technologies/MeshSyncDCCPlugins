@@ -356,9 +356,17 @@ static inline int get_int(Self *self, PropertyRNA *prop)
     PointerRNA ptr;
 	ptr.data = self;
 	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
-	
-    return ((IntPropertyRNA*)prop)->get(&ptr);
+    return reinterpret_cast<IntPropertyRNA*>(prop)->get(&ptr);
 }
+template<typename Self>
+static inline void SetInt(Self *self, PropertyRNA *prop, const int value)
+{
+    PointerRNA ptr;
+    ptr.data = self;
+    PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+    reinterpret_cast<IntPropertyRNA*>(prop)->set(&ptr, value);
+}
+
 template<typename Self>
 static inline float get_float(Self *self, PropertyRNA *prop)
 {
@@ -598,7 +606,14 @@ float BCamera::shift_y() const { return get_float(m_ptr, BCamera_shift_y); }
 int BScene::fps() { return m_ptr->r.frs_sec; }
 int BScene::frame_start() { return get_int(m_ptr, BScene_frame_start); }
 int BScene::frame_end() { return get_int(m_ptr, BScene_frame_end); }
-int BScene::frame_current() { return get_int(m_ptr, BScene_frame_current); }
+
+
+int BScene::GetCurrentFrame() const {
+    return get_int(m_ptr, BScene_frame_current);
+}
+void BScene::SetCurrentFrame(const int frame) {
+    SetInt(m_ptr, BScene_frame_current, frame);
+}
 
 void BScene::frame_set(int f, float subf)
 {

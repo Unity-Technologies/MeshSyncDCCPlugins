@@ -213,7 +213,8 @@ namespace blender
         int fps();
         int frame_start();
         int frame_end();
-        int frame_current();
+        int GetCurrentFrame() const;
+        void SetCurrentFrame(int frame) ;
         void frame_set(int f, float subf = 0.0f);
 
 #if BLENDER_VERSION < 280

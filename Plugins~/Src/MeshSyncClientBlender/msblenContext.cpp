@@ -1413,7 +1413,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     // advance frame and record animations
     {
-        const int frame_current = scene.frame_current();
+        const int frame_current = scene.GetCurrentFrame();
         const int frame_start = scene.frame_start();
         const int frame_end = scene.frame_end();
         const int interval = frame_step;
@@ -1479,7 +1479,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         m_anim_time = 0.0f;
         DoExportSceneCache(0, materialRange, nodes);
     } else {
-        const int prevFrame = scene.frame_current();
+        const int prevFrame = scene.GetCurrentFrame();
         const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
         int frameStart = cache_settings.frame_begin;
         int frameEnd = cache_settings.frame_end;
