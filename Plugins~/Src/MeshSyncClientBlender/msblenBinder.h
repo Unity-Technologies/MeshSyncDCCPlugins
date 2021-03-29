@@ -23,21 +23,6 @@ namespace blender
 
     struct ListHeader { ListHeader *next, *prev; };
 
-	//Data structure change in Blender 2.81: https://developer.blender.org/D5558
-#if BLENDER_VERSION >= 281
-	#define PointerRNA_OWNER_ID(ptr) (ptr.owner_id)
-	#define PointerRNA_OWNER_ID_CAST(obj) reinterpret_cast<ID*>(obj)
-#else 
-	#define PointerRNA_OWNER_ID(ptr) (ptr.id.data)
-	#define PointerRNA_OWNER_ID_CAST(obj) reinterpret_cast<void*>(obj)
-#endif
-
-	template<typename T> inline T rna_data(py::object p) { 
-		return reinterpret_cast<T>(PointerRNA_OWNER_ID( reinterpret_cast<BPy_StructRNA*>(p.ptr())->ptr) ); 
-	}
-	template<typename T> inline void rna_data(py::object p, T& v) { 
-		v = reinterpret_cast<T>(PointerRNA_OWNER_ID( reinterpret_cast<BPy_StructRNA*>(p.ptr())->ptr) );
-	}
 	template<typename T> inline T rna_sdata(py::object p) { 
 		return reinterpret_cast<T>( reinterpret_cast<BPy_StructRNA*>(p.ptr())->ptr.data );
 	}
