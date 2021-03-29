@@ -33,10 +33,5 @@ Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
     return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
 }
 
-void BlenderPyContext::EvaluateDepsgraph() {
-    Depsgraph* depsgraph = evaluated_depsgraph_get();
-    call<Depsgraph, void>(depsgraph, BDepsgraph_update);
-}
-
 
 } // namespace blender
