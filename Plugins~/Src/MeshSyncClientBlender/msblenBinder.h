@@ -268,12 +268,12 @@ namespace blender
         void remove(Mesh *v);
     };
 
-    class BContext
+    class BlenderPyContext
     {
     public:
-        MSBLEN_BOILERPLATE2(BContext, bContext)
+        MSBLEN_BOILERPLATE2(BlenderPyContext, bContext)
 
-        static BContext get();
+        static BlenderPyContext get();
         Main* data();
         Scene* scene();
         Depsgraph* evaluated_depsgraph_get();

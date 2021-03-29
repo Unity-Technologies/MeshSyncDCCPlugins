@@ -58,7 +58,7 @@ StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-StructRNA* BContext::s_type;
+StructRNA* BlenderPyContext::s_type;
 static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
 static FunctionRNA* BContext_evaluated_depsgraph_get;
@@ -182,7 +182,7 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Context")) {
-            BContext::s_type = type;
+            BlenderPyContext::s_type = type;
             each_prop{
                 if (match_prop("blend_data")) BContext_blend_data = prop;
                 if (match_prop("scene")) BContext_scene = prop;
@@ -200,7 +200,7 @@ void setup(py::object bpy_context)
 #undef match_type
 
     // test
-    //auto scene = BContext::get().scene();
+    //auto scene = BlenderPyContext::get().scene();
 }
 
 template<class R>
@@ -456,7 +456,7 @@ bool blender::BObject::is_selected() const
 #if BLENDER_VERSION < 280
 Mesh* BObject::to_mesh() const
 {
-    auto scene = blender::BContext::get().scene();
+    auto scene = blender::BlenderPyContext::get().scene();
     return call<Object, Mesh*, Scene*, int, int, int, int>(m_ptr, BObject_to_mesh, scene, 1, 1, 1, 0);
 }
 #else
@@ -606,20 +606,20 @@ void BScene::frame_set(int f, float subf)
 }
 
 
-BContext BContext::get()
+BlenderPyContext BlenderPyContext::get()
 {
-    return BContext(g_context);
+    return BlenderPyContext(g_context);
 }
-Main* BContext::data()
+Main* BlenderPyContext::data()
 {
     return (Main*)get_pointer(m_ptr, BContext_blend_data);
 }
-Scene* BContext::scene()
+Scene* BlenderPyContext::scene()
 {
     return (Scene*)get_pointer(m_ptr, BContext_scene);
 }
 
-Depsgraph* BContext::evaluated_depsgraph_get()
+Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
 {
     return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
 }
