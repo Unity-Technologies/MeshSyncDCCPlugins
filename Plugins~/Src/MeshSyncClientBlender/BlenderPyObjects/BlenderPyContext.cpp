@@ -7,9 +7,9 @@ namespace blender {
 extern bContext *g_context;
 
 StructRNA* BlenderPyContext::s_type;
-static PropertyRNA* BContext_blend_data = nullptr;
-static PropertyRNA* BContext_scene = nullptr;
-static FunctionRNA* BContext_evaluated_depsgraph_get = nullptr;
+PropertyRNA* BContext_blend_data = nullptr;
+PropertyRNA* BContext_scene = nullptr;
+FunctionRNA* BContext_evaluated_depsgraph_get = nullptr;
 
 
 BlenderPyContext BlenderPyContext::get()
