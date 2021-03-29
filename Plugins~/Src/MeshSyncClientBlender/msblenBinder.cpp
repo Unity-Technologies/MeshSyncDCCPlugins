@@ -10,7 +10,7 @@
 namespace blender
 {
 
-static bContext *g_context;
+bContext *g_context;
 
 
 StructRNA* BID::s_type;
