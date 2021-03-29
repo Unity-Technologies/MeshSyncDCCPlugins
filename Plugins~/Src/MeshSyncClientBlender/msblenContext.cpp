@@ -15,6 +15,7 @@
 #include "MeshSyncClient/SceneCacheUtility.h"
 
 #include "BlenderPyObjects/BlenderPyContext.h" //BlenderPyContext
+#include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 
 
 
