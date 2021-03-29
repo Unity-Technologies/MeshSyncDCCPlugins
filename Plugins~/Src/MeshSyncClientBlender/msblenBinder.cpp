@@ -5,10 +5,13 @@
 
 #include "MeshUtils/muLog.h"
 
+#include "BlenderPyObjects/BlenderPyContext.h"
+#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
+
 namespace blender
 {
 
-static bContext *g_context;
+bContext *g_context;
 
 
 StructRNA* BID::s_type;
@@ -58,10 +61,9 @@ StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-StructRNA* BContext::s_type;
-static PropertyRNA* BContext_blend_data;
-static PropertyRNA* BContext_scene;
-static FunctionRNA* BContext_evaluated_depsgraph_get;
+extern PropertyRNA* BlenderPyContext_blend_data;
+extern PropertyRNA* BlenderPyContext_scene;
+extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 
 bool ready()
 {
@@ -182,13 +184,13 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Context")) {
-            BContext::s_type = type;
+            BlenderPyContext::s_type = type;
             each_prop{
-                if (match_prop("blend_data")) BContext_blend_data = prop;
-                if (match_prop("scene")) BContext_scene = prop;
+                if (match_prop("blend_data")) BlenderPyContext_blend_data = prop;
+                if (match_prop("scene")) BlenderPyContext_scene = prop;
             }
             each_func{
-                if (match_func("evaluated_depsgraph_get")) BContext_evaluated_depsgraph_get = func;
+                if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
             }
         }
     }
@@ -200,146 +202,11 @@ void setup(py::object bpy_context)
 #undef match_type
 
     // test
-    //auto scene = BContext::get().scene();
+    //auto scene = BlenderPyContext::get().scene();
 }
 
-template<class R>
-struct ret_holder
-{
-    using ret_t = R & ;
-    R r;
-    R& get() { return r; }
-};
-template<>
-struct ret_holder<void>
-{
-    using ret_t = void;
-    void get() {}
-};
-
-#pragma pack(push, 1)
-template<typename R>
-struct param_holder0
-{
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-template<typename R, typename A1>
-struct param_holder1
-{
-    A1 a1;
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-template<typename R, typename A1, typename A2>
-struct param_holder2
-{
-    A1 a1; A2 a2;
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-template<typename R, typename A1, typename A2, typename A3>
-struct param_holder3
-{
-    A1 a1; A2 a2; A3 a3;
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-template<typename R, typename A1, typename A2, typename A3, typename A4>
-struct param_holder4
-{
-    A1 a1; A2 a2; A3 a3; A4 a4;
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-template<typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
-struct param_holder5
-{
-    A1 a1; A2 a2; A3 a3; A4 a4; A5 a5;
-    ret_holder<R> ret;
-    typename ret_holder<R>::ret_t get() { return ret.get(); }
-} msPacked;
-#pragma pack(pop)
 
 
-template<typename T, typename R>
-R call(T *self, FunctionRNA *f)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder0<R> params;
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
-template<typename T, typename R, typename A1>
-R call(T *self, FunctionRNA *f, const A1& a1)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder1<R, A1> params = { a1 };
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
-template<typename T, typename R, typename A1, typename A2>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder2<R, A1, A2> params = { a1, a2 };
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
-template<typename T, typename R, typename A1, typename A2, typename A3>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder3<R, A1, A2, A3> params = { a1, a2, a3 };
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
-template<typename T, typename R, typename A1, typename A2, typename A3, typename A4>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder4<R, A1, A2, A3, A4> params = { a1, a2, a3, a4 };
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
-template<typename T, typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
-{
-    PointerRNA ptr;
-    ptr.data = self;
-
-    param_holder5<R, A1, A2, A3, A4, A5> params = { a1, a2, a3, a4, a5 };
-    ParameterList param_list;
-    param_list.data = &params;
-
-    f->call(g_context, nullptr, &ptr, &param_list);
-    return params.get();
-}
 
 template<typename Self>
 static inline bool get_bool(Self *self, PropertyRNA *prop)
@@ -377,17 +244,6 @@ static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 
     ((FloatPropertyRNA*)prop)->getarray(&ptr, dst);
 }
-template<typename Self>
-static inline void* get_pointer(Self *self, PropertyRNA *prop)
-{
-    PointerRNA ptr;
-	ptr.data = self;
-	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
-	
-    PointerRNA ret = ((PointerPropertyRNA*)prop)->get(&ptr);
-    return ret.data;
-}
-
 
 
 const char *BID::name() const { return m_ptr->name + 2; }
@@ -456,7 +312,7 @@ bool blender::BObject::is_selected() const
 #if BLENDER_VERSION < 280
 Mesh* BObject::to_mesh() const
 {
-    auto scene = blender::BContext::get().scene();
+    auto scene = blender::BlenderPyContext::get().scene();
     return call<Object, Mesh*, Scene*, int, int, int, int>(m_ptr, BObject_to_mesh, scene, 1, 1, 1, 0);
 }
 #else
@@ -605,24 +461,6 @@ void BScene::frame_set(int f, float subf)
     call<Scene, void, int, float>(m_ptr, BScene_frame_set, f, subf);
 }
 
-
-BContext BContext::get()
-{
-    return BContext(g_context);
-}
-Main* BContext::data()
-{
-    return (Main*)get_pointer(m_ptr, BContext_blend_data);
-}
-Scene* BContext::scene()
-{
-    return (Scene*)get_pointer(m_ptr, BContext_scene);
-}
-
-Depsgraph* BContext::evaluated_depsgraph_get()
-{
-    return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
-}
 
 blist_range<Object> BData::objects()
 {
