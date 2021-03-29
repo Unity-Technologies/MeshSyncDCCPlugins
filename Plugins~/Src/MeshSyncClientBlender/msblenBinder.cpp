@@ -63,6 +63,7 @@ static FunctionRNA* BlendDataMeshes_remove;
 extern PropertyRNA* BlenderPyContext_blend_data;
 extern PropertyRNA* BlenderPyContext_scene;
 extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
+extern FunctionRNA* BlenderPyContext_depsgraph_update;
 
 bool ready()
 {
@@ -190,6 +191,13 @@ void setup(py::object bpy_context)
             }
             each_func{
                 if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
+            }
+        }
+        else if (match_type("Depsgraph")) {
+            each_func{
+                if (match_func("update")) {
+                    BlenderPyContext_depsgraph_update = func;
+                }
             }
         }
     }

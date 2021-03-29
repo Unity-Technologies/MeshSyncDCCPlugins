@@ -15,6 +15,9 @@ namespace blender
         Main* data();
         Scene* scene();
         Depsgraph* evaluated_depsgraph_get();
+
+        static void EvaluateDepsgraph(Depsgraph* depsgraph);
+
     };
 
 } // namespace blender
