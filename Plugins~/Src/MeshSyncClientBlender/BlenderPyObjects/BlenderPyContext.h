@@ -12,12 +12,12 @@ struct Depsgraph;
 namespace blender
 {
 
-    class PyContext
+    class BlenderPyContext
     {
     public:
-        MSBLEN_BOILERPLATE2(PyContext, bContext)
+        MSBLEN_BOILERPLATE2(BlenderPyContext, bContext)
 
-        static PyContext get();
+        static BlenderPyContext get();
         Main* data();
         Scene* scene();
         Depsgraph* evaluated_depsgraph_get();
