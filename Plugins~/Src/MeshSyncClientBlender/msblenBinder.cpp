@@ -470,24 +470,6 @@ void BScene::frame_set(int f, float subf)
 }
 
 
-BlenderPyContext BlenderPyContext::get()
-{
-    return BlenderPyContext(g_context);
-}
-Main* BlenderPyContext::data()
-{
-    return (Main*)get_pointer(m_ptr, BContext_blend_data);
-}
-Scene* BlenderPyContext::scene()
-{
-    return (Scene*)get_pointer(m_ptr, BContext_scene);
-}
-
-Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
-{
-    return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
-}
-
 blist_range<Object> BData::objects()
 {
 #if BLENDER_VERSION < 280
