@@ -14,10 +14,9 @@ namespace blender
 bContext *g_context;
 
 
-StructRNA* BID::s_type;
-static PropertyRNA* BID_is_updated;
-static PropertyRNA* BID_is_updated_data;
-static FunctionRNA* BID_evaluated_get;
+extern PropertyRNA* BID_is_updated;
+extern PropertyRNA* BID_is_updated_data;
+extern FunctionRNA* BID_evaluated_get;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -243,31 +242,6 @@ static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
 
     ((FloatPropertyRNA*)prop)->getarray(&ptr, dst);
-}
-
-
-const char *BID::name() const { return m_ptr->name + 2; }
-bool BID::is_updated() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated);
-#else
-    return true;
-#endif
-
-}
-bool BID::is_updated_data() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated_data);
-#else
-    return true;
-#endif
-}
-
-ID* blender::BID::evaluated_get(Depsgraph* depsgraph)
-{
-    return call<ID, ID*, Depsgraph*>(m_ptr, BID_evaluated_get, depsgraph);
 }
 
 
