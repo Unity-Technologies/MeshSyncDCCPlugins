@@ -1494,8 +1494,16 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         }
 
         // record
+        bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+        Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
         int sceneIndex = 0;
         for (int f = frameStart; f <= frameEnd; f += frameStep) {
+
+            //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
+            scene.SetCurrentFrame(f);
+            pyContext.EvaluateDepsgraph(depsGraph);
+
             scene.frame_set(f);
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
