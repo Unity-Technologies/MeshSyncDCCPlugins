@@ -2,6 +2,8 @@
 
 #include "msblenMacros.h"
 #include "MeshUtils/muMath.h" //mu::float3
+#include "BlenderPyObjects/BlenderPyID.h" //BlenderPyID
+
 
 #if BLENDER_VERSION < 280
 using Collection = Group;
@@ -81,23 +83,11 @@ namespace blender
     template<typename T> barray_range<T> array_range(T *t, size_t s) { return barray_range<T>(t, s); }
 
 
-
-    class BID
-    {
-    public:
-        MSBLEN_BOILERPLATE(ID)
-
-        const char *name() const;
-        bool is_updated() const;
-        bool is_updated_data() const;
-        ID* evaluated_get(Depsgraph *depsgraph);
-    };
-
     class BObject
     {
     public:
         MSBLEN_BOILERPLATE(Object)
-        MSBLEN_COMPATIBLE(BID)
+        MSBLEN_COMPATIBLE(BlenderPyID)
 
         blist_range<ModifierData> modifiers();
         blist_range<bDeformGroup> deform_groups();
@@ -120,7 +110,7 @@ namespace blender
     class BMesh {
     public:
         MSBLEN_BOILERPLATE(Mesh)
-        MSBLEN_COMPATIBLE(BID)
+        MSBLEN_COMPATIBLE(BlenderPyID)
 
         barray_range<MLoop> indices();
         barray_range<MEdge> edges();
@@ -158,7 +148,7 @@ namespace blender
     {
     public:
         MSBLEN_BOILERPLATE(Material)
-        MSBLEN_COMPATIBLE(BID)
+        MSBLEN_COMPATIBLE(BlenderPyID)
 
         const char *name() const;
         const mu::float3& color() const;
@@ -170,7 +160,7 @@ namespace blender
     {
     public:
         MSBLEN_BOILERPLATE(Camera)
-        MSBLEN_COMPATIBLE(BID)
+        MSBLEN_COMPATIBLE(BlenderPyID)
 
         float clip_start() const;
         float clip_end() const;
@@ -189,11 +179,11 @@ namespace blender
         float shift_y() const; // in percent
     };
 
-    class BScene
+    class BlenderPyScene
     {
     public:
-        MSBLEN_BOILERPLATE(Scene)
-        MSBLEN_COMPATIBLE(BID)
+        MSBLEN_BOILERPLATE2(BlenderPyScene, Scene)
+        MSBLEN_COMPATIBLE(BlenderPyID)
 
         int fps();
         int frame_start();

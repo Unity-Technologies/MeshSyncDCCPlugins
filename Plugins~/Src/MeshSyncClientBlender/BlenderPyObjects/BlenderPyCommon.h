@@ -16,6 +16,17 @@ static inline void* get_pointer(Self *self, PropertyRNA *prop)
     return ret.data;
 }
 
+template<typename Self>
+static inline int get_int(Self *self, PropertyRNA *prop)
+{
+    PointerRNA ptr;
+    ptr.data = self;
+    PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+
+    return ((IntPropertyRNA*)prop)->get(&ptr);
+}
+
+
 //----------------------------------------------------------------------------------------------------------------------
 
 template<class R>

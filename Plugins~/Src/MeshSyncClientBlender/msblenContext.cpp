@@ -94,7 +94,7 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<Object*> ret;
 
-    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     if (scope == MeshSyncClient::ObjectScope::All) {
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
@@ -1372,7 +1372,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
+        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BID bid = bl::BID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1400,7 +1400,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1457,7 +1457,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings) {
     using namespace MeshSyncClient;
 
-    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     const float frameRate = static_cast<float>(scene.fps());
 
     const BlenderSyncSettings settings_old = m_settings;

@@ -14,10 +14,9 @@ namespace blender
 bContext *g_context;
 
 
-StructRNA* BID::s_type;
-static PropertyRNA* BID_is_updated;
-static PropertyRNA* BID_is_updated_data;
-static FunctionRNA* BID_evaluated_get;
+extern PropertyRNA* BlenderPyID_is_updated;
+extern PropertyRNA* BlenderPyID_is_updated_data;
+extern FunctionRNA* BlenderPyID_evaluated_get;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -51,11 +50,10 @@ static PropertyRNA* BCamera_sensor_height;
 static PropertyRNA* BCamera_shift_x;
 static PropertyRNA* BCamera_shift_y;
 
-StructRNA* BScene::s_type;
-static PropertyRNA* BScene_frame_start;
-static PropertyRNA* BScene_frame_end;
-static PropertyRNA* BScene_frame_current;
-static FunctionRNA* BScene_frame_set;
+extern PropertyRNA* BScene_frame_start;
+extern PropertyRNA* BScene_frame_end;
+extern PropertyRNA* BScene_frame_current;
+extern FunctionRNA* BScene_frame_set;
 
 StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
@@ -96,13 +94,13 @@ void setup(py::object bpy_context)
 
     for (auto *type : list_range((StructRNA*)first_type)) {
         if (match_type("ID")) {
-            BID::s_type = type;
+            BlenderPyID::s_type = type;
             each_prop{
-                if (match_prop("is_updated")) BID_is_updated = prop;
-                if (match_prop("is_updated_data")) BID_is_updated_data = prop;
+                if (match_prop("is_updated")) BlenderPyID_is_updated = prop;
+                if (match_prop("is_updated_data")) BlenderPyID_is_updated_data = prop;
             }
             each_func {
-                if (match_func("evaluated_get")) BID_evaluated_get = func;
+                if (match_func("evaluated_get")) BlenderPyID_evaluated_get = func;
             }
         }
         else if (match_type("Object")) {
@@ -160,7 +158,7 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Scene")) {
-            BScene::s_type = type;
+            BlenderPyScene::s_type = type;
             each_prop{
                 if (match_prop("frame_start")) BScene_frame_start = prop;
                 if (match_prop("frame_end")) BScene_frame_end = prop;
@@ -218,15 +216,6 @@ static inline bool get_bool(Self *self, PropertyRNA *prop)
     return ((BoolPropertyRNA*)prop)->get(&ptr) != 0;
 }
 template<typename Self>
-static inline int get_int(Self *self, PropertyRNA *prop)
-{
-    PointerRNA ptr;
-	ptr.data = self;
-	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
-	
-    return ((IntPropertyRNA*)prop)->get(&ptr);
-}
-template<typename Self>
 static inline float get_float(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
@@ -246,32 +235,7 @@ static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 }
 
 
-const char *BID::name() const { return m_ptr->name + 2; }
-bool BID::is_updated() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated);
-#else
-    return true;
-#endif
-
-}
-bool BID::is_updated_data() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated_data);
-#else
-    return true;
-#endif
-}
-
-ID* blender::BID::evaluated_get(Depsgraph* depsgraph)
-{
-    return call<ID, ID*, Depsgraph*>(m_ptr, BID_evaluated_get, depsgraph);
-}
-
-
-const char *BObject::name() const { return ((BID)*this).name(); }
+const char *BObject::name() const { return ((BlenderPyID)*this).name(); }
 void* BObject::data() { return m_ptr->data; }
 
 mu::float4x4 BObject::matrix_local() const
@@ -450,17 +414,6 @@ float BCamera::sensor_width() const { return get_float(m_ptr, BCamera_sensor_wid
 float BCamera::sensor_height() const { return get_float(m_ptr, BCamera_sensor_height); }
 float BCamera::shift_x() const { return get_float(m_ptr, BCamera_shift_x); }
 float BCamera::shift_y() const { return get_float(m_ptr, BCamera_shift_y); }
-
-int BScene::fps() { return m_ptr->r.frs_sec; }
-int BScene::frame_start() { return get_int(m_ptr, BScene_frame_start); }
-int BScene::frame_end() { return get_int(m_ptr, BScene_frame_end); }
-int BScene::frame_current() { return get_int(m_ptr, BScene_frame_current); }
-
-void BScene::frame_set(int f, float subf)
-{
-    call<Scene, void, int, float>(m_ptr, BScene_frame_set, f, subf);
-}
-
 
 blist_range<Object> BData::objects()
 {
