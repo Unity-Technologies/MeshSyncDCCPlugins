@@ -1,6 +1,7 @@
 #pragma once
 
 #include "msblenMacros.h"
+#include "BlenderPyObjects/BlenderPyCommon.h" //rna_data
 #include "MeshUtils/muMath.h" //mu::float3
 
 #if BLENDER_VERSION < 280

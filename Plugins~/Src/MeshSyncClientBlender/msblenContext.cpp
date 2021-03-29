@@ -14,6 +14,7 @@
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
+#include "BlenderPyObjects/BlenderPyContext.h"
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -91,7 +92,7 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
 {
     std::vector<Object*> ret;
 
-    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
     if (scope == MeshSyncClient::ObjectScope::All) {
         scene.each_objects([&](Object *obj) {
             ret.push_back(obj);
@@ -101,7 +102,7 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
             ret.push_back(obj);
         });
     } else if (scope == MeshSyncClient::ObjectScope::Updated) {
-        bl::BData bpy_data = bl::BData(bl::BContext::get().data());
+        bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
                 const bl::BID bid = bl::BID(obj);
@@ -141,7 +142,7 @@ void msblenContext::exportMaterials()
         m_material_manager.add(dst);
     }
 
-    bl::BData bpy_data = bl::BData(bl::BContext::get().data());
+    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
     for (struct Material* mat : bpy_data.materials()) {
         std::shared_ptr<ms::Material> ret = ms::Material::create();
         ret->name = get_name(mat);
@@ -653,7 +654,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
         if (need_convert) {
 #if BLENDER_VERSION >= 280
             if (m_settings.BakeModifiers ) {
-                Depsgraph* depsgraph = bl::BContext::get().evaluated_depsgraph_get();
+                Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BID(bobj).evaluated_get(depsgraph);
             }
 #endif
@@ -1365,11 +1366,11 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         exportMaterials();
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
-        bl::BData bpy_data = bl::BData(bl::BContext::get().data());
+        bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BScene scene = bl::BScene(bl::BContext::get().scene());
+        bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BID bid = bl::BID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1397,7 +1398,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1454,7 +1455,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings) {
     using namespace MeshSyncClient;
 
-    bl::BScene scene = bl::BScene(bl::BContext::get().scene());
+    bl::BScene scene = bl::BScene(bl::BlenderPyContext::get().scene());
     const float frameRate = static_cast<float>(scene.fps());
 
     const BlenderSyncSettings settings_old = m_settings;
@@ -1493,7 +1494,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         for (int f = frameStart; f <= frameEnd; f += frameStep) {
             //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
             scene.SetCurrentFrame(f);
-            bl::BContext::get().EvaluateDepsgraph();
+            bl::BlenderPyContext::get().EvaluateDepsgraph();
 
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
             DoExportSceneCache(sceneIndex, materialRange, nodes);
