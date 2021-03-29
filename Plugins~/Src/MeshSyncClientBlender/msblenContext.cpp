@@ -1478,6 +1478,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
     const MaterialFrameRange materialRange = cache_settings.material_frame_range;
     const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
+    mu::ScopedTimer timer;
 
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
@@ -1505,7 +1506,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     }
 
     m_asyncTasksController.Wait();
-    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
+    logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
 
     m_settings = settings_old;
     m_cache_writer.close();
