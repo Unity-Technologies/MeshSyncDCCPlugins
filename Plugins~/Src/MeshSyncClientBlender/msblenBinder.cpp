@@ -7,6 +7,7 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
+#include "BlenderPyObjects/BlenderPyScene.h"
 
 namespace blender
 {
