@@ -17,13 +17,22 @@ static inline void* get_pointer(Self *self, PropertyRNA *prop)
 }
 
 template<typename Self>
-static inline int get_int(Self *self, PropertyRNA *prop)
+static inline int GetInt(Self *self, PropertyRNA *prop)
 {
     PointerRNA ptr;
     ptr.data = self;
     PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
 
     return ((IntPropertyRNA*)prop)->get(&ptr);
+}
+
+template<typename Self>
+static inline void SetInt(Self *self, PropertyRNA *prop, const int value)
+{
+    PointerRNA ptr;
+    ptr.data = self;
+    PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
+    reinterpret_cast<IntPropertyRNA*>(prop)->set(&ptr, value);
 }
 
 

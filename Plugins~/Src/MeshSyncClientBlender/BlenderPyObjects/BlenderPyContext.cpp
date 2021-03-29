@@ -10,6 +10,7 @@ StructRNA* BlenderPyContext::s_type;
 PropertyRNA* BlenderPyContext_blend_data = nullptr;
 PropertyRNA* BlenderPyContext_scene = nullptr;
 FunctionRNA* BlenderPyContext_evaluated_depsgraph_get = nullptr;
+FunctionRNA* BlenderPyContext_depsgraph_update = nullptr;
 
 
 BlenderPyContext BlenderPyContext::get()
@@ -29,5 +30,10 @@ Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
 {
     return call<bContext, Depsgraph*>(m_ptr, BlenderPyContext_evaluated_depsgraph_get);
 }
+
+void BlenderPyContext::EvaluateDepsgraph(Depsgraph* depsgraph) {
+    call<Depsgraph, void>(depsgraph, BlenderPyContext_depsgraph_update);
+}
+
 
 } // namespace blender

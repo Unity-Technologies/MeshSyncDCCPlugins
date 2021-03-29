@@ -1417,7 +1417,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     // advance frame and record animations
     {
-        const int frame_current = scene.frame_current();
+        const int frame_current = scene.GetCurrentFrame();
         const int frame_start = scene.frame_start();
         const int frame_end = scene.frame_end();
         const int interval = frame_step;
@@ -1478,12 +1478,13 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
     const MaterialFrameRange materialRange = cache_settings.material_frame_range;
     const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
+    mu::ScopedTimer timer;
 
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
         DoExportSceneCache(0, materialRange, nodes);
     } else {
-        const int prevFrame = scene.frame_current();
+        const int prevFrame = scene.GetCurrentFrame();
         const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
         int frameStart = cache_settings.frame_begin;
         int frameEnd = cache_settings.frame_end;
@@ -1493,9 +1494,16 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         }
 
         // record
+        bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+        Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
         int sceneIndex = 0;
         for (int f = frameStart; f <= frameEnd; f += frameStep) {
-            scene.frame_set(f);
+
+            //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
+            scene.SetCurrentFrame(f);
+            pyContext.EvaluateDepsgraph(depsGraph);
+
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
             DoExportSceneCache(sceneIndex, materialRange, nodes);
@@ -1505,7 +1513,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     }
 
     m_asyncTasksController.Wait();
-    logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
+    logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
 
     m_settings = settings_old;
     m_cache_writer.close();
