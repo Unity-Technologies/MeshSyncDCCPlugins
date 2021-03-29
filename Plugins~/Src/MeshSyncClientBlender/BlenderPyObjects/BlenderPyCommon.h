@@ -3,6 +3,8 @@
 #include "msblenMacros.h" //PointerRNA_OWNER_ID
 #include "MeshSync/msFoundation.h" //msPacked
 
+namespace blender {
+
 template<typename Self>
 static inline void* get_pointer(Self *self, PropertyRNA *prop)
 {
@@ -166,3 +168,5 @@ R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const 
     f->call(blender::g_context, nullptr, &ptr, &param_list);
     return params.get();
 }
+
+} //end namespace blender 
