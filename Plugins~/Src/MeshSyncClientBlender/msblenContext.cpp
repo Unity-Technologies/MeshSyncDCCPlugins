@@ -14,6 +14,9 @@
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
+#include "BlenderPyObjects/BlenderPyContext.h" //BlenderPyContext
+
+
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)

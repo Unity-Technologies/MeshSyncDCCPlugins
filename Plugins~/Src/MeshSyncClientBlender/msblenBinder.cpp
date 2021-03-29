@@ -5,6 +5,9 @@
 
 #include "MeshUtils/muLog.h"
 
+#include "BlenderPyObjects/BlenderPyContext.h"
+#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
+
 namespace blender
 {
 
@@ -241,17 +244,6 @@ static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 
     ((FloatPropertyRNA*)prop)->getarray(&ptr, dst);
 }
-template<typename Self>
-static inline void* get_pointer(Self *self, PropertyRNA *prop)
-{
-    PointerRNA ptr;
-	ptr.data = self;
-	PointerRNA_OWNER_ID(ptr) = PointerRNA_OWNER_ID_CAST(self);
-	
-    PointerRNA ret = ((PointerPropertyRNA*)prop)->get(&ptr);
-    return ret.data;
-}
-
 
 
 const char *BID::name() const { return m_ptr->name + 2; }
