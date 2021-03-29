@@ -1504,7 +1504,6 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
             scene.SetCurrentFrame(f);
             pyContext.EvaluateDepsgraph(depsGraph);
 
-            scene.frame_set(f);
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
             DoExportSceneCache(sceneIndex, materialRange, nodes);
