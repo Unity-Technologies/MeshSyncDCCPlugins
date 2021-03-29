@@ -464,11 +464,8 @@ int BScene::frame_start() { return get_int(m_ptr, BScene_frame_start); }
 int BScene::frame_end() { return get_int(m_ptr, BScene_frame_end); }
 
 
-int BScene::GetCurrentFrame() const {
+int BScene::frame_current() const {
     return get_int(m_ptr, BScene_frame_current);
-}
-void BScene::SetCurrentFrame(const int frame) {
-    SetInt(m_ptr, BScene_frame_current, frame);
 }
 
 void BScene::frame_set(int f, float subf)
