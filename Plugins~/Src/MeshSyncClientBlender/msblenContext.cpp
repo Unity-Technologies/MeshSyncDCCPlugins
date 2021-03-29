@@ -107,7 +107,7 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (bpy_data.objects_is_updated()) {
             scene.each_objects([&](Object *obj) {
-                const bl::BID bid = bl::BID(obj);
+                const bl::BlenderPyID bid = bl::BlenderPyID(obj);
                 if (bid.is_updated() || bid.is_updated_data())
                     ret.push_back(obj);
             });
@@ -657,7 +657,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
 #if BLENDER_VERSION >= 280
             if (m_settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
-                bobj = (Object*)bl::BID(bobj).evaluated_get(depsgraph);
+                bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
 #endif
             if (Mesh *tmp = bobj.to_mesh()) {
@@ -1374,7 +1374,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
         bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
-            bl::BID bid = bl::BID(obj);
+            bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
                 exportObject(obj, false);
             else

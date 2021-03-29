@@ -10,7 +10,7 @@ namespace blender {
 class BlenderPyScene {
 public:
     MSBLEN_BOILERPLATE2(BlenderPyScene, Scene)
-    MSBLEN_COMPATIBLE(BID)
+    MSBLEN_COMPATIBLE(BlenderPyID)
 
     int fps();
     int frame_start();
