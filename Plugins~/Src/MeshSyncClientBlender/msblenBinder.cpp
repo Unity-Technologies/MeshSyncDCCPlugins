@@ -8,7 +8,7 @@
 namespace blender
 {
 
-static bContext *g_context;
+bContext *g_context;
 
 
 StructRNA* BID::s_type;
@@ -58,10 +58,9 @@ StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-StructRNA* BlenderPyContext::s_type;
-static PropertyRNA* BContext_blend_data;
-static PropertyRNA* BContext_scene;
-static FunctionRNA* BContext_evaluated_depsgraph_get;
+extern PropertyRNA* BContext_blend_data;
+extern PropertyRNA* BContext_scene;
+extern FunctionRNA* BContext_evaluated_depsgraph_get;
 
 bool ready()
 {
