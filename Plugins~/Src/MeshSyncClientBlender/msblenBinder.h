@@ -189,10 +189,10 @@ namespace blender
         float shift_y() const; // in percent
     };
 
-    class BScene
+    class BlenderPyScene
     {
     public:
-        MSBLEN_BOILERPLATE(Scene)
+        MSBLEN_BOILERPLATE2(BlenderPyScene, Scene)
         MSBLEN_COMPATIBLE(BID)
 
         int fps();

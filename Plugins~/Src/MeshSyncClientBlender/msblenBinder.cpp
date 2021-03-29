@@ -51,7 +51,7 @@ static PropertyRNA* BCamera_sensor_height;
 static PropertyRNA* BCamera_shift_x;
 static PropertyRNA* BCamera_shift_y;
 
-StructRNA* BScene::s_type;
+StructRNA* BlenderPyScene::s_type;
 static PropertyRNA* BScene_frame_start;
 static PropertyRNA* BScene_frame_end;
 static PropertyRNA* BScene_frame_current;
@@ -160,7 +160,7 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Scene")) {
-            BScene::s_type = type;
+            BlenderPyScene::s_type = type;
             each_prop{
                 if (match_prop("frame_start")) BScene_frame_start = prop;
                 if (match_prop("frame_end")) BScene_frame_end = prop;
@@ -451,12 +451,12 @@ float BCamera::sensor_height() const { return get_float(m_ptr, BCamera_sensor_he
 float BCamera::shift_x() const { return get_float(m_ptr, BCamera_shift_x); }
 float BCamera::shift_y() const { return get_float(m_ptr, BCamera_shift_y); }
 
-int BScene::fps() { return m_ptr->r.frs_sec; }
-int BScene::frame_start() { return get_int(m_ptr, BScene_frame_start); }
-int BScene::frame_end() { return get_int(m_ptr, BScene_frame_end); }
-int BScene::frame_current() { return get_int(m_ptr, BScene_frame_current); }
+int BlenderPyScene::fps() { return m_ptr->r.frs_sec; }
+int BlenderPyScene::frame_start() { return get_int(m_ptr, BScene_frame_start); }
+int BlenderPyScene::frame_end() { return get_int(m_ptr, BScene_frame_end); }
+int BlenderPyScene::frame_current() { return get_int(m_ptr, BScene_frame_current); }
 
-void BScene::frame_set(int f, float subf)
+void BlenderPyScene::frame_set(int f, float subf)
 {
     call<Scene, void, int, float>(m_ptr, BScene_frame_set, f, subf);
 }
