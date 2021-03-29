@@ -7,10 +7,10 @@ namespace blender
 extern bContext *g_context;
 
 StructRNA* BlenderPyScene::s_type;
-PropertyRNA* BlenderPyScene_frame_start;
-PropertyRNA* BlenderPyScene_frame_end;
-PropertyRNA* BlenderPyScene_frame_current;
-FunctionRNA* BlenderPyScene_frame_set;
+PropertyRNA* BlenderPyScene_frame_start = nullptr;
+PropertyRNA* BlenderPyScene_frame_end = nullptr;
+PropertyRNA* BlenderPyScene_frame_current = nullptr;
+FunctionRNA* BlenderPyScene_frame_set = nullptr;
 
 //----------------------------------------------------------------------------------------------------------------------
 
