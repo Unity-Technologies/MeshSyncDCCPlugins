@@ -2,6 +2,8 @@
 
 #include "msblenMacros.h"
 #include "MeshUtils/muMath.h" //mu::float3
+#include "BlenderPyObjects/BlenderPyID.h" //BID
+
 
 #if BLENDER_VERSION < 280
 using Collection = Group;
@@ -80,18 +82,6 @@ namespace blender
     };
     template<typename T> barray_range<T> array_range(T *t, size_t s) { return barray_range<T>(t, s); }
 
-
-
-    class BID
-    {
-    public:
-        MSBLEN_BOILERPLATE(ID)
-
-        const char *name() const;
-        bool is_updated() const;
-        bool is_updated_data() const;
-        ID* evaluated_get(Depsgraph *depsgraph);
-    };
 
     class BObject
     {
