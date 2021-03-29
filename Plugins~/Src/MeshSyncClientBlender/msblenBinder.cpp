@@ -61,9 +61,9 @@ StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-extern PropertyRNA* BContext_blend_data;
-extern PropertyRNA* BContext_scene;
-extern FunctionRNA* BContext_evaluated_depsgraph_get;
+extern PropertyRNA* BlenderPyContext_blend_data;
+extern PropertyRNA* BlenderPyContext_scene;
+extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 
 bool ready()
 {
@@ -186,11 +186,11 @@ void setup(py::object bpy_context)
         else if (match_type("Context")) {
             BlenderPyContext::s_type = type;
             each_prop{
-                if (match_prop("blend_data")) BContext_blend_data = prop;
-                if (match_prop("scene")) BContext_scene = prop;
+                if (match_prop("blend_data")) BlenderPyContext_blend_data = prop;
+                if (match_prop("scene")) BlenderPyContext_scene = prop;
             }
             each_func{
-                if (match_func("evaluated_depsgraph_get")) BContext_evaluated_depsgraph_get = func;
+                if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
             }
         }
     }

@@ -7,9 +7,9 @@ namespace blender {
 extern bContext *g_context;
 
 StructRNA* BlenderPyContext::s_type;
-PropertyRNA* BContext_blend_data = nullptr;
-PropertyRNA* BContext_scene = nullptr;
-FunctionRNA* BContext_evaluated_depsgraph_get = nullptr;
+PropertyRNA* BlenderPyContext_blend_data = nullptr;
+PropertyRNA* BlenderPyContext_scene = nullptr;
+FunctionRNA* BlenderPyContext_evaluated_depsgraph_get = nullptr;
 
 
 BlenderPyContext BlenderPyContext::get()
@@ -18,16 +18,16 @@ BlenderPyContext BlenderPyContext::get()
 }
 Main* BlenderPyContext::data()
 {
-    return (Main*)get_pointer(m_ptr, BContext_blend_data);
+    return (Main*)get_pointer(m_ptr, BlenderPyContext_blend_data);
 }
 Scene* BlenderPyContext::scene()
 {
-    return (Scene*)get_pointer(m_ptr, BContext_scene);
+    return (Scene*)get_pointer(m_ptr, BlenderPyContext_scene);
 }
 
 Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
 {
-    return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
+    return call<bContext, Depsgraph*>(m_ptr, BlenderPyContext_evaluated_depsgraph_get);
 }
 
 } // namespace blender
