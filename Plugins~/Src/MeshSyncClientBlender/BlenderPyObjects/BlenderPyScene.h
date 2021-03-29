@@ -12,9 +12,9 @@ public:
     MSBLEN_BOILERPLATE2(BlenderPyScene, Scene)
     MSBLEN_COMPATIBLE(BlenderPyID)
 
-    int fps();
-    int frame_start();
-    int frame_end();
+    int fps() const ;
+    int frame_start() const ;
+    int frame_end() const ;
     int GetCurrentFrame() const;
     void SetCurrentFrame(int frame);
 
