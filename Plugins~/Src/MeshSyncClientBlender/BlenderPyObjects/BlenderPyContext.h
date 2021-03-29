@@ -1,6 +1,7 @@
 #pragma once
 
 #include <BKE_context.h>
+#include "BlenderPyCommon.h"
 
 #include "msblenMacros.h"
 

@@ -1,7 +1,9 @@
 #include "pch.h"
-#include "msblenContext.h"
+#include "BlenderPyObjects/BlenderPyContext.h"
+
 #include "msblenUtils.h"
 #include "msblenBinder.h"
+
 
 #include "MeshUtils/muLog.h"
 
@@ -58,7 +60,6 @@ StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
 static FunctionRNA* BlendDataMeshes_remove;
 
-StructRNA* BContext::s_type;
 static PropertyRNA* BContext_blend_data;
 static PropertyRNA* BContext_scene;
 static FunctionRNA* BContext_evaluated_depsgraph_get;
@@ -196,7 +197,7 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Context")) {
-            BContext::s_type = type;
+            BlenderPyContext::s_type = type;
             each_prop{
                 if (match_prop("blend_data")) BContext_blend_data = prop;
                 if (match_prop("scene")) BContext_scene = prop;
@@ -497,31 +498,6 @@ void BScene::frame_set(int f, float subf)
 {
     call<Scene, void, int, float>(m_ptr, BScene_frame_set, f, subf);
 }
-
-
-BContext BContext::get()
-{
-    return BContext(g_context);
-}
-Main* BContext::data()
-{
-    return (Main*)get_pointer(m_ptr, BContext_blend_data);
-}
-Scene* BContext::scene()
-{
-    return (Scene*)get_pointer(m_ptr, BContext_scene);
-}
-
-Depsgraph* BContext::evaluated_depsgraph_get()
-{
-    return call<bContext, Depsgraph*>(m_ptr, BContext_evaluated_depsgraph_get);
-}
-
-void BContext::EvaluateDepsgraph() {
-    Depsgraph* depsgraph = evaluated_depsgraph_get();
-    call<Depsgraph, void>(depsgraph, BDepsgraph_update);
-}
-
 
 blist_range<Object> BData::objects()
 {
