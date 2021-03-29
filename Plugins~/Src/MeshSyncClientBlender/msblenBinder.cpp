@@ -14,9 +14,9 @@ namespace blender
 bContext *g_context;
 
 
-extern PropertyRNA* BID_is_updated;
-extern PropertyRNA* BID_is_updated_data;
-extern FunctionRNA* BID_evaluated_get;
+extern PropertyRNA* BlenderPyID_is_updated;
+extern PropertyRNA* BlenderPyID_is_updated_data;
+extern FunctionRNA* BlenderPyID_evaluated_get;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -94,13 +94,13 @@ void setup(py::object bpy_context)
 
     for (auto *type : list_range((StructRNA*)first_type)) {
         if (match_type("ID")) {
-            BID::s_type = type;
+            BlenderPyID::s_type = type;
             each_prop{
-                if (match_prop("is_updated")) BID_is_updated = prop;
-                if (match_prop("is_updated_data")) BID_is_updated_data = prop;
+                if (match_prop("is_updated")) BlenderPyID_is_updated = prop;
+                if (match_prop("is_updated_data")) BlenderPyID_is_updated_data = prop;
             }
             each_func {
-                if (match_func("evaluated_get")) BID_evaluated_get = func;
+                if (match_func("evaluated_get")) BlenderPyID_evaluated_get = func;
             }
         }
         else if (match_type("Object")) {
@@ -235,7 +235,7 @@ static inline void get_float_array(Self *self, float *dst, PropertyRNA *prop)
 }
 
 
-const char *BObject::name() const { return ((BID)*this).name(); }
+const char *BObject::name() const { return ((BlenderPyID)*this).name(); }
 void* BObject::data() { return m_ptr->data; }
 
 mu::float4x4 BObject::matrix_local() const

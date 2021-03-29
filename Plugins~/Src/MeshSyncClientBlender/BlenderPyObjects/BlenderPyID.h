@@ -8,10 +8,10 @@ struct Depsgraph;
 namespace blender
 {
 
-class BID
+class BlenderPyID
 {
 public:
-    MSBLEN_BOILERPLATE(ID)
+    MSBLEN_BOILERPLATE2(BlenderPyID, ID)
 
     const char *name() const;
     bool is_updated() const;

@@ -9,14 +9,14 @@ namespace blender
 extern bContext *g_context;
 
 
-StructRNA* BID::s_type;
-PropertyRNA* BID_is_updated;
-PropertyRNA* BID_is_updated_data;
-FunctionRNA* BID_evaluated_get;
+StructRNA* BlenderPyID::s_type;
+PropertyRNA* BlenderPyID_is_updated;
+PropertyRNA* BlenderPyID_is_updated_data;
+FunctionRNA* BlenderPyID_evaluated_get;
 
 
-const char *BID::name() const { return m_ptr->name + 2; }
-bool BID::is_updated() const
+const char *BlenderPyID::name() const { return m_ptr->name + 2; }
+bool BlenderPyID::is_updated() const
 {
 #if BLENDER_VERSION < 280
     return get_bool(m_ptr, BID_is_updated);
@@ -25,7 +25,7 @@ bool BID::is_updated() const
 #endif
 
 }
-bool BID::is_updated_data() const
+bool BlenderPyID::is_updated_data() const
 {
 #if BLENDER_VERSION < 280
     return get_bool(m_ptr, BID_is_updated_data);
@@ -34,9 +34,9 @@ bool BID::is_updated_data() const
 #endif
 }
 
-ID* blender::BID::evaluated_get(Depsgraph* depsgraph)
+ID* blender::BlenderPyID::evaluated_get(Depsgraph* depsgraph)
 {
-    return call<ID, ID*, Depsgraph*>(m_ptr, BID_evaluated_get, depsgraph);
+    return call<ID, ID*, Depsgraph*>(m_ptr, BlenderPyID_evaluated_get, depsgraph);
 }
 
 
