@@ -1,7 +1,5 @@
 #pragma once
 
-//#include "pybind11/pytypes.h"
-
 //Data structure change in Blender 2.81: https://developer.blender.org/D5558
 #if BLENDER_VERSION >= 281
 #define PointerRNA_OWNER_ID(ptr) (ptr.owner_id)
