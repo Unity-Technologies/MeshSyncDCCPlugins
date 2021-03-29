@@ -15,9 +15,13 @@ FunctionRNA* BlenderPyScene_frame_set;
 //----------------------------------------------------------------------------------------------------------------------
 
 int BlenderPyScene::fps() { return m_ptr->r.frs_sec; }
-int BlenderPyScene::frame_start() { return get_int(m_ptr, BlenderPyScene_frame_start); }
-int BlenderPyScene::frame_end() { return get_int(m_ptr, BlenderPyScene_frame_end); }
-int BlenderPyScene::frame_current() { return get_int(m_ptr, BlenderPyScene_frame_current); }
+int BlenderPyScene::frame_start() { return GetInt(m_ptr, BlenderPyScene_frame_start); }
+int BlenderPyScene::frame_end() { return GetInt(m_ptr, BlenderPyScene_frame_end); }
+int BlenderPyScene::GetCurrentFrame() const{ return GetInt(m_ptr, BlenderPyScene_frame_current); }
+
+void BlenderPyScene::SetCurrentFrame(int frame) {
+    SetInt(m_ptr, BlenderPyScene_frame_current, frame);    
+}
 
 void BlenderPyScene::frame_set(int f, float subf)
 {
