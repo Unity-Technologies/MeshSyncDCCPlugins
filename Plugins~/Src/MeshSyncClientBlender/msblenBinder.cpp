@@ -7,6 +7,7 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
+#include "BlenderPyObjects/BlenderPyScene.h"
 
 namespace blender
 {
@@ -50,10 +51,10 @@ static PropertyRNA* BCamera_sensor_height;
 static PropertyRNA* BCamera_shift_x;
 static PropertyRNA* BCamera_shift_y;
 
-extern PropertyRNA* BScene_frame_start;
-extern PropertyRNA* BScene_frame_end;
-extern PropertyRNA* BScene_frame_current;
-extern FunctionRNA* BScene_frame_set;
+extern PropertyRNA* BlenderPyScene_frame_start;
+extern PropertyRNA* BlenderPyScene_frame_end;
+extern PropertyRNA* BlenderPyScene_frame_current;
+extern FunctionRNA* BlenderPyScene_frame_set;
 
 StructRNA* BData::s_type;
 static PropertyRNA* BlendDataObjects_is_updated;
@@ -160,12 +161,12 @@ void setup(py::object bpy_context)
         else if (match_type("Scene")) {
             BlenderPyScene::s_type = type;
             each_prop{
-                if (match_prop("frame_start")) BScene_frame_start = prop;
-                if (match_prop("frame_end")) BScene_frame_end = prop;
-                if (match_prop("frame_current")) BScene_frame_current = prop;
+                if (match_prop("frame_start")) BlenderPyScene_frame_start = prop;
+                if (match_prop("frame_end")) BlenderPyScene_frame_end = prop;
+                if (match_prop("frame_current")) BlenderPyScene_frame_current = prop;
             }
             each_func{
-                if (match_func("frame_set")) BScene_frame_set = func;
+                if (match_func("frame_set")) BlenderPyScene_frame_set = func;
             }
         }
         else if (match_type("BlendData")) {
