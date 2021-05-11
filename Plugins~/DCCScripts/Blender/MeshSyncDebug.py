@@ -16,17 +16,9 @@ class MeshSyncDebugMainPanel(MeshSyncDebugView, bpy.types.Panel):
     bl_label = "MeshSyncDebugView"
 
     def draw(self, context):
-        pass
-       
-
-class MeshSyncDebugUpdateDepsgraphPanel(MeshSyncDebugView, bpy.types.Panel):
-    bl_label = "Update depsgraph"
-    bl_parent_id = "MeshSyncDebugMainPanel"
-
-    def draw(self, context):
-        scene = bpy.context.scene
         layout = self.layout
         layout.operator("object.update_depsgraph", text="Update Depsgraph for each frame")        
+       
         
         
 class UpdateDepsgraph(bpy.types.Operator):
@@ -65,7 +57,6 @@ class UpdateDepsgraph(bpy.types.Operator):
 
 classes = (
     MeshSyncDebugMainPanel,
-    MeshSyncDebugUpdateDepsgraphPanel,
     UpdateDepsgraph,
 )
 
