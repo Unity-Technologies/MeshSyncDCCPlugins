@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Custom Tools",
+    "name": "MeshSync Debug",
     "blender": (2, 91, 2),
     "category": "Object",
 }
@@ -7,27 +7,28 @@ bl_info = {
 import bpy;
 import time;
 
-class ToolView:
+class MeshSyncDebugView:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Tool"
 
-class ToolMainPanel(ToolView, bpy.types.Panel):
-    bl_label = "ToolView"
+class MeshSyncDebugMainPanel(MeshSyncDebugView, bpy.types.Panel):
+    bl_label = "MeshSyncDebugView"
 
     def draw(self, context):
         pass
        
-class MoveXByOnePanel(ToolView, bpy.types.Panel):
-    bl_label = "Test"
-    bl_parent_id = "ToolMainPanel"
+
+class MeshSyncDebugUpdateDepsgraphPanel(MeshSyncDebugView, bpy.types.Panel):
+    bl_label = "Update depsgraph"
+    bl_parent_id = "MeshSyncDebugMainPanel"
 
     def draw(self, context):
         scene = bpy.context.scene
         layout = self.layout
         layout.operator("object.update_depsgraph", text="Update Depsgraph for each frame")        
-
-
+        
+        
 class UpdateDepsgraph(bpy.types.Operator):
     """Update Depsgraph for each frame"""        # tooltip
     bl_idname = "object.update_depsgraph"        # Unique ID
@@ -63,8 +64,8 @@ class UpdateDepsgraph(bpy.types.Operator):
 #----------------------------------------------------------------------------------------------------------------------
 
 classes = (
-    ToolMainPanel,
-    MoveXByOnePanel,
+    MeshSyncDebugMainPanel,
+    MeshSyncDebugUpdateDepsgraphPanel,
     UpdateDepsgraph,
 )
 
