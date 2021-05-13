@@ -31,18 +31,18 @@ Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
     return call<bContext, Depsgraph*>(m_ptr, BlenderPyContext_evaluated_depsgraph_get);
 }
 
-struct HackedDepsGraph {
-    char buffer[1240];
-};
 
 void BlenderPyContext::UpdateDepsgraph(Depsgraph* depsgraph) {
-    HackedDepsGraph* hackedDepsGraph = reinterpret_cast<HackedDepsGraph*>(depsgraph);
-    for (int i=308-35; i<308-35+41;++i) {
-        hackedDepsGraph->buffer[i] = 1;
 
-    }
+    struct DepsGraphInChar {
+        char Buffer[1240];
+    };
 
+    DepsGraphInChar* charGraph = reinterpret_cast<DepsGraphInChar*>(depsgraph);
 
+    //[Note-sin: 2021-5-13] Manually update id_type_updated[INDEX_ID_AC] so that depsgraph update will invoke the callbacks
+    const size_t ID_TYPE_UPDATED_OFFSET = 273;
+    charGraph->Buffer[ID_TYPE_UPDATED_OFFSET + INDEX_ID_AC] = 1;
 
     call<Depsgraph, void>(depsgraph, BlenderPyContext_depsgraph_update);
 }
