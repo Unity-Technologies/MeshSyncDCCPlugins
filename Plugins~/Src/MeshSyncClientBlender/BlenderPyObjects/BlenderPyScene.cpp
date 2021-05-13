@@ -19,8 +19,19 @@ int BlenderPyScene::frame_start() const  { return GetInt(m_ptr, BlenderPyScene_f
 int BlenderPyScene::frame_end() const { return GetInt(m_ptr, BlenderPyScene_frame_end); }
 int BlenderPyScene::GetCurrentFrame() const{ return GetInt(m_ptr, BlenderPyScene_frame_current); }
 
-void BlenderPyScene::SetCurrentFrame(int frame) {
-    SetInt(m_ptr, BlenderPyScene_frame_current, frame);    
+void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
+    SetInt(m_ptr, BlenderPyScene_frame_current, frame);
+
+    struct DepsGraphInChar {
+        char Buffer[1240];
+    };
+
+    //[Note-sin: 2021-5-13] Since we are modifying frame_current directly, and not using frame_set(),
+    //we have to manually update id_type_updated so that depsgraph.update will invoke the handlers: depsgraph_update_pre, etc
+    DepsGraphInChar* charGraph = reinterpret_cast<DepsGraphInChar*>(depsgraph);
+    const size_t ID_TYPE_UPDATED_OFFSET = 273;
+    charGraph->Buffer[ID_TYPE_UPDATED_OFFSET + INDEX_ID_AC] = 1;
+
 }
 
 void BlenderPyScene::frame_set(int f, float subf)
