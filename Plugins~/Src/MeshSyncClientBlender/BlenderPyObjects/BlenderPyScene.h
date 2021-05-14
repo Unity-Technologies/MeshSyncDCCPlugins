@@ -16,7 +16,7 @@ public:
     int frame_start() const ;
     int frame_end() const ;
     int GetCurrentFrame() const;
-    void SetCurrentFrame(int frame);
+    void SetCurrentFrame(int frame, Depsgraph* depsgraph);
 
     void frame_set(int f, float subf = 0.0f);
 
