@@ -29,8 +29,10 @@ void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
     //[Note-sin: 2021-5-13] Since we are modifying frame_current directly, and not using frame_set(),
     //we have to manually update id_type_updated so that depsgraph.update will invoke the handlers: depsgraph_update_pre, etc
     DepsGraphInChar* charGraph = reinterpret_cast<DepsGraphInChar*>(depsgraph);
-    const size_t ID_TYPE_UPDATED_OFFSET = 273;
-    charGraph->Buffer[ID_TYPE_UPDATED_OFFSET + INDEX_ID_AC] = 1;
+
+    //Offset is different between Blender Debug and Release, and maybe different among different Blender versions !
+    const size_t ID_TYPE_UPDATED_OFFSET = 265; 
+    charGraph->Buffer[ID_TYPE_UPDATED_OFFSET + INDEX_ID_SCE] = 1;
 
 }
 
