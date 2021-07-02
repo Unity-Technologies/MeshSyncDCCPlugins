@@ -4,13 +4,9 @@
 #include "MeshUtils/muMath.h" //mu::float3
 #include "BlenderPyObjects/BlenderPyID.h" //BlenderPyID
 
-
-#if BLENDER_VERSION < 280
-using Collection = Group;
-using CollectionObject = GroupObject;
-#else
 struct Depsgraph;
-#endif
+
+}
 
 namespace blender
 {
