@@ -36,7 +36,7 @@ bool BlenderPyID::is_updated_data() const
 
 ID* blender::BlenderPyID::evaluated_get(Depsgraph* depsgraph)
 {
-    return call<ID, ID*, Depsgraph*>(m_ptr, BlenderPyID_evaluated_get, depsgraph);
+    return call<ID, ID*, Depsgraph*>(g_context, m_ptr, BlenderPyID_evaluated_get, depsgraph);
 }
 
 

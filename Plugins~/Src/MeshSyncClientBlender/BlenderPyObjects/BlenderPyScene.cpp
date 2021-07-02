@@ -1,14 +1,11 @@
 #include "pch.h"
 #include "BlenderPyScene.h"
 
-namespace blender {
-    extern bContext *g_context;
-}
-
-//[TODO-sin:2021-7-2] Some functions in this core require access to g_context. 
 #include "BlenderPyCommon.h" //call
 
 namespace blender {
+
+extern bContext *g_context;
 
 StructRNA* BlenderPyScene::s_type;
 PropertyRNA* BlenderPyScene_frame_start = nullptr;
@@ -47,7 +44,7 @@ void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
 
 void BlenderPyScene::frame_set(int f, float subf)
 {
-    call<Scene, void, int, float>(m_ptr, BlenderPyScene_frame_set, f, subf);
+    call<Scene, void, int, float>(g_context, m_ptr, BlenderPyScene_frame_set, f, subf);
 }
 
 
