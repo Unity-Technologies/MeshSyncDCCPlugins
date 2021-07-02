@@ -8,8 +8,8 @@
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
 #include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSync/msIDGenerator.h"
+#include "MeshSync/MeshSyncMacros.h"
 
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -51,7 +51,7 @@ struct MObjectKey
 struct TreeNode;
 
 struct DAGNode {
-    DEFAULT_NOCOPY_NOASSIGN(DAGNode);
+    MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(DAGNode);
     MObject node;
     std::vector<TreeNode*> branches;
     MCallbackId cid = 0;
@@ -71,7 +71,7 @@ struct TransformData
 };
 
 struct TreeNode {
-    DEFAULT_NOCOPY_NOASSIGN(TreeNode);
+    MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(TreeNode);
     DAGNode *trans = nullptr;
     DAGNode *shape = nullptr;
     std::string name;
@@ -139,7 +139,7 @@ public:
 
 private:
     struct TaskRecord {
-        DEFAULT_NOCOPY_NOASSIGN(TaskRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(TaskRecord);
         using task_t = std::function<void()>;
         std::vector<std::tuple<TreeNode*, task_t>> tasks;
 
@@ -149,7 +149,7 @@ private:
     using TaskRecords = std::map<TreeNode*, TaskRecord>;
 
     struct AnimationRecord {
-        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmayaContext::*)(ms::TransformAnimation& dst, TreeNode *n);
 
         TreeNode *tn = nullptr;

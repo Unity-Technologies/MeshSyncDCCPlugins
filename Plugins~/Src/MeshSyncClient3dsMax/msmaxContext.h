@@ -6,10 +6,10 @@
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
 #include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
+#include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/AsyncTasksController.h"
 #include "MeshSyncClient/ExportTarget.h"
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -81,10 +81,10 @@ public:
 
 private:
 
-    NOCOPY_NOASSIGN(msmaxContext);
+    MS_CLASS_NOCOPY_NOASSIGN(msmaxContext);
 
     struct TreeNode {
-        DEFAULT_NOCOPY_NOASSIGN(TreeNode);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(TreeNode);
         int index = 0;
         INode *node = nullptr;
         Object *baseobj = nullptr;
@@ -102,7 +102,7 @@ private:
     };
 
     struct AnimationRecord {
-        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmaxContext::*)(ms::TransformAnimation& dst, TreeNode *n);
         extractor_t extractor = nullptr;
         TreeNode *node = nullptr;
@@ -112,7 +112,7 @@ private:
     };
 
     struct MaterialRecord {
-        DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
         int material_id = 0;
         std::vector<int> submaterial_ids;
     };

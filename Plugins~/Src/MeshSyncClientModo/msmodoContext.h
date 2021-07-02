@@ -5,13 +5,13 @@
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
 #include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSync/msIDGenerator.h"
+#include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
 #include "MeshSyncClient/ObjectScope.h"
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 
 #include "ModoCacheSettings.h"
 #include "ModoSyncSettings.h"
@@ -78,7 +78,7 @@ private:
     using AnimationExtractor = void (msmodoContext::*)(TreeNode& node);
 
     struct TreeNode {
-        DEFAULT_NOCOPY_NOASSIGN(TreeNode);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(TreeNode);
 
         CLxUser_Item item;
 

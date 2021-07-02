@@ -9,8 +9,8 @@
 #include "MeshSync/SceneExporter.h"
 #include "MeshSync/AsyncSceneSender.h"
 #include "MeshSync/SceneCache/SceneCacheWriter.h"
+#include "MeshSync/MeshSyncMacros.h"
 
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -50,7 +50,7 @@ public:
 private:
     // todo
     struct NodeRecord {
-        DEFAULT_NOCOPY_NOASSIGN(NodeRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(NodeRecord);
         NodeRecord *parent = nullptr;
 
         std::string path;
@@ -72,7 +72,7 @@ private:
     // dupli group is a collection of nodes that will be instanced.
     // so, only the path is unique. Object maybe shared by multiple ObjectRecord.
     struct ObjectRecord {
-        DEFAULT_NOCOPY_NOASSIGN(ObjectRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(ObjectRecord);
         //std::vector<NodeRecord*> branches; // todo
 
         std::string path;
@@ -90,7 +90,7 @@ private:
     };
 
     struct AnimationRecord  {
-        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msblenContext::*)(ms::TransformAnimation& dst, void *obj);
 
         void *obj = nullptr;
