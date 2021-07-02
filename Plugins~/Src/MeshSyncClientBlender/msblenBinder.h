@@ -6,8 +6,6 @@
 
 struct Depsgraph;
 
-}
-
 namespace blender
 {
     bool ready();
