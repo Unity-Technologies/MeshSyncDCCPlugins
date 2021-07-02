@@ -524,14 +524,14 @@ bool msmqContext::importMeshes(MQDocument doc)
 
 void msmqContext::WaitAndKickAsyncExport()
 {
-    using Exporter = ms::AsyncSceneExporter;
+    using Exporter = ms::SceneExporter;
     auto *exporter = m_settings.recording ? (Exporter*)&m_cache_writer : (Exporter*)&m_send_meshes;
 
     exporter->on_prepare = [this, exporter]() {
         if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (auto writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
             writer->time = mu::NS2S(m_time - m_cache_settings.time_start);
         }
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string> //[TODO-sin: 2021-2-4] Remove this. This is required temporarily for std::string in ClientSettings
 #include "MeshSync/msClientSettings.h" //ClientSettings
 
 namespace MeshSyncClient {

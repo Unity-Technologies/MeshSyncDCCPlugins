@@ -4,7 +4,8 @@
 #include "MeshSync/SceneGraph/msLight.h"
 #include "msmaxUtils.h"
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
-#include "MeshSync/Utility/msAsyncSceneExporter.h" //AsyncSceneCacheWriter
+#include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
+#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
 
 #include "MeshSyncClient/AsyncTasksController.h"
 #include "MeshSyncClient/ExportTarget.h"
@@ -185,7 +186,7 @@ private:
     ms::MaterialManager m_material_manager;
     ms::EntityManager m_entity_manager;
     ms::AsyncSceneSender m_sender;
-    ms::AsyncSceneCacheWriter m_cache_writer;
+    ms::SceneCacheWriter m_cache_writer;
 
     std::vector<std::function<void()>> m_deferred_calls;
     std::mutex m_mutex;
