@@ -2,6 +2,8 @@
 #include "MeshUtils/MeshUtils.h"
 #include "msblenBinder.h" //Collection
 
+#include "BlenderPyObjects/BlenderPyContext.h" 
+
 std::string get_name(const Material *obj);
 std::string get_name(const Object *obj);
 std::string get_name(const Bone *obj);
