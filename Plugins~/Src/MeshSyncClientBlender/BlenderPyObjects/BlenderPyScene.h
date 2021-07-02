@@ -4,6 +4,7 @@
 #include "msblenMacros.h" //MSBLEN_BOILERPLATE2
 
 #include "BlenderPyID.h" //BID
+#include "../msblenBinder.h" //list_range
 
 namespace blender {
 
