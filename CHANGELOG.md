@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0-preview] - 2020-07-22
+
+* blender: update supported versions. 2.83.16, 2.91.2, 2.92.0, 2.93.1
+* blender: remove support for Blender 2.79 - 2.82 
+* fix: compile errors when building against com.unity.meshsync@0.8.0-preview 
+* opt: optimize SetFrame in Blender plugin
+
 ## [0.7.1-preview] - 2020-02-09
 * feat: log output after exporting scene cache file 
 * fix: automatically add sc extension when exporting SceneCache
