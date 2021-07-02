@@ -7,7 +7,6 @@
 #include "MeshSync/SceneCache/msSceneCacheSettings.h"
 #include "MeshSync/SceneGraph/msAnimation.h"
 #include "MeshSync/SceneGraph/msMesh.h"
-#include "MeshSync/Utility/msAsyncSceneExporter.h"
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
@@ -761,18 +760,18 @@ void msmayaContext::WaitAndKickAsyncExport()
     dist.setValue(1.0f);
     const float to_meter = static_cast<float>(dist.asMeters());
 
-    using Exporter = ms::AsyncSceneExporter;
+    using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     exporter->on_prepare = [this, to_meter, exporter]() {
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        ms::AsyncSceneExporter& t = *exporter;
+        ms::SceneExporter& t = *exporter;
         t.scene_settings.handedness = ms::Handedness::Right;
         t.scene_settings.scale_factor = m_settings.scale_factor / to_meter;
 

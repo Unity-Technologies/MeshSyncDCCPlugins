@@ -1517,7 +1517,7 @@ void msmodoContext::WaitAndKickAsyncExport()
     for (std::map<LxItemKey, TreeNode>::value_type& kvp : m_tree_nodes)
         kvp.second.clearState();
 
-    using Exporter = ms::AsyncSceneExporter;
+    using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // kick async send
@@ -1525,11 +1525,11 @@ void msmodoContext::WaitAndKickAsyncExport()
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        ms::AsyncSceneExporter& t = *exporter;
+        ms::SceneExporter& t = *exporter;
         t.scene_settings.handedness = ms::Handedness::Right;
         t.scene_settings.scale_factor = m_settings.scale_factor;
 

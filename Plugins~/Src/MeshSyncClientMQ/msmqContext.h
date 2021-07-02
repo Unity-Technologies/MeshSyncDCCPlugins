@@ -2,7 +2,8 @@
 
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/msClient.h"
-#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
+#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
@@ -121,7 +122,7 @@ private:
 
     ms::AsyncSceneSender m_send_meshes;
     ms::AsyncSceneSender m_send_camera;
-    ms::AsyncSceneCacheWriter m_cache_writer;
+    ms::SceneCacheWriter m_cache_writer;
     bool m_pending_send_meshes = false;
 
     mu::nanosec m_time = 0;

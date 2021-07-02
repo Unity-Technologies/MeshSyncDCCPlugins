@@ -5,7 +5,8 @@
 #include "MeshSync/msClient.h"
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msCamera.h"
-#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
+
 #include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"

@@ -2,8 +2,9 @@
 
 #include "msmodoInterface.h"
 #include "MeshSync/SceneGraph/msLight.h"
-#include "MeshSync/Utility/msAsyncSceneExporter.h"
-#include "MeshSync/Utility/msIDGenerator.h"
+#include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
+#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
+#include "MeshSync/msIDGenerator.h"
 
 #include "MeshSyncClient/ExportTarget.h"
 #include "MeshSyncClient/msEntityManager.h"
@@ -158,7 +159,7 @@ private:
     ms::MaterialManager m_material_manager;
     ms::EntityManager m_entity_manager;
     ms::AsyncSceneSender m_sender;
-    ms::AsyncSceneCacheWriter m_cache_writer;
+    ms::SceneCacheWriter m_cache_writer;
 
     int m_material_index_seed = 0;
     int m_entity_index_seed = 0;
