@@ -6,14 +6,12 @@
 #include "MeshUtils/muLog.h"
 
 #include "BlenderPyObjects/BlenderPyContext.h"
-#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 #include "BlenderPyObjects/BlenderPyScene.h"
+#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
-namespace blender
-{
+namespace blender {
 
 bContext *g_context;
-
 
 extern PropertyRNA* BlenderPyID_is_updated;
 extern PropertyRNA* BlenderPyID_is_updated_data;
@@ -273,32 +271,21 @@ bool BObject::hide_render() const
     return get_bool(m_ptr, BObject_hide_render);
 }
 
+
 bool blender::BObject::is_selected() const
 {
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BObject_select);
-#else
-    return call<Object, bool, ViewLayer*>(m_ptr, BObject_select_get, nullptr);
-#endif
+    return call<Object, bool, ViewLayer*>(g_context, m_ptr, BObject_select_get, nullptr);
 }
 
-#if BLENDER_VERSION < 280
 Mesh* BObject::to_mesh() const
 {
-    auto scene = blender::BlenderPyContext::get().scene();
-    return call<Object, Mesh*, Scene*, int, int, int, int>(m_ptr, BObject_to_mesh, scene, 1, 1, 1, 0);
-}
-#else
-Mesh* BObject::to_mesh() const
-{
-    return call<Object, Mesh*, bool, Depsgraph*>(m_ptr, BObject_to_mesh, false, nullptr);
+    return call<Object, Mesh*, bool, Depsgraph*>(g_context, m_ptr, BObject_to_mesh, false, nullptr);
 }
 
 void BObject::to_mesh_clear()
 {
-    call<Object, Mesh*>(m_ptr, BObject_to_mesh_clear);
+    call<Object, Mesh*>(g_context, m_ptr, BObject_to_mesh_clear);
 }
-#endif
 
 blist_range<ModifierData> BObject::modifiers()
 {
@@ -366,7 +353,7 @@ barray_range<MLoopCol> BMesh::colors()
 
 void BMesh::calc_normals_split()
 {
-    call<Mesh, void>(m_ptr, BMesh_calc_normals_split);
+    call<Mesh, void>(g_context, m_ptr, BMesh_calc_normals_split);
 }
 
 
@@ -461,7 +448,7 @@ void BData::remove(Mesh * v)
 {
     PointerRNA t = {};
     t.data = v;
-    call<Main, void, PointerRNA*>(m_ptr, BlendDataMeshes_remove, &t);
+    call<Main, void, PointerRNA*>(g_context, m_ptr, BlendDataMeshes_remove, &t);
 }
 
 const void* CustomData_get(const CustomData& data, int type)

@@ -6,8 +6,8 @@
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
+#include "MeshSync/MeshSyncMacros.h"
 
-#include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -73,21 +73,21 @@ private:
     using ExtractTasks = std::vector<std::function<void()>>;
 
     struct TextureRecord {
-        DEFAULT_NOCOPY_NOASSIGN(TextureRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(TextureRecord);
         int id = ms::InvalidID;
         ms::Texture *dst = nullptr;
     };
     using TextureRecords = std::map<FBTexture*, TextureRecord>;
 
     struct MaterialRecord  {
-        DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(MaterialRecord);
         int id = 0;
         ms::Material *dst = nullptr;
     };
     using MaterialRecords = std::map<FBMaterial*, MaterialRecord>;
 
     struct AnimationRecord  {
-        DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msmobuDevice::*)(ms::TransformAnimation& dst, FBModel *src);
 
         ms::TransformAnimationPtr dst;

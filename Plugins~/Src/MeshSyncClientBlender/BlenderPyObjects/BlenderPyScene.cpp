@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "BlenderPyScene.h"
+
 #include "BlenderPyCommon.h" //call
 
-namespace blender
-{
+namespace blender {
+
 extern bContext *g_context;
 
 StructRNA* BlenderPyScene::s_type;
@@ -43,7 +44,7 @@ void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
 
 void BlenderPyScene::frame_set(int f, float subf)
 {
-    call<Scene, void, int, float>(m_ptr, BlenderPyScene_frame_set, f, subf);
+    call<Scene, void, int, float>(g_context, m_ptr, BlenderPyScene_frame_set, f, subf);
 }
 
 

@@ -4,6 +4,7 @@
 #include "msblenMacros.h" //MSBLEN_BOILERPLATE2
 
 #include "BlenderPyID.h" //BID
+#include "../msblenBinder.h" //list_range
 
 namespace blender {
 
@@ -20,15 +21,6 @@ public:
 
     void frame_set(int f, float subf = 0.0f);
 
-#if BLENDER_VERSION < 280
-    template<class Body>
-    void each_objects(const Body& body)
-    {
-        for (auto *base : list_range((Base*)m_ptr->base.first)) {
-            body(base->object);
-        }
-    }
-#else
     template<class Body>
     void each_objects_impl(const Body& body, CollectionChild *cc)
     {
@@ -46,7 +38,6 @@ public:
         for (auto *o : list_range((CollectionObject*)m_ptr->master_collection->gobject.first))
             body(o->ob);
     }
-#endif
 
     template<class Body>
     void each_selection(const Body& body)

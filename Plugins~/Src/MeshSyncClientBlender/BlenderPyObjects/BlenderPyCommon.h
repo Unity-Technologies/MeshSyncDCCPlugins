@@ -101,7 +101,7 @@ struct param_holder5
 //----------------------------------------------------------------------------------------------------------------------
 
 template<typename T, typename R>
-R call(T *self, FunctionRNA *f)
+R call(bContext* context, T *self, FunctionRNA *f)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -110,12 +110,12 @@ R call(T *self, FunctionRNA *f)
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 
 template<typename T, typename R, typename A1>
-R call(T *self, FunctionRNA *f, const A1& a1)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -124,11 +124,11 @@ R call(T *self, FunctionRNA *f, const A1& a1)
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -137,11 +137,11 @@ R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2)
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -150,11 +150,11 @@ R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3)
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3, typename A4>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -163,11 +163,11 @@ R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const 
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
-R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
 {
     PointerRNA ptr;
     ptr.data = self;
@@ -176,7 +176,7 @@ R call(T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const 
     ParameterList param_list;
     param_list.data = &params;
 
-    f->call(g_context, nullptr, &ptr, &param_list);
+    f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
 

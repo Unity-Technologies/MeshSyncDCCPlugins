@@ -28,12 +28,12 @@ Scene* BlenderPyContext::scene()
 
 Depsgraph* BlenderPyContext::evaluated_depsgraph_get()
 {
-    return call<bContext, Depsgraph*>(m_ptr, BlenderPyContext_evaluated_depsgraph_get);
+    return call<bContext, Depsgraph*>(g_context, m_ptr, BlenderPyContext_evaluated_depsgraph_get);
 }
 
 
 void BlenderPyContext::UpdateDepsgraph(Depsgraph* depsgraph) {
-    call<Depsgraph, void>(depsgraph, BlenderPyContext_depsgraph_update);
+    call<Depsgraph, void>(g_context, depsgraph, BlenderPyContext_depsgraph_update);
 }
 
 

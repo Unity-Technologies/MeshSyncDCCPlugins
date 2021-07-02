@@ -4,7 +4,8 @@
 #include "MeshSync/msClient.h"
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
 #include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
-#include "MeshSyncClient/MeshSyncClientMacros.h"
+#include "MeshSync/MeshSyncMacros.h"
+
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
 #include "MeshSyncClient/msTextureManager.h"
@@ -62,7 +63,7 @@ public:
 
 private:
     struct MorphRecord {
-        DEFAULT_NOCOPY_NOASSIGN(MorphRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(MorphRecord);
         MQObject base_obj = nullptr;
         MQObject target_obj = nullptr;
         ms::MeshPtr base;
@@ -71,13 +72,13 @@ private:
     };
 
     struct ObjectRecord {
-        DEFAULT_NOASSIGN(ObjectRecord);
+        MS_CLASS_DEFAULT_NOASSIGN(ObjectRecord);
         MQObject obj = nullptr;
         ms::MeshPtr dst;
     };
 
     struct BoneRecord {
-        DEFAULT_NOCOPY_NOASSIGN(BoneRecord);
+        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(BoneRecord);
         UINT bone_id = -1;
         UINT parent_id = -1;
         std::string name;
