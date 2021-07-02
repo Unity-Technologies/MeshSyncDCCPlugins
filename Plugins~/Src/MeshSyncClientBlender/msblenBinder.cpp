@@ -8,14 +8,14 @@
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
 
-namespace blender
-{
-
-bContext *g_context;
+namespace blender {
+    bContext *g_context;
+}
 
 //[TODO-sin:2021-7-2] Some functions in this core require access to g_context. 
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
+namespace blender {
 
 extern PropertyRNA* BlenderPyID_is_updated;
 extern PropertyRNA* BlenderPyID_is_updated_data;
@@ -274,6 +274,7 @@ bool BObject::hide_render() const
 {
     return get_bool(m_ptr, BObject_hide_render);
 }
+
 
 bool blender::BObject::is_selected() const
 {
