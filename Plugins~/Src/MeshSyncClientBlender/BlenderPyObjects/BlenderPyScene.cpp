@@ -1,10 +1,14 @@
 #include "pch.h"
 #include "BlenderPyScene.h"
+
+namespace blender {
+    extern bContext *g_context;
+}
+
+//[TODO-sin:2021-7-2] Some functions in this core require access to g_context. 
 #include "BlenderPyCommon.h" //call
 
-namespace blender
-{
-extern bContext *g_context;
+namespace blender {
 
 StructRNA* BlenderPyScene::s_type;
 PropertyRNA* BlenderPyScene_frame_start = nullptr;
