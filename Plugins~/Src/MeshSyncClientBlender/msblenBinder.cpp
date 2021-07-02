@@ -6,13 +6,15 @@
 #include "MeshUtils/muLog.h"
 
 #include "BlenderPyObjects/BlenderPyContext.h"
-#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 #include "BlenderPyObjects/BlenderPyScene.h"
 
 namespace blender
 {
 
 bContext *g_context;
+
+//[TODO-sin:2021-7-2] Some functions in this core require access to g_context. 
+#include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
 
 extern PropertyRNA* BlenderPyID_is_updated;
