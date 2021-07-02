@@ -6,7 +6,10 @@
 #include "MeshSync/SceneGraph/msLight.h"
 
 #include "MeshSync/msClient.h"
-#include "MeshSync/Utility/msAsyncSceneExporter.h"
+#include "MeshSync/SceneExporter.h"
+#include "MeshSync/AsyncSceneSender.h"
+#include "MeshSync/SceneCache/SceneCacheWriter.h"
+
 #include "MeshSyncClient/MeshSyncClientMacros.h"
 #include "MeshSyncClient/msEntityManager.h"
 #include "MeshSyncClient/msMaterialManager.h"
@@ -180,7 +183,7 @@ private:
     ms::MaterialManager m_material_manager;
     ms::EntityManager m_entity_manager;
     ms::AsyncSceneSender m_sender;
-    ms::AsyncSceneCacheWriter m_cache_writer;
+    ms::SceneCacheWriter m_cache_writer;
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

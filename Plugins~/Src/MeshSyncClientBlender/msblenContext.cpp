@@ -1579,7 +1579,7 @@ void msblenContext::WaitAndKickAsyncExport()
         kvp.second.clearState();
     m_bones.clear();
 
-    using Exporter = ms::AsyncSceneExporter;
+    using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
     // kick async send
@@ -1587,11 +1587,11 @@ void msblenContext::WaitAndKickAsyncExport()
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (ms::AsyncSceneCacheWriter* writer = dynamic_cast<ms::AsyncSceneCacheWriter*>(exporter)) {
+        else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
             writer->time = m_anim_time;
         }
 
-        ms::AsyncSceneExporter& t = *exporter;
+        ms::SceneExporter& t = *exporter;
         t.scene_settings = m_settings.scene_settings;
         const float scale_factor = 1.0f / m_settings.scene_settings.scale_factor;
         t.scene_settings.scale_factor = 1.0f;
