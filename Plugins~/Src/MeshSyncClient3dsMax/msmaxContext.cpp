@@ -3,6 +3,7 @@
 #include "msmaxUtils.h"
 #include "msmaxCallbacks.h"
 
+#include "MeshSync/MeshSyncConstants.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 
@@ -1314,96 +1315,31 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (m_settings.sync_uvs) {
 
             int numUVS = mesh->getNumMaps();
+            //http://docs.autodesk.com/3DSMAX/16/ENU/3ds-Max-SDK-Programmer-Guide/index.html?url=files/GUID-5574902C-63C3-4491-9C51-A3B471B60239.htm,topicNumber=d30e29628
+            //Channel indexes:
+            //  0: Vertex Color channel.
+            //  1: Default mapping channel (the TVert array).
+            //  2 through MAX_MESHMAPS-1: The new mapping channels available in release 3.0.
+
+            numUVS = std::min(numUVS-1, static_cast<int>(ms::MeshSyncConstants::MAX_UV)) + 1;
+
             for (int k=1;k<numUVS ;++k) {
                 MeshMap* meshMap = &mesh->maps[k];
 
                 TVFace* uv_Faces = meshMap->tf;
                 UVVert* uv_vertices = meshMap->tv;
-                int numFaces = meshMap->getNumFaces();
+                const int numFaces = meshMap->getNumFaces();
 
                 const int unityUVIndex = k - 1;
                 dst.m_uv[unityUVIndex].resize_discard(num_indices);
                 for (int fi = 0; fi < numFaces; ++fi) {
                     for (int i = 0; i < 3; ++i) {
                         dst.m_uv[unityUVIndex][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
-
-                        //multi uv
                     }
                 }
             }
 
 
-            const int num_uv = mesh->numTVerts;
-            TVFace* uv_Faces = mesh->tvFace;
-            UVVert* uv_vertices = mesh->tVerts;
-            if (num_uv && uv_Faces && uv_vertices) {
-                //dst.m_uv[0].resize_discard(num_indices);
-                //for (int fi = 0; fi < num_faces; ++fi) {
-                //    for (int i = 0; i < 3; ++i) {
-                //        //dst.m_uv[0][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
-
-                //        //multi uv
-                //    }
-                //}
-
-                //0: Vertex Color channel.
-                //1: Default mapping channel (the TVert array).
-                //2 through MAX_MESHMAPS-1: The new mapping channels available in release 3.0.
-
-                //auto& ctx = msmaxGetContext();
-                //ctx.logInfo("MeshSync: Num TVerts: %d, num faces: %d, NumMaps: %d, NumMapVerts: ??\n", 
-                //            mesh->getNumTVerts(), mesh->getNumFaces(), mesh->getNumMaps(), mesh->getNumMaps()
-                //);
-
-                //int numUVS = mesh->getNumMaps()-1;
-                //for (int k=0;k<numUVS ;++k) {
-                //    int maxUVIndex = k + 1;
-                //    MeshMap* meshMap = mesh->maps[maxUVIndex];
-
-                //    dst.m_uv[k].resize_discard(num_indices);
-                //    for (int fi = 0; fi < num_faces; ++fi) {
-                //        for (int i = 0; i < 3; ++i) {
-                //            //dst.m_uv[0][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
-
-                //            //multi uv
-                //        }
-                //    }
-
-
-                //    const UVVert* mappedUV = mesh->mapVerts(k+1);
-                //    for (int fi = 0; fi < num_faces; ++fi) {
-                //        for (int i = 0; i < 3; ++i) {
-                //            const UVVert& b = mappedUV [uv_Faces[fi].t[i]];
-                //            dst.m_uv[k][fi * 3 + i] = to_float2(b);
-                //        }
-                //    }
-                //}
-
-                //for (int k=0;k<numUVS;++k) {
-                //    ctx.logInfo("NumMapVerts[%d]: %d\n", 
-                //                k, mesh->getNumMapVerts(k)
-                //    );
-                //}
-
-                //const UVVert* uv_0 = mesh->mapVerts(1);
-                //for (int fi = 0; fi < num_faces; ++fi) {
-                //    for (int i = 0; i < 3; ++i) {
-                //        const UVVert& a = uv_vertices[uv_Faces[fi].t[i]];
-                //        const UVVert& b = uv_0[uv_Faces[fi].t[i]];
-                //        if ( a != b) {
-                //            ctx.logInfo("a!=b. a: (%f, %f, %f), b: (%f,%f, %f)\n", 
-                //                        a.x, a.y, a.z,
-                //                        b.x, b.y, b.z                                      
-                //            );
-
-                //        }
-                //        //multi uv
-                //    }
-                //}
-
-
-
-            }
         }
 
         // colors
