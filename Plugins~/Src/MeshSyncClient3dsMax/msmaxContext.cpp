@@ -1315,26 +1315,29 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (m_settings.sync_uvs) {
 
             int numUVS = mesh->getNumMaps();
-            //http://docs.autodesk.com/3DSMAX/16/ENU/3ds-Max-SDK-Programmer-Guide/index.html?url=files/GUID-5574902C-63C3-4491-9C51-A3B471B60239.htm,topicNumber=d30e29628
+            //https://documentation.help/3DS-Max/idx_R_list_of_mapping_channel_index_values.htm
             //Channel indexes:
             //  0: Vertex Color channel.
             //  1: Default mapping channel (the TVert array).
-            //  2 through MAX_MESHMAPS-1: The new mapping channels available in release 3.0.
+            //  2: through MAX_MESHMAPS-1: The new mapping channels available in release 3.0.
 
             numUVS = std::min(numUVS-1, static_cast<int>(ms::MeshSyncConstants::MAX_UV)) + 1;
 
             for (int k=1;k<numUVS ;++k) {
                 MeshMap* meshMap = &mesh->maps[k];
 
-                TVFace* uv_Faces = meshMap->tf;
-                UVVert* uv_vertices = meshMap->tv;
+                TVFace* mapFaces = meshMap->tf;
+                UVVert* uvVertices = meshMap->tv;
                 const int numFaces = meshMap->getNumFaces();
 
                 const int unityUVIndex = k - 1;
-                dst.m_uv[unityUVIndex].resize_discard(num_indices);
+                const int NUM_VERTICES_PER_FACE = 3;
+                const int numUVIndices = numFaces * NUM_VERTICES_PER_FACE;
+                dst.m_uv[unityUVIndex].resize_discard(numUVIndices);
                 for (int fi = 0; fi < numFaces; ++fi) {
-                    for (int i = 0; i < 3; ++i) {
-                        dst.m_uv[unityUVIndex][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
+                    const uint32_t offset = fi * NUM_VERTICES_PER_FACE;
+                    for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
+                        dst.m_uv[unityUVIndex][ offset + i] = to_float2(uvVertices[mapFaces[fi].t[i]]);
                     }
                 }
             }
