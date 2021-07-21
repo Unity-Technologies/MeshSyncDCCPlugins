@@ -13,7 +13,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | ライトの同期                  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
 | 両面 (Double-sided) メッシュ  | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
 | 負のスケール                  | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
-| マルチ UV                     |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+| マルチ UV                     |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache を出力            | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | ポリゴン以外の形状データ       |                      |                      |                      |                      |                      |                      |  
 
