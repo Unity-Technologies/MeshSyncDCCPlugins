@@ -3,6 +3,7 @@
 #include "msmaxUtils.h"
 #include "msmaxCallbacks.h"
 
+#include "MeshSync/MeshSyncConstants.h"
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 
@@ -1312,17 +1313,36 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
         // uv
         if (m_settings.sync_uvs) {
-            const int num_uv = mesh->numTVerts;
-            TVFace* uv_Faces = mesh->tvFace;
-            UVVert* uv_vertices = mesh->tVerts;
-            if (num_uv && uv_Faces && uv_vertices) {
-                dst.m_uv[0].resize_discard(num_indices);
-                for (int fi = 0; fi < num_faces; ++fi) {
-                    for (int i = 0; i < 3; ++i) {
-                        dst.m_uv[0][fi * 3 + i] = to_float2(uv_vertices[uv_Faces[fi].t[i]]);
+
+            int numUVS = mesh->getNumMaps();
+            //https://documentation.help/3DS-Max/idx_R_list_of_mapping_channel_index_values.htm
+            //Channel indexes:
+            //  0: Vertex Color channel.
+            //  1: Default mapping channel (the TVert array).
+            //  2: through MAX_MESHMAPS-1: The new mapping channels available in release 3.0.
+
+            numUVS = std::min(numUVS-1, static_cast<int>(ms::MeshSyncConstants::MAX_UV)) + 1;
+
+            for (int k=1;k<numUVS ;++k) {
+                MeshMap* meshMap = &mesh->maps[k];
+
+                TVFace* mapFaces = meshMap->tf;
+                UVVert* uvVertices = meshMap->tv;
+                const int numFaces = meshMap->getNumFaces();
+
+                const int unityUVIndex = k - 1;
+                const int NUM_VERTICES_PER_FACE = 3;
+                const int numUVIndices = numFaces * NUM_VERTICES_PER_FACE;
+                dst.m_uv[unityUVIndex].resize_discard(numUVIndices);
+                for (int fi = 0; fi < numFaces; ++fi) {
+                    const uint32_t offset = fi * NUM_VERTICES_PER_FACE;
+                    for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
+                        dst.m_uv[unityUVIndex][ offset + i] = to_float2(uvVertices[mapFaces[fi].t[i]]);
                     }
                 }
             }
+
+
         }
 
         // colors
