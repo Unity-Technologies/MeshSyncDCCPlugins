@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1-preview] - 2020-07-22
+
+### Added
+* feat: multi UV for 3ds Max 
+
+### Changed
+* blender: use 2.83.17, 2.93.4 for building
+
 ## [0.8.0-preview] - 2020-07-22
 
 ### Added
