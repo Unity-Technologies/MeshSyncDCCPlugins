@@ -1,10 +1,26 @@
 {
   "dependencies": {
+    "com.unity.editorcoroutines": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.film-internal-utilities": {
+      "version": "0.10.2-preview",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.uielements": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
@@ -32,6 +48,24 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.unity.meshsync": {
+      "version": "0.8.4-preview",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.film-internal-utilities": "0.10.2-preview",
+        "com.unity.editorcoroutines": "1.0.0",
+        "com.unity.modules.audio": "1.0.0",
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.cloth": "1.0.0",
+        "com.unity.modules.director": "1.0.0",
+        "com.unity.modules.particlesystem": "1.0.0",
+        "com.unity.modules.screencapture": "1.0.0",
+        "com.unity.sharp-zip-lib": "1.2.2-preview.1",
+        "com.unity.timeline": "1.2.14"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.meshsync.dcc-plugins": {
       "version": "file:com.unity.meshsync-dcc-plugins",
       "depth": 0,
@@ -54,6 +88,13 @@
       "dependencies": {
         "com.unity.nuget.mono-cecil": "0.1.6-preview.2"
       },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.sharp-zip-lib": {
+      "version": "1.2.2-preview.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
