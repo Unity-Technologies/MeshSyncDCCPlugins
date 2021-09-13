@@ -252,7 +252,7 @@ msmodoSettingsWidget::msmodoSettingsWidget(QWidget *parent)
     }
 
     {
-        auto lb_version = new QLabel("Plugin Version: " msPluginVersionStr);
+        auto lb_version = new QLabel("Plugin Version: " MESHSYNC_DCC_PLUGIN_VER);
         lb_version->setContentsMargins(0, space, 0, 0);
         layout->addWidget(lb_version, iy++, 0, 1, 3);
     }
