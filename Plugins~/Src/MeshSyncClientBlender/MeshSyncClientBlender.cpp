@@ -70,7 +70,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
         using self_t = ContextProxy;
         py::class_<ContextProxy>(m, "Context")
             .def(py::init<>())
-            BindConst(PLUGIN_VERSION, std::string(msPluginVersionStr))
+            BindConst(PLUGIN_VERSION, std::string(MESHSYNC_DCC_PLUGIN_VER))
             BindConst(PROTOCOL_VERSION, std::to_string(msProtocolVersion))
 
             BindConst(TARGET_OBJECTS, (int)MeshSyncClient::ExportTarget::Objects)

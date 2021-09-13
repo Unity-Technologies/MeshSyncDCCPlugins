@@ -185,7 +185,7 @@ MStatus CmdSettings::doIt(const MArgList& args_)
 
     if (args.isFlagSet("pluginVersion")) {
         if (args.isQuery())
-            set_result(std::string(msPluginVersionStr));
+            set_result(std::string(MESHSYNC_DCC_PLUGIN_VER));
     }
     else if (args.isFlagSet("protocolVersion")) {
         if (args.isQuery())

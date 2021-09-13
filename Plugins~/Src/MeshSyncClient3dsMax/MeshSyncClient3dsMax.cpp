@@ -18,7 +18,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, LPVOID lpvReserved)
 
 msmaxAPI const TCHAR* LibDescription()
 {
-    return _T("UnityMeshSync for 3ds Max (Release " msPluginVersionStr ") (Unity Technologies)");
+    return _T("UnityMeshSync for 3ds Max (Release " MESHSYNC_DCC_PLUGIN_VER") (Unity Technologies)");
 }
 
 msmaxAPI int LibNumberClasses()

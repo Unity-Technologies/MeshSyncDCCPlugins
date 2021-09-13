@@ -249,7 +249,7 @@ bool msmobuLayout::FBCreate()
             lW2, kFBAttachNone, nullptr, 1,
             0, kFBAttachHeight, idButtonSyncAnimations, 1);
         SetControl(idLabelVersion, m_lb_version);
-        m_lb_version.Caption = "Plugin Version: " msPluginVersionStr;
+        m_lb_version.Caption = "Plugin Version: " MESHSYNC_DCC_PLUGIN_VER;
     }
 
     return true;
