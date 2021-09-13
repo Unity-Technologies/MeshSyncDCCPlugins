@@ -51,7 +51,7 @@ include(AddPlugin)
 include(UnityPackage)
 
 setup_unity_package_version()
-add_definitions(-DMESHSYNC_DCC_PLUGIN_VER ${UNITY_PACKAGE_VERSION})
+add_definitions(-DMESHSYNC_DCC_PLUGIN_VER="${UNITY_PACKAGE_VERSION}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
