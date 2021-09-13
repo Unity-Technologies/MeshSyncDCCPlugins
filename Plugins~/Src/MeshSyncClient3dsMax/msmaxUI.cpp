@@ -564,7 +564,7 @@ void msmaxContext::updateSettingControls()
 
     CtrlSetText(IDC_FRAME_STEP,             s.frame_step);
 
-    CtrlSetText(IDC_TEXT_VERSION, "Plugin Version: " msPluginVersionStr);
+    CtrlSetText(IDC_TEXT_VERSION, "Plugin Version: " MESHSYNC_DCC_PLUGIN_VER);
 }
 
 
