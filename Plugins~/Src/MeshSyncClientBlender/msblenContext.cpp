@@ -14,7 +14,6 @@
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
-#include "BlenderPyObjects/BlenderPyContext.h" //BlenderPyContext
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 
 
@@ -1502,14 +1501,13 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
             //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
             scene.SetCurrentFrame(f, depsGraph);
-            bl::BlenderPyContext::UpdateDepsgraph(depsGraph);
 
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
             DoExportSceneCache(sceneIndex, materialRange, nodes);
             ++sceneIndex;
         }
-        scene.frame_set(prevFrame);
+        scene.SetCurrentFrame(prevFrame, depsGraph);
     }
 
     m_asyncTasksController.Wait();
