@@ -307,7 +307,7 @@ MayaCacheSettings& msmayaContext::getCacheSettings()
 
 msmayaContext::msmayaContext(MObject obj)
     : m_obj(obj)
-    , m_iplugin(obj, msVendor, msPluginVersionStr)
+    , m_iplugin(obj, msVendor, MESHSYNC_DCC_PLUGIN_VER)
 {
 #define Body(CmdType) m_iplugin.registerCommand(CmdType::name(), CmdType::create, CmdType::createSyntax);
     EachCommand(Body)
