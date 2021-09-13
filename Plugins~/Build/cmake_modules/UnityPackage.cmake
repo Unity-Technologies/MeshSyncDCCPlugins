@@ -2,7 +2,7 @@
 # Set the following to cache
 # - ${UNITY_PACKAGE_VERSION}
 
-function(get_unity_package_version)
+function(setup_unity_package_version)
 
     find_file(UNITY_PACKAGE_JSON
         NAMES package.json
