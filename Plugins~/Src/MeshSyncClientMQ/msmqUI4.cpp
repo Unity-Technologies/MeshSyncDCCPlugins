@@ -142,7 +142,7 @@ msmqSettingsDlg::msmqSettingsDlg(MeshSyncClientPlugin *plugin, MQWindowBase& par
         vf->SetOutSpace(outer_margin);
         vf->SetInSpace(inner_margin);
 
-        std::string plugin_version = "Plugin Version: " msPluginVersionStr;
+        std::string plugin_version = "Plugin Version: " MESHSYNC_DCC_PLUGIN_VER;
         CreateLabel(vf, mu::ToWCS(plugin_version));
     }
 

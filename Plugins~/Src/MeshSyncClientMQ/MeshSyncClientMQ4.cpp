@@ -46,7 +46,7 @@ void MeshSyncClientPlugin::GetPlugInID(DWORD *Product, DWORD *ID)
 //---------------------------------------------------------------------------
 const char *MeshSyncClientPlugin::GetPlugInName(void)
 {
-    return "Unity Mesh Sync (Release " msPluginVersionStr ")  Copyright(C) 2017-2019, Unity Technologies";
+    return "Unity Mesh Sync (Release " MESHSYNC_DCC_PLUGIN_VER ")  Copyright(C) 2017-2019, Unity Technologies";
 }
 
 //---------------------------------------------------------------------------
