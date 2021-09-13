@@ -3,6 +3,8 @@
 
 #include "BlenderPyCommon.h" //call
 
+#include "BlenderPyObjects/BlenderPyContext.h" //BlenderPyContext::UpdateDepsgraph
+
 namespace blender {
 
 extern bContext *g_context;
@@ -39,6 +41,8 @@ void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
 
     //Offset is different between Blender Debug and Release, and maybe different among different Blender versions !
     charGraph->Buffer[ID_TYPE_UPDATED_OFFSET + INDEX_ID_SCE] = 1;
+
+    BlenderPyContext::UpdateDepsgraph(depsgraph);
 
 }
 
