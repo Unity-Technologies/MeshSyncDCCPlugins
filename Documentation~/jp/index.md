@@ -37,6 +37,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
 | 3ds Max 2019        | :white_check_mark: | :x:                | :x:                | 
 | 3ds Max 2020        | :white_check_mark: | :x:                | :x:                | 
+| 3ds Max 2021        | :heavy_check_mark: | :x:                | :x:                | 
 | MotionBuilder 2017  | :white_check_mark: | :x:                | :white_check_mark: | 
 | MotionBuilder 2018  | :white_check_mark: | :x:                | :white_check_mark: | 
 | MotionBuilder 2019  | :white_check_mark: | :x:                | :white_check_mark: | 
