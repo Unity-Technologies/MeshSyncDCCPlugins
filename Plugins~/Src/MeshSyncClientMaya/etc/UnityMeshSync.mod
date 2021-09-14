@@ -15,3 +15,7 @@ scripts: scripts
 
 + MAYAVERSION:2019LT UnityMeshSync 20190902 ./UnityMeshSync/2019LT
 scripts: scripts
+
++ MAYAVERSION:2022 UnityMeshSync 20190902 ./UnityMeshSync/2022
+scripts: scripts
+
