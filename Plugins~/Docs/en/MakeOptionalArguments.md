@@ -14,6 +14,7 @@ with commands described in the following sections.
 * Maya 2018: `-DBUILD_MAYA_2018_PLUGIN=ON`
 * Maya 2019: `-DBUILD_MAYA_2019_PLUGIN=ON`
 * Maya 2020: `-DBUILD_MAYA_2020_PLUGIN=ON`
+* Maya 2022: `-DBUILD_MAYA_2022_PLUGIN=ON`
 
 ## 3ds Max
 

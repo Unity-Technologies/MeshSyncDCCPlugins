@@ -35,6 +35,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Maya 2018           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Maya 2019           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Maya 2020           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| Maya 2022           | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
 | Maya LT 2019 +      | :white_check_mark: |                    | :x:                | 
 | 3ds Max 2017        | :white_check_mark: | :x:                | :x:                | 
 | 3ds Max 2018        | :white_check_mark: | :x:                | :x:                | 
