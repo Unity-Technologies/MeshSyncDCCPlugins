@@ -1,6 +1,19 @@
 # Changelog
 
-## [0.8.1-preview] - 2020-07-22
+## [0.9.0-preview] - 2020-09-15
+
+### Added
+* support com.unity.meshsync@0.9.x-preview
+* feat: add support for Maya 2022 
+* feat: support for 3ds Max 2021
+
+### Changed
+* blender: optimize setting the frame back after exporting scene cache
+
+### Fixed
+* fix: show the correct plugin version for DCC plugins
+
+## [0.8.1-preview] - 2020-09-9
 
 ### Added
 * feat: multi UV for 3ds Max 
