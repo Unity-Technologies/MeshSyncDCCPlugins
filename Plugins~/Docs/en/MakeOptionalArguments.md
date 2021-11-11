@@ -10,7 +10,6 @@ with commands described in the following sections.
 ## Maya
 
 * All supported Maya versions: `-DBUILD_MAYA_ALL=ON`
-* Maya 2017: `-DBUILD_MAYA_2017_PLUGIN=ON`
 * Maya 2018: `-DBUILD_MAYA_2018_PLUGIN=ON`
 * Maya 2019: `-DBUILD_MAYA_2019_PLUGIN=ON`
 * Maya 2020: `-DBUILD_MAYA_2020_PLUGIN=ON`
@@ -19,7 +18,6 @@ with commands described in the following sections.
 ## 3ds Max
 
 * All supported 3ds Max versions: `-DBUILD_3DSMAX_ALL=ON`
-* 3ds Max 2017: `-DBUILD_3DSMAX_2017_PLUGIN=ON`
 * 3ds Max 2018: `-DBUILD_3DSMAX_2018_PLUGIN=ON`
 * 3ds Max 2019: `-DBUILD_3DSMAX_2019_PLUGIN=ON`
 * 3ds Max 2020: `-DBUILD_3DSMAX_2020_PLUGIN=ON`
