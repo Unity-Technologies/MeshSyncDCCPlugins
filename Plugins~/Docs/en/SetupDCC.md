@@ -16,20 +16,11 @@ Based on the version of [Maya](https://www.autodesk.com/products/maya/overview),
 
 As an example in MacOS:
 ``` 
-export MAYA_SDK_2017=/Applications/Autodesk/maya2017/Maya.app/Contents
 export MAYA_SDK_2018=/path/to/maya/sdk/2018
 export MAYA_SDK_2019=/path/to/maya/sdk/2019
 export MAYA_SDK_2020=/path/to/maya/sdk/2020
 export MAYA_SDK_2022=/path/to/maya/sdk/2022
 ``` 
-### Maya 2017 
-
-In addition to the above, Maya 2017 requires `MAYA_APP_2017` environment variable to be set.  
-As an example in MacOS:
-``` 
-export MAYA_APP_2017=/Applications/Autodesk/maya2017/Maya.app
-``` 
-
 
 ## 3ds Max 
 

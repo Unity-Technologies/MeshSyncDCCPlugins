@@ -101,7 +101,6 @@ endfunction()
 
 # Maya
 list(APPEND MAYA_VERSIONS
-    MAYA_2017
     MAYA_2018
     MAYA_2019
     MAYA_2020
@@ -152,7 +151,6 @@ endforeach(CUR_BLENDER_VER)
 
 # 3DSMAX (Windows only)
 list(APPEND 3DSMAX_VERSIONS
-    3DSMAX_2017
     3DSMAX_2018
     3DSMAX_2019
     3DSMAX_2020
