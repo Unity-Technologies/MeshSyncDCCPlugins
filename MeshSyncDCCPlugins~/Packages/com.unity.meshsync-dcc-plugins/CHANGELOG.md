@@ -1,6 +1,14 @@
 # Changelog
 
-## [0.9.0-preview] - 2020-09-15
+## [0.10.0-preview] - 2021-11-11
+
+### Added
+* support com.unity.meshsync@0.10.x-preview
+
+### Removed
+* remove support for 3dsMax 2017 and Maya 2017
+
+## [0.9.0-preview] - 2021-09-15
 
 ### Added
 * support com.unity.meshsync@0.9.x-preview
@@ -13,7 +21,7 @@
 ### Fixed
 * fix: show the correct plugin version for DCC plugins
 
-## [0.8.1-preview] - 2020-09-9
+## [0.8.1-preview] - 2021-09-9
 
 ### Added
 * feat: multi UV for 3ds Max 
@@ -21,7 +29,7 @@
 ### Changed
 * blender: use 2.83.17, 2.93.4 for building
 
-## [0.8.0-preview] - 2020-07-22
+## [0.8.0-preview] - 2021-07-22
 
 ### Added
 * support com.unity.meshsync@0.8.x-preview
@@ -36,13 +44,13 @@
 ### Removed
 * blender: remove support for Blender 2.79 - 2.82 
 
-## [0.7.1-preview] - 2020-02-09
+## [0.7.1-preview] - 2021-02-09
 
 ### Changed
 * log output after exporting scene cache file 
 * automatically add sc extension when exporting SceneCache
 
-## [0.7.0-preview] - 2020-02-03
+## [0.7.0-preview] - 2021-02-03
 
 ### Added
 * support com.unity.meshsync@0.7.x-preview
