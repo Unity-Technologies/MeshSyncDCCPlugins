@@ -10,11 +10,9 @@ public class DebugInstallWindow : EditorWindow {
 
 //----------------------------------------------------------------------------------------------------------------------        
     private void CreateGUI() {
-        VisualElement root = rootVisualElement;
 
-        m_dccContainers.Clear();
-        
-        m_root = root;
+        m_root = rootVisualElement;
+        LoadAndAddStyle( m_root.styleSheets, MeshSyncEditorConstants.USER_SETTINGS_STYLE_PATH);	
         m_root.Clear();
         m_installPluginButtons.Clear();
 
@@ -29,14 +27,12 @@ public class DebugInstallWindow : EditorWindow {
         TemplateContainer containerInstance = container.CloneTree();
         ScrollView scrollView = containerInstance.Query<ScrollView>().First();
 
-       
-        //Buttons
-        Button autoDetectDCCButton = containerInstance.Query<Button>("AutoDetectDCCButton").First();
-        autoDetectDCCButton.clickable.clicked += OnAutoDetectDCCButtonClicked;
-        
-        Button addDCCToolButton = containerInstance.Query<Button>("AddDCCToolButton").First();
-        addDCCToolButton.visible =  false;
-        
+        string[] invisibleButtonNames = new[] { "AutoDetectDCCButton", "AddDCCToolButton", "ChecksPluginUpdatesButton" };
+        foreach (string buttonName in invisibleButtonNames) {
+            Button btn = containerInstance.Query<Button>(buttonName).First();
+            btn.visible = false;
+        }
+
         //Add detected DCCTools to ScrollView
         MeshSyncEditorSettings settings = MeshSyncEditorSettings.GetOrCreateSettings();
         foreach (KeyValuePair<string, DCCToolInfo> dccToolInfo in settings.GetDCCToolInfos()) {
@@ -44,7 +40,7 @@ public class DebugInstallWindow : EditorWindow {
         }            
         
         //Add the container of this tab to root
-        root.Add(containerInstance);
+        m_root.Add(containerInstance);
 
     }
 
@@ -66,9 +62,6 @@ public class DebugInstallWindow : EditorWindow {
         
         container.Query<Label>("DCCToolPath").First().text = "Path: " + dccToolInfo.AppPath;
         BaseDCCIntegrator integrator = DCCIntegratorFactory.Create(dccToolInfo);
-
-        m_dccContainers[dccToolInfo.AppPath]   = container; 
-            
             
         //Buttons
         {
@@ -95,13 +88,6 @@ public class DebugInstallWindow : EditorWindow {
 //----------------------------------------------------------------------------------------------------------------------        
 
     #region Button callbacks
-
-    private void OnAutoDetectDCCButtonClicked() {
-        // MeshSyncEditorSettings settings = MeshSyncEditorSettings.GetOrCreateSettings();
-        // if (settings.AddInstalledDCCTools()) {
-        //     SetupInternal(m_root);
-        // }
-    }
 
     void OnLaunchDCCToolButtonClicked(EventBase evt) {
         DCCToolInfo dccToolInfo = GetEventButtonUserDataAs<DCCToolInfo>(evt.target);           
@@ -173,6 +159,16 @@ public class DebugInstallWindow : EditorWindow {
         return asset;
     }    
 
+    private static void LoadAndAddStyle(VisualElementStyleSheetSet set, string pathWithoutExt, string ext = ".uss") {
+        string     path  = pathWithoutExt + ext;
+        StyleSheet asset = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
+        if (null == asset) {
+            Debug.LogError("[AnimeToolbox] Can't load style: " + path);
+            return;
+        }
+        set.Add(asset);
+    }
+    
 //----------------------------------------------------------------------------------------------------------------------
     
     static T GetEventButtonUserDataAs<T>(IEventHandler eventTarget) where T: class{
@@ -186,11 +182,9 @@ public class DebugInstallWindow : EditorWindow {
     }
 //----------------------------------------------------------------------------------------------------------------------
 
-    private readonly Dictionary<string, VisualElement> m_dccContainers        = new Dictionary<string, VisualElement>();
-    private readonly List<Button>                      m_installPluginButtons = new List<Button>();
+    private List<Button> m_installPluginButtons = new List<Button>();
    
-    private VisualElement             m_root             = null;
-    private string                    m_lastOpenedFolder = "";
+    private VisualElement m_root             = null;
     
     
 }
