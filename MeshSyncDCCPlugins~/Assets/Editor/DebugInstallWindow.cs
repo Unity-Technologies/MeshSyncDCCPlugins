@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using JetBrains.Annotations;
 using Unity.MeshSync.Editor;
 using UnityEngine;
 using UnityEditor;
@@ -60,7 +61,6 @@ public class DebugInstallWindow : EditorWindow {
         }
         
         container.Query<Label>("DCCToolPath").First().text = "Path: " + dccToolInfo.AppPath;
-        BaseDCCIntegrator integrator = DCCIntegratorFactory.Create(dccToolInfo);
             
         //Buttons
         {
@@ -71,7 +71,7 @@ public class DebugInstallWindow : EditorWindow {
         {
             Button button = container.Query<Button>("InstallPluginButton").First();
             button.clickable.clickedWithEventInfo += OnInstallPluginButtonClicked;
-            button.userData                       =  integrator;
+            button.userData                       =  dccToolInfo;
         }
         
         container.Query<Button>("RemoveDCCToolButton").First().visible = false;
@@ -82,13 +82,15 @@ public class DebugInstallWindow : EditorWindow {
         TemplateContainer container = dccToolInfoTemplate.CloneTree();
         
         VisualElement labelParent     = container.Query<Label>("DCCToolPath").First().parent;
-        TextField     manualTextField = new TextField("Dir: ");
+        TextField     manualTextField = new TextField("Dir: ") {
+            value = m_lastManualDir
+        };
         labelParent.Add(manualTextField);
 
         Button chooseFolderButton = new Button();
         chooseFolderButton.text = "Choose Folder";
         chooseFolderButton.clicked += () => {
-            string folder = EditorUtility.OpenFolderPanel("Add DCC Tool", "", "");
+            string folder = EditorUtility.OpenFolderPanel("Add DCC Tool", manualTextField.value, "");
             if (string.IsNullOrEmpty(folder)) {
                 return;
             }
@@ -125,37 +127,41 @@ public class DebugInstallWindow : EditorWindow {
         DiagnosticsUtility.StartProcess(dccToolInfo.AppPath);
     }
 
-    void OnManualLaunchDCCToolButtonClicked(EventBase evt) {
-        
+    void OnManualLaunchDCCToolButtonClicked(EventBase evt) {        
         TextField manualTextField = GetEventButtonUserDataAs<TextField>(evt.target);           
-        
-        //Find the path to the actual app
-        DCCToolType lastDCCToolType = DCCToolType.AUTODESK_MAYA;
-        DCCToolInfo dccToolInfo     = null;
-        for (int i = 0; i < (int) (DCCToolType.NUM_DCC_TOOL_TYPES) && null==dccToolInfo; ++i) {
-            lastDCCToolType = (DCCToolType) (i);
-            dccToolInfo     = DCCFinderUtility.FindDCCToolInDirectory(lastDCCToolType, null, manualTextField.value);
-        }
-
+        DCCToolInfo dccToolInfo = FindDCCToolInfo(manualTextField.value);
         if (null==dccToolInfo) {
             EditorUtility.DisplayDialog("Debug", "No DCC Tool is detected", "Ok");
             return;
         }
         DiagnosticsUtility.StartProcess(dccToolInfo.AppPath);
     }
-
+    
 //----------------------------------------------------------------------------------------------------------------------        
 
     void OnInstallPluginButtonClicked(EventBase evt) {
         
-        BaseDCCIntegrator integrator = GetEventButtonUserDataAs<BaseDCCIntegrator>(evt.target);           
-        if (null==integrator) {
-            Debug.LogWarning("[MeshSync] Failed to Install Plugin");
+        DCCToolInfo dccToolInfo = GetEventButtonUserDataAs<DCCToolInfo>(evt.target);           
+        if (null==dccToolInfo) {
+            Debug.LogWarning("[Debug] Failed to Install Plugin");
             return;
         }
+        InstallPlugin(dccToolInfo);
+    }
+    
+    static void OnManualInstallPluginButtonClicked(EventBase evt) {
+        TextField   manualTextField = GetEventButtonUserDataAs<TextField>(evt.target);           
+        DCCToolInfo dccToolInfo     = FindDCCToolInfo(manualTextField.value);
+        if (null==dccToolInfo) {
+            EditorUtility.DisplayDialog("Debug", "No DCC Tool is detected", "Ok");
+            return;
+        }
+        InstallPlugin(dccToolInfo);
+    }
 
+    static void InstallPlugin(DCCToolInfo dccToolInfo) {
+        BaseDCCIntegrator integrator = DCCIntegratorFactory.Create(dccToolInfo);
         const string ZIP_ROOT    = "Packages/com.unity.meshsync-dcc-plugins/Editor/Plugins~";
-        DCCToolInfo  dccToolInfo = integrator.GetDCCToolInfo();
         string dccPluginFileName = $"UnityMeshSync_{GetDCCToolName(dccToolInfo)}_{GetCurrentDCCPluginPlatform()}.zip";
         string path              = Path.Combine(ZIP_ROOT, dccPluginFileName);
             
@@ -168,15 +174,26 @@ public class DebugInstallWindow : EditorWindow {
                 : $"Error in installing MeshSync plugin for {dccDesc}",
             "Ok"
         );
-
-    }
-    void OnManualInstallPluginButtonClicked(EventBase evt) {
+        
     }
     
     
 
 //----------------------------------------------------------------------------------------------------------------------        
 
+    [CanBeNull]
+    static DCCToolInfo FindDCCToolInfo(string dir) {
+        
+        //Find the path to the actual app
+        DCCToolInfo dccToolInfo = null;
+        for (int i = 0; i < (int) (DCCToolType.NUM_DCC_TOOL_TYPES) && null==dccToolInfo; ++i) {
+            DCCToolType dccToolType = (DCCToolType) (i);
+            dccToolInfo = DCCFinderUtility.FindDCCToolInDirectory(dccToolType, null, dir);
+        }
+
+        return dccToolInfo;
+    }    
+    
     Texture2D LoadIcon(string iconPath) {
 
         if (string.IsNullOrEmpty(iconPath) || !File.Exists(iconPath)) {
@@ -215,7 +232,7 @@ public class DebugInstallWindow : EditorWindow {
         set.Add(asset);
     }
 
-    string GetDCCToolName(DCCToolInfo info) {
+    static string GetDCCToolName(DCCToolInfo info) {
         switch (info.Type) {
             case DCCToolType.BLENDER: return "Blender";
             case DCCToolType.AUTODESK_3DSMAX: return "3DSMAX";
@@ -253,7 +270,9 @@ public class DebugInstallWindow : EditorWindow {
     }
 //----------------------------------------------------------------------------------------------------------------------
    
-    private VisualElement m_root             = null;
+    private VisualElement m_root          = null;
     
-    
+    [SerializeField] private string m_lastManualDir = null;
+
+
 }
