@@ -25,7 +25,9 @@ public static class Menu {
             
         }
     }
-
+    
+//----------------------------------------------------------------------------------------------------------------------
+    
     [MenuItem("MeshSyncDCCPlugins/Debug Install Window")]
     static void RenamePluginZipFiles2() {
         DebugInstallWindow window = (DebugInstallWindow)EditorWindow.GetWindow(typeof(DebugInstallWindow));
