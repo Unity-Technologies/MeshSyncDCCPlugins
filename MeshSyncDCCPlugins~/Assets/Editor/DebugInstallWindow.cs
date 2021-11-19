@@ -82,8 +82,20 @@ public class DebugInstallWindow : EditorWindow {
         TemplateContainer container = dccToolInfoTemplate.CloneTree();
         
         VisualElement labelParent     = container.Query<Label>("DCCToolPath").First().parent;
-        TextField     manualTextField = new TextField("Path: ");
+        TextField     manualTextField = new TextField("Dir: ");
         labelParent.Add(manualTextField);
+
+        Button chooseFolderButton = new Button();
+        chooseFolderButton.text = "Choose Folder";
+        chooseFolderButton.clicked += () => {
+            string folder = EditorUtility.OpenFolderPanel("Add DCC Tool", "", "");
+            if (string.IsNullOrEmpty(folder)) {
+                return;
+            }
+
+            manualTextField.value = folder;
+        };
+        labelParent.Add(chooseFolderButton);
                     
         //Buttons
         {
@@ -102,12 +114,11 @@ public class DebugInstallWindow : EditorWindow {
     
 //----------------------------------------------------------------------------------------------------------------------        
 
-    #region Button callbacks
 
     void OnLaunchDCCToolButtonClicked(EventBase evt) {
         DCCToolInfo dccToolInfo = GetEventButtonUserDataAs<DCCToolInfo>(evt.target);           
         if (null==dccToolInfo || string.IsNullOrEmpty(dccToolInfo.AppPath) || !File.Exists(dccToolInfo.AppPath)) {
-            Debug.LogWarning("[MeshSync] Failed to launch DCC Tool");
+            Debug.LogWarning("[Debug] Failed to launch DCC Tool");
             return;
         }
         
@@ -115,8 +126,25 @@ public class DebugInstallWindow : EditorWindow {
     }
 
     void OnManualLaunchDCCToolButtonClicked(EventBase evt) {
+        
+        TextField manualTextField = GetEventButtonUserDataAs<TextField>(evt.target);           
+        
+        //Find the path to the actual app
+        DCCToolType lastDCCToolType = DCCToolType.AUTODESK_MAYA;
+        DCCToolInfo dccToolInfo     = null;
+        for (int i = 0; i < (int) (DCCToolType.NUM_DCC_TOOL_TYPES) && null==dccToolInfo; ++i) {
+            lastDCCToolType = (DCCToolType) (i);
+            dccToolInfo     = DCCFinderUtility.FindDCCToolInDirectory(lastDCCToolType, null, manualTextField.value);
+        }
+
+        if (null==dccToolInfo) {
+            EditorUtility.DisplayDialog("Debug", "No DCC Tool is detected", "Ok");
+            return;
+        }
+        DiagnosticsUtility.StartProcess(dccToolInfo.AppPath);
     }
 
+//----------------------------------------------------------------------------------------------------------------------        
 
     void OnInstallPluginButtonClicked(EventBase evt) {
         
@@ -145,7 +173,6 @@ public class DebugInstallWindow : EditorWindow {
     void OnManualInstallPluginButtonClicked(EventBase evt) {
     }
     
-    #endregion
     
 
 //----------------------------------------------------------------------------------------------------------------------        
