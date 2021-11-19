@@ -15,7 +15,6 @@ public class DebugInstallWindow : EditorWindow {
         m_root = rootVisualElement;
         LoadAndAddStyle( m_root.styleSheets, MeshSyncEditorConstants.USER_SETTINGS_STYLE_PATH);	
         m_root.Clear();
-        m_installPluginButtons.Clear();
 
         VisualTreeAsset container = LoadVisualTreeAsset(
             MeshSyncEditorConstants.DCC_TOOLS_SETTINGS_CONTAINER_PATH
@@ -38,11 +37,10 @@ public class DebugInstallWindow : EditorWindow {
         MeshSyncEditorSettings settings = MeshSyncEditorSettings.GetOrCreateSettings();
         foreach (KeyValuePair<string, DCCToolInfo> dccToolInfo in settings.GetDCCToolInfos()) {
             AddDCCToolSettingsContainer(dccToolInfo.Value, scrollView, dccToolInfoTemplate);                
-        }            
+        }
+        AddManualDCCToolSettingsContainer(scrollView, dccToolInfoTemplate);
         
-        //Add the container of this tab to root
         m_root.Add(containerInstance);
-
     }
 
 //----------------------------------------------------------------------------------------------------------------------        
@@ -74,15 +72,31 @@ public class DebugInstallWindow : EditorWindow {
             Button button = container.Query<Button>("InstallPluginButton").First();
             button.clickable.clickedWithEventInfo += OnInstallPluginButtonClicked;
             button.userData                       =  integrator;
-            m_installPluginButtons.Add(button);
+        }
+        
+        container.Query<Button>("RemoveDCCToolButton").First().visible = false;
+        top.Add(container);
+    }
+
+    private void AddManualDCCToolSettingsContainer(VisualElement top, VisualTreeAsset dccToolInfoTemplate) {
+        TemplateContainer container = dccToolInfoTemplate.CloneTree();
+        
+        VisualElement labelParent     = container.Query<Label>("DCCToolPath").First().parent;
+        TextField     manualTextField = new TextField("Path: ");
+        labelParent.Add(manualTextField);
+                    
+        //Buttons
+        {
+            Button button = container.Query<Button>("LaunchDCCToolButton").First();
+            button.clickable.clickedWithEventInfo += OnManualLaunchDCCToolButtonClicked;
+            button.userData                       =  manualTextField;
         }
         {
-            Button button = container.Query<Button>("RemoveDCCToolButton").First();
-            button.visible =  false;
+            Button button = container.Query<Button>("InstallPluginButton").First();
+            button.clickable.clickedWithEventInfo += OnManualInstallPluginButtonClicked;
+            button.userData                       =  manualTextField;
         }
-
-        
-        
+        container.Query<Button>("RemoveDCCToolButton").First().visible = false;
         top.Add(container);
     }
     
@@ -99,6 +113,10 @@ public class DebugInstallWindow : EditorWindow {
         
         DiagnosticsUtility.StartProcess(dccToolInfo.AppPath);
     }
+
+    void OnManualLaunchDCCToolButtonClicked(EventBase evt) {
+    }
+
 
     void OnInstallPluginButtonClicked(EventBase evt) {
         
@@ -122,7 +140,11 @@ public class DebugInstallWindow : EditorWindow {
                 : $"Error in installing MeshSync plugin for {dccDesc}",
             "Ok"
         );
+
     }
+    void OnManualInstallPluginButtonClicked(EventBase evt) {
+    }
+    
     #endregion
     
 
@@ -203,8 +225,6 @@ public class DebugInstallWindow : EditorWindow {
         return dccToolInfo;
     }
 //----------------------------------------------------------------------------------------------------------------------
-
-    private readonly List<Button> m_installPluginButtons = new List<Button>();
    
     private VisualElement m_root             = null;
     
