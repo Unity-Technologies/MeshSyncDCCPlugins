@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Unity.MeshSync.Editor;
 using UnityEngine;
@@ -100,31 +101,27 @@ public class DebugInstallWindow : EditorWindow {
     }
 
     void OnInstallPluginButtonClicked(EventBase evt) {
+        
+        BaseDCCIntegrator integrator = GetEventButtonUserDataAs<BaseDCCIntegrator>(evt.target);           
+        if (null==integrator) {
+            Debug.LogWarning("[MeshSync] Failed to Install Plugin");
+            return;
+        }
 
-        // if (null == m_latestCompatibleDCCPluginVersion) {
-        //     EditorUtility.DisplayDialog("MeshSync",
-        //         $"DCC Plugin compatible with MeshSync@{MeshSyncEditorConstants.GetPluginVersion()} is not found", 
-        //         "Ok"
-        //     );
-        //     return;
-        // }            
-        //
-        // BaseDCCIntegrator integrator = GetEventButtonUserDataAs<BaseDCCIntegrator>(evt.target);           
-        // if (null==integrator) {
-        //     Debug.LogWarning("[MeshSync] Failed to Install Plugin");
-        //     return;
-        // }
-        //
-        // integrator.Integrate(m_latestCompatibleDCCPluginVersion.ToString(), () => {
-        //     DCCToolInfo dccToolInfo = integrator.GetDCCToolInfo();                
-        //     if (!m_dccStatusLabels.ContainsKey(dccToolInfo.AppPath)) {
-        //         SetupInternal(m_root);
-        //         return;
-        //     }
-        //
-        //     UpdateDCCPluginStatusLabel(m_dccStatusLabels[dccToolInfo.AppPath]);
-        // });
+        const string ZIP_ROOT    = "Packages/com.unity.meshsync-dcc-plugins/Editor/Plugins~";
+        DCCToolInfo  dccToolInfo = integrator.GetDCCToolInfo();
+        string dccPluginFileName = $"UnityMeshSync_{GetDCCToolName(dccToolInfo)}_{GetCurrentDCCPluginPlatform()}.zip";
+        string path              = Path.Combine(ZIP_ROOT, dccPluginFileName);
+            
+        bool installed = DCCIntegrationUtility.InstallDCCPlugin(integrator, integrator.GetDCCToolInfo(), "dev", path);
 
+        string dccDesc = dccToolInfo.GetDescription();
+        EditorUtility.DisplayDialog("MeshSync",
+            installed
+                ? $"MeshSync plugin installed for {dccDesc}"
+                : $"Error in installing MeshSync plugin for {dccDesc}",
+            "Ok"
+        );
     }
     #endregion
     
@@ -168,6 +165,31 @@ public class DebugInstallWindow : EditorWindow {
         }
         set.Add(asset);
     }
+
+    string GetDCCToolName(DCCToolInfo info) {
+        switch (info.Type) {
+            case DCCToolType.BLENDER: return "Blender";
+            case DCCToolType.AUTODESK_3DSMAX: return "3DSMAX";
+            case DCCToolType.AUTODESK_MAYA: return "Maya";
+        }
+        return null;
+    }
+    
+    private static string GetCurrentDCCPluginPlatform() {
+        string platform = null;
+        switch (Application.platform) {
+            case RuntimePlatform.WindowsEditor: platform = "Windows"; break;
+            case RuntimePlatform.OSXEditor:  platform    = "Mac"; break;
+            case RuntimePlatform.LinuxEditor:  platform  = "Linux"; break;
+            default: {
+                throw new NotImplementedException();
+            }
+        }
+
+        return platform;
+
+    }
+    
     
 //----------------------------------------------------------------------------------------------------------------------
     
@@ -182,7 +204,7 @@ public class DebugInstallWindow : EditorWindow {
     }
 //----------------------------------------------------------------------------------------------------------------------
 
-    private List<Button> m_installPluginButtons = new List<Button>();
+    private readonly List<Button> m_installPluginButtons = new List<Button>();
    
     private VisualElement m_root             = null;
     
