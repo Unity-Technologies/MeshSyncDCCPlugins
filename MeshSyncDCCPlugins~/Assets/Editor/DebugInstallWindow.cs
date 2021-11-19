@@ -94,8 +94,7 @@ public class DebugInstallWindow : EditorWindow {
             if (string.IsNullOrEmpty(folder)) {
                 return;
             }
-
-            manualTextField.value = folder;
+            m_lastManualDir = manualTextField.value = folder;
         };
         labelParent.Add(chooseFolderButton);
                     
