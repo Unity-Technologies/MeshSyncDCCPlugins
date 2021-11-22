@@ -24,6 +24,14 @@ public static class Menu {
             Debug.Log($"Moving {fileName} to {destFileName}");
             
         }
-    }    
+    }
+    
+//----------------------------------------------------------------------------------------------------------------------
+    
+    [MenuItem("MeshSyncDCCPlugins/Debug Install Window")]
+    static void ShowDebugInstallWindow() {
+        DebugInstallWindow window = (DebugInstallWindow)EditorWindow.GetWindow(typeof(DebugInstallWindow));
+        window.Show();
+    }
 
 }
