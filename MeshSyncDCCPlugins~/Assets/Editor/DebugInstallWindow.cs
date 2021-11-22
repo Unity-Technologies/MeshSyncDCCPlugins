@@ -199,7 +199,6 @@ public class DebugInstallWindow : EditorWindow {
             return null;
         }
 
-        //TODO-sin: 2020-5-11: Support ico ?
         string ext = Path.GetExtension(iconPath).ToLower();
         if (ext != ".png") {
             return null;
@@ -269,7 +268,7 @@ public class DebugInstallWindow : EditorWindow {
     }
 //----------------------------------------------------------------------------------------------------------------------
    
-    private VisualElement m_root          = null;
+    private VisualElement m_root = null;
     
     [SerializeField] private string m_lastManualDir = null;
 
