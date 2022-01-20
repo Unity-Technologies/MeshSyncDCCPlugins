@@ -43,6 +43,7 @@ Plugins~/Build/install_manifest.txt
 
 # XCode
 Plugins~/Build/MeshSyncDCCPlugins.build/**
+Plugins~/Build/Build/*
 
 # Visual Studio
 Plugins~/Build/.vs
@@ -62,6 +63,10 @@ Plugins~/Src/MeshSyncClientMODO_*
 # Files to be distributed (Build results)
 Plugins~/Dist/UnityMeshSync_**
 Plugins~/Dist/meta.txt
+
+# Manually extracted files from the zip files in the package
+Editor/Plugins~/*/*
+
 
 # Sample Project
 MeshSyncDCCPlugins~/Library/**
