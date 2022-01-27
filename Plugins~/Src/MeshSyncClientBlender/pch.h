@@ -35,6 +35,7 @@ namespace py = pybind11;
 #pragma warning( disable : 4200 ) // zero length array
 #include "BKE_blender_version.h"
 #include "BKE_main.h"
+#include "BKE_customdata.h"
 #include "BKE_context.h"
 #include "BKE_fcurve.h"
 #include "BKE_editmesh.h"
