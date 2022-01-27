@@ -75,6 +75,7 @@ MeshSyncDCCPlugins~/*.csproj
 MeshSyncDCCPlugins~/Logs/**
 MeshSyncDCCPlugins~/Temp/**
 MeshSyncDCCPlugins~/obj/**
+MeshSyncDCCPlugins~/.vs
 
 # Rider
 **/.idea/**
