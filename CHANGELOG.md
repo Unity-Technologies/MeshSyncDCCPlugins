@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.1-preview] - 2022-01-27
+
+### Changed
+* blender: use 2.83.18, 2.93.7 for building 
+
+### Fixed
+* fix: Blender plugin wouldn't install on Mac for Blender 2.93.x
+
 ## [0.10.0-preview] - 2021-11-11
 
 ### Added
