@@ -27,7 +27,7 @@ target_link_libraries(${MESHSYNC_CLIENT_3DSMAX}
 )
 
 # Installation
-set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_3DSMAX_${PLATFORM}")
+set(DEST_DIR "${DIST_ROOT}/UnityMeshSync_${UNITY_PACKAGE_VERSION}_3DSMAX_${PLATFORM}")
 set_target_properties(${MESHSYNC_CLIENT_3DSMAX} PROPERTIES SUFFIX ".dlu")
 
 set(MESHSYNC_CLIENT_3DSMAX_OUTPUT_NAME "MeshSyncClient3dsMax")

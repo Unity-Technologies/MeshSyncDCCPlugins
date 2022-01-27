@@ -43,7 +43,7 @@ target_link_libraries(${meshsync_client_metasequoia}
 
 
 # Install/copying after build
-set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Metasequoia_${PLATFORM}/Metasequoia${MQ_VERSION}")
+set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${UNITY_PACKAGE_VERSION}_Metasequoia_${PLATFORM}/Metasequoia${MQ_VERSION}")
 install(TARGETS ${meshsync_client_metasequoia} DESTINATION ${DIST_DIR})
 
 

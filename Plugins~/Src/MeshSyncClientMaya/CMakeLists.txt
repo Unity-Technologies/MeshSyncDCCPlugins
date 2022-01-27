@@ -36,7 +36,7 @@ else()
     add_definitions(-DMAYA_LT=0)
 endif()
 
-set(BASE_DEST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Maya_${PLATFORM}")
+set(BASE_DEST_DIR "${DIST_ROOT}/UnityMeshSync_${UNITY_PACKAGE_VERSION}_Maya_${PLATFORM}")
 if(LINUX)
     target_link_libraries(${MESHSYNC_CLIENT_MAYA} PRIVATE "-Wl,--no-undefined")
     set(DEST_DIR "${BASE_DEST_DIR}/modules")
