@@ -61,7 +61,7 @@ set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES PREFIX "")
 set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES OUTPUT_NAME "MeshSyncClientBlender")
 
 # Install/copying after build
-set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Blender_${PLATFORM}/blender-${BLENDER_VERSION}")
+set(DIST_DIR "${DIST_ROOT}/UnityMeshSync_${UNITY_PACKAGE_VERSION}_Blender_${PLATFORM}/blender-${BLENDER_VERSION}")
 set(PYD_DIR "${DIST_DIR}/MeshSyncClientBlender")
 install(FILES
     python/unity_mesh_sync_common.py

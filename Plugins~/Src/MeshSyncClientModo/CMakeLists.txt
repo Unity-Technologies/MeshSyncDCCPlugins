@@ -47,6 +47,6 @@ set_target_properties(${meshsync_client_modo} PROPERTIES SUFFIX ".lx")
 set_target_properties(${meshsync_client_modo} PROPERTIES OUTPUT_NAME "MeshSyncClientModo")
 
 # Install/copying after build
-set(dist_dir "${DIST_ROOT}/UnityMeshSync_${MESHSYNC_VER}_Modo_${PLATFORM}/Modo${modo_version}")
+set(dist_dir "${DIST_ROOT}/UnityMeshSync_${UNITY_PACKAGE_VERSION}_Modo_${PLATFORM}/Modo${modo_version}")
 install(TARGETS ${meshsync_client_modo} DESTINATION ${dist_dir})
 
