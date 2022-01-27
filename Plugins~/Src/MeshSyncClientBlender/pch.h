@@ -51,13 +51,8 @@ namespace py = pybind11;
 #include "DNA_anim_types.h"
 #include "DNA_key_types.h"
 #include "DNA_scene_types.h"
-#if BLENDER_VERSION < 280
-    #include "DNA_group_types.h"
-    #include "DNA_lamp_types.h"
-#else
-    #include "DNA_collection_types.h"
-    #include "DNA_light_types.h"
-#endif
+#include "DNA_collection_types.h"
+#include "DNA_light_types.h"
 #include "BLI_utildefines.h"
 #include "BLI_math_base.h"
 #include "BLI_math_vector.h"
