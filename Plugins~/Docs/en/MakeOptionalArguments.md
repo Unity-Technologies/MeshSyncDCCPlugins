@@ -39,6 +39,7 @@ with commands described in the following sections.
 * Blender 2.91.2 : `-DBUILD_BLENDER_2.91.2_PLUGIN=ON`
 * Blender 2.92.0 : `-DBUILD_BLENDER_2.92.0_PLUGIN=ON`
 * Blender 2.93.7 : `-DBUILD_BLENDER_2.93.7_PLUGIN=ON`
+* Blender 3.0.1 : `-DBUILD_BLENDER_3.0.1_PLUGIN=ON`
 
 ## Modo
 
