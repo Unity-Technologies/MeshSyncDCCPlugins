@@ -35,6 +35,7 @@ namespace py = pybind11;
 #pragma warning( disable : 4200 ) // zero length array
 #include "BKE_blender_version.h"
 #include "BKE_main.h"
+#include "BKE_customdata.h"
 #include "BKE_context.h"
 #include "BKE_fcurve.h"
 #include "BKE_editmesh.h"
@@ -50,13 +51,8 @@ namespace py = pybind11;
 #include "DNA_anim_types.h"
 #include "DNA_key_types.h"
 #include "DNA_scene_types.h"
-#if BLENDER_VERSION < 280
-    #include "DNA_group_types.h"
-    #include "DNA_lamp_types.h"
-#else
-    #include "DNA_collection_types.h"
-    #include "DNA_light_types.h"
-#endif
+#include "DNA_collection_types.h"
+#include "DNA_light_types.h"
 #include "BLI_utildefines.h"
 #include "BLI_math_base.h"
 #include "BLI_math_vector.h"
