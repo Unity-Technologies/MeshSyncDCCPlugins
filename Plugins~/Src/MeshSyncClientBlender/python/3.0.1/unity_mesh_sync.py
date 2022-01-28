@@ -14,6 +14,13 @@ from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 from unity_mesh_sync_common import *
 
+def MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
+    def draw(self, context):
+        self.layout.label(text=message)
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
+
+
 class MESHSYNC_PT:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -210,6 +217,8 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         ctx.strip_normals = self.strip_normals
         ctx.strip_tangents = self.strip_tangents
         ctx.export(self.filepath)
+        MessageBox("SceneCache created") 
+        
         return {'FINISHED'}
 
     def invoke(self, context, event):
