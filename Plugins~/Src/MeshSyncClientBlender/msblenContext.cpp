@@ -124,10 +124,8 @@ int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
 
 int msblenContext::getMaterialID(Material *m)
 {
-#if BLENDER_VERSION >= 280
     if (m && m->id.orig_id)
         m = (Material*)m->id.orig_id;
-#endif
     return m_material_ids.getID(m);
 }
 
@@ -154,14 +152,6 @@ void msblenContext::exportMaterials()
         ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
         bl::BMaterial bm(mat);
         struct Material* color_src = mat;
-        if (bm.use_nodes()) {
-#if BLENDER_VERSION < 280
-            bl::BMaterial node(bm.active_node_material());
-            if (node.ptr()) {
-                color_src = node.ptr();
-            }
-#endif
-        }
         stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
 
         // todo: handle texture
@@ -327,13 +317,9 @@ void msblenContext::extractCameraData(const Object *src,
 void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
-#if BLENDER_VERSION < 280
-    auto data = (Lamp*)src->data;
-    const float energy_to_intensity = 1.0f;
-#else
     Light* data = (Light*)src->data;
     const float energy_to_intensity = 0.001f;
-#endif
+
     color = (mu::float4&)data->r;
     intensity = data->energy * energy_to_intensity;
     range = data->dist;

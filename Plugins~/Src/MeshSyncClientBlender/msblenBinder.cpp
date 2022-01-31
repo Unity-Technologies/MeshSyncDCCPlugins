@@ -260,11 +260,7 @@ mu::float4x4 BObject::matrix_world() const
 }
 bool BObject::hide_viewport() const
 {
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BObject_hide);
-#else
     return get_bool(m_ptr, BObject_hide_viewport);
-#endif
 }
 bool BObject::hide_render() const
 {
