@@ -260,11 +260,7 @@ mu::float4x4 BObject::matrix_world() const
 }
 bool BObject::hide_viewport() const
 {
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BObject_hide);
-#else
     return get_bool(m_ptr, BObject_hide_viewport);
-#endif
 }
 bool BObject::hide_render() const
 {
@@ -411,37 +407,20 @@ float BCamera::sensor_height() const { return get_float(m_ptr, BCamera_sensor_he
 float BCamera::shift_x() const { return get_float(m_ptr, BCamera_shift_x); }
 float BCamera::shift_y() const { return get_float(m_ptr, BCamera_shift_y); }
 
-blist_range<Object> BData::objects()
-{
-#if BLENDER_VERSION < 280
-    return list_range((Object*)m_ptr->object.first);
-#else
+blist_range<Object> BData::objects() {
     return list_range((Object*)m_ptr->objects.first);
-#endif
 }
-blist_range<Mesh> BData::meshes()
-{
-#if BLENDER_VERSION < 280
-    return list_range((Mesh*)m_ptr->mesh.first);
-#else
+
+blist_range<Mesh> BData::meshes(){
     return list_range((Mesh*)m_ptr->meshes.first);
-#endif
 }
-blist_range<Material> BData::materials()
-{
-#if BLENDER_VERSION < 280
-    return list_range((Material*)m_ptr->mat.first);
-#else
+
+blist_range<Material> BData::materials(){
     return list_range((Material*)m_ptr->materials.first);
-#endif
 }
-bool BData::objects_is_updated()
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BlendDataObjects_is_updated);
-#else
-    return true;
-#endif
+
+bool BData::objects_is_updated() {
+    return true; //before 2.80: get_bool(m_ptr, BlendDataObjects_is_updated);
 }
 
 void BData::remove(Mesh * v)

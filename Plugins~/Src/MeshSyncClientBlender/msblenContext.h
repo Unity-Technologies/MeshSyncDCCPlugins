@@ -171,11 +171,7 @@ private:
 
     MeshSyncClient::AsyncTasksController m_asyncTasksController;
 
-#if BLENDER_VERSION < 280
-    std::vector<Mesh*> m_tmp_meshes;
-#else
     std::vector<const Object*> m_meshes_to_clear;
-#endif
 
     std::vector<ms::AnimationClipPtr> m_animations;
     ms::IDGenerator<Material*> m_material_ids;

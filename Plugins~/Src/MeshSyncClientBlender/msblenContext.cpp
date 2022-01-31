@@ -124,10 +124,8 @@ int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
 
 int msblenContext::getMaterialID(Material *m)
 {
-#if BLENDER_VERSION >= 280
     if (m && m->id.orig_id)
         m = (Material*)m->id.orig_id;
-#endif
     return m_material_ids.getID(m);
 }
 
@@ -154,14 +152,6 @@ void msblenContext::exportMaterials()
         ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
         bl::BMaterial bm(mat);
         struct Material* color_src = mat;
-        if (bm.use_nodes()) {
-#if BLENDER_VERSION < 280
-            bl::BMaterial node(bm.active_node_material());
-            if (node.ptr()) {
-                color_src = node.ptr();
-            }
-#endif
-        }
         stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
 
         // todo: handle texture
@@ -327,13 +317,9 @@ void msblenContext::extractCameraData(const Object *src,
 void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
-#if BLENDER_VERSION < 280
-    auto data = (Lamp*)src->data;
-    const float energy_to_intensity = 1.0f;
-#else
     Light* data = (Light*)src->data;
     const float energy_to_intensity = 0.001f;
-#endif
+
     color = (mu::float4&)data->r;
     intensity = data->energy * energy_to_intensity;
     range = data->dist;
@@ -654,19 +640,13 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-#if BLENDER_VERSION >= 280
             if (m_settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-#endif
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
-#if BLENDER_VERSION < 280
-                m_tmp_meshes.push_back(tmp); // baked meshes are need to be deleted manually
-#else
                 m_meshes_to_clear.push_back(src);
-#endif
             }
         }
 
@@ -1556,14 +1536,6 @@ void msblenContext::WaitAndKickAsyncExport()
     m_asyncTasksController.Wait();
 
     // clear baked meshes
-#if BLENDER_VERSION < 280
-    if (!m_tmp_meshes.empty()) {
-        bl::BData bd(bl::BlenderPyContext::get().data());
-        for (auto *v : m_tmp_meshes)
-            bd.remove(v);
-        m_tmp_meshes.clear();
-}
-#else
     if (!m_meshes_to_clear.empty()) {
         for (const struct Object* v : m_meshes_to_clear) {
             bl::BObject bobj(v);
@@ -1571,7 +1543,6 @@ void msblenContext::WaitAndKickAsyncExport()
         }
         m_meshes_to_clear.clear();
     }
-#endif
 
     for (std::map<const void*, ObjectRecord>::value_type& kvp : m_obj_records)
         kvp.second.clearState();
