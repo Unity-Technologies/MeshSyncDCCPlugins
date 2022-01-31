@@ -1,13 +1,8 @@
 #pragma once
 
 //Data structure change in Blender 2.81: https://developer.blender.org/D5558
-#if BLENDER_VERSION >= 281
 #define PointerRNA_OWNER_ID(ptr) (ptr.owner_id)
 #define PointerRNA_OWNER_ID_CAST(obj) reinterpret_cast<ID*>(obj)
-#else 
-#define PointerRNA_OWNER_ID(ptr) (ptr.id.data)
-#define PointerRNA_OWNER_ID_CAST(obj) reinterpret_cast<void*>(obj)
-#endif
 
 namespace blender {
 

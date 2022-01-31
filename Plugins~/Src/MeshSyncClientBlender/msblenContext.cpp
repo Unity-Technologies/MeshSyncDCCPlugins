@@ -640,19 +640,13 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-#if BLENDER_VERSION >= 280
             if (m_settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-#endif
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
-#if BLENDER_VERSION < 280
-                m_tmp_meshes.push_back(tmp); // baked meshes are need to be deleted manually
-#else
                 m_meshes_to_clear.push_back(src);
-#endif
             }
         }
 
@@ -1542,14 +1536,6 @@ void msblenContext::WaitAndKickAsyncExport()
     m_asyncTasksController.Wait();
 
     // clear baked meshes
-#if BLENDER_VERSION < 280
-    if (!m_tmp_meshes.empty()) {
-        bl::BData bd(bl::BlenderPyContext::get().data());
-        for (auto *v : m_tmp_meshes)
-            bd.remove(v);
-        m_tmp_meshes.clear();
-}
-#else
     if (!m_meshes_to_clear.empty()) {
         for (const struct Object* v : m_meshes_to_clear) {
             bl::BObject bobj(v);
@@ -1557,7 +1543,6 @@ void msblenContext::WaitAndKickAsyncExport()
         }
         m_meshes_to_clear.clear();
     }
-#endif
 
     for (std::map<const void*, ObjectRecord>::value_type& kvp : m_obj_records)
         kvp.second.clearState();
