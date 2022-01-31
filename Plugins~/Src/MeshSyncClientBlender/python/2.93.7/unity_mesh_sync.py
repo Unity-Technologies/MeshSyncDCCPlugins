@@ -210,6 +210,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         ctx.strip_normals = self.strip_normals
         ctx.strip_tangents = self.strip_tangents
         ctx.export(self.filepath)
+        MS_MessageBox("Finished writing scene cache to " + self.filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):

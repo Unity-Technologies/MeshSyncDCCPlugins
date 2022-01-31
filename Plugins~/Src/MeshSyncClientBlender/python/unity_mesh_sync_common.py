@@ -97,6 +97,10 @@ def on_scene_update(context):
         msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
+def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
+    def draw(self, context):
+        self.layout.label(text=message)
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
