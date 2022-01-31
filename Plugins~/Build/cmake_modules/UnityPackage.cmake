@@ -19,7 +19,7 @@ function(setup_unity_package_version)
         if (PACKAGE_VERSION)
         
             message("Unity Package Version: ${CMAKE_MATCH_1}")
-            set(UNITY_PACKAGE_VERSION ${CMAKE_MATCH_1} CACHE STRING "Unity package version")    
+            set(UNITY_PACKAGE_VERSION ${CMAKE_MATCH_1} CACHE STRING "Unity package version" FORCE )    
             break()
         
         endif()
