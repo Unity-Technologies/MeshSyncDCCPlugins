@@ -9,7 +9,6 @@ using UnityEngine.UIElements;
 
 public class DebugInstallWindow : EditorWindow {
     
-
 //----------------------------------------------------------------------------------------------------------------------        
     private void CreateGUI() {
 
@@ -36,6 +35,7 @@ public class DebugInstallWindow : EditorWindow {
 
         //Add detected DCCTools to ScrollView
         MeshSyncEditorSettings settings = MeshSyncEditorSettings.GetOrCreateSettings();
+        settings.AddInstalledDCCTools(); //force adding installed tools
         foreach (KeyValuePair<string, DCCToolInfo> dccToolInfo in settings.GetDCCToolInfos()) {
             AddDCCToolSettingsContainer(dccToolInfo.Value, scrollView, dccToolInfoTemplate);                
         }
@@ -160,8 +160,10 @@ public class DebugInstallWindow : EditorWindow {
 
     static void InstallPlugin(DCCToolInfo dccToolInfo) {
         BaseDCCIntegrator integrator = DCCIntegratorFactory.Create(dccToolInfo);
-        const string ZIP_ROOT    = "Packages/com.unity.meshsync-dcc-plugins/Editor/Plugins~";
-        string dccPluginFileName = $"UnityMeshSync_{GetDCCToolName(dccToolInfo)}_{GetCurrentDCCPluginPlatform()}.zip";
+                
+        const string ZIP_ROOT    = "../Plugins~/Dist";
+        string packageVersion = PackageChecker.GetPackageVersion();
+        string dccPluginFileName = $"UnityMeshSync_{packageVersion}_{GetDCCToolName(dccToolInfo)}_{GetCurrentDCCPluginPlatform()}.zip";
         string path              = Path.Combine(ZIP_ROOT, dccPluginFileName);
             
         bool installed = DCCIntegrationUtility.InstallDCCPlugin(integrator, integrator.GetDCCToolInfo(), "dev", path);
