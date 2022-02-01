@@ -11,6 +11,38 @@
 #include "DNA_meta_types.h" //MetaBall
 
 
+Material ***BKE_object_material_array_p(Object *ob)
+{
+  if (ob->type == OB_MESH) {
+    Mesh *me = reinterpret_cast<Mesh*>(ob->data);
+    return &(me->mat);
+  }
+  if (ELEM(ob->type, OB_CURVE, OB_FONT, OB_SURF)) {
+    Curve *cu = reinterpret_cast<Curve*>(ob->data);
+    return &(cu->mat);
+  }
+  if (ob->type == OB_MBALL) {
+    MetaBall *mb = reinterpret_cast<MetaBall*>(ob->data);
+    return &(mb->mat);
+  }
+  if (ob->type == OB_GPENCIL) {
+    bGPdata *gpd = reinterpret_cast<bGPdata*>(ob->data);
+    return &(gpd->mat);
+  }
+  if (ob->type == OB_HAIR) {
+    Hair *hair = reinterpret_cast<Hair*>(ob->data);
+    return &(hair->mat);
+  }
+  if (ob->type == OB_POINTCLOUD) {
+    PointCloud *pointcloud = reinterpret_cast<PointCloud*>(ob->data);
+    return &(pointcloud->mat);
+  }
+  if (ob->type == OB_VOLUME) {
+    Volume *volume = reinterpret_cast<Volume*>(ob->data);
+    return &(volume->mat);
+  }
+  return NULL;
+}
 
 
 

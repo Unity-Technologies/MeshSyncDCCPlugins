@@ -30,11 +30,18 @@ void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_
 
 }
 
-short BlenderUtility::GetNumMaterials(Object* obj) {
+//----------------------------------------------------------------------------------------------------------------------
 
+Material** BlenderUtility::GetMaterials(Object* obj) {
+    Material*** matPointers = BKE_object_material_array_p(obj);
+    return matPointers? *matPointers: NULL;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+short BlenderUtility::GetNumMaterials(Object* obj) {
     const short* numMaterials = BKE_object_material_len_p(obj);
     return (nullptr == numMaterials) ? 0 : *numMaterials;
-
 }
 
 
