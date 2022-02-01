@@ -42,18 +42,24 @@ namespace py = pybind11;
 #include "BKE_material.h"
 #include "RNA_define.h"
 #include "RNA_types.h"
-#include "DNA_object_types.h"
+
+#include "DNA_anim_types.h"
+#include "DNA_armature_types.h"
 #include "DNA_camera_types.h"
+#include "DNA_collection_types.h"
+#include "DNA_gpencil_types.h" //bGPdata
+#include "DNA_hair_types.h" //Hair
+#include "DNA_key_types.h"
+#include "DNA_light_types.h"
 #include "DNA_material_types.h"
 #include "DNA_mesh_types.h"
 #include "DNA_meshdata_types.h"
 #include "DNA_modifier_types.h"
-#include "DNA_armature_types.h"
-#include "DNA_anim_types.h"
-#include "DNA_key_types.h"
+#include "DNA_object_types.h"
+#include "DNA_pointcloud_types.h" //PointCloud
 #include "DNA_scene_types.h"
-#include "DNA_collection_types.h"
-#include "DNA_light_types.h"
+#include "DNA_volume_types.h" //Volume
+
 #include "BLI_utildefines.h"
 #include "BLI_math_base.h"
 #include "BLI_math_vector.h"
