@@ -15,6 +15,7 @@ class BMesh;
 class BlenderUtility {
 public:
     static void ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_t numIndices, ms::Mesh* dest);
+    static short GetNumMaterials(Object* obj);
 };
 
 } //end namespace

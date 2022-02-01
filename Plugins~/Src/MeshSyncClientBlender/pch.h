@@ -39,6 +39,7 @@ namespace py = pybind11;
 #include "BKE_context.h"
 #include "BKE_fcurve.h"
 #include "BKE_editmesh.h"
+#include "BKE_material.h"
 #include "RNA_define.h"
 #include "RNA_types.h"
 #include "DNA_object_types.h"

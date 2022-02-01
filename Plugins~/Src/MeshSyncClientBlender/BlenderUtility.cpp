@@ -30,6 +30,14 @@ void BlenderUtility::ApplyBMeshUVToMesh(const blender::BMesh* bMesh, const size_
 
 }
 
+short BlenderUtility::GetNumMaterials(Object* obj) {
+
+    const short* numMaterials = BKE_object_material_len_p(obj);
+    return (nullptr == numMaterials) ? 0 : *numMaterials;
+
+}
+
+
 
 } //end namespace
 
