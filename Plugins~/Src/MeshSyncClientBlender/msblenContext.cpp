@@ -129,7 +129,7 @@ int msblenContext::getMaterialID(Material *m)
     return m_material_ids.getID(m);
 }
 
-void msblenContext::RegisterAllMaterials()
+void msblenContext::RegisterSceneMaterials()
 {
     int midx = 0;
     
@@ -1327,7 +1327,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    RegisterAllMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -1345,7 +1345,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        RegisterAllMaterials();
+        RegisterSceneMaterials();
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
@@ -1503,14 +1503,14 @@ void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
                    const std::vector<Object*>& nodes)
 {
     if (sceneIndex == 0) {
-        // RegisterAllMaterials() is needed to export material IDs in meshes
-        RegisterAllMaterials();
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
         if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
             m_material_manager.clearDirtyFlags();
     }
     else {
         if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            RegisterAllMaterials();
+            RegisterSceneMaterials();
     }
 
     for (const std::vector<Object*>::value_type& n : nodes)
