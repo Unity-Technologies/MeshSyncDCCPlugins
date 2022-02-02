@@ -268,7 +268,7 @@ bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     int num_exported = 0;
     auto nodes = getNodes(scope);
@@ -307,7 +307,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -462,8 +462,8 @@ void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient
                                       const std::vector<msmaxContext::TreeNode*>& nodes)
 {
     if (sceneIndex == 0 || materialFrameRange == MeshSyncClient::MaterialFrameRange::All) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
         m_material_manager.clearDirtyFlags();
     }
 
@@ -648,7 +648,7 @@ int msmaxContext::exportTexture(const std::string & path, ms::TextureType type)
     return m_texture_manager.addFile(path, type);
 }
 
-void msmaxContext::exportMaterials()
+void msmaxContext::RegisterSceneMaterials()
 {
     auto *mtllib = GetCOREInterface()->GetSceneMtls();
     int count = mtllib->Count();
