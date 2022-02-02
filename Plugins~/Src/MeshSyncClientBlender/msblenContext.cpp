@@ -1536,11 +1536,11 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
         if (sceneIndex == 0) {
-            RegisterSceneMaterials(); //needed to export material IDs in meshes
+            RegisterObjectMaterials(nodes); //needed to export material IDs in meshes
             if (MeshSyncClient::MaterialFrameRange::None == materialRange)
                 m_material_manager.clearDirtyFlags();
         } else if (MeshSyncClient::MaterialFrameRange::All == materialRange) {
-            RegisterSceneMaterials();
+            RegisterObjectMaterials(nodes);
         }
 
         DoExportSceneCache(nodes);
