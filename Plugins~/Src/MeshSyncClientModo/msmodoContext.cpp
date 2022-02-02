@@ -476,21 +476,20 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
 
 
     const double prevTime = m_svc_selection.GetTime();
-    double timeStart = 0, timeEnd = 0, interval = 0;
+    double timeStart = 0, timeEnd = 0;
     switch(cache_settings.frame_range){
         case MeshSyncClient::FrameRange::Current:{
             timeStart = timeEnd = prevTime;
-            interval = 1;
             break;
         }
         case MeshSyncClient::FrameRange::All:
         case MeshSyncClient::FrameRange::Custom:
         {
             std::tie(timeStart, timeEnd) = getTimeRange();
-            double interval = frameStep / frameRate;
             break;
         }
     }
+    const double interval = frameStep / frameRate;
 
     // advance frame and record
     int sceneIndex = 0;
