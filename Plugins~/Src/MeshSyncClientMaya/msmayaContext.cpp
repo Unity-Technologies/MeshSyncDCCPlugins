@@ -678,8 +678,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
         MGlobal::viewFrame(t);
 
         if (sceneIndex == 0) {
-            // RegisterSceneMaterials() is needed to export material IDs in meshes
-            RegisterSceneMaterials();
+            RegisterSceneMaterials(); //needed to export material IDs in meshes
             if (MeshSyncClient::MaterialFrameRange::None == material_range)
                 m_material_manager.clearDirtyFlags();
         } else if (MeshSyncClient::MaterialFrameRange::All == material_range) {
