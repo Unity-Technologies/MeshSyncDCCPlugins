@@ -1467,7 +1467,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
         if (MeshSyncClient::MaterialFrameRange::None == materialRange)
             m_material_manager.clearDirtyFlags();
 
-        DoExportSceneCache(0, materialRange, nodes);
+        DoExportSceneCache(nodes);
     } else {
         const int prevFrame = scene.GetCurrentFrame();
         const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
@@ -1500,7 +1500,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
                     RegisterSceneMaterials();
             }
 
-            DoExportSceneCache(sceneIndex, materialRange, nodes);
+            DoExportSceneCache(nodes);
             ++sceneIndex;
         }
         scene.SetCurrentFrame(prevFrame, depsGraph);
@@ -1515,8 +1515,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 }
 
 
-void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                   const std::vector<Object*>& nodes)
+void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(n, true);
