@@ -114,7 +114,7 @@ private:
 
     int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
-    void exportMaterials();
+    void RegisterAllMaterials();
 
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(const Object *obj);
