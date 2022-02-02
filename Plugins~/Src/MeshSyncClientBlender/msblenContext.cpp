@@ -129,50 +129,94 @@ int msblenContext::getMaterialID(Material *m)
     return m_material_ids.getID(m);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
+ms::MaterialPtr msblenContext::CreateDefaultMaterial(const uint32_t matIndex) {
+    std::shared_ptr<ms::Material> dst = ms::Material::create();
+    dst->id = m_material_ids.getID(nullptr);
+    dst->index = matIndex;
+    dst->name = "Default";
+    return dst;
+}
+
+
 void msblenContext::RegisterSceneMaterials()
 {
     int midx = 0;
     
     // Blender allows faces to have no material. add dummy material for them.
-    {
-        std::shared_ptr<ms::Material> dst = ms::Material::create();
-        dst->id = m_material_ids.getID(nullptr);
-        dst->index = midx++;
-        dst->name = "Default";
-        m_material_manager.add(dst);
-    }
+    m_material_manager.add(CreateDefaultMaterial(midx++));
 
     bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
     for (struct Material* mat : bpy_data.materials()) {
-        std::shared_ptr<ms::Material> ret = ms::Material::create();
-        ret->name = get_name(mat);
-        ret->id = m_material_ids.getID(mat);
-        ret->index = midx++;
-
-        ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-        bl::BMaterial bm(mat);
-        struct Material* color_src = mat;
-        stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
-
-        // todo: handle texture
-#if 0
-        if (m_settings.sync_textures) {
-            auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-                if (!mtex || !mtex->tex || !mtex->tex->ima)
-                    return -1;
-                return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-            };
-#if BLENDER_VERSION < 280
-            stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
-#endif
-        }
-#endif
-
-        m_material_manager.add(ret);
+        RegisterMaterial(mat, midx++);
     }
     m_material_ids.eraseStaleRecords();
     m_material_manager.eraseStaleMaterials();
 }
+
+void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) {
+    int midx = 0;
+    
+    // Blender allows faces to have no material. add dummy material for them.
+    m_material_manager.add(CreateDefaultMaterial(midx++));
+
+    std::unordered_set<Material*> blMaterials;
+    for (auto it = objects.begin();it!=objects.end();++it) {
+        Object* curObject = *it;
+        if (nullptr == curObject)
+            continue;
+
+        const short numMaterials = blender::BlenderUtility::GetNumMaterials(curObject);
+        Material** matPtr = blender::BlenderUtility::GetMaterials(curObject);
+        for (uint32_t i =0;i<numMaterials;++i){
+            if (nullptr == matPtr[i])
+                continue;
+            blMaterials.emplace(matPtr[i]);
+        }
+    }
+
+    //Register materials to material manager
+    for (auto it = blMaterials.begin();it!=blMaterials.end();++it) {
+        Material* mat = *it;
+        RegisterMaterial(mat, midx++);
+
+    }
+    m_material_ids.eraseStaleRecords();
+    m_material_manager.eraseStaleMaterials();
+}
+
+void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
+    std::shared_ptr<ms::Material> ret = ms::Material::create();
+    ret->name = get_name(mat);
+    ret->id = m_material_ids.getID(mat);
+    ret->index = matIndex;
+
+    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
+    bl::BMaterial bm(mat);
+    struct Material* color_src = mat;
+    stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
+
+    // todo: handle texture
+#if 0
+    if (m_settings.sync_textures) {
+        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
+            if (!mtex || !mtex->tex || !mtex->tex->ima)
+                return -1;
+            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
+        };
+#if BLENDER_VERSION < 280
+        stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
+#endif
+    }
+#endif
+
+    m_material_manager.add(ret);
+    
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
 
 
 static inline mu::float4x4 camera_correction(const mu::float4x4& v)
