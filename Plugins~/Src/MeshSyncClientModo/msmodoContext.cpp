@@ -481,7 +481,7 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
         if (MeshSyncClient::MaterialFrameRange::None == material_range)
             m_material_manager.clearDirtyFlags();
 
-        DoExportSceneCache(0, material_range, nodes);
+        DoExportSceneCache(nodes);
     } else {
         const double prevTime = m_svc_selection.GetTime();
 
@@ -506,7 +506,7 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
                     RegisterSceneMaterials();
             }
 
-            DoExportSceneCache(sceneIndex, material_range, nodes);
+            DoExportSceneCache(nodes);
             ++sceneIndex;
         }
         setChannelReadTime(prevTime);
@@ -521,8 +521,7 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
     return true;
 }
 
-void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                        const std::vector<CLxUser_Item>& nodes)
+void msmodoContext::DoExportSceneCache(const std::vector<CLxUser_Item>& nodes)
 {
     //need to use auto. Different type per platform
     for (auto n : nodes)
