@@ -93,7 +93,7 @@ private:
     void WaitAndKickAsyncExport();
     int getMaterialID(int material_index) const;
     int exportTexture(const std::string& path, ms::TextureType type);
-    int exportMaterials(MQDocument doc);
+    int RegisterSceneMaterials(MQDocument doc);
 
     MQObject findMesh(MQDocument doc, const char *name);
     MQObject createMesh(MQDocument doc, const ms::Mesh& data, const char *name);
