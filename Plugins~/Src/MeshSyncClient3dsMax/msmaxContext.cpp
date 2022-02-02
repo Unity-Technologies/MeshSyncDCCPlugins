@@ -400,7 +400,6 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<msmaxContext::TreeNode*> nodes = getNodes(cache_settings.object_scope);
 
-    const int ticksPerFrame = ::GetTicksPerFrame();
 
     Interface* ifs = GetCOREInterface();
     const TimeValue prevTime = ifs->GetTime();
@@ -417,6 +416,7 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
             break;
         }
         case MeshSyncClient::FrameRange::Custom:{
+            const int ticksPerFrame = ::GetTicksPerFrame();
             timeStart = cache_settings.frame_begin * ticksPerFrame;
             timeEnd = cache_settings.frame_end * ticksPerFrame;
             break;
