@@ -1461,6 +1461,12 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
+
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
+        if (MeshSyncClient::MaterialFrameRange::None == materialRange)
+            m_material_manager.clearDirtyFlags();
+
         DoExportSceneCache(0, materialRange, nodes);
     } else {
         const int prevFrame = scene.GetCurrentFrame();
@@ -1484,6 +1490,16 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 
             m_anim_time = static_cast<float>(f - frameStart) / frameRate;
 
+            if (sceneIndex == 0) {
+                // RegisterSceneMaterials() is needed to export material IDs in meshes
+                RegisterSceneMaterials();
+                if (MeshSyncClient::MaterialFrameRange::None == materialRange)
+                    m_material_manager.clearDirtyFlags();
+            } else {
+                if (MeshSyncClient::MaterialFrameRange::All == materialRange)
+                    RegisterSceneMaterials();
+            }
+
             DoExportSceneCache(sceneIndex, materialRange, nodes);
             ++sceneIndex;
         }
@@ -1502,17 +1518,6 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
                    const std::vector<Object*>& nodes)
 {
-    if (sceneIndex == 0) {
-        // RegisterSceneMaterials() is needed to export material IDs in meshes
-        RegisterSceneMaterials();
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
-            m_material_manager.clearDirtyFlags();
-    }
-    else {
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            RegisterSceneMaterials();
-    }
-
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(n, true);
 
