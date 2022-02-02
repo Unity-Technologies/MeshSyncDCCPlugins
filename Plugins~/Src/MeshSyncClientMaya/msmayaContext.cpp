@@ -682,9 +682,8 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
             RegisterSceneMaterials();
             if (MeshSyncClient::MaterialFrameRange::None == material_range)
                 m_material_manager.clearDirtyFlags();
-        } else {
-            if (MeshSyncClient::MaterialFrameRange::All == material_range)
-                RegisterSceneMaterials();
+        } else if (MeshSyncClient::MaterialFrameRange::All == material_range) {
+            RegisterSceneMaterials();
         }
 
         DoExportSceneCache(nodes);

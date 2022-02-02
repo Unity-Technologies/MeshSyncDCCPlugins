@@ -1498,9 +1498,8 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
             RegisterSceneMaterials();
             if (MeshSyncClient::MaterialFrameRange::None == materialRange)
                 m_material_manager.clearDirtyFlags();
-        } else {
-            if (MeshSyncClient::MaterialFrameRange::All == materialRange)
-                RegisterSceneMaterials();
+        } else if (MeshSyncClient::MaterialFrameRange::All == materialRange) {
+            RegisterSceneMaterials();
         }
 
         DoExportSceneCache(nodes);
