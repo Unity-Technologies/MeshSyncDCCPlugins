@@ -145,8 +145,7 @@ private:
         std::string& path, mu::float3& pos, mu::quatf& rot, mu::float3& scale);
 
     void WaitAndKickAsyncExport();
-    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<CLxUser_Item>& nodes);
+    void DoExportSceneCache(const std::vector<CLxUser_Item>& nodes);
 
 
 private:

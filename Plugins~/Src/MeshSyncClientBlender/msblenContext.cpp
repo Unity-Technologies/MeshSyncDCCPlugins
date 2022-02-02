@@ -1459,36 +1459,50 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
     mu::ScopedTimer timer;
 
-    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
-        m_anim_time = 0.0f;
-        DoExportSceneCache(0, materialRange, nodes);
-    } else {
-        const int prevFrame = scene.GetCurrentFrame();
-        const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
-        int frameStart = cache_settings.frame_begin;
-        int frameEnd = cache_settings.frame_end;
-        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range) {
+    const int prevFrame = scene.GetCurrentFrame();
+    int frameStart = 0, frameEnd = 0;
+    switch(cache_settings.frame_range){
+        case MeshSyncClient::FrameRange::Current:{
+            frameStart = frameEnd = prevFrame;
+            break;
+        }
+        case MeshSyncClient::FrameRange::All:{
             frameStart = scene.frame_start();
             frameEnd = scene.frame_end();
+            break;
         }
-
-        // record
-        bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
-        Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
-
-        int sceneIndex = 0;
-        for (int f = frameStart; f <= frameEnd; f += frameStep) {
-
-            //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
-            scene.SetCurrentFrame(f, depsGraph);
-
-            m_anim_time = static_cast<float>(f - frameStart) / frameRate;
-
-            DoExportSceneCache(sceneIndex, materialRange, nodes);
-            ++sceneIndex;
+        case MeshSyncClient::FrameRange::Custom:{
+            frameStart = cache_settings.frame_begin;
+            frameEnd = cache_settings.frame_end;
+            break;
         }
-        scene.SetCurrentFrame(prevFrame, depsGraph);
     }
+    const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
+
+    // record
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    int sceneIndex = 0;
+    for (int f = frameStart; f <= frameEnd; f += frameStep) {
+
+        //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
+        scene.SetCurrentFrame(f, depsGraph);
+
+        m_anim_time = static_cast<float>(f - frameStart) / frameRate;
+
+        if (sceneIndex == 0) {
+            RegisterSceneMaterials(); //needed to export material IDs in meshes
+            if (MeshSyncClient::MaterialFrameRange::None == materialRange)
+                m_material_manager.clearDirtyFlags();
+        } else if (MeshSyncClient::MaterialFrameRange::All == materialRange) {
+            RegisterSceneMaterials();
+        }
+
+        DoExportSceneCache(nodes);
+        ++sceneIndex;
+    }
+    scene.SetCurrentFrame(prevFrame, depsGraph);
 
     m_asyncTasksController.Wait();
     logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
@@ -1499,20 +1513,8 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 }
 
 
-void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                   const std::vector<Object*>& nodes)
+void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
-    if (sceneIndex == 0) {
-        // RegisterSceneMaterials() is needed to export material IDs in meshes
-        RegisterSceneMaterials();
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
-            m_material_manager.clearDirtyFlags();
-    }
-    else {
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            RegisterSceneMaterials();
-    }
-
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(n, true);
 

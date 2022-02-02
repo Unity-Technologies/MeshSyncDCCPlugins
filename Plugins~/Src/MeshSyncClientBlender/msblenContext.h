@@ -158,8 +158,7 @@ private:
     void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
 
 
-    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<Object*>& nodes);
+    void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
 private:
