@@ -641,8 +641,19 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
 
         if (need_convert) {
             if (m_settings.BakeModifiers ) {
-                Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
+                auto blContext = bl::BlenderPyContext::get();
+                Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
+
+                CollectionPropertyIterator* beginIt;
+                CollectionPropertyIterator* nextIt;
+                CollectionPropertyIterator* endIt;
+
+                blContext.object_instances_begin(beginIt, depsgraph);
+                blContext.object_instances_end(endIt);
+                for (nextIt = beginIt; nextIt != endIt; blContext.object_instances_next(nextIt)) {
+                    auto matrix = blContext.object_instances_get(nextIt);
+                }
             }
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
