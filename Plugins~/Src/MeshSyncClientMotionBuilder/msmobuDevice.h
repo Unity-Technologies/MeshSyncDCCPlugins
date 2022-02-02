@@ -122,7 +122,7 @@ private:
 
     int exportTexture(FBTexture* src, FBMaterialTextureType type);
     bool exportMaterial(FBMaterial* src, int index);
-    bool exportMaterials();
+    bool RegisterSceneMaterials();
 
     bool exportAnimations();
     bool exportAnimation(FBModel* src, bool force);
