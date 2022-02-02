@@ -1460,26 +1460,24 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     mu::ScopedTimer timer;
 
     const int prevFrame = scene.GetCurrentFrame();
-    int frameStart = 0, frameEnd = 0, frameStep = 0;
+    int frameStart = 0, frameEnd = 0;
     switch(cache_settings.frame_range){
         case MeshSyncClient::FrameRange::Current:{
             frameStart = frameEnd = prevFrame;
-            frameStep = 1;
             break;
         }
         case MeshSyncClient::FrameRange::All:{
             frameStart = scene.frame_start();
             frameEnd = scene.frame_end();
-            frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
             break;
         }
         case MeshSyncClient::FrameRange::Custom:{
             frameStart = cache_settings.frame_begin;
             frameEnd = cache_settings.frame_end;
-            frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
             break;
         }
     }
+    const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
 
     // record
     bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
