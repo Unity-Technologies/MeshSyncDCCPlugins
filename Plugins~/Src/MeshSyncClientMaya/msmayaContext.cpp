@@ -649,48 +649,49 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<TreeNode*> nodes = getNodes(cache_settings.object_scope, true);
 
-    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
-        m_anim_time = 0.0f;
-        // RegisterSceneMaterials() is needed to export material IDs in meshes
-        RegisterSceneMaterials();
-        if ( MeshSyncClient::MaterialFrameRange::None == material_range)
-            m_material_manager.clearDirtyFlags();
-        DoExportSceneCache(nodes);
-    } else {
-        const MTime prevTime = MAnimControl::currentTime();
-
-        const MTime interval = MTime(frameStep, MTime::uiUnit());
-        MTime timeStart = MTime(cache_settings.frame_begin, MTime::uiUnit());
-        MTime timeEnd = MTime(cache_settings.frame_end, MTime::uiUnit());
-        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range ) {
+    const MTime prevTime = MAnimControl::currentTime();
+    MTime timeStart = prevTime, timeEnd = prevTime;
+    switch(cache_settings.frame_range){
+        case MeshSyncClient::FrameRange::Current:{
+            timeStart = timeEnd = prevTime;
+            break;
+        }
+        case MeshSyncClient::FrameRange::All:{
             timeStart = MAnimControl::minTime();
             timeEnd = MAnimControl::maxTime();
-        } 
-        timeEnd = std::max(timeEnd, timeStart); // sanitize
-
-        // advance frame and record
-        int sceneIndex = 0;
-        m_ignore_update = true;
-        for (MTime t = timeStart; t <= timeEnd; t += interval) {
-            m_anim_time = static_cast<float>((t - timeStart).as(MTime::kSeconds));
-            MGlobal::viewFrame(t);
-
-            if (sceneIndex == 0) {
-                // RegisterSceneMaterials() is needed to export material IDs in meshes
-                RegisterSceneMaterials();
-                if (MeshSyncClient::MaterialFrameRange::None == material_range)
-                    m_material_manager.clearDirtyFlags();
-            } else {
-                if (MeshSyncClient::MaterialFrameRange::All == material_range)
-                    RegisterSceneMaterials();
-            }
-
-            DoExportSceneCache(nodes);
-            ++sceneIndex;
+            break;
         }
-        MGlobal::viewFrame(prevTime);
-        m_ignore_update = false;
+        case MeshSyncClient::FrameRange::Custom:{
+            timeStart = MTime(cache_settings.frame_begin, MTime::uiUnit());
+            timeEnd = MTime(cache_settings.frame_end, MTime::uiUnit());
+            break;
+        }
     }
+    const MTime interval = MTime(frameStep, MTime::uiUnit());
+    timeEnd = std::max(timeEnd, timeStart); // sanitize
+
+    // advance frame and record
+    int sceneIndex = 0;
+    m_ignore_update = true;
+    for (MTime t = timeStart; t <= timeEnd; t += interval) {
+        m_anim_time = static_cast<float>((t - timeStart).as(MTime::kSeconds));
+        MGlobal::viewFrame(t);
+
+        if (sceneIndex == 0) {
+            // RegisterSceneMaterials() is needed to export material IDs in meshes
+            RegisterSceneMaterials();
+            if (MeshSyncClient::MaterialFrameRange::None == material_range)
+                m_material_manager.clearDirtyFlags();
+        } else {
+            if (MeshSyncClient::MaterialFrameRange::All == material_range)
+                RegisterSceneMaterials();
+        }
+
+        DoExportSceneCache(nodes);
+        ++sceneIndex;
+    }
+    MGlobal::viewFrame(prevTime);
+    m_ignore_update = false;
 
     logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
 
