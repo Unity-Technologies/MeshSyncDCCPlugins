@@ -111,7 +111,7 @@ private:
 
     std::vector<CLxUser_Item> getNodes(MeshSyncClient::ObjectScope scope);
 
-    void exportMaterials();
+    void RegisterSceneMaterials();
     ms::MaterialPtr exportMaterial(CLxUser_Item obj);
 
     ms::TransformPtr exportObject(CLxUser_Item obj, bool parent, bool tip = true);

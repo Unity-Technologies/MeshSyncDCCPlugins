@@ -366,7 +366,7 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -399,7 +399,7 @@ bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     // materials
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     // entities
     if (scope == MeshSyncClient::ObjectScope::All) {
@@ -509,14 +509,14 @@ void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
                         const std::vector<CLxUser_Item>& nodes)
 {
     if (sceneIndex == 0) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
         if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
             m_material_manager.clearDirtyFlags();
     }
     else {
         if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            exportMaterials();
+            RegisterSceneMaterials();
     }
 
     //need to use auto. Different type per platform
@@ -640,7 +640,7 @@ std::vector<CLxUser_Item> msmodoContext::getNodes(MeshSyncClient::ObjectScope sc
     return ret;
 }
 
-void msmodoContext::exportMaterials()
+void msmodoContext::RegisterSceneMaterials()
 {
     m_material_index_seed = 0;
 
