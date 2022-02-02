@@ -569,7 +569,7 @@ bool msmayaContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -593,7 +593,7 @@ bool msmayaContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     int num_exported = 0;
     bool handle_parents = scope != MeshSyncClient::ObjectScope::Updated;
@@ -688,13 +688,13 @@ void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClien
                         const std::vector<TreeNode*>& nodes)
 {
     if (sceneIndex == 0) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
         if (materialFrameRange== MeshSyncClient::MaterialFrameRange::None)
             m_material_manager.clearDirtyFlags();
     } else {
         if (materialFrameRange== MeshSyncClient::MaterialFrameRange::All)
-            exportMaterials();
+            RegisterSceneMaterials();
     }
 
     for (const std::vector<TreeNode*>::value_type& n : nodes)
@@ -879,7 +879,7 @@ int msmayaContext::findTexture(const std::string& path)
     return m_texture_manager.find(path);
 }
 
-void msmayaContext::exportMaterials()
+void msmayaContext::RegisterSceneMaterials()
 {
     int midx = 0;
     MItDependencyNodes it(MFn::kLambert);
