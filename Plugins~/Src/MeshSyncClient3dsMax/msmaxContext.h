@@ -155,9 +155,7 @@ private:
     void extractLightAnimation(ms::TransformAnimation& dst, TreeNode *n);
     void extractMeshAnimation(ms::TransformAnimation& dst, TreeNode *n);
 
-
-    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<msmaxContext::TreeNode*>& nodes);
+    void DoExportSceneCache(const std::vector<msmaxContext::TreeNode*>& nodes);
 
 private:
     MaxSyncSettings m_settings;
