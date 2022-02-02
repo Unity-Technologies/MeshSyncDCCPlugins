@@ -486,6 +486,7 @@ void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient
         export_objects();
     }
 
+    //exportObject() marks materials as dirty, so we need to clear them after if necessary
     if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None ||
         (materialFrameRange == MeshSyncClient::MaterialFrameRange::One && sceneIndex != 0)) 
     {
