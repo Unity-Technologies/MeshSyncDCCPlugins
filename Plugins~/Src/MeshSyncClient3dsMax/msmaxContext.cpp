@@ -435,16 +435,7 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
         const TimeValue timeElapsed = t - timeStart;
         m_anim_time = ToSeconds(timeElapsed);
 
-        if (sceneIndex == 0) {
-            RegisterSceneMaterials(); //needed to export material IDs in meshes
-            if (MeshSyncClient::MaterialFrameRange::None == material_range)
-                m_material_manager.clearDirtyFlags();
-        } else if (MeshSyncClient::MaterialFrameRange::All == material_range) {
-            RegisterSceneMaterials();
-        }
-
-
-        DoExportSceneCache(nodes);
+        DoExportSceneCache(sceneIndex, material_range, nodes);
         ++sceneIndex;
 
         const float progress = static_cast<float>(timeElapsed) * progressPercentage;
@@ -471,8 +462,15 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     return true;
 }
 
-void msmaxContext::DoExportSceneCache(const std::vector<msmaxContext::TreeNode*>& nodes)
+void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
+                                      const std::vector<msmaxContext::TreeNode*>& nodes)
 {
+    if (sceneIndex == 0 || materialFrameRange == MeshSyncClient::MaterialFrameRange::All) {
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
+        m_material_manager.clearDirtyFlags();
+    }
+
     auto export_objects = [&]() {
         for (const std::vector<msmaxContext::TreeNode*>::value_type& n : nodes)
             exportObject(n->node, true);
@@ -486,6 +484,12 @@ void msmaxContext::DoExportSceneCache(const std::vector<msmaxContext::TreeNode*>
     }
     else {
         export_objects();
+    }
+
+    if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None ||
+        (materialFrameRange == MeshSyncClient::MaterialFrameRange::One && sceneIndex != 0)) 
+    {
+        m_material_manager.clearDirtyFlags();
     }
 
     m_texture_manager.clearDirtyFlags();
