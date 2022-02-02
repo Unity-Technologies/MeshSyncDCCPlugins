@@ -655,7 +655,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
         RegisterSceneMaterials();
         if ( MeshSyncClient::MaterialFrameRange::None == material_range)
             m_material_manager.clearDirtyFlags();
-        DoExportSceneCache(0, material_range, nodes);
+        DoExportSceneCache(nodes);
     } else {
         const MTime prevTime = MAnimControl::currentTime();
 
@@ -685,7 +685,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
                     RegisterSceneMaterials();
             }
 
-            DoExportSceneCache(sceneIndex, material_range, nodes);
+            DoExportSceneCache(nodes);
             ++sceneIndex;
         }
         MGlobal::viewFrame(prevTime);
@@ -699,8 +699,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     return true;
 }
 
-void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                        const std::vector<TreeNode*>& nodes)
+void msmayaContext::DoExportSceneCache(const std::vector<TreeNode*>& nodes)
 {
     for (const std::vector<TreeNode*>::value_type& n : nodes)
         exportObject(n, true);
