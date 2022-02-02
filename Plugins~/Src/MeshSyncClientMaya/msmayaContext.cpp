@@ -651,6 +651,10 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
 
     if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
         m_anim_time = 0.0f;
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
+        if ( MeshSyncClient::MaterialFrameRange::None == material_range)
+            m_material_manager.clearDirtyFlags();
         DoExportSceneCache(0, material_range, nodes);
     } else {
         const MTime prevTime = MAnimControl::currentTime();
@@ -670,6 +674,17 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
         for (MTime t = timeStart; t <= timeEnd; t += interval) {
             m_anim_time = static_cast<float>((t - timeStart).as(MTime::kSeconds));
             MGlobal::viewFrame(t);
+
+            if (sceneIndex == 0) {
+                // RegisterSceneMaterials() is needed to export material IDs in meshes
+                RegisterSceneMaterials();
+                if (MeshSyncClient::MaterialFrameRange::None == material_range)
+                    m_material_manager.clearDirtyFlags();
+            } else {
+                if (MeshSyncClient::MaterialFrameRange::All == material_range)
+                    RegisterSceneMaterials();
+            }
+
             DoExportSceneCache(sceneIndex, material_range, nodes);
             ++sceneIndex;
         }
@@ -687,16 +702,6 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
 void msmayaContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
                         const std::vector<TreeNode*>& nodes)
 {
-    if (sceneIndex == 0) {
-        // RegisterSceneMaterials() is needed to export material IDs in meshes
-        RegisterSceneMaterials();
-        if (materialFrameRange== MeshSyncClient::MaterialFrameRange::None)
-            m_material_manager.clearDirtyFlags();
-    } else {
-        if (materialFrameRange== MeshSyncClient::MaterialFrameRange::All)
-            RegisterSceneMaterials();
-    }
-
     for (const std::vector<TreeNode*>::value_type& n : nodes)
         exportObject(n, true);
 
