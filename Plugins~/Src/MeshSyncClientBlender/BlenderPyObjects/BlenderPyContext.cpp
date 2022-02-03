@@ -13,6 +13,7 @@ FunctionRNA* BlenderPyContext_evaluated_depsgraph_get = nullptr;
 FunctionRNA* BlenderPyContext_depsgraph_update = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_object_instances = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_instance_object = nullptr;
+PropertyRNA* BlenderPyContext_depsgraph_is_instance = nullptr;
 
 
 
@@ -60,13 +61,15 @@ void BlenderPyContext::object_instances_next(CollectionPropertyIterator * it){
     cprop->next(it);
 }
 
-Object* BlenderPyContext::object_instances_get(CollectionPropertyIterator* it) {
+PointerRNA BlenderPyContext::object_instances_get(CollectionPropertyIterator* it) {
 
-   
     auto collectionProp = (CollectionPropertyRNA*)BlenderPyContext_depsgraph_object_instances;
+    return collectionProp->get(it);
+
+}
+
+Object* BlenderPyContext::instance_object_get(PointerRNA instance) {
     auto objectInstanceProp = (PointerPropertyRNA*)BlenderPyContext_depsgraph_instance_object;
-    
-    auto instance = collectionProp->get(it);
     auto object = objectInstanceProp->get(&instance);
 
     if (object.type == nullptr || object.data == nullptr) {
@@ -74,6 +77,13 @@ Object* BlenderPyContext::object_instances_get(CollectionPropertyIterator* it) {
     }
 
     return (Object*)object.data;
+}
+
+
+
+bool BlenderPyContext::object_instances_is_instance(PointerRNA object) {
+    auto booleanProp = (BoolPropertyRNA*)BlenderPyContext_depsgraph_is_instance;
+    return booleanProp->get(&object);
 }
 
 } // namespace blender

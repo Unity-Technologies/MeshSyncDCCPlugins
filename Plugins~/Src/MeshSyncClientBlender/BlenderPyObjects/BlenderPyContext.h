@@ -22,7 +22,11 @@ namespace blender
         void object_instances_begin(CollectionPropertyIterator* it, Depsgraph* depsgrah);
         void object_instances_end(CollectionPropertyIterator* it);
         void object_instances_next(CollectionPropertyIterator* it);
-        Object* object_instances_get(CollectionPropertyIterator* it);
+        PointerRNA object_instances_get(CollectionPropertyIterator* it);
+
+
+        Object* instance_object_get(PointerRNA instance);
+        bool BlenderPyContext::object_instances_is_instance(PointerRNA instance);
 
     };
 

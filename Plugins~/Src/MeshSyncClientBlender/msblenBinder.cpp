@@ -66,6 +66,7 @@ extern FunctionRNA* BlenderPyContext_depsgraph_update;
 extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_instance_object;
+extern PropertyRNA* BlenderPyContext_depsgraph_is_instance;
 
 bool ready()
 {
@@ -211,6 +212,10 @@ void setup(py::object bpy_context)
             each_prop{
                 if (match_prop("instance_object")) {
                     BlenderPyContext_depsgraph_instance_object = prop;
+                }
+
+                if (match_prop("is_instance")) {
+                    BlenderPyContext_depsgraph_is_instance = prop;
                 }
             }
         }
