@@ -12,6 +12,7 @@ PropertyRNA* BlenderPyContext_scene = nullptr;
 FunctionRNA* BlenderPyContext_evaluated_depsgraph_get = nullptr;
 FunctionRNA* BlenderPyContext_depsgraph_update = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_object_instances = nullptr;
+PropertyRNA* BlenderPyContext_depsgraph_instance_object = nullptr;
 
 
 
@@ -40,12 +41,12 @@ void BlenderPyContext::UpdateDepsgraph(Depsgraph* depsgraph) {
 
 void BlenderPyContext::object_instances_begin(CollectionPropertyIterator* it, Depsgraph* depsgraph) {
 
-    PointerRNA* rna;
-    rna->data = depsgraph;
+    PointerRNA rna;
+    rna.data = depsgraph;
 
     CollectionPropertyRNA* cprop = (CollectionPropertyRNA*)BlenderPyContext_depsgraph_object_instances;
     
-    cprop->begin(it, rna);
+    cprop->begin(it, &rna);
 }
 
 void BlenderPyContext::object_instances_end(CollectionPropertyIterator* it) {
@@ -59,12 +60,20 @@ void BlenderPyContext::object_instances_next(CollectionPropertyIterator * it){
     cprop->next(it);
 }
 
-mu::float4x4* BlenderPyContext::object_instances_get(CollectionPropertyIterator* it) {
-    CollectionPropertyRNA* cprop = (CollectionPropertyRNA*)BlenderPyContext_depsgraph_object_instances;
-    auto ret = cprop->get(it);
-    auto k = (mu::float4x4*)ret.data;
-    return k;
+Object* BlenderPyContext::object_instances_get(CollectionPropertyIterator* it) {
+
+   
+    auto collectionProp = (CollectionPropertyRNA*)BlenderPyContext_depsgraph_object_instances;
+    auto objectInstanceProp = (PointerPropertyRNA*)BlenderPyContext_depsgraph_instance_object;
     
+    auto instance = collectionProp->get(it);
+    auto object = objectInstanceProp->get(&instance);
+
+    if (object.type == nullptr || object.data == nullptr) {
+        return nullptr;
+    }
+
+    return (Object*)object.data;
 }
 
 } // namespace blender

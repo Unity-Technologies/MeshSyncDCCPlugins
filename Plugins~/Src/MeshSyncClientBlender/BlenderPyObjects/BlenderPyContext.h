@@ -22,7 +22,7 @@ namespace blender
         void object_instances_begin(CollectionPropertyIterator* it, Depsgraph* depsgrah);
         void object_instances_end(CollectionPropertyIterator* it);
         void object_instances_next(CollectionPropertyIterator* it);
-        mu::float4x4* object_instances_get(CollectionPropertyIterator* it);
+        Object* object_instances_get(CollectionPropertyIterator* it);
 
     };
 

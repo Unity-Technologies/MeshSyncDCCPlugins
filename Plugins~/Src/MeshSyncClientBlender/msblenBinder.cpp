@@ -65,6 +65,8 @@ extern FunctionRNA* BlenderPyContext_depsgraph_update;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 
+extern PropertyRNA* BlenderPyContext_depsgraph_instance_object;
+
 bool ready()
 {
     return g_context != nullptr;
@@ -202,6 +204,13 @@ void setup(py::object bpy_context)
             each_func{
                 if (match_func("update")) {
                     BlenderPyContext_depsgraph_update = func;
+                }
+            }
+        }
+        else if (match_type("DepsgraphObjectInstance")) {
+            each_prop{
+                if (match_prop("instance_object")) {
+                    BlenderPyContext_depsgraph_instance_object = prop;
                 }
             }
         }

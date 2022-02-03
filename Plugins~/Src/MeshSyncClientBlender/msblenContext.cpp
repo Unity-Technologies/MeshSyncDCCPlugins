@@ -645,15 +645,21 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
                 Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
 
-                CollectionPropertyIterator* beginIt;
-                CollectionPropertyIterator* nextIt;
-                CollectionPropertyIterator* endIt;
+                CollectionPropertyIterator it;
 
-                blContext.object_instances_begin(beginIt, depsgraph);
-                blContext.object_instances_end(endIt);
-                for (nextIt = beginIt; nextIt != endIt; blContext.object_instances_next(nextIt)) {
-                    auto matrix = blContext.object_instances_get(nextIt);
+                blContext.object_instances_begin(&it, depsgraph);
+                auto counter = 0;
+                for (; it.valid; blContext.object_instances_next(&it)) {
+                    auto instance_object = blContext.object_instances_get(&it);
+                    if (instance_object == nullptr) {
+                        continue;
+                    }
+
+
+
+                    counter++;
                 }
+                blContext.object_instances_end(&it);
             }
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
