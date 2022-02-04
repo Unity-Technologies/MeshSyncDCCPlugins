@@ -644,33 +644,6 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
                 auto blContext = bl::BlenderPyContext::get();
                 Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
-
-                // Iterate over the object instances collection
-                CollectionPropertyIterator it;
-
-                blContext.object_instances_begin(&it, depsgraph);
-                auto counter = 0;
-                for (; it.valid; blContext.object_instances_next(&it)) {
-                    auto instance = blContext.object_instances_get(&it);
-                    auto instance_object = blContext.instance_object_get(instance);
-
-                    // if the object is null, skip
-                    if (instance_object == nullptr) {
-                        continue;
-                    }
-
-                    // if the object is not a mesh object, skip
-                    if (instance_object->type != OB_MESH) {
-                        continue;
-                    }
-
-                    if (!blContext.object_instances_is_instance(instance)) {
-                        continue;
-                    }
-
-                    counter++;
-                }
-                blContext.object_instances_end(&it);
             }
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
@@ -691,6 +664,25 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
         auto task = [this, ret, src, data]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
+            
+            auto name = src->id.name;
+            std::string nameMesh;
+            dst.getName(nameMesh);
+
+            // if modifier baking is on and there are instances for this mesh
+            if (m_settings.BakeModifiers && 
+                object_instances.find(name) != object_instances.end()) {
+
+                /// Add mesh instances as a user property
+                ms::Variant instances;
+                instances.name = "instances";
+                instances.type = ms::Variant::Type::Float4x4;
+                auto matrices = object_instances[name];
+                instances.set(matrices.data(), matrices.size());
+
+                dst.addUserProperty(std::move(instances));
+            }
+            
             m_entity_manager.add(ret);
         };
 
@@ -1375,6 +1367,10 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
 
+    if (!extractObjectInstances()) {
+        return false;
+    }
+
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
@@ -1396,8 +1392,78 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         eraseStaleObjects();
     }
 
+    //TODO-Sean Dillon: cleanup object instances array
+    // How to know when the async mesh export has finished?
+
     WaitAndKickAsyncExport();
     return true;
+}
+
+bool msblenContext::extractObjectInstances() {
+    
+    using namespace std;
+    using namespace mu;
+
+    object_instances.clear();
+
+    // Geometry nodes are modifiers, if bake is off, send nothing
+    if (!m_settings.BakeModifiers) {
+        return true;
+    } 
+    
+    // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
+    auto blContext = bl::BlenderPyContext::get();
+    auto depsgraph = blContext.evaluated_depsgraph_get();
+
+    // Iterate over the object instances collection of depsgraph
+    CollectionPropertyIterator it;
+
+    blContext.object_instances_begin(&it, depsgraph);
+
+    for (; it.valid; blContext.object_instances_next(&it)) {
+        // Get the instance as a Pointer RNA. This is not converted to an object yet
+        auto instance = blContext.object_instances_get(&it);
+
+        // Convert the instance to an object
+        auto instance_object = blContext.instance_object_get(instance);
+
+        // If the object is null, skip
+        if (instance_object == nullptr)
+            continue;
+
+        if (!is_mesh(instance_object))
+            continue;
+
+        // if the object is not an instance, skip
+        if (!blContext.object_instances_is_instance(instance))
+            continue;
+        
+        // If the object data is null, skip
+        auto data = (ID*)instance_object->data;
+        if (data == nullptr)
+            continue;
+
+        // If the object has a mesh parent, skip.
+        // This is because need to capture only the mesh object parent.
+        // The transform relative to the parent is captured by the local matrix of the object.
+        auto parent = instance_object->parent;
+        if (parent != nullptr && is_mesh(parent))
+            continue;
+
+        auto name = instance_object->id.name;
+        if (name != nullptr) {
+            if (object_instances.find(name) == object_instances.end()) {
+                matrix_vector v;
+                object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
+            }
+
+            auto world_matrix = getWorldMatrix(instance_object);
+            object_instances[name].push_back(move(world_matrix));
+        }
+    }
+
+    // Cleanup resources
+    blContext.object_instances_end(&it);
 }
 
 bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
