@@ -14,6 +14,8 @@ FunctionRNA* BlenderPyContext_depsgraph_update = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_object_instances = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_instance_object = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_is_instance = nullptr;
+PropertyRNA* BlenderPyContext_depsgraph_world_matrix = nullptr;
+PropertyRNA* BlenderPyContext_depsgraph_parent = nullptr;
 
 
 
@@ -84,6 +86,19 @@ Object* BlenderPyContext::instance_object_get(PointerRNA instance) {
 bool BlenderPyContext::object_instances_is_instance(PointerRNA object) {
     auto booleanProp = (BoolPropertyRNA*)BlenderPyContext_depsgraph_is_instance;
     return booleanProp->get(&object);
+}
+
+void BlenderPyContext::world_matrix_get(PointerRNA* instance, mu::float4x4* result)
+{
+    auto floatProp = (FloatPropertyRNA*)BlenderPyContext_depsgraph_world_matrix;
+    floatProp->getarray(instance, &(result->m[0][0])); // Sean Dillon - TODO: is the matrix object memory guaranteed to be aligned?
+}
+
+Object* BlenderPyContext::instance_parent_get(PointerRNA* instance) {
+    auto pointerProp = (PointerPropertyRNA*)BlenderPyContext_depsgraph_parent;
+    auto parent = pointerProp->get(instance);
+
+    return (Object*)parent.data;
 }
 
 } // namespace blender

@@ -1393,7 +1393,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     //TODO-Sean Dillon: cleanup object instances array
-    // How to know when the async mesh export has finished?
+    // How to know when the async mesh export has finished? WhenAll task?
 
     WaitAndKickAsyncExport();
     return true;
@@ -1421,44 +1421,53 @@ bool msblenContext::extractObjectInstances() {
     blContext.object_instances_begin(&it, depsgraph);
 
     for (; it.valid; blContext.object_instances_next(&it)) {
-        // Get the instance as a Pointer RNA. This is not converted to an object yet
+        // Get the instance as a Pointer RNA.
         auto instance = blContext.object_instances_get(&it);
 
-        // Convert the instance to an object
-        auto instance_object = blContext.instance_object_get(instance);
+        // Get the object that the instance refers to
+        auto object = blContext.instance_object_get(instance);
 
         // If the object is null, skip
-        if (instance_object == nullptr)
+        if (object == nullptr)
             continue;
 
-        if (!is_mesh(instance_object))
+        // if the object is not a mesh, skip
+        if (!is_mesh(object))
             continue;
 
-        // if the object is not an instance, skip
+        // if the instance is not an instance, skip
         if (!blContext.object_instances_is_instance(instance))
             continue;
         
         // If the object data is null, skip
-        auto data = (ID*)instance_object->data;
+        auto data = (ID*)object->data;
         if (data == nullptr)
             continue;
 
-        // If the object has a mesh parent, skip.
-        // This is because need to capture only the mesh object parent.
-        // The transform relative to the parent is captured by the local matrix of the object.
-        auto parent = instance_object->parent;
-        if (parent != nullptr && is_mesh(parent))
-            continue;
-
-        auto name = instance_object->id.name;
+        auto name = object->id.name;
         if (name != nullptr) {
             if (object_instances.find(name) == object_instances.end()) {
                 matrix_vector v;
                 object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
             }
 
-            auto world_matrix = getWorldMatrix(instance_object);
-            object_instances[name].push_back(move(world_matrix));
+            auto world_matrix = float4x4();
+            blContext.world_matrix_get(&instance, &world_matrix);
+
+            auto rotation = rotate_x(-90 * DegToRad);
+            auto rotation180 = rotate_z(180 * DegToRad);
+            auto scale = float3::one();
+            scale.x = -1;
+            auto result =
+                to_mat4x4(rotation) *
+                scale44(scale)*
+                world_matrix *
+                to_mat4x4(rotation) *
+                to_mat4x4(rotation180) *
+                scale44(scale);
+
+
+            object_instances[name].push_back(move(result));
         }
     }
 

@@ -67,6 +67,8 @@ extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_instance_object;
 extern PropertyRNA* BlenderPyContext_depsgraph_is_instance;
+extern PropertyRNA* BlenderPyContext_depsgraph_world_matrix;
+extern PropertyRNA* BlenderPyContext_depsgraph_parent;
 
 bool ready()
 {
@@ -216,6 +218,12 @@ void setup(py::object bpy_context)
 
                 if (match_prop("is_instance")) {
                     BlenderPyContext_depsgraph_is_instance = prop;
+                }
+                if (match_prop("matrix_world")) {
+                    BlenderPyContext_depsgraph_world_matrix = prop;
+                }
+                if (match_prop("parent")) {
+                    BlenderPyContext_depsgraph_parent = prop;
                 }
             }
         }

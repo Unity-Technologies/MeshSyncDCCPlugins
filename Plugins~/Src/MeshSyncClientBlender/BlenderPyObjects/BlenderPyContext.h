@@ -26,8 +26,9 @@ namespace blender
 
 
         Object* instance_object_get(PointerRNA instance);
-        bool BlenderPyContext::object_instances_is_instance(PointerRNA instance);
-
+        bool object_instances_is_instance(PointerRNA instance);
+        void world_matrix_get(PointerRNA* instance, mu::float4x4* world_matrix);
+        Object* instance_parent_get(PointerRNA* instance);
     };
 
 } // namespace blender
