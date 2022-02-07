@@ -31,8 +31,10 @@ void BlenderPyScene::SetCurrentFrame(int frame, Depsgraph* depsgraph) {
 
 #if BLENDER_VERSION <= 283
     const size_t ID_TYPE_UPDATED_OFFSET = 41;
-#else
+#elif BLENDER_VERSION < 300
     const size_t ID_TYPE_UPDATED_OFFSET = 265;
+#else 
+    const size_t ID_TYPE_UPDATED_OFFSET = 267;
 #endif
 
     //[Note-sin: 2021-5-13] Since we are modifying frame_current directly, and not using frame_set(),
