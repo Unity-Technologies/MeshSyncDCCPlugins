@@ -19,16 +19,16 @@ This allows devs to immediately see how things will look in-game while modelling
 
 ## Features
 
-|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
-| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
-| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          |
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- |
+| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
 | Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
-| Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
-| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
-| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
+| Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |
+| Non-polygon shape   |                      |                      |                      |                      |                      |                      |
 
 
 ### Caveats
@@ -42,29 +42,30 @@ This allows devs to immediately see how things will look in-game while modelling
 
 ## Supported DCC Tools
 
-|                     | Windows            | Mac                | Linux              | 
-| --------------------| ------------------ | ------------------ |------------------- | 
-| Maya 2018           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Maya 2019           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Maya 2020           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Maya 2022           | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Maya LT 2019 +      | :heavy_check_mark: |                    | :x:                | 
-| 3ds Max 2018        | :heavy_check_mark: | :x:                | :x:                | 
-| 3ds Max 2019        | :heavy_check_mark: | :x:                | :x:                | 
-| 3ds Max 2020        | :heavy_check_mark: | :x:                | :x:                | 
-| 3ds Max 2021        | :heavy_check_mark: | :x:                | :x:                | 
-| MotionBuilder 2017  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
-| MotionBuilder 2018  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
-| MotionBuilder 2019  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
-| MotionBuilder 2020  | :heavy_check_mark: | :x:                | :heavy_check_mark: | 
-| Blender 2.83        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.90        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.91        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.92        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Blender 2.93        | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
-| Modo 12             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Modo 13             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | 
-| Metasequoia 4.x     | :heavy_check_mark: | :heavy_check_mark: |                    | 
+|                    | Windows            | Mac                | Linux              |
+|--------------------| ------------------ | ------------------ |------------------- |
+| Maya 2018          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya 2019          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya 2020          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya 2022          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya LT 2019 +     | :heavy_check_mark: |                    | :x:                |
+| 3ds Max 2018       | :heavy_check_mark: | :x:                | :x:                |
+| 3ds Max 2019       | :heavy_check_mark: | :x:                | :x:                |
+| 3ds Max 2020       | :heavy_check_mark: | :x:                | :x:                |
+| 3ds Max 2021       | :heavy_check_mark: | :x:                | :x:                |
+| MotionBuilder 2017 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
+| MotionBuilder 2018 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
+| MotionBuilder 2019 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
+| MotionBuilder 2020 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
+| Blender 2.83       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 2.90       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 2.91       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 2.92       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
 
 Notes:
 * :heavy_check_mark: : Supported

@@ -116,7 +116,11 @@ private:
 
     int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
+    ms::MaterialPtr CreateDefaultMaterial(const uint32_t matIndex);
     void RegisterSceneMaterials();
+    void RegisterObjectMaterials(const std::vector<Object*> objects);
+    void RegisterMaterial(Material* mat, const uint32_t matIndex);
+
 
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(const Object *obj);
