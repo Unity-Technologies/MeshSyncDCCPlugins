@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.0-preview] - 2022-02-08
+
+### Added
+* feat: blender3.0 support 
+* blender: show a message box after exporting a SceneCache file
+
+### Changed
+* blender: export only the materials of selected objects during scene cache export
+
 ## [0.10.1-preview] - 2022-01-27
 
 ### Changed
