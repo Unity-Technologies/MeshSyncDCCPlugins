@@ -16,6 +16,7 @@ PropertyRNA* BlenderPyContext_depsgraph_instance_object = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_is_instance = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_world_matrix = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_parent = nullptr;
+PropertyRNA* BlenderPyContext_depsgraph_object = nullptr;
 
 
 
@@ -99,6 +100,17 @@ Object* BlenderPyContext::instance_parent_get(PointerRNA* instance) {
     auto parent = pointerProp->get(instance);
 
     return (Object*)parent.data;
+}
+
+Object* BlenderPyContext::object_get(PointerRNA instance) {
+    auto objectInstanceProp = (PointerPropertyRNA*)BlenderPyContext_depsgraph_object;
+    auto object = objectInstanceProp->get(&instance);
+
+    if (object.type == nullptr || object.data == nullptr) {
+        return nullptr;
+    }
+
+    return (Object*)object.data;
 }
 
 } // namespace blender

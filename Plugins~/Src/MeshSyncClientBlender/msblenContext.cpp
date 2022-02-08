@@ -713,15 +713,21 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             std::string nameMesh;
             dst.getName(nameMesh);
 
+            auto data = (ID*)src->data;
+            auto meshName = "";
+            if (data != nullptr) {
+                meshName = data->name;
+            }
+
             // if modifier baking is on and there are instances for this mesh
             if (m_settings.BakeModifiers && 
-                object_instances.find(name) != object_instances.end()) {
+                object_instances.find(meshName) != object_instances.end()) {
 
                 /// Add mesh instances as a user property
                 ms::Variant instances;
                 instances.name = "instances";
                 instances.type = ms::Variant::Type::Float4x4;
-                auto matrices = object_instances[name];
+                auto matrices = object_instances[meshName];
                 instances.set(matrices.data(), matrices.size());
 
                 dst.addUserProperty(std::move(instances));
@@ -1469,14 +1475,14 @@ bool msblenContext::extractObjectInstances() {
         auto instance = blContext.object_instances_get(&it);
 
         // Get the object that the instance refers to
-        auto object = blContext.instance_object_get(instance);
+        auto instance_object = blContext.instance_object_get(instance);
 
         // If the object is null, skip
-        if (object == nullptr)
+        if (instance_object == nullptr)
             continue;
 
         // if the object is not a mesh, skip
-        if (!is_mesh(object))
+        if (!is_mesh(instance_object))
             continue;
 
         // if the instance is not an instance, skip
@@ -1484,39 +1490,53 @@ bool msblenContext::extractObjectInstances() {
             continue;
         
         // If the object data is null, skip
-        auto data = (ID*)object->data;
+        auto data = (ID*)instance_object->data;
         if (data == nullptr)
             continue;
 
-        auto name = object->id.name;
-        if (name != nullptr) {
-            if (object_instances.find(name) == object_instances.end()) {
-                matrix_vector v;
-                object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
-            }
+        auto parent = blContext.instance_parent_get(&instance);
+        if (parent == nullptr)
+            continue;
 
-            auto world_matrix = float4x4();
-            blContext.world_matrix_get(&instance, &world_matrix);
+        auto object = blContext.object_get(instance);
+        auto object_name = object->id.name;
 
-            auto rotation = rotate_x(-90 * DegToRad);
-            auto rotation180 = rotate_z(180 * DegToRad);
-            auto scale = float3::one();
-            scale.x = -1;
-            auto result =
-                to_mat4x4(rotation) *
-                scale44(scale)*
-                world_matrix *
-                to_mat4x4(rotation) *
-                to_mat4x4(rotation180) *
-                scale44(scale);
+        auto object_data = (ID*)object->data;
+        if (object_data == nullptr)
+            continue;
 
+        auto name = object_data->name;
 
-            object_instances[name].push_back(move(result));
+        if (name == nullptr)
+            continue;
+        
+        if (object_instances.find(name) == object_instances.end()) {
+            matrix_vector v;
+            object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
         }
+
+        auto world_matrix = float4x4();
+        blContext.world_matrix_get(&instance, &world_matrix);
+
+        auto rotation = rotate_x(-90 * DegToRad);
+        auto rotation180 = rotate_z(180 * DegToRad);
+        auto scale = float3::one();
+        scale.x = -1;
+        auto result =
+            to_mat4x4(rotation) *
+            scale44(scale)*
+            world_matrix *
+            to_mat4x4(rotation) *
+            to_mat4x4(rotation180) *
+            scale44(scale);
+
+        object_instances[name].push_back(move(result));
     }
 
     // Cleanup resources
     blContext.object_instances_end(&it);
+
+    return true;
 }
 
 bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)

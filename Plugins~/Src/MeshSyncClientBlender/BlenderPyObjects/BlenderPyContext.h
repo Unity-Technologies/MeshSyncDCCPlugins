@@ -29,6 +29,7 @@ namespace blender
         bool object_instances_is_instance(PointerRNA instance);
         void world_matrix_get(PointerRNA* instance, mu::float4x4* world_matrix);
         Object* instance_parent_get(PointerRNA* instance);
+        Object* object_get(PointerRNA instance);
     };
 
 } // namespace blender
