@@ -15,6 +15,9 @@
 #include "MeshSyncClient/SceneCacheUtility.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
+#include "BlenderPyObjects/BlenderPyNodeTree.h"
+#include "DNA_node_types.h"
+#include <sstream>
 
 
 
@@ -646,6 +649,53 @@ ms::LightPtr msblenContext::exportLight(const Object *src)
     return ret;
 }
 
+bool addModifierProperties(ms::Mesh* mesh, ModifierData* modifier, std::stringstream& names)
+{
+    if (modifier->type != ModifierType::eModifierType_Nodes) {
+        return false;
+    }
+
+    auto blNodeTree = bl::BlenderPyNodeTree();
+    auto nodeModifier = (NodesModifierData*)modifier;
+    auto group = nodeModifier->node_group;
+    CollectionPropertyIterator it;
+    blNodeTree.inputs_begin(&it, group);
+    for (; it.valid; blNodeTree.inputs_next(&it)) {
+        auto input = blNodeTree.inputs_get(&it);
+        auto socket = (bNodeSocket*)input.data;
+        auto socket_type = socket->type;
+
+        auto variant = ms::Variant();
+        variant.name = socket->name;
+
+        if (socket_type == eNodeSocketDatatype::SOCK_GEOMETRY) {
+            continue;
+        }
+        if (socket_type == eNodeSocketDatatype::SOCK_FLOAT) {
+            variant.type = ms::Variant::Type::Float;
+            auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
+            variant.set(std::move(defaultValue->value));
+        }
+        if (socket_type == eNodeSocketDatatype::SOCK_INT) {
+            variant.type = ms::Variant::Type::Int;
+            auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
+            variant.set(std::move(defaultValue->value));
+        }
+        if (socket_type == eNodeSocketDatatype::SOCK_VECTOR) {
+            variant.type = ms::Variant::Type::Float3;
+            auto defaultValue = (bNodeSocketValueVector*)socket->default_value;
+            float* v = new float[3];
+            copy_v3_v3(v, defaultValue->value);
+            variant.set(v, 3);
+        }
+
+        names << variant.name<<std::endl;
+        mesh->addUserProperty(std::move(variant));
+    }
+    blNodeTree.inputs_end(&it);
+    return true;
+}
+
 ms::MeshPtr msblenContext::exportMesh(const Object *src)
 {
     // ignore particles
@@ -709,28 +759,56 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
             
-            auto name = src->id.name;
-            std::string nameMesh;
-            dst.getName(nameMesh);
+            // if modifier baking is on
+            if (m_settings.BakeModifiers){
+                
+                auto data = (ID*)src->data;
+                auto meshName = "";
+                
+                if (data != nullptr) {
+                    meshName = data->name;
+                }
+                // If there are instances if the mesh mesh
+                if (object_instances.find(meshName) != object_instances.end()) {
 
-            auto data = (ID*)src->data;
-            auto meshName = "";
-            if (data != nullptr) {
-                meshName = data->name;
-            }
+                    /// Add mesh instances as a user property
+                    ms::Variant instances;
+                    instances.name = "instances";
+                    instances.type = ms::Variant::Type::Float4x4;
+                    auto matrices = object_instances[meshName];
+                    instances.set(matrices.data(), matrices.size());
 
-            // if modifier baking is on and there are instances for this mesh
-            if (m_settings.BakeModifiers && 
-                object_instances.find(meshName) != object_instances.end()) {
+                    dst.addUserProperty(std::move(instances));
+                }
 
-                /// Add mesh instances as a user property
-                ms::Variant instances;
-                instances.name = "instances";
-                instances.type = ms::Variant::Type::Float4x4;
-                auto matrices = object_instances[meshName];
-                instances.set(matrices.data(), matrices.size());
 
-                dst.addUserProperty(std::move(instances));
+                // Add the geometry node properties as a user property
+
+                // Create a manifest with the names of the modifiers
+                std::stringstream modifierNames;
+                bl::BObject bObj(src);
+                auto modifiers = bObj.modifiers();
+                for (auto it = modifiers.begin(); it != modifiers.end();++it) {
+
+                    auto modifier = *it;
+
+                    // Add each modifier as a variant
+                    addModifierProperties(&dst, modifier, modifierNames);
+                }
+                ms::Variant modifierManifest;
+                modifierManifest.name = "modifiers";
+                modifierManifest.type = ms::Variant::Type::String;
+
+                auto streamString = modifierNames.str();
+                if (!streamString.empty()) {
+                    
+                    auto names = new char[streamString.length()];
+
+                    streamString.copy(names, streamString.length(), 0);
+
+                    modifierManifest.set(names, streamString.length());
+                    dst.addUserProperty(std::move(modifierManifest));
+                }
             }
             
             m_entity_manager.add(ret);
@@ -743,6 +821,8 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
     return ret;
 }
+
+
 
 void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
 {

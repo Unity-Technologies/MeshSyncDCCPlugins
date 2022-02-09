@@ -72,6 +72,8 @@ extern PropertyRNA* BlenderPyContext_depsgraph_parent;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_object;
 
+extern PropertyRNA* BlenderPyNodeTree_inputs;
+
 bool ready()
 {
     return g_context != nullptr;
@@ -229,6 +231,13 @@ void setup(py::object bpy_context)
                 }
                 if (match_prop("object")) {
                     BlenderPyContext_depsgraph_object = prop;
+                }
+            }
+        }
+        else if (match_type("NodeTree")) {
+            each_prop{
+                if (match_prop("inputs")) {
+                    BlenderPyNodeTree_inputs = prop;
                 }
             }
         }
