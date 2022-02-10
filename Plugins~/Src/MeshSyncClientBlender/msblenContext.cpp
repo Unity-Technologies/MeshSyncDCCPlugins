@@ -806,7 +806,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
 
                     streamString.copy(names, streamString.length(), 0);
 
-                    modifierManifest.set(names, streamString.length());
+                    modifierManifest.set(std::move(names), streamString.length());
                     dst.addUserProperty(std::move(modifierManifest));
                 }
             }
