@@ -709,29 +709,10 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
             
-            auto name = src->id.name;
-            std::string nameMesh;
-            dst.getName(nameMesh);
 
-            auto data = (ID*)src->data;
-            auto meshName = "";
-            if (data != nullptr) {
-                meshName = data->name;
-            }
-
-            // if modifier baking is on and there are instances for this mesh
-            if (m_settings.BakeModifiers && 
-                object_instances.find(meshName) != object_instances.end()) {
-
-                /// Add mesh instances as a user property
-                ms::Variant instances;
-                instances.name = "instances";
-                instances.type = ms::Variant::Type::Float4x4;
-                auto matrices = object_instances[meshName];
-                instances.set(matrices.data(), matrices.size());
-
-                dst.addUserProperty(std::move(instances));
-            }
+#if BLENDER_VERSION >= 300
+            addInstanceData(src, dst);
+#endif
             
             m_entity_manager.add(ret);
         };
@@ -743,6 +724,32 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
     return ret;
 }
+
+#if BLENDER_VERSION >= 300
+void msblenContext::addInstanceData(const Object* src, ms::Mesh& dst)
+{
+    if (!m_settings.BakeModifiers)
+        return;
+
+    auto data = (ID*)src->data;
+    auto meshName = "";
+    if (data != nullptr) {
+        meshName = data->name;
+    }
+
+    if (m_object_instances.find(meshName) == m_object_instances.end())
+        return;
+
+    /// Add mesh instances as a user property
+    ms::Variant instances;
+    instances.name = "instances";
+    instances.type = ms::Variant::Type::Float4x4;
+    auto matrices = m_object_instances[meshName];
+    instances.set(matrices.data(), matrices.size());
+    
+    dst.addUserProperty(std::move(instances));
+}
+#endif
 
 void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
 {
@@ -1417,9 +1424,11 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
 
+#if BLENDER_VERSION >= 300
     if (!extractObjectInstances()) {
         return false;
     }
+#endif
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
@@ -1442,19 +1451,17 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         eraseStaleObjects();
     }
 
-    //TODO-Sean Dillon: cleanup object instances array
-    // How to know when the async mesh export has finished? WhenAll task?
-
     WaitAndKickAsyncExport();
     return true;
 }
 
+#if BLENDER_VERSION >= 300
 bool msblenContext::extractObjectInstances() {
     
     using namespace std;
     using namespace mu;
 
-    object_instances.clear();
+    m_object_instances.clear();
 
     // Geometry nodes are modifiers, if bake is off, send nothing
     if (!m_settings.BakeModifiers) {
@@ -1510,9 +1517,9 @@ bool msblenContext::extractObjectInstances() {
         if (name == nullptr)
             continue;
         
-        if (object_instances.find(name) == object_instances.end()) {
+        if (m_object_instances.find(name) == m_object_instances.end()) {
             matrix_vector v;
-            object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
+            m_object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
         }
 
         auto world_matrix = float4x4();
@@ -1530,7 +1537,7 @@ bool msblenContext::extractObjectInstances() {
             to_mat4x4(rotation180) *
             scale44(scale);
 
-        object_instances[name].push_back(move(result));
+        m_object_instances[name].push_back(move(result));
     }
 
     // Cleanup resources
@@ -1538,6 +1545,7 @@ bool msblenContext::extractObjectInstances() {
 
     return true;
 }
+#endif
 
 bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
@@ -1757,5 +1765,14 @@ void msblenContext::WaitAndKickAsyncExport()
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
     };
+
+    exporter->on_complete = [this]() {
+
+#if BLENDER_VERSION >= 300
+        m_object_instances.clear();
+#endif
+
+    };
+
     exporter->kick();
 }
