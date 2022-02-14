@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (3, 0, 1),
+    "blender": (3, 0, 0),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -135,6 +135,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
+        deps = bpy.context.evaluated_depsgraph_get()
         msb_context.flushPendingList();
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
@@ -213,7 +214,6 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         ctx.strip_normals = self.strip_normals
         ctx.strip_tangents = self.strip_tangents
         ctx.export(self.filepath)
-        MS_MessageBox("Finished writing scene cache to " + self.filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):
