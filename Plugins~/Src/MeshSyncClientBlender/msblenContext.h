@@ -45,6 +45,8 @@ public:
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
+    bool extractObjectInstances();
+
     void flushPendingList();
 
 private:
@@ -166,6 +168,11 @@ private:
     void WaitAndKickAsyncExport();
 
 private:
+
+    typedef std::vector<mu::float4x4> matrix_vector;
+    typedef std::unordered_map<std::string, matrix_vector> object_instances_t;
+    object_instances_t object_instances;
+
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
     std::set<const Object*> m_pending;
