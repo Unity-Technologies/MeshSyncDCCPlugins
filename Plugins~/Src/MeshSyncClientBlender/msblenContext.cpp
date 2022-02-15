@@ -649,6 +649,7 @@ ms::LightPtr msblenContext::exportLight(const Object *src)
     return ret;
 }
 
+#if BLENDER_VERSION > 293
 bool addModifierProperties(ms::Mesh* mesh, ModifierData* modifier, std::stringstream& names)
 {
     if (modifier->type != ModifierType::eModifierType_Nodes) {
@@ -671,6 +672,7 @@ bool addModifierProperties(ms::Mesh* mesh, ModifierData* modifier, std::stringst
         if (socket_type == eNodeSocketDatatype::SOCK_GEOMETRY) {
             continue;
         }
+
         if (socket_type == eNodeSocketDatatype::SOCK_FLOAT) {
             variant.type = ms::Variant::Type::Float;
             auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
@@ -695,6 +697,7 @@ bool addModifierProperties(ms::Mesh* mesh, ModifierData* modifier, std::stringst
     blNodeTree.inputs_end(&it);
     return true;
 }
+#endif
 
 ms::MeshPtr msblenContext::exportMesh(const Object *src)
 {
@@ -759,6 +762,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
             
+#if BLENDER_VERSION > 293
             // if modifier baking is on
             if (m_settings.BakeModifiers){
                 
@@ -809,8 +813,9 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
                     modifierManifest.set(std::move(names), streamString.length());
                     dst.addUserProperty(std::move(modifierManifest));
                 }
+
             }
-            
+#endif
             m_entity_manager.add(ret);
         };
 
