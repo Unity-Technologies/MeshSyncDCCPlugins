@@ -69,6 +69,133 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
 
+class MESHSYNC_PT_MaterialBake(MESHSYNC_PT, bpy.types.Panel):
+    bl_label = "Bake Materials"
+    bl_parent_id = "MESHSYNC_PT_Main"
+    
+    def draw(self, context):
+        scene = bpy.context.scene
+        layout = self.layout
+        
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align = True)
+        row.label(text="Width:")
+        # row.operator("brm.bakeuiincrement", text="", icon="REMOVE").target = "width/2"
+        row.prop(context.scene, "bakeWidth", text="")
+        # row.operator("brm.bakeuiincrement", text="", icon="ADD").target = "width*2"
+        
+        row = col.row(align = True)
+        row.label(text="Height:")
+        # row.operator("brm.bakeuiincrement", text="", icon="REMOVE").target = "height/2"
+        row.prop(context.scene, "bakeHeight", text="")
+        # row.operator("brm.bakeuiincrement", text="", icon="ADD").target = "height*2"
+        
+        layout.label(text="Export Dir:")
+        layout.prop(context.scene, 'bakeFolder', text="")
+        layout.label(text="Filename:")
+        layout.prop(context.scene, "bakePrefix", text="")
+        
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align = True)
+        row.label(text="Samples:")        
+        row.prop(context.scene, "samples", text="")
+        row = col.row(align = True)
+        row.label(text="Smart UV Project:")        
+        row.prop(context.scene, "smartUV", text="")
+        
+        layout.operator("meshsync.dothing", text="Do Thing")
+        
+
+class MESHSYNC_PT_DoThing(bpy.types.Operator):
+    bl_idname = "meshsync.dothing"        
+    bl_label = "Do the thing" 
+    
+    def execute(self, context): 
+        scene = context.scene
+        
+        hasfolder = os.access(scene.bakeFolder, os.W_OK)
+        if hasfolder is False:
+            self.report({'WARNING'}, "Select a valid export folder!")
+            return {'FINISHED'}
+            
+        if scene.smartUV :
+            if bpy.context.object.mode == 'OBJECT':
+                bpy.ops.object.mode_set(mode='EDIT')
+                 
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.select_linked(delimit={'SEAM'})
+            bpy.ops.uv.smart_project(island_margin=0.01, # angle_limit=math.radians(settings.uvAngleLimit), 
+                                    scale_to_bounds=True)
+            bpy.ops.uv.pack_islands(rotate=True, margin=0.001)
+            
+        if bpy.context.object.mode == 'EDIT':
+                bpy.ops.object.mode_set(mode='OBJECT')
+                
+        scene.render.engine = "CYCLES"
+        scene.cycles.device = "GPU"
+        scene.cycles.samples = scene.samples
+
+        diffuseBakeImage = bpy.data.images.new("Bake"+scene.affixColor, width=scene.bakeWidth, height=scene.bakeHeight)
+        #bakemat = bpy.data.materials.new(name="bakemat")
+        #bakemat.use_nodes = true
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.new("ShaderNodeTexImage")
+            node.select = True
+            node_tree.nodes.active = node
+            node.image = diffuseBakeImage
+        
+        scene.render.bake.use_pass_direct = False
+        scene.render.bake.use_pass_indirect = False
+        scene.render.bake.use_pass_color = True
+
+        bpy.ops.object.bake(type='DIFFUSE', use_clear=True, use_selected_to_active=False)
+        diffuseBakeImage.filepath_raw = scene.bakeFolder+scene.bakePrefix+scene.affixColor+".png"
+        diffuseBakeImage.file_format = 'PNG'
+        diffuseBakeImage.save()
+        
+        normalBakeImage = bpy.data.images.new("Bake"+scene.affixNormal, width=scene.bakeWidth, height=scene.bakeHeight)
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.active
+            node.image = normalBakeImage
+        
+        bpy.ops.object.bake(type='NORMAL', use_clear=True, use_selected_to_active=False, normal_space='TANGENT')
+        normalBakeImage.filepath_raw = scene.bakeFolder+scene.bakePrefix+scene.affixNormal+".png"
+        normalBakeImage.file_format = 'PNG'
+        normalBakeImage.save()
+        
+        aoBakeImage = bpy.data.images.new("Bake"+scene.affixAO, width=scene.bakeWidth, height=scene.bakeHeight)
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.active
+            node.image = aoBakeImage
+        
+        bpy.ops.object.bake(type='AO', use_clear=True, use_selected_to_active=False)
+        aoBakeImage.filepath_raw = scene.bakeFolder+scene.bakePrefix+scene.affixAO+".png"
+        aoBakeImage.file_format = 'PNG'
+        aoBakeImage.save()
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        original_type = bpy.context.area.type
+        bpy.context.area.type = "IMAGE_EDITOR"
+        uvfilepath = scene.bakeFolder+scene.bakePrefix+scene.affixUV+".png"
+        bpy.ops.uv.export_layout(filepath=uvfilepath, size=(context.scene.bakeWidth, context.scene.bakeHeight))
+        bpy.context.area.type = original_type
+
+        return {'FINISHED'} 
+        
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Animation"
@@ -272,6 +399,8 @@ classes = (
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_MaterialBake,
+    MESHSYNC_PT_DoThing,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
@@ -285,6 +414,23 @@ def register():
     msb_initialize_properties()
     for c in classes:
         bpy.utils.register_class(c)
+        
+    bpy.types.Scene.bakeWidth = bpy.props.IntProperty (name = "bakeWidth",default = 512,description = "Export Texture Width")  
+    bpy.types.Scene.bakeHeight = bpy.props.IntProperty (name = "bakeHeight",default = 512,description = "Export Texture Height")
+    bpy.types.Scene.bakePrefix = bpy.props.StringProperty (name = "bakePrefix",default = "testname", description = "Export filename")
+    bpy.types.Scene.bakeFolder = bpy.props.StringProperty (name = "bakeFolder",default = "C:\\temp\\", description = "Destination folder", subtype = 'DIR_PATH')
+    
+    bpy.types.Scene.smartUV = bpy.props.BoolProperty (name = "smartUV",default = False,description = "Do a Smart UV Project on object")
+    
+    bpy.types.Scene.samples = bpy.props.IntProperty (name = "samples",default = 10,description = "Sample Count")
+    
+    bpy.types.Scene.affixNormal = bpy.props.StringProperty (name = "affixNormal",default = "_normal",description = "normal map affix")
+    bpy.types.Scene.affixObject = bpy.props.StringProperty (name = "affixObject",default = "_object",description = "object normal map affix")
+    bpy.types.Scene.affixAO = bpy.props.StringProperty (name = "affixAO",default = "_ao",description = "AO map affix")
+    bpy.types.Scene.affixColor = bpy.props.StringProperty (name = "affixColor",default = "_color",description = "color map affix")
+    bpy.types.Scene.affixRoughness = bpy.props.StringProperty (name = "affixRoughness",default = "_rough",description = "Roughness map affix")
+    bpy.types.Scene.affixEmission = bpy.props.StringProperty (name = "affixEmission",default = "_emit",description = "Emission map affix")
+    bpy.types.Scene.affixUV = bpy.props.StringProperty (name = "affixUV",default = "_uv",description = "UV map affix")
 
 def unregister():
     msb_context.Destroy()
