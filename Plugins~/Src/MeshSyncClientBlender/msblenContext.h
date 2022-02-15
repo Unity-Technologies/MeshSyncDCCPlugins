@@ -161,11 +161,22 @@ private:
     void extractLightAnimationData(ms::TransformAnimation& dst, void *obj);
     void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
 
+#if BLENDER_VERSION >= 300
+    bool extractObjectInstances();
+    void addInstanceData(const Object* src, ms::Mesh& dst);
+#endif
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
 private:
+
+#if BLENDER_VERSION >= 300
+    typedef std::vector<mu::float4x4> matrix_vector;
+    typedef std::unordered_map<std::string, matrix_vector> object_instances_t;
+    object_instances_t m_object_instances;
+#endif
+
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
     std::set<const Object*> m_pending;
