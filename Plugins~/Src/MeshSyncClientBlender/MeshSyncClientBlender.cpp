@@ -1,10 +1,26 @@
 #include "pch.h"
 #include "msblenBinder.h"
 #include "msblenContext.h"
+#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
+#include "BlenderPyObjects/BlenderPyContext.h"
 
 #include "MeshSyncClient/ExportTarget.h"
 
 namespace bl = blender;
+
+static Depsgraph* DepsgraphFromPyObject(py::object graphObj) {
+    Depsgraph* graph;
+    BPy_StructRNA* rna = (BPy_StructRNA*)graphObj.ptr();
+    auto typeName = rna->ob_base.ob_type->tp_name;
+
+    if (strcmp(typeName, "Depsgraph") != 0) {
+        return nullptr;
+    }
+
+    blender::rna_sdata(graphObj, graph);
+
+    return graph;
+}
 
 static bool msblenSend(msblenContext& self, MeshSyncClient::ExportTarget target, MeshSyncClient::ObjectScope scope)
 {
@@ -122,7 +138,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, bool v) { self->getSettings().make_double_sided = v; })
             BindProperty(bake_modifiers,
                 [](const self_t& self) { return self->getSettings().BakeModifiers; },
-                [](self_t& self, bool v) { self->getSettings().BakeModifiers= v; })
+                [](self_t& self, bool v) { self->getSettings().BakeModifiers = v; })
             BindProperty(bake_transform,
                 [](const self_t& self) { return self->getSettings().BakeTransform; },
                 [](self_t& self, bool v) { self->getSettings().BakeTransform = v; })
@@ -157,7 +173,11 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindMethod(clear, [](self_t& self) { self->clear(); })
             BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); })
             BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
-            ;
+            BindMethod(OnDepsgraphUpdatePost,
+                [](self_t& self, py::object depsgraph) {
+                    auto graph = DepsgraphFromPyObject(depsgraph);
+                    self->onDepsgraphUpdatedPost(graph);
+                });
     }
     {
         using self_t = CacheProxy;

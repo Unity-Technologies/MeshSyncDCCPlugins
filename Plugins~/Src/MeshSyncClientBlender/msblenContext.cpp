@@ -15,6 +15,10 @@
 #include "MeshSyncClient/SceneCacheUtility.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
+#include "BlenderPyObjects/BlenderPyNodeTree.h"
+#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
+#include "DNA_node_types.h"
+#include <sstream>
 
 
 
@@ -705,15 +709,15 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
 
     if (data) {
+
+#if BLENDER_VERSION >= 300
+        // Inject instance info on the mesh
+        m_geometry_nodes.onMeshExport(src, dst);
+#endif
+
         auto task = [this, ret, src, data]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
-            
-
-#if BLENDER_VERSION >= 300
-            addInstanceData(src, dst);
-#endif
-            
             m_entity_manager.add(ret);
         };
 
@@ -724,32 +728,6 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
     return ret;
 }
-
-#if BLENDER_VERSION >= 300
-void msblenContext::addInstanceData(const Object* src, ms::Mesh& dst)
-{
-    if (!m_settings.BakeModifiers)
-        return;
-
-    auto data = (ID*)src->data;
-    auto meshName = "";
-    if (data != nullptr) {
-        meshName = data->name;
-    }
-
-    if (m_object_instances.find(meshName) == m_object_instances.end())
-        return;
-
-    /// Add mesh instances as a user property
-    ms::Variant instances;
-    instances.name = "instances";
-    instances.type = ms::Variant::Type::Float4x4;
-    auto matrices = m_object_instances[meshName];
-    instances.set(matrices.data(), matrices.size());
-    
-    dst.addUserProperty(std::move(instances));
-}
-#endif
 
 void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
 {
@@ -1424,12 +1402,6 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
 
-#if BLENDER_VERSION >= 300
-    if (!extractObjectInstances()) {
-        return false;
-    }
-#endif
-
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
@@ -1454,98 +1426,6 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     WaitAndKickAsyncExport();
     return true;
 }
-
-#if BLENDER_VERSION >= 300
-bool msblenContext::extractObjectInstances() {
-    
-    using namespace std;
-    using namespace mu;
-
-    m_object_instances.clear();
-
-    // Geometry nodes are modifiers, if bake is off, send nothing
-    if (!m_settings.BakeModifiers) {
-        return true;
-    } 
-    
-    // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
-    auto blContext = bl::BlenderPyContext::get();
-    auto depsgraph = blContext.evaluated_depsgraph_get();
-
-    // Iterate over the object instances collection of depsgraph
-    CollectionPropertyIterator it;
-
-    blContext.object_instances_begin(&it, depsgraph);
-
-    for (; it.valid; blContext.object_instances_next(&it)) {
-        // Get the instance as a Pointer RNA.
-        auto instance = blContext.object_instances_get(&it);
-
-        // Get the object that the instance refers to
-        auto instance_object = blContext.instance_object_get(instance);
-
-        // If the object is null, skip
-        if (instance_object == nullptr)
-            continue;
-
-        // if the object is not a mesh, skip
-        if (!is_mesh(instance_object))
-            continue;
-
-        // if the instance is not an instance, skip
-        if (!blContext.object_instances_is_instance(instance))
-            continue;
-        
-        // If the object data is null, skip
-        auto data = (ID*)instance_object->data;
-        if (data == nullptr)
-            continue;
-
-        auto parent = blContext.instance_parent_get(&instance);
-        if (parent == nullptr)
-            continue;
-
-        auto object = blContext.object_get(instance);
-        auto object_name = object->id.name;
-
-        auto object_data = (ID*)object->data;
-        if (object_data == nullptr)
-            continue;
-
-        auto name = object_data->name;
-
-        if (name == nullptr)
-            continue;
-        
-        if (m_object_instances.find(name) == m_object_instances.end()) {
-            matrix_vector v;
-            m_object_instances.insert(move(pair<string, matrix_vector>(name, move(v))));
-        }
-
-        auto world_matrix = float4x4();
-        blContext.world_matrix_get(&instance, &world_matrix);
-
-        auto rotation = rotate_x(-90 * DegToRad);
-        auto rotation180 = rotate_z(180 * DegToRad);
-        auto scale = float3::one();
-        scale.x = -1;
-        auto result =
-            to_mat4x4(rotation) *
-            scale44(scale)*
-            world_matrix *
-            to_mat4x4(rotation) *
-            to_mat4x4(rotation180) *
-            scale44(scale);
-
-        m_object_instances[name].push_back(move(result));
-    }
-
-    // Cleanup resources
-    blContext.object_instances_end(&it);
-
-    return true;
-}
-#endif
 
 bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 {
@@ -1769,10 +1649,26 @@ void msblenContext::WaitAndKickAsyncExport()
     exporter->on_complete = [this]() {
 
 #if BLENDER_VERSION >= 300
-        m_object_instances.clear();
+        m_geometry_nodes.onExportComplete();
 #endif
 
     };
 
     exporter->kick();
 }
+
+/// Application Handler Events ///
+
+/// <summary>
+/// Event corresponding to the application handler
+/// https://docs.blender.org/api/current/bpy.app.handlers.html
+/// </summary>
+void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
+{
+
+#if BLENDER_VERSION >= 300
+    m_geometry_nodes.onDepsgraphUpdatePost(graph);
+#endif
+
+}
+
