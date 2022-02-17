@@ -366,7 +366,7 @@ bool msmodoContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -399,7 +399,7 @@ bool msmodoContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     // materials
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     // entities
     if (scope == MeshSyncClient::ObjectScope::All) {
@@ -474,28 +474,43 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<CLxUser_Item> nodes = getNodes(cache_settings.object_scope);
 
-    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
-        m_anim_time = 0.0f;
-        DoExportSceneCache(0, material_range, nodes);
-    } else {
-        const double prevTime = m_svc_selection.GetTime();
 
-        double timeStart, timeEnd;
-        std::tie(timeStart, timeEnd) = getTimeRange();
-        const double interval = frameStep / frameRate;
-
-        // advance frame and record
-        int sceneIndex = 0;
-        m_ignore_events = true;
-        for (double t = timeStart; t <= timeEnd; t += interval) {
-            m_anim_time = static_cast<float>(t - timeStart);
-            setChannelReadTime(t);
-            DoExportSceneCache(sceneIndex, material_range, nodes);
-            ++sceneIndex;
+    const double prevTime = m_svc_selection.GetTime();
+    double timeStart = 0, timeEnd = 0;
+    switch(cache_settings.frame_range){
+        case MeshSyncClient::FrameRange::Current:{
+            timeStart = timeEnd = prevTime;
+            break;
         }
-        setChannelReadTime(prevTime);
-        m_ignore_events = false;
+        case MeshSyncClient::FrameRange::All:
+        case MeshSyncClient::FrameRange::Custom:
+        {
+            std::tie(timeStart, timeEnd) = getTimeRange();
+            break;
+        }
     }
+    const double interval = frameStep / frameRate;
+
+    // advance frame and record
+    int sceneIndex = 0;
+    m_ignore_events = true;
+    for (double t = timeStart; t <= timeEnd; t += interval) {
+        m_anim_time = static_cast<float>(t - timeStart);
+        setChannelReadTime(t);
+
+        if (sceneIndex == 0) {
+            RegisterSceneMaterials(); //needed to export material IDs in meshes
+            if (MeshSyncClient::MaterialFrameRange::None == material_range)
+                m_material_manager.clearDirtyFlags();
+        } else if (MeshSyncClient::MaterialFrameRange::All == material_range) {
+            RegisterSceneMaterials();
+        }
+
+        DoExportSceneCache(nodes);
+        ++sceneIndex;
+    }
+    setChannelReadTime(prevTime);
+    m_ignore_events = false;
 
     logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
 
@@ -505,20 +520,8 @@ bool msmodoContext::ExportCache(const std::string& path, const ModoCacheSettings
     return true;
 }
 
-void msmodoContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                        const std::vector<CLxUser_Item>& nodes)
+void msmodoContext::DoExportSceneCache(const std::vector<CLxUser_Item>& nodes)
 {
-    if (sceneIndex == 0) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
-            m_material_manager.clearDirtyFlags();
-    }
-    else {
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            exportMaterials();
-    }
-
     //need to use auto. Different type per platform
     for (auto n : nodes)
         exportObject(n, true);
@@ -640,7 +643,7 @@ std::vector<CLxUser_Item> msmodoContext::getNodes(MeshSyncClient::ObjectScope sc
     return ret;
 }
 
-void msmodoContext::exportMaterials()
+void msmodoContext::RegisterSceneMaterials()
 {
     m_material_index_seed = 0;
 

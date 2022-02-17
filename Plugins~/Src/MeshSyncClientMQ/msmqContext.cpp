@@ -122,7 +122,7 @@ bool msmqContext::sendMaterials(MQDocument doc, bool dirty_all)
     m_settings.validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials(doc);
+    RegisterSceneMaterials(doc);
 
     WaitAndKickAsyncExport();
     return true;
@@ -142,7 +142,7 @@ bool msmqContext::sendMeshes(MQDocument doc, bool dirty_all)
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
-    exportMaterials(doc);
+    RegisterSceneMaterials(doc);
 
     int num_objects = doc->GetObjectCount();
 
@@ -567,7 +567,7 @@ int msmqContext::getMaterialID(int material_index) const
     return m_material_index_to_id[material_index + 1];
 }
 
-int msmqContext::exportMaterials(MQDocument doc)
+int msmqContext::RegisterSceneMaterials(MQDocument doc)
 {
     char buf[1024];
     int num_materials = doc->GetMaterialCount();

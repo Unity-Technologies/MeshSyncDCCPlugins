@@ -268,7 +268,7 @@ bool msmaxContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     int num_exported = 0;
     auto nodes = getNodes(scope);
@@ -307,7 +307,7 @@ bool msmaxContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -400,51 +400,55 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     const MaterialFrameRange material_range = cache_settings.material_frame_range;
     const std::vector<msmaxContext::TreeNode*> nodes = getNodes(cache_settings.object_scope);
 
-    auto *ifs = GetCOREInterface();
-    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
-        m_anim_time = 0.0f;
-        m_current_time_tick = ifs->GetTime();
-        DoExportSceneCache(0, material_range, nodes);
-    } else {
-        ifs->ProgressStart(L"Exporting Scene Cache", TRUE, CB_Dummy, nullptr);
 
-        const int ticksPerFrame = ::GetTicksPerFrame();
-        TimeValue timeStart = cache_settings.frame_begin * ticksPerFrame;
-        TimeValue timeEnd = cache_settings.frame_end * ticksPerFrame;
-
-        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range ) {
-            // all active frames
+    Interface* ifs = GetCOREInterface();
+    const TimeValue prevTime = ifs->GetTime();
+    TimeValue timeStart = 0, timeEnd  = 0;
+    switch(cache_settings.frame_range){
+        case MeshSyncClient::FrameRange::Current:{
+            timeStart = timeEnd = prevTime;
+            break;
+        }
+        case MeshSyncClient::FrameRange::All:{
             const Interval timeRange = ifs->GetAnimRange();
             timeStart = timeRange.Start();
             timeEnd = timeRange.End();
+            break;
         }
-        const TimeValue interval = ToTicks(frameStep / frameRate);
-        timeEnd = std::max(timeEnd, timeStart); // sanitize
-
-        const TimeValue prevTime = m_current_time_tick;
-
-        int sceneIndex = 0;
-        const float progressPercentage = 1.f / static_cast<float>(timeEnd - timeStart) * 100.0f;
-        for (TimeValue t = timeStart; t <= timeEnd; t += interval) {
-            m_current_time_tick = t;
-            const TimeValue timeElapsed = t - timeStart;
-            m_anim_time = ToSeconds(timeElapsed);
-
-            DoExportSceneCache(sceneIndex, material_range, nodes);
-            ++sceneIndex;
-
-            const float progress = static_cast<float>(timeElapsed) * progressPercentage;
-            ifs->ProgressUpdate(static_cast<int>(progress));
-
-            if (ifs->GetCancel()) {
-                // cancel requested
-                ifs->SetCancel(FALSE);
-                break;
-            }
+        case MeshSyncClient::FrameRange::Custom:{
+            const int ticksPerFrame = ::GetTicksPerFrame();
+            timeStart = cache_settings.frame_begin * ticksPerFrame;
+            timeEnd = cache_settings.frame_end * ticksPerFrame;
+            break;
         }
-        m_current_time_tick = prevTime;
-        ifs->ProgressEnd();
     }
+    const TimeValue interval = ToTicks(frameStep / frameRate);
+    timeEnd = std::max(timeEnd, timeStart); // sanitize
+
+
+    ifs->ProgressStart(L"Exporting Scene Cache", TRUE, CB_Dummy, nullptr);
+
+    int sceneIndex = 0;
+    const float progressPercentage = 1.f / static_cast<float>(timeEnd - timeStart) * 100.0f;
+    for (TimeValue t = timeStart; t <= timeEnd; t += interval) {
+        m_current_time_tick = t;
+        const TimeValue timeElapsed = t - timeStart;
+        m_anim_time = ToSeconds(timeElapsed);
+
+        DoExportSceneCache(sceneIndex, material_range, nodes);
+        ++sceneIndex;
+
+        const float progress = static_cast<float>(timeElapsed) * progressPercentage;
+        ifs->ProgressUpdate(static_cast<int>(progress));
+
+        if (ifs->GetCancel()) {
+            // cancel requested
+            ifs->SetCancel(FALSE);
+            break;
+        }
+    }
+    m_current_time_tick = prevTime;
+    ifs->ProgressEnd();
 
     m_asyncTasksController.Wait();
     logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
@@ -462,8 +466,8 @@ void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient
                                       const std::vector<msmaxContext::TreeNode*>& nodes)
 {
     if (sceneIndex == 0 || materialFrameRange == MeshSyncClient::MaterialFrameRange::All) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
+        // RegisterSceneMaterials() is needed to export material IDs in meshes
+        RegisterSceneMaterials();
         m_material_manager.clearDirtyFlags();
     }
 
@@ -482,6 +486,7 @@ void msmaxContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient
         export_objects();
     }
 
+    //exportObject() marks materials as dirty, so we need to clear them after if necessary
     if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None ||
         (materialFrameRange == MeshSyncClient::MaterialFrameRange::One && sceneIndex != 0)) 
     {
@@ -648,7 +653,7 @@ int msmaxContext::exportTexture(const std::string & path, ms::TextureType type)
     return m_texture_manager.addFile(path, type);
 }
 
-void msmaxContext::exportMaterials()
+void msmaxContext::RegisterSceneMaterials()
 {
     auto *mtllib = GetCOREInterface()->GetSceneMtls();
     int count = mtllib->Count();

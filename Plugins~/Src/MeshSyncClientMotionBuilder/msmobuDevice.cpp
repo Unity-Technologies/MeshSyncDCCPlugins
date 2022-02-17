@@ -214,7 +214,7 @@ bool msmobuDevice::sendMaterials(bool dirty_all)
     m_settings.validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     kickAsyncSend();
@@ -239,7 +239,7 @@ bool msmobuDevice::sendObjects(bool dirty_all)
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     // export nodes
     int num_exported = 0;
@@ -817,7 +817,7 @@ bool msmobuDevice::exportMaterial(FBMaterial* src, int index)
     return true;
 }
 
-bool msmobuDevice::exportMaterials()
+bool msmobuDevice::RegisterSceneMaterials()
 {
     int num_exported = 0;
     auto& materials = FBSystem::TheOne().Scene->Materials;

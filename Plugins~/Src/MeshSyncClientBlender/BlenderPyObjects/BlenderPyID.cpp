@@ -16,22 +16,12 @@ FunctionRNA* BlenderPyID_evaluated_get;
 
 
 const char *BlenderPyID::name() const { return m_ptr->name + 2; }
-bool BlenderPyID::is_updated() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated);
-#else
-    return true;
-#endif
-
+bool BlenderPyID::is_updated() const {
+    return true; //before 2.80: get_bool(m_ptr, BID_is_updated);
 }
-bool BlenderPyID::is_updated_data() const
-{
-#if BLENDER_VERSION < 280
-    return get_bool(m_ptr, BID_is_updated_data);
-#else
-    return true;
-#endif
+
+bool BlenderPyID::is_updated_data() const {
+    return true; //before 2.80:  return get_bool(m_ptr, BID_is_updated_data);
 }
 
 ID* blender::BlenderPyID::evaluated_get(Depsgraph* depsgraph)

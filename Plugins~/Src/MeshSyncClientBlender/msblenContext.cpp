@@ -124,65 +124,99 @@ int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
 
 int msblenContext::getMaterialID(Material *m)
 {
-#if BLENDER_VERSION >= 280
     if (m && m->id.orig_id)
         m = (Material*)m->id.orig_id;
-#endif
     return m_material_ids.getID(m);
 }
 
-void msblenContext::exportMaterials()
+//----------------------------------------------------------------------------------------------------------------------
+
+ms::MaterialPtr msblenContext::CreateDefaultMaterial(const uint32_t matIndex) {
+    std::shared_ptr<ms::Material> dst = ms::Material::create();
+    dst->id = m_material_ids.getID(nullptr);
+    dst->index = matIndex;
+    dst->name = "Default";
+    return dst;
+}
+
+
+void msblenContext::RegisterSceneMaterials()
 {
     int midx = 0;
     
     // Blender allows faces to have no material. add dummy material for them.
-    {
-        std::shared_ptr<ms::Material> dst = ms::Material::create();
-        dst->id = m_material_ids.getID(nullptr);
-        dst->index = midx++;
-        dst->name = "Default";
-        m_material_manager.add(dst);
-    }
+    m_material_manager.add(CreateDefaultMaterial(midx++));
 
     bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
     for (struct Material* mat : bpy_data.materials()) {
-        std::shared_ptr<ms::Material> ret = ms::Material::create();
-        ret->name = get_name(mat);
-        ret->id = m_material_ids.getID(mat);
-        ret->index = midx++;
-
-        ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-        bl::BMaterial bm(mat);
-        struct Material* color_src = mat;
-        if (bm.use_nodes()) {
-#if BLENDER_VERSION < 280
-            bl::BMaterial node(bm.active_node_material());
-            if (node.ptr()) {
-                color_src = node.ptr();
-            }
-#endif
-        }
-        stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
-
-        // todo: handle texture
-#if 0
-        if (m_settings.sync_textures) {
-            auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-                if (!mtex || !mtex->tex || !mtex->tex->ima)
-                    return -1;
-                return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-            };
-#if BLENDER_VERSION < 280
-            stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
-#endif
-        }
-#endif
-
-        m_material_manager.add(ret);
+        RegisterMaterial(mat, midx++);
     }
     m_material_ids.eraseStaleRecords();
     m_material_manager.eraseStaleMaterials();
 }
+
+void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) {
+    int midx = 0;
+    
+    // Blender allows faces to have no material. add dummy material for them.
+    m_material_manager.add(CreateDefaultMaterial(midx++));
+
+    std::unordered_set<Material*> blMaterials;
+    for (auto it = objects.begin();it!=objects.end();++it) {
+        Object* curObject = *it;
+        if (nullptr == curObject)
+            continue;
+
+        const short numMaterials = blender::BlenderUtility::GetNumMaterials(curObject);
+        Material** matPtr = blender::BlenderUtility::GetMaterials(curObject);
+        for (uint32_t i =0;i<numMaterials;++i){
+            if (nullptr == matPtr[i])
+                continue;
+            blMaterials.emplace(matPtr[i]);
+        }
+    }
+
+    //Register materials to material manager
+    for (auto it = blMaterials.begin();it!=blMaterials.end();++it) {
+        Material* mat = *it;
+        RegisterMaterial(mat, midx++);
+
+    }
+    m_material_ids.eraseStaleRecords();
+    m_material_manager.eraseStaleMaterials();
+}
+
+void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
+    std::shared_ptr<ms::Material> ret = ms::Material::create();
+    ret->name = get_name(mat);
+    ret->id = m_material_ids.getID(mat);
+    ret->index = matIndex;
+
+    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
+    bl::BMaterial bm(mat);
+    struct Material* color_src = mat;
+    stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
+
+    // todo: handle texture
+#if 0
+    if (m_settings.sync_textures) {
+        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
+            if (!mtex || !mtex->tex || !mtex->tex->ima)
+                return -1;
+            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
+        };
+#if BLENDER_VERSION < 280
+        stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
+#endif
+    }
+#endif
+
+    m_material_manager.add(ret);
+    
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
 
 
 static inline mu::float4x4 camera_correction(const mu::float4x4& v)
@@ -327,13 +361,9 @@ void msblenContext::extractCameraData(const Object *src,
 void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
-#if BLENDER_VERSION < 280
-    auto data = (Lamp*)src->data;
-    const float energy_to_intensity = 1.0f;
-#else
     Light* data = (Light*)src->data;
     const float energy_to_intensity = 0.001f;
-#endif
+
     color = (mu::float4&)data->r;
     intensity = data->energy * energy_to_intensity;
     range = data->dist;
@@ -654,19 +684,13 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-#if BLENDER_VERSION >= 280
             if (m_settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-#endif
             if (Mesh *tmp = bobj.to_mesh()) {
                 data = tmp;
-#if BLENDER_VERSION < 280
-                m_tmp_meshes.push_back(tmp); // baked meshes are need to be deleted manually
-#else
                 m_meshes_to_clear.push_back(src);
-#endif
             }
         }
 
@@ -1347,7 +1371,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     m_settings.Validate();
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(dirty_all);
-    exportMaterials();
+    RegisterSceneMaterials();
 
     // send
     WaitAndKickAsyncExport();
@@ -1365,7 +1389,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
 
     if (m_settings.sync_meshes)
-        exportMaterials();
+        RegisterSceneMaterials();
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
@@ -1479,36 +1503,50 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     const std::vector<Object*> nodes = getNodes(cache_settings.object_scope);
     mu::ScopedTimer timer;
 
-    if (cache_settings.frame_range == MeshSyncClient::FrameRange::Current) {
-        m_anim_time = 0.0f;
-        DoExportSceneCache(0, materialRange, nodes);
-    } else {
-        const int prevFrame = scene.GetCurrentFrame();
-        const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
-        int frameStart = cache_settings.frame_begin;
-        int frameEnd = cache_settings.frame_end;
-        if (MeshSyncClient::FrameRange::Custom != cache_settings.frame_range) {
+    const int prevFrame = scene.GetCurrentFrame();
+    int frameStart = 0, frameEnd = 0;
+    switch(cache_settings.frame_range){
+        case MeshSyncClient::FrameRange::Current:{
+            frameStart = frameEnd = prevFrame;
+            break;
+        }
+        case MeshSyncClient::FrameRange::All:{
             frameStart = scene.frame_start();
             frameEnd = scene.frame_end();
+            break;
         }
-
-        // record
-        bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
-        Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
-
-        int sceneIndex = 0;
-        for (int f = frameStart; f <= frameEnd; f += frameStep) {
-
-            //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
-            scene.SetCurrentFrame(f, depsGraph);
-
-            m_anim_time = static_cast<float>(f - frameStart) / frameRate;
-
-            DoExportSceneCache(sceneIndex, materialRange, nodes);
-            ++sceneIndex;
+        case MeshSyncClient::FrameRange::Custom:{
+            frameStart = cache_settings.frame_begin;
+            frameEnd = cache_settings.frame_end;
+            break;
         }
-        scene.SetCurrentFrame(prevFrame, depsGraph);
     }
+    const int frameStep = std::max(static_cast<int>(cache_settings.frame_step), 1);
+
+    // record
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    int sceneIndex = 0;
+    for (int f = frameStart; f <= frameEnd; f += frameStep) {
+
+        //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
+        scene.SetCurrentFrame(f, depsGraph);
+
+        m_anim_time = static_cast<float>(f - frameStart) / frameRate;
+
+        if (sceneIndex == 0) {
+            RegisterObjectMaterials(nodes); //needed to export material IDs in meshes
+            if (MeshSyncClient::MaterialFrameRange::None == materialRange)
+                m_material_manager.clearDirtyFlags();
+        } else if (MeshSyncClient::MaterialFrameRange::All == materialRange) {
+            RegisterObjectMaterials(nodes);
+        }
+
+        DoExportSceneCache(nodes);
+        ++sceneIndex;
+    }
+    scene.SetCurrentFrame(prevFrame, depsGraph);
 
     m_asyncTasksController.Wait();
     logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
@@ -1519,20 +1557,8 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 }
 
 
-void msblenContext::DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                   const std::vector<Object*>& nodes)
+void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
-    if (sceneIndex == 0) {
-        // exportMaterials() is needed to export material IDs in meshes
-        exportMaterials();
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::None)
-            m_material_manager.clearDirtyFlags();
-    }
-    else {
-        if (materialFrameRange == MeshSyncClient::MaterialFrameRange::All)
-            exportMaterials();
-    }
-
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(n, true);
 
@@ -1556,14 +1582,6 @@ void msblenContext::WaitAndKickAsyncExport()
     m_asyncTasksController.Wait();
 
     // clear baked meshes
-#if BLENDER_VERSION < 280
-    if (!m_tmp_meshes.empty()) {
-        bl::BData bd(bl::BlenderPyContext::get().data());
-        for (auto *v : m_tmp_meshes)
-            bd.remove(v);
-        m_tmp_meshes.clear();
-}
-#else
     if (!m_meshes_to_clear.empty()) {
         for (const struct Object* v : m_meshes_to_clear) {
             bl::BObject bobj(v);
@@ -1571,7 +1589,6 @@ void msblenContext::WaitAndKickAsyncExport()
         }
         m_meshes_to_clear.clear();
     }
-#endif
 
     for (std::map<const void*, ObjectRecord>::value_type& kvp : m_obj_records)
         kvp.second.clearState();

@@ -1,0 +1,15 @@
+{
+    "name": "Unity.FilmInternalUtilities.EditorWorkbench",
+    "references": [
+        "GUID:9158ceab1b89b8c4982afff02e1bb036"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

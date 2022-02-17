@@ -174,7 +174,7 @@ private:
 
     int exportTexture(const std::string& path, ms::TextureType type = ms::TextureType::Default);
     int findTexture(const std::string& path);
-    void exportMaterials();
+    void RegisterSceneMaterials();
 
     ms::TransformPtr exportObject(TreeNode *n, bool parent, bool tip = true);
     template<class T> std::shared_ptr<T> createEntity(TreeNode& n);
@@ -206,8 +206,7 @@ private:
     void extractMeshAnimationData(ms::TransformAnimation& dst, TreeNode *n);
 
     void WaitAndKickAsyncExport();
-    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<TreeNode*>& nodes);
+    void DoExportSceneCache(const std::vector<TreeNode*>& nodes);
 
 private:
     MayaSyncSettings m_settings;

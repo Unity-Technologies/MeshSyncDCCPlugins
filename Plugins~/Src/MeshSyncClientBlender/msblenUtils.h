@@ -21,31 +21,16 @@ bool is_camera(const Object *obj);
 bool is_light(const Object *obj);
 bool is_armature(const Object *obj);
 
-inline Collection* get_instance_collection(const Object *obj)
-{
-#if BLENDER_VERSION < 280
-    return obj->dup_group;
-#else
+inline Collection* get_instance_collection(const Object *obj) {
     return obj->instance_collection;
-#endif
 }
 
-inline const mu::float3& get_instance_offset(const Collection *col)
-{
-#if BLENDER_VERSION < 280
-    return (mu::float3&)col->dupli_ofs;
-#else
+inline const mu::float3& get_instance_offset(const Collection *col) {
     return (mu::float3&)col->instance_offset;
-#endif
 }
 
-inline BMEditMesh* get_edit_mesh(Mesh *mesh)
-{
-#if BLENDER_VERSION < 280
-    return mesh->edit_btmesh;
-#else
+inline BMEditMesh* get_edit_mesh(Mesh *mesh) {
     return mesh->edit_mesh;
-#endif
 }
 
 

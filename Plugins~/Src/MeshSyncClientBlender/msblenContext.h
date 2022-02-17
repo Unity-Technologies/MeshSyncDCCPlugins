@@ -114,7 +114,11 @@ private:
 
     int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
-    void exportMaterials();
+    ms::MaterialPtr CreateDefaultMaterial(const uint32_t matIndex);
+    void RegisterSceneMaterials();
+    void RegisterObjectMaterials(const std::vector<Object*> objects);
+    void RegisterMaterial(Material* mat, const uint32_t matIndex);
+
 
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(const Object *obj);
@@ -158,8 +162,7 @@ private:
     void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
 
 
-    void DoExportSceneCache(const int sceneIndex, const MeshSyncClient::MaterialFrameRange materialFrameRange, 
-                            const std::vector<Object*>& nodes);
+    void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
 private:
@@ -171,11 +174,7 @@ private:
 
     MeshSyncClient::AsyncTasksController m_asyncTasksController;
 
-#if BLENDER_VERSION < 280
-    std::vector<Mesh*> m_tmp_meshes;
-#else
     std::vector<const Object*> m_meshes_to_clear;
-#endif
 
     std::vector<ms::AnimationClipPtr> m_animations;
     ms::IDGenerator<Material*> m_material_ids;
