@@ -73,6 +73,11 @@ extern PropertyRNA* BlenderPyContext_depsgraph_parent;
 extern PropertyRNA* BlenderPyContext_depsgraph_object;
 
 extern PropertyRNA* BlenderPyNodeTree_inputs;
+extern PropertyRNA* BlenderPyNodeTree_nodes;
+extern PropertyRNA* BlenderPyNodeTree_outputs;
+
+extern PropertyRNA* BlenderPyDepsgraphUpdate_updates;
+extern FunctionRNA* BlenderPyDepsgraphUpdate_id_type_updated;
 
 bool ready()
 {
@@ -207,10 +212,16 @@ void setup(py::object bpy_context)
                 if (match_prop("object_instances")) {
                     BlenderPyContext_depsgraph_object_instances = prop;
                 }
+                if (match_prop("updates")) {
+                    BlenderPyDepsgraphUpdate_updates = prop;
+                }
             }
             each_func{
                 if (match_func("update")) {
                     BlenderPyContext_depsgraph_update = func;
+                }
+                if (match_func("id_type_updated")) {
+                    BlenderPyDepsgraphUpdate_id_type_updated = func;
                 }
             }
         }
@@ -238,6 +249,12 @@ void setup(py::object bpy_context)
             each_prop{
                 if (match_prop("inputs")) {
                     BlenderPyNodeTree_inputs = prop;
+                }
+                if (match_prop("nodes")) {
+                    BlenderPyNodeTree_nodes = prop;
+                }
+                if (match_prop("outputs")) {
+                    BlenderPyNodeTree_outputs = prop;
                 }
             }
         }

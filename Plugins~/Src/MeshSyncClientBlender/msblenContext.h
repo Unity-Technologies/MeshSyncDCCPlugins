@@ -19,6 +19,7 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
+#include "msblenGeometryNodes.h"
 
 class msblenContext;
 
@@ -45,9 +46,9 @@ public:
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
-    bool extractObjectInstances();
-
     void flushPendingList();
+
+    void onDepsgraphUpdatedPost(Depsgraph* graph);
 
 private:
     // todo
@@ -163,15 +164,10 @@ private:
     void extractLightAnimationData(ms::TransformAnimation& dst, void *obj);
     void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
 
-
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
 private:
-
-    typedef std::vector<mu::float4x4> matrix_vector;
-    typedef std::unordered_map<std::string, matrix_vector> object_instances_t;
-    object_instances_t object_instances;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
@@ -195,6 +191,12 @@ private:
     std::map<std::string, AnimationRecord> m_anim_records;
     float m_anim_time = 0.0f;
     bool m_ignore_events = false;
+
+    // geometry nodes
+#if BLENDER_VERSION >= 300
+    blender::msblenGeometryNodes m_geometry_nodes;
+#endif
+
 };
 using msblenContextPtr = std::shared_ptr<msblenContext>;
 #define msblenGetContext() msblenContext::getInstance()
