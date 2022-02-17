@@ -43,7 +43,7 @@ namespace blender {
         using namespace std;
         using namespace mu;
 
-        instances.clear();
+        this->clearObjectInstances();
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
         auto blContext = blender::BlenderPyContext::get();
@@ -100,9 +100,8 @@ namespace blender {
 
     void msblenGeometryNodes::clearObjectInstances()
     {
-        for (auto it = instances.begin(); it != instances.end(); it++) {
-            auto data = *it;
-            data.second.clear();
+        for (auto &it :instances) {
+            it.second.clear();
         }
     }
 
