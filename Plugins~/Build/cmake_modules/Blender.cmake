@@ -81,6 +81,7 @@ function(setup_blender blender_ver)
     endif()
     set(BLENDER${blender_ver}_PYTHON_VERSION ${CMAKE_MATCH_1}${CMAKE_MATCH_2} CACHE STRING "Python version used by Blender ${blender_ver}")    
     message("Python version: ${BLENDER${blender_ver}_PYTHON_VERSION}")
+    message("Python version: ${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}")
 
         
     include(FindPackageHandleStandardArgs)
