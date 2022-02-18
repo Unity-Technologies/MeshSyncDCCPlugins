@@ -423,6 +423,23 @@ bool BData::objects_is_updated() {
     return true; //before 2.80: get_bool(m_ptr, BlendDataObjects_is_updated);
 }
 
+blist_range<Image> BData::images()
+{
+#if BLENDER_VERSION < 280
+    return list_range((Image*)m_ptr->image.first);
+#else
+    return list_range((Image*)m_ptr->images.first);
+#endif
+}
+blist_range<Tex> BData::textures()
+{
+#if BLENDER_VERSION < 280
+    return list_range((Tex*)m_ptr->tex.first);
+#else
+    return list_range((Tex*)m_ptr->textures.first);
+#endif
+}
+
 void BData::remove(Mesh * v)
 {
     PointerRNA t = {};

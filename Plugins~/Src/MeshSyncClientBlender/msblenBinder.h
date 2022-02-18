@@ -179,6 +179,8 @@ namespace blender
         blist_range<Object>   objects();
         blist_range<Mesh>     meshes();
         blist_range<Material> materials();
+        blist_range<Image>    images();
+        blist_range<Tex>      textures();
 
         bool objects_is_updated();
         void remove(Mesh *v);

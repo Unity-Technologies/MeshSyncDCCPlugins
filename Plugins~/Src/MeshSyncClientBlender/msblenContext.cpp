@@ -16,6 +16,10 @@
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 
+#include "DNA_material_types.h"
+#include "BKE_node.h"
+#include "BLI_listbase.h"
+
 
 
 #ifdef mscDebug
@@ -174,6 +178,7 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
                 continue;
             blMaterials.emplace(matPtr[i]);
         }
+
     }
 
     //Register materials to material manager
@@ -186,6 +191,17 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
     m_material_manager.eraseStaleMaterials();
 }
 
+int EndsWith(const char* str, const char* suffix)
+{
+    if (!str || !suffix)
+        return 0;
+    size_t lenstr = strlen(str);
+    size_t lensuffix = strlen(suffix);
+    if (lensuffix > lenstr)
+        return 0;
+    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
 void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     std::shared_ptr<ms::Material> ret = ms::Material::create();
     ret->name = get_name(mat);
@@ -196,15 +212,113 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     bl::BMaterial bm(mat);
     struct Material* color_src = mat;
     stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
+    
+    
+    auto tree = mat->nodetree;
 
-    // todo: handle texture
+    //auto tree = mat->nodetree;
+    if (tree) {
+        bl::blist_range<struct bNode> nodes = bl::list_range((bNode*)tree->nodes.first);
+
+        for (struct bNode* node : nodes) {
+            auto name = node->name;
+
+            if (node->type == SH_NODE_BSDF_PRINCIPLED) {
+                auto inputs = bl::list_range((bNodeSocket*)node->inputs.first);
+                for (auto input : inputs) {
+                    auto socketName = input->name;
+                    auto link = input->link;
+                    
+
+
+
+                    char* baseColor = "Base Color";
+                    if (strncmp(socketName, baseColor, sizeof baseColor) == 0) {
+                        auto value = static_cast<bNodeSocketValueRGBA*>(input->default_value);
+                        auto x = 1;
+                    }
+
+                    if (link) {
+                        auto linkFrom = link->fromnode;
+                        auto linkTo = link->tonode;
+                    }
+                }
+            }
+
+            if (node->type == SH_NODE_TEX_IMAGE) {
+                Image* ima = (Image*)node->id;
+                auto fullpath = bl::abspath(ima->filepath);
+
+                auto outputs = bl::list_range((bNodeSocket*)node->outputs.first);
+                for (auto output : outputs) {
+                    auto socketName = output->name;
+                    auto link = output->link;
+
+                    auto x = 1;
+                }
+
+                if (fullpath.size() == 0) continue;
+
+                std::shared_ptr<ms::Texture> texture = ms::Texture::create();
+                texture->readFromFile(fullpath.c_str());
+
+                //potential overflow - what is a good id?
+                texture->id = ima->id.session_uuid;
+                m_texture_manager.add(texture);
+
+                auto other = ima->id;
+            }
+        }
+    }
+
+
+
+        // todo: handle texture
+        //exportImages();
+
+        /*
+        int counter = 1;
+        bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
+        //std::vector<std::shared_ptr<ms::Texture>> textures;
+        for (struct Image* image : bpy_data.images()) {
+            auto thing = image->id;
+            auto name = thing.name;
+            auto path = image->filepath;
+            auto result = bl::abspath(path);
+
+            if (result.size() == 0) continue;
+
+            std::shared_ptr<ms::Texture> texture = ms::Texture::create();
+            texture->readFromFile(result.c_str());
+            texture->id = counter;
+            m_texture_manager.add(texture);
+
+            //textures.push_back(texture);
+            if (EndsWith(name, "normal")) {
+                stdmat.setBumpMap(texture);
+            }
+            
+            if (EndsWith(name, "color")) {
+                stdmat.setColorMap(texture);
+            }  
+
+            //if (EndsWith(name, "ao")) {
+            //    stdmat.setOcclusionMap(texture);
+            //    stdmat.setOcclusionStrength(0);
+            //}
+
+            counter++;
+            
+        }
+       */
 #if 0
-    if (m_settings.sync_textures) {
-        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-            if (!mtex || !mtex->tex || !mtex->tex->ima)
-                return -1;
-            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-        };
+        if (m_settings.sync_textures) {
+            auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
+                if (!mtex || !mtex->tex || !mtex->tex->ima)
+                    return -1;
+                return exportTexture(bl::abspath(mtex->tex->ima->id.name), type);
+            };
+>>>>>>> Stashed changes
 #if BLENDER_VERSION < 280
         stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
 #endif
@@ -216,7 +330,27 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 }
 
 
-//----------------------------------------------------------------------------------------------------------------------
+//void msblenContext::exportImages(int x)
+//{
+//    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
+//    std::vector<std::shared_ptr<ms::Texture>> textures;
+//    for (struct Image* image : bpy_data.images()) {
+//        auto thing = image->id;
+//        auto name = thing.name;
+//        auto path = image->filepath;
+//        auto result = bl::abspath(path);
+//
+//        if (result.size() == 0) continue;
+//
+//        std::shared_ptr<ms::Texture> texture = ms::Texture::create();
+//        texture->readFromFile(result.c_str());
+//        //textures.push_back(texture);
+//        //mat->setColorMap(texture);
+//
+//        break;
+//    }
+//
+//}
 
 
 static inline mu::float4x4 camera_correction(const mu::float4x4& v)

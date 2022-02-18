@@ -20,6 +20,7 @@
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
 
+
 class msblenContext;
 
 class msblenContext {
@@ -119,6 +120,8 @@ private:
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
+
+    //void exportImages(ms::StandardMaterial x);
 
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(const Object *obj);
