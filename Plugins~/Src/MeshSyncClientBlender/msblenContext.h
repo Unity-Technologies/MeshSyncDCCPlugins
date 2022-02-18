@@ -21,6 +21,8 @@
 #include "MeshSyncClient/AsyncTasksController.h"
 #include "msblenGeometryNodes.h"
 
+#include "MeshSyncClient/msInstancesManager.h"
+
 class msblenContext;
 
 class msblenContext {
@@ -187,16 +189,12 @@ private:
     ms::AsyncSceneSender m_sender;
     ms::SceneCacheWriter m_cache_writer;
 
+    ms::InstancesManager m_instances_manager;
+
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;
     float m_anim_time = 0.0f;
     bool m_ignore_events = false;
-
-    // geometry nodes
-#if BLENDER_VERSION >= 300
-    blender::msblenGeometryNodes m_geometry_nodes;
-#endif
-
 };
 using msblenContextPtr = std::shared_ptr<msblenContext>;
 #define msblenGetContext() msblenContext::getInstance()

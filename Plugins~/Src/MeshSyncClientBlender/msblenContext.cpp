@@ -75,6 +75,7 @@ void msblenContext::Destroy() {
     m_texture_manager.clear();
     m_material_manager.clear();
     m_entity_manager.clear();
+    m_instances_manager.clear();
 }
 
 
@@ -709,12 +710,6 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
 
     if (data) {
-
-#if BLENDER_VERSION >= 300
-        // Inject instance info on the mesh
-        m_geometry_nodes.onMeshExport(src, dst);
-#endif
-
         auto task = [this, ret, src, data]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
@@ -1607,7 +1602,7 @@ void msblenContext::WaitAndKickAsyncExport()
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
-
+    
     // kick async send
     exporter->on_prepare = [this, exporter]() {
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
@@ -1626,6 +1621,7 @@ void msblenContext::WaitAndKickAsyncExport()
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
+        t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
@@ -1644,14 +1640,7 @@ void msblenContext::WaitAndKickAsyncExport()
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
-    };
-
-    exporter->on_complete = [this]() {
-
-#if BLENDER_VERSION >= 300
-        m_geometry_nodes.onExportComplete();
-#endif
-
+        m_instances_manager.clearDirtyFlags();
     };
 
     exporter->kick();
@@ -1665,9 +1654,17 @@ void msblenContext::WaitAndKickAsyncExport()
 /// </summary>
 void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 {
-
+    //TODO - Check thread safety
 #if BLENDER_VERSION >= 300
-    m_geometry_nodes.onDepsgraphUpdatePost(graph);
+    auto func = [&](std::string str, std::vector<mu::float4x4> mat){
+        auto info = ms::InstanceInfo::create();
+        info->path = str;
+        info->transforms = mat;
+
+        m_instances_manager.add(info);
+    };
+
+    blender::GeometryNodesUtils::foreach_instance(func);
 #endif
 
 }

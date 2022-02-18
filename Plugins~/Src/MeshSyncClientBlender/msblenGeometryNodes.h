@@ -5,27 +5,30 @@
 #include "DNA_object_types.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 #include <DNA_node_types.h>
+#include "MeshSyncClient/msInstancesManager.h"
+#include "MeshUtils/muMath.h"
 
 namespace blender {
 
-	class msblenGeometryNodes
+#if BLENDER_VERSION >= 300
+	class GeometryNodesUtils
 	{
-		private:
-			// Object instances
-			typedef std::vector<mu::float4x4> matrix_vector;
-			typedef std::unordered_map<std::string, matrix_vector> object_instances_t;
-			object_instances_t instances;
-			void findObjectInstances();
-			void clearObjectInstances();
-			void addInstanceData(const Object* src, ms::Mesh& dst);
+	public:
+        /// <summary>
+        /// /// Converts the world matrix from blender to Unity coordinate system
+        /// /// </summary>
+		static mu::float4x4& blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
 
-		public:
-			// Blender Application events
-			void onDepsgraphUpdatePost(Depsgraph* graph);
+		/// <summary>
+		/// Will invoke f for every instance. The first argument of f is the name
+		/// of the mesh that is being instantiated and the second argumenet is the world matrix
+		/// of the instance in the Unity3D Coordinate system
+		/// </summary>
+		/// <param name="f"></param>
+		static void foreach_instance(std::function<void (std:: string, mu::float4x4)> f);
 
-			// MeshSync events
-			void onExportComplete();
-			void onMeshExport(const Object* obj, ms::Mesh& mesh);
+		static void foreach_instance(std::function<void(std::string, std::vector<mu::float4x4>)> f);
 	};
+#endif
 }
 
