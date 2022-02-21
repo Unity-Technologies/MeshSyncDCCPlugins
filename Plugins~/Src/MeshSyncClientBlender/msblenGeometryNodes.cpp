@@ -85,7 +85,7 @@ namespace blender {
     }
 
     void GeometryNodesUtils::foreach_instance(std::function<void(string, vector<float4x4>)> f) {
-        std::map<string, vector<float4x4>> map;
+        map<string, vector<float4x4>> map;
         foreach_instance([&](string name, float4x4 matrix) {
             map[name].push_back(matrix);
             });
@@ -93,6 +93,14 @@ namespace blender {
         for (auto& entry : map) {
             f(entry.first, entry.second);
         }
+    }
+    void GeometryNodesUtils::setInstancesDirty(bool dirty)
+    {
+        m_instances_dirty = dirty;
+    }
+    bool GeometryNodesUtils::getInstancesDirty()
+    {
+        return m_instances_dirty;
     }
 #endif
 }

@@ -28,6 +28,12 @@ namespace blender {
 		static void foreach_instance(std::function<void (std:: string, mu::float4x4)> f);
 
 		static void foreach_instance(std::function<void(std::string, std::vector<mu::float4x4>)> f);
+
+		void setInstancesDirty(bool dirty);
+		bool getInstancesDirty();
+
+	private:
+		bool m_instances_dirty;
 	};
 #endif
 }

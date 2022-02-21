@@ -23,6 +23,10 @@
 
 #include "MeshSyncClient/msInstancesManager.h"
 
+#if BLENDER_VERSION >= 300
+#include <msblenGeometryNodes.h>
+#endif
+
 class msblenContext;
 
 class msblenContext {
@@ -190,6 +194,9 @@ private:
     ms::SceneCacheWriter m_cache_writer;
 
     ms::InstancesManager m_instances_manager;
+#if BLENDER_VERSION >= 300
+    blender::GeometryNodesUtils m_geometryNodeUtils;
+#endif
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

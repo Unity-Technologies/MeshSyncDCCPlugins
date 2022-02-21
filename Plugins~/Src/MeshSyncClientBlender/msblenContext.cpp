@@ -1393,6 +1393,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
+    m_instances_manager.setAlwaysMarkDirty(dirty_all);
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1417,6 +1418,30 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             exportObject(obj, true);
         eraseStaleObjects();
     }
+
+#if BLENDER_VERSION >= 300
+    if (m_geometryNodeUtils.getInstancesDirty()) {
+
+        // Assume everything needs to be deleted
+        m_instances_manager.deleteAll();
+
+        // Assume everything is now dirty
+        m_instances_manager.setAlwaysMarkDirty(true);
+
+        auto func = [&](std::string str, std::vector<mu::float4x4> mat) {
+            auto info = ms::InstanceInfo::create();
+            info->path = str;
+            info->transforms = mat;
+
+            // If an object that is added has been marked for deletion
+            // it will be removed from the deletion list
+            m_instances_manager.add(std::move(info));
+        };
+
+        blender::GeometryNodesUtils::foreach_instance(func);
+    }
+    m_geometryNodeUtils.setInstancesDirty(false);
+#endif
 
     WaitAndKickAsyncExport();
     return true;
@@ -1626,6 +1651,7 @@ void msblenContext::WaitAndKickAsyncExport()
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
+        t.deleted_instanceInfos = m_instances_manager.getDeleted();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1656,15 +1682,7 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 {
     //TODO - Check thread safety
 #if BLENDER_VERSION >= 300
-    auto func = [&](std::string str, std::vector<mu::float4x4> mat){
-        auto info = ms::InstanceInfo::create();
-        info->path = str;
-        info->transforms = mat;
-
-        m_instances_manager.add(info);
-    };
-
-    blender::GeometryNodesUtils::foreach_instance(func);
+    m_geometryNodeUtils.setInstancesDirty(true);
 #endif
 
 }
