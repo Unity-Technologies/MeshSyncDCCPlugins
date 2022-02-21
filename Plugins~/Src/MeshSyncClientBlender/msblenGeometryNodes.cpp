@@ -4,6 +4,7 @@
 #include <BlenderPyObjects/BlenderPyContext.h>
 #include <MeshSync/SceneGraph/msMesh.h>
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
+#include "BlenderPyObjects/BlenderPyScene.h"
 
 
 using namespace std;
@@ -38,6 +39,22 @@ namespace blender {
 
     void GeometryNodesUtils::foreach_instance(std::function<void(string, float4x4)> f)
     {
+        // Build a table to translate meshNames to object names
+        auto scene = blContext.scene();
+        auto mscene = BlenderPyScene(scene);
+
+        map<string, string> meshToObject;
+
+        mscene.each_objects([&](Object* obj) {
+            if (obj->type != OB_MESH)
+                return;
+
+            auto object_name = obj->id.name;
+
+            auto mesh = (Mesh*)obj->data;
+            auto mesh_name = mesh->id.name;
+            meshToObject[mesh_name] = object_name;
+            });
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
         auto blContext = blender::BlenderPyContext::get();
@@ -65,7 +82,14 @@ namespace blender {
                 continue;
 
             auto object = blContext.object_get(instance);
-            auto object_name = object->id.name;
+
+            if (object->type != OB_MESH)
+                continue;
+
+            auto mesh = (Mesh*)object->data;
+            auto mesh_name = mesh->id.name;
+            
+            auto object_name = meshToObject[mesh_name];
 
             auto blendeName = string(object_name);
 
