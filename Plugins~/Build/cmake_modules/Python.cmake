@@ -86,6 +86,12 @@ function(configure_python python_full_version)
             "  Path: ${PYTHON_SRC_ROOT}"
         )
     endif()    
+
+    if(NOT ${PYTHON_${python_full_version}_LIBRARY})
+        message(FATAL_ERROR "Failed to find and configure Python libraries for ${python_full_version}. \n"
+            "  Path: ${PYTHON_SRC_ROOT}"
+        )
+    endif()
         
 endfunction()
 
