@@ -5,6 +5,7 @@
 #include <MeshSync/SceneGraph/msMesh.h>
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
+#include <msblenUtils.h>
 
 
 using namespace std;
@@ -39,23 +40,19 @@ namespace blender {
 
     void GeometryNodesUtils::foreach_instance(std::function<void(string, float4x4)> f)
     {
+
         auto blContext = blender::BlenderPyContext::get();
-        // Build a table to translate meshNames to object names
+        // Build a map between data and the objects they belong to
         auto scene = blContext.scene();
         auto mscene = BlenderPyScene(scene);
 
-        map<string, string> dataToObject;
+        map<string, Object*> dataToObject;
 
         mscene.each_objects([&](Object* obj) {
             if (obj == nullptr || obj->data == nullptr)
                 return;
-
-            auto object_name = obj->id.name;
-           
-
-            auto data = (ID*)obj->data;
-            auto data_name = getOutlinerName(data->name);
-            dataToObject[data_name] = getOutlinerName(object_name);
+            auto data_id = (ID*)obj->data;
+            dataToObject[data_id->name] = obj;
             });
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
@@ -87,10 +84,9 @@ namespace blender {
             if (object->type != OB_MESH)
                 continue;
 
-            auto mesh = (Mesh*)object->data;
-            auto mesh_name = getOutlinerName(mesh->id.name);
-            
-            auto object_name = dataToObject[mesh_name];            
+            auto data_id = (ID*)object->data;
+            auto hierarchyObject = dataToObject[data_id->name];
+            auto path = get_path(hierarchyObject);
 
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
@@ -98,7 +94,7 @@ namespace blender {
             auto result = blenderToUnityWorldMatrix(world_matrix);
 
             
-            f(move(object_name), move(result));
+            f(move(path), move(result));
         }
 
         // Cleanup resources
@@ -115,11 +111,7 @@ namespace blender {
             f(entry.first, entry.second);
         }
     }
-    string GeometryNodesUtils::getOutlinerName(char* name)
-    {
-        string str(name);
-        return str.substr(2, str.size() - 2);
-    }
+
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
         m_instances_dirty = dirty;

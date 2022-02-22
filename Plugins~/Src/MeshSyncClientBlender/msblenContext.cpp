@@ -689,7 +689,16 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-            if (m_settings.BakeModifiers ) {
+
+            auto forceBakeModifiers = false;
+
+#if BLENDER_VERSION >= 300
+            // If the object has a geometry node modifier, force bake it
+            auto node_modifier = (NodesModifierData*)FindModifier(src, ModifierType::eModifierType_Nodes);
+            forceBakeModifiers = node_modifier != nullptr && node_modifier->node_group->type == NTREE_GEOMETRY;
+#endif
+
+            if (m_settings.BakeModifiers || forceBakeModifiers) {
                 auto blContext = bl::BlenderPyContext::get();
                 Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);

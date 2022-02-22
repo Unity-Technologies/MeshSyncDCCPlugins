@@ -29,15 +29,6 @@ namespace blender {
 
 		static void foreach_instance(std::function<void(std::string, std::vector<mu::float4x4>)> f);
 
-		/// <summary>
-		/// Converts a name with the type embedded
-		/// to the name used without in the outliner window
-		/// i.e. MEMyMesh -> MyMesh
-		/// </summary>
-		/// <param name=""></param>
-		/// <returns></returns>
-		static std::string getOutlinerName(char *name);
-
 		void setInstancesDirty(bool dirty);
 		bool getInstancesDirty();
 
