@@ -24,7 +24,7 @@ endfunction()
 
 # Configure Python. Generate pyconfig.h
 # Returns:
-# - PYTHON_${python_full_version}_INCLUDE_DIRS: include dirs this version of Python
+# - PYTHON_${python_full_version}_INCLUDE_DIRS: include dirs of this version of Python
 # - PYTHON_${python_full_version}_LIBRARY: (Windows only) the library of this version of Python 
 function(configure_python python_full_version)
 
