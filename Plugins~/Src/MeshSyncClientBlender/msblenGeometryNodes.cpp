@@ -39,6 +39,7 @@ namespace blender {
 
     void GeometryNodesUtils::foreach_instance(std::function<void(string, float4x4)> f)
     {
+        auto blContext = blender::BlenderPyContext::get();
         // Build a table to translate meshNames to object names
         auto scene = blContext.scene();
         auto mscene = BlenderPyScene(scene);
@@ -57,7 +58,6 @@ namespace blender {
             });
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
-        auto blContext = blender::BlenderPyContext::get();
         auto depsgraph = blContext.evaluated_depsgraph_get();
 
         // Iterate over the object instances collection of depsgraph
