@@ -60,11 +60,13 @@ function(configure_python python_full_version)
                 "${PYTHON_${python_full_version}_SRC_ROOT}/PC"
             CACHE INTERNAL "Python ${python_full_version} include directories"
         )
+        string(REGEX MATCH "([0-9]+).([0-9]+).([0-9]+)" python_ver ${python_full_version})        
+        set(python_ver_no_dots "${CMAKE_MATCH_1}${CMAKE_MATCH_2}" )
         
         find_library(
             PYTHON_${python_full_version}_LIBRARY
             NAMES             
-                python${python_full_version}.lib
+                python${python_ver_no_dots}.lib
             HINTS 
                 ${PYTHON_${python_full_version}_SRC_ROOT}
             PATH_SUFFIXES
@@ -87,7 +89,7 @@ function(configure_python python_full_version)
         )
     endif()    
 
-    if(NOT ${PYTHON_${python_full_version}_LIBRARY})
+    if(NOT DEFINED PYTHON_${python_full_version}_LIBRARY)
         message(FATAL_ERROR "Failed to find and configure Python libraries for ${python_full_version}. \n"
             "  Path: ${PYTHON_SRC_ROOT}"
         )
