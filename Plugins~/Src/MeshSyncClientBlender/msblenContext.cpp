@@ -214,6 +214,7 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
     
     
+    /*
     auto tree = mat->nodetree;
 
     //auto tree = mat->nodetree;
@@ -271,46 +272,51 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
         }
     }
 
+    */
 
+    // todo: handle texture
+    //exportImages();
+        
+    int counter = 1;
+    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
+    //std::vector<std::shared_ptr<ms::Texture>> textures;
+    for (struct Image* image : bpy_data.images()) {
+        auto thing = image->id;
+        auto name = thing.name;
+        auto path = image->filepath;
+        
+        auto result = bl::abspath(path);
 
-        // todo: handle texture
-        //exportImages();
+        if (result.size() == 0) continue;
 
-        /*
-        int counter = 1;
-        bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
-        //std::vector<std::shared_ptr<ms::Texture>> textures;
-        for (struct Image* image : bpy_data.images()) {
-            auto thing = image->id;
-            auto name = thing.name;
-            auto path = image->filepath;
-            auto result = bl::abspath(path);
-
-            if (result.size() == 0) continue;
-
-            std::shared_ptr<ms::Texture> texture = ms::Texture::create();
-            texture->readFromFile(result.c_str());
-            texture->id = counter;
-            m_texture_manager.add(texture);
-
-            //textures.push_back(texture);
-            if (EndsWith(name, "normal")) {
-                stdmat.setBumpMap(texture);
-            }
-            
-            if (EndsWith(name, "color")) {
-                stdmat.setColorMap(texture);
-            }  
-
-            //if (EndsWith(name, "ao")) {
-            //    stdmat.setOcclusionMap(texture);
-            //    stdmat.setOcclusionStrength(0);
-            //}
-
-            counter++;
-            
+        if (image->gputexture) {
+            auto pixels = bl::BlenderPyContext::GetPixels(image);
+            auto pixelsLen = bl::BlenderPyContext::GetPixelsLength(image);
         }
-       */
+
+        std::shared_ptr<ms::Texture> texture = ms::Texture::create();
+        texture->readFromFile(result.c_str());
+        texture->id = counter;
+        m_texture_manager.add(texture);
+
+        //textures.push_back(texture);
+        if (EndsWith(name, "normal")) {
+            stdmat.setBumpMap(texture);
+        }
+            
+        if (EndsWith(name, "color")) {
+            stdmat.setColorMap(texture);
+        }  
+
+        //if (EndsWith(name, "ao")) {
+        //    stdmat.setOcclusionMap(texture);
+        //    stdmat.setOcclusionStrength(0);
+        //}
+
+        counter++;
+            
+    }
+       
 #if 0
         if (m_settings.sync_textures) {
             auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {

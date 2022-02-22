@@ -9,6 +9,9 @@
 #include "BlenderPyObjects/BlenderPyScene.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
+#include <iostream>
+#include <fstream>
+
 namespace blender {
 
 bContext *g_context;
@@ -62,6 +65,10 @@ extern PropertyRNA* BlenderPyContext_blend_data;
 extern PropertyRNA* BlenderPyContext_scene;
 extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
+extern PropertyRNA* BlenderPyContext_image_pixels;
+extern PropertyRNA* BlenderPyContext_image_file_format;
+extern PropertyRNA* BlenderPyContext_image_size;
+extern PropertyRNA* BlenderPyContext_image_channels;
 
 bool ready()
 {
@@ -84,6 +91,9 @@ void setup(py::object bpy_context)
         first_type = (StructRNA*)first_type->cont.prev;
     }
     rna_sdata(bpy_context, g_context);
+
+    std::ofstream myfile;
+    myfile.open("c:/export/example.txt");
 
     // resolve blender types and functions
 #define match_type(N) strcmp(type->identifier, N) == 0
@@ -198,7 +208,34 @@ void setup(py::object bpy_context)
                 }
             }
         }
+        else if (match_type("Image")) {
+            each_prop{
+                if (match_prop("pixels")) BlenderPyContext_image_pixels = prop;
+                if (match_prop("file_format")) BlenderPyContext_image_file_format = prop;
+                if (match_prop("size")) BlenderPyContext_image_size = prop;
+                if (match_prop("channels")) BlenderPyContext_image_channels = prop;
+            }
+
+            
+            myfile << "Functions" << "\n";
+            myfile << "========" << "\n";
+
+            for (auto* func : list_range((FunctionRNA*)type->functions.first)) {
+                myfile << func->identifier << "\n";
+            }
+
+
+            myfile << "========" << "\n";
+            myfile << "Properties" << "\n";
+            myfile << "========" << "\n";
+
+            for (auto* prop : list_range((PropertyRNA*)type->cont.properties.first)) {
+                myfile << prop->identifier << "\n";
+            }
+        }
     }
+
+    myfile.close();
 #undef each_iprop
 #undef each_nprop
 #undef each_func
