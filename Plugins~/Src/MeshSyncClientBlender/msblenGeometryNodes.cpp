@@ -44,17 +44,18 @@ namespace blender {
         auto scene = blContext.scene();
         auto mscene = BlenderPyScene(scene);
 
-        map<string, string> meshToObject;
+        map<string, string> dataToObject;
 
         mscene.each_objects([&](Object* obj) {
-            if (obj->type != OB_MESH)
+            if (obj == nullptr || obj->data == nullptr)
                 return;
 
             auto object_name = obj->id.name;
+           
 
-            auto mesh = (Mesh*)obj->data;
-            auto mesh_name = mesh->id.name;
-            meshToObject[mesh_name] = object_name;
+            auto data = (ID*)obj->data;
+            auto data_name = getOutlinerName(data->name);
+            dataToObject[data_name] = getOutlinerName(object_name);
             });
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
@@ -87,13 +88,9 @@ namespace blender {
                 continue;
 
             auto mesh = (Mesh*)object->data;
-            auto mesh_name = mesh->id.name;
+            auto mesh_name = getOutlinerName(mesh->id.name);
             
-            auto object_name = meshToObject[mesh_name];
-
-            auto blendeName = string(object_name);
-
-            auto unityName = blendeName.substr(2, blendeName.size());
+            auto object_name = dataToObject[mesh_name];            
 
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
@@ -101,7 +98,7 @@ namespace blender {
             auto result = blenderToUnityWorldMatrix(world_matrix);
 
             
-            f(move(unityName), move(result));
+            f(move(object_name), move(result));
         }
 
         // Cleanup resources
@@ -117,6 +114,11 @@ namespace blender {
         for (auto& entry : map) {
             f(entry.first, entry.second);
         }
+    }
+    string GeometryNodesUtils::getOutlinerName(char* name)
+    {
+        string str(name);
+        return str.substr(2, str.size() - 2);
     }
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
