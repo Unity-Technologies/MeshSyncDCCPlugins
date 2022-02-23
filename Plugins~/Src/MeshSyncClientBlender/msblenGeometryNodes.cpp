@@ -34,7 +34,7 @@ namespace blender {
             to_mat4x4(rotation180) *
             scale44(scale);
 
-        return move(result);
+        return result;
     }
 
 
@@ -86,6 +86,9 @@ namespace blender {
 
             auto data_id = (ID*)object->data;
             auto hierarchyObject = dataToObject[data_id->name];
+            if (hierarchyObject == nullptr)
+                continue;
+
             auto path = get_path(hierarchyObject);
 
             auto world_matrix = float4x4();
