@@ -55,6 +55,9 @@ namespace blender {
             dataToObject[data_id->name] = obj;
             });
 
+        
+
+
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
         auto depsgraph = blContext.evaluated_depsgraph_get();
 
@@ -86,8 +89,10 @@ namespace blender {
 
             auto data_id = (ID*)object->data;
             auto hierarchyObject = dataToObject[data_id->name];
-            if (hierarchyObject == nullptr)
-                continue;
+
+            if (hierarchyObject == nullptr) {
+                hierarchyObject = object;
+            }
 
             auto path = get_path(hierarchyObject);
 
