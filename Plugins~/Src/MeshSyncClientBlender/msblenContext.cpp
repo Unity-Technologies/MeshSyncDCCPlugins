@@ -75,6 +75,7 @@ void msblenContext::Destroy() {
     m_texture_manager.clear();
     m_material_manager.clear();
     m_entity_manager.clear();
+    m_instances_manager.clear();
 }
 
 
@@ -692,7 +693,16 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
             (!is_editing && m_settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-            if (m_settings.BakeModifiers ) {
+
+            auto forceBakeModifiers = false;
+
+#if BLENDER_VERSION >= 300
+            // If the object has a geometry node modifier, force bake it
+            auto node_modifier = (NodesModifierData*)FindModifier(src, ModifierType::eModifierType_Nodes);
+            forceBakeModifiers = node_modifier != nullptr && node_modifier->node_group->type == NTREE_GEOMETRY;
+#endif
+
+            if (m_settings.BakeModifiers || forceBakeModifiers) {
                 auto blContext = bl::BlenderPyContext::get();
                 Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
@@ -713,12 +723,6 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
 
     if (data) {
-
-#if BLENDER_VERSION >= 300
-        // Inject instance info on the mesh
-        m_geometry_nodes.onMeshExport(src, dst);
-#endif
-
         auto task = [this, ret, src, data]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
@@ -1403,6 +1407,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
+    m_instances_manager.setAlwaysMarkDirty(dirty_all);
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1427,6 +1432,30 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             exportObject(obj, true);
         eraseStaleObjects();
     }
+
+#if BLENDER_VERSION >= 300
+    if (m_geometryNodeUtils.getInstancesDirty()) {
+
+        // Assume everything needs to be deleted
+        m_instances_manager.deleteAll();
+
+        // Assume everything is now dirty
+        m_instances_manager.setAlwaysMarkDirty(true);
+
+        auto func = [&](std::string str, std::vector<mu::float4x4> mat) {
+            auto info = ms::InstanceInfo::create();
+            info->path = str;
+            info->transforms = mat;
+
+            // If an object that is added has been marked for deletion
+            // it will be removed from the deletion list
+            m_instances_manager.add(std::move(info));
+        };
+
+        blender::GeometryNodesUtils::foreach_instance(func);
+    }
+    m_geometryNodeUtils.setInstancesDirty(false);
+#endif
 
     WaitAndKickAsyncExport();
     return true;
@@ -1612,7 +1641,7 @@ void msblenContext::WaitAndKickAsyncExport()
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
-
+    
     // kick async send
     exporter->on_prepare = [this, exporter]() {
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
@@ -1631,10 +1660,12 @@ void msblenContext::WaitAndKickAsyncExport()
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
+        t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
+        t.deleted_instanceInfos = m_instances_manager.getDeleted();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1649,14 +1680,7 @@ void msblenContext::WaitAndKickAsyncExport()
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
-    };
-
-    exporter->on_complete = [this]() {
-
-#if BLENDER_VERSION >= 300
-        m_geometry_nodes.onExportComplete();
-#endif
-
+        m_instances_manager.clearDirtyFlags();
     };
 
     exporter->kick();
@@ -1670,9 +1694,9 @@ void msblenContext::WaitAndKickAsyncExport()
 /// </summary>
 void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 {
-
+    //TODO - Check thread safety
 #if BLENDER_VERSION >= 300
-    m_geometry_nodes.onDepsgraphUpdatePost(graph);
+    m_geometryNodeUtils.setInstancesDirty(true);
 #endif
 
 }

@@ -4,6 +4,8 @@
 #include <BlenderPyObjects/BlenderPyContext.h>
 #include <MeshSync/SceneGraph/msMesh.h>
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
+#include "BlenderPyObjects/BlenderPyScene.h"
+#include <msblenUtils.h>
 
 
 using namespace std;
@@ -11,14 +13,13 @@ using namespace mu;
 
 namespace blender {
 
-    // UTILS
-
+#if BLENDER_VERSION >= 300
     /// <summary>
     /// Converts the world matrix from blender to Unity coordinate systems
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4& blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
+    float4x4& GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
 
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
@@ -33,20 +34,31 @@ namespace blender {
             to_mat4x4(rotation180) *
             scale44(scale);
 
-        return move(result);
+        return result;
     }
 
-    // INSTANCES
 
-    void msblenGeometryNodes::findObjectInstances() {
+    void GeometryNodesUtils::foreach_instance(std::function<void(string, float4x4)> f)
+    {
 
-        using namespace std;
-        using namespace mu;
+        auto blContext = blender::BlenderPyContext::get();
+        // Build a map between data and the objects they belong to
+        auto scene = blContext.scene();
+        auto mscene = BlenderPyScene(scene);
 
-        instances.clear();
+        map<string, Object*> dataToObject;
+
+        mscene.each_objects([&](Object* obj) {
+            if (obj == nullptr || obj->data == nullptr)
+                return;
+            auto data_id = (ID*)obj->data;
+            dataToObject[data_id->name] = obj;
+            });
+
+        
+
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
-        auto blContext = blender::BlenderPyContext::get();
         auto depsgraph = blContext.evaluated_depsgraph_get();
 
         // Iterate over the object instances collection of depsgraph
@@ -72,84 +84,49 @@ namespace blender {
 
             auto object = blContext.object_get(instance);
 
-            auto object_data = (ID*)object->data;
-            if (object_data == nullptr)
+            if (object->type != OB_MESH)
                 continue;
 
-            auto name = object_data->name;
+            auto data_id = (ID*)object->data;
+            auto hierarchyObject = dataToObject[data_id->name];
 
-            if (name == nullptr)
-                continue;
-
-            if (instances.find(name) == instances.end()) {
-                matrix_vector v;
-                instances.insert(move(pair(name, move(v))));
+            if (hierarchyObject == nullptr) {
+                hierarchyObject = object;
             }
+
+            auto path = get_path(hierarchyObject);
 
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
 
             auto result = blenderToUnityWorldMatrix(world_matrix);
 
-            instances[name].push_back(move(result));
+            
+            f(move(path), move(result));
         }
 
         // Cleanup resources
         blContext.object_instances_end(&it);
     }
 
-    void msblenGeometryNodes::clearObjectInstances()
-    {
-        for (auto it = instances.begin(); it != instances.end(); it++) {
-            auto data = *it;
-            data.second.clear();
+    void GeometryNodesUtils::foreach_instance(std::function<void(string, vector<float4x4>)> f) {
+        map<string, vector<float4x4>> map;
+        foreach_instance([&](string name, float4x4 matrix) {
+            map[name].push_back(matrix);
+            });
+
+        for (auto& entry : map) {
+            f(entry.first, entry.second);
         }
     }
 
-    void msblenGeometryNodes::addInstanceData(const Object* src, ms::Mesh& dst)
+    void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
-        auto data = (ID*)src->data;
-
-        if (data == nullptr)
-            return;
-
-        auto meshName = data->name;
-
-        auto meshInstances = instances.find(meshName);
-        if (instances.find(meshName) == instances.end())
-            return;
-
-        if (meshInstances->second.size() == 0)
-            return;
-
-        /// Add mesh instances as a user property
-        if (dst.findUserProperty("instances")== nullptr){
-
-            auto matrices = instances[meshName];
-
-            ms::Variant newProperty;
-
-            newProperty.name = "instances";
-            newProperty.type = ms::Variant::Type::Float4x4;
-            newProperty.set(matrices.data(), matrices.size());
-            dst.addUserProperty(move(newProperty));
-        }
+        m_instances_dirty = dirty;
     }
-
-    // EVENTS
-
-    void msblenGeometryNodes::onDepsgraphUpdatePost(Depsgraph* graph)
+    bool GeometryNodesUtils::getInstancesDirty()
     {
-        findObjectInstances();
+        return m_instances_dirty;
     }
-
-    void msblenGeometryNodes::onExportComplete()
-    {
-        clearObjectInstances();
-    }
-
-    void msblenGeometryNodes::onMeshExport(const Object* obj, ms::Mesh& mesh)
-    {
-        addInstanceData(obj, mesh);
-    }
+#endif
 }

@@ -25,6 +25,7 @@ class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
 
     def draw(self, context):
         pass
+            
 
 
 class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
@@ -122,13 +123,11 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
                 return {'FINISHED'}
             MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
             context.window_manager.modal_handler_add(self)
-            bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
             context.window_manager.event_timer_remove(MESHSYNC_OT_AutoSync._timer)
             MESHSYNC_OT_AutoSync._timer = None
-            bpy.app.handlers.depsgraph_update_post.remove(on_depsgraph_update_post)
             return {'FINISHED'}
 
     def modal(self, context, event):
@@ -307,6 +306,9 @@ def on_depsgraph_update_post(scene):
     graph = bpy.context.evaluated_depsgraph_get()
     msb_context.setup(bpy.context)
     msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
 
 import atexit
 atexit.register(DestroyMeshSyncContext)
