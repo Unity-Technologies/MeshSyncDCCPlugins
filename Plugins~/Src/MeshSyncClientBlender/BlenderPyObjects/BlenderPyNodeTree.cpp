@@ -11,7 +11,7 @@ namespace blender {
 	void begin(CollectionPropertyIterator* it, const bNodeTree* nodeTree, PropertyRNA* prop) {
 		auto cprop = (CollectionPropertyRNA*)prop;
 		PointerRNA rna;
-		rna.data = &nodeTree;
+		rna.data = (void*)nodeTree;
 		cprop->begin(it, &rna);
 	}
 

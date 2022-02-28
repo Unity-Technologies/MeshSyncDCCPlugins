@@ -485,6 +485,10 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
 
             exportDupliGroup(obj, ctx);
         }
+
+#if BLENDER_VERSION >= 300
+        m_modifiers.exportModifiers(rec.dst, obj);
+#endif
     }
     return rec.dst;
 }
@@ -718,6 +722,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
         auto task = [this, ret, src, data]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
+
             m_entity_manager.add(ret);
         };
 

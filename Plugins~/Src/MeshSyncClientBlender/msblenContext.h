@@ -20,6 +20,7 @@
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
 #include "msblenGeometryNodes.h"
+#include "msblenModifiers.h"
 
 class msblenContext;
 
@@ -195,6 +196,7 @@ private:
     // geometry nodes
 #if BLENDER_VERSION >= 300
     blender::msblenGeometryNodes m_geometry_nodes;
+    blender::msblenModifiers m_modifiers;
 #endif
 
 };
