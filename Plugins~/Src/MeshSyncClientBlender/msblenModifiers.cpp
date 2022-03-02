@@ -5,6 +5,8 @@
 #include <MeshSync/SceneGraph/msMesh.h>
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
 #include <msblenBinder.h>
+#include "MeshSync/SceneGraph/msPropertyInfo.h"
+#include <msblenUtils.h>
 
 // Copied from blender source that we cannot include:
 #define LISTBASE_FOREACH(type, var, list) \
@@ -62,7 +64,7 @@ namespace blender {
 	//	transform->addUserProperty(std::move(variant));
 	//}
 
-	bool msblenModifiers::addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, std::stringstream& names)
+	bool addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, std::stringstream& names, const Object* obj, ms::PropertyManager* propertyManager)
 	{
 #if BLENDER_VERSION >= 300
 		if (modifier->type != ModifierType::eModifierType_Nodes) {
@@ -82,31 +84,39 @@ namespace blender {
 			auto socket = getSocketForProperty(property, group, blNodeTree);
 
 			if (socket != nullptr) {
-				auto variant = ms::Variant();
-				variant.name = socket->name;
-
+				//auto variant = ms::Variant();
+				// variant.name = socket->name;
+				auto propertyInfo = ms::PropertyInfo::create();
+				
 				switch (property->type) {
 				case IDP_INT: {
-					auto val = IDP_Int(property);
-
-					variant.type = ms::Variant::Type::Int;
+					auto defaultValue = (bNodeSocketValueInt*)socket->default_value;	
+					propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
+					//variant.type = ms::Variant::Type::Int;
 					//variant.set(std::move(val));
-					variant.set(val);
+					//variant.set(val);
 					break;
 				}
 				case IDP_FLOAT: {
-					auto val = IDP_Float(property);
+					/*auto val = IDP_Float(property);
 
 					variant.type = ms::Variant::Type::Float;
-					variant.set(val);
+					variant.set(val);*/
+
+					auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
+					propertyInfo->set(IDP_Float(property), defaultValue->min, defaultValue->max);
 					break;
 				}
 				default:
 					continue;
 				}
 
-				names << variant.name << std::endl;
-				transform->addUserProperty(std::move(variant));
+				propertyInfo->path = get_path(obj);
+				propertyInfo->name = socket->name;
+				propertyManager->add(propertyInfo);
+
+				//names << variant.name << std::endl;
+				//transform->addUserProperty(std::move(variant));
 
 				//if (variant.type != ms::Variant::Type::Unknown) {
 				//	names << variant.name << std::endl;
@@ -133,7 +143,7 @@ namespace blender {
 #endif // BLENDER_VERSION >= 300
 	}
 
-	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj)
+	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager)
 	{
 		// Add the geometry node properties as a user property
 
@@ -146,7 +156,7 @@ namespace blender {
 			auto modifier = *it;
 
 			// Add each modifier as a variant
-			addModifierProperties(transform, modifier, modifierNames);
+			addModifierProperties(transform, modifier, modifierNames, obj, propertyManager);
 		}
 
 		auto streamString = modifierNames.str();

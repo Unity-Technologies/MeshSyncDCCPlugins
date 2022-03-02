@@ -488,9 +488,10 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
         }
 
 #if BLENDER_VERSION >= 300
-        m_modifiers.exportModifiers(rec.dst, obj);
+        blender::msblenModifiers::exportModifiers(rec.dst, obj, &m_property_manager);
 #endif
     }
+
     return rec.dst;
 }
 
@@ -1408,6 +1409,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
     m_instances_manager.setAlwaysMarkDirty(dirty_all);
+    m_property_manager.clear();
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1661,6 +1663,7 @@ void msblenContext::WaitAndKickAsyncExport()
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
         t.instanceInfos = m_instances_manager.getDirtyInstances();
+        t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();

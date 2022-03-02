@@ -23,6 +23,7 @@
 #include "msblenModifiers.h"
 
 #include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msPropertyManager.h"
 
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodes.h>
@@ -195,9 +196,10 @@ private:
     ms::SceneCacheWriter m_cache_writer;
 
     ms::InstancesManager m_instances_manager;
+    ms::PropertyManager m_property_manager;
+
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
-    blender::msblenModifiers m_modifiers;
 #endif
 
     // animation export
