@@ -23,22 +23,40 @@ namespace blender {
 
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
-        auto scale = float3::one();
-        scale.x = -1;
+        auto scale_z = float3::one();
+        scale_z.z = -1;
+
+        auto scale_x = float3::one();
+        scale_x.x = -1;
 
         auto result =
             to_mat4x4(rotation) *
-            scale44(scale) *
+            scale44(scale_x) *
             blenderMatrix *
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
+            scale44(scale_z);
+
+        return result;
+    }
+
+    mu::float4x4& GeometryNodesUtils::blenderToUnityWorldMatrixMesh()
+    {
+        auto rotation = rotate_x(90 * DegToRad);
+        auto scale = float3::one();
+        scale.x = -1;
+
+        auto result = 
+            to_mat4x4(rotation) *
             scale44(scale);
 
         return result;
     }
 
 
-    void GeometryNodesUtils::foreach_instance(std::function<void(string, float4x4)> f)
+    void GeometryNodesUtils::foreach_instance(
+        std::function<void(string, float4x4)> pathHandler, 
+        std::function<void(Mesh*, float4x4)> meshHandler)
     {
 
         auto blContext = blender::BlenderPyContext::get();
@@ -90,33 +108,41 @@ namespace blender {
             auto data_id = (ID*)object->data;
             auto hierarchyObject = dataToObject[data_id->name];
 
-            if (hierarchyObject == nullptr) {
-                hierarchyObject = object;
-            }
-
-            auto path = get_path(hierarchyObject);
-
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
 
-            auto result = blenderToUnityWorldMatrix(world_matrix);
+            auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
 
-            
-            f(move(path), move(result));
+            if (hierarchyObject == nullptr) {
+                auto mesh = (Mesh*)object->data;
+                meshHandler(move(mesh),move(unityMatrix));
+            }
+            else {
+                auto path = get_path(hierarchyObject);
+                pathHandler(move(path), move(unityMatrix));
+            }
         }
 
         // Cleanup resources
         blContext.object_instances_end(&it);
     }
 
-    void GeometryNodesUtils::foreach_instance(std::function<void(string, vector<float4x4>)> f) {
-        map<string, vector<float4x4>> map;
+    void GeometryNodesUtils::foreach_instance(
+        std::function<void(string, vector<float4x4>)> pathHandler,
+        std::function<void(Mesh*, vector<float4x4>)> meshHandler) {
+        map<string, vector<float4x4>> pathMap;
+        map<Mesh*, vector<float4x4>> meshMap;
         foreach_instance([&](string name, float4x4 matrix) {
-            map[name].push_back(matrix);
+            pathMap[name].push_back(matrix);
+            }, [&](Mesh* mesh, float4x4 matrix) {
+                meshMap[mesh].push_back(matrix);
             });
 
-        for (auto& entry : map) {
-            f(entry.first, entry.second);
+        for (auto& entry : pathMap) {
+            pathHandler(entry.first, entry.second);
+        }
+        for (auto& entry : meshMap) {
+            meshHandler(entry.first, entry.second);
         }
     }
 

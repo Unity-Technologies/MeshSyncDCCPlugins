@@ -695,15 +695,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
 
         if (need_convert) {
 
-            auto forceBakeModifiers = false;
-
-#if BLENDER_VERSION >= 300
-            // If the object has a geometry node modifier, force bake it
-            auto node_modifier = (NodesModifierData*)FindModifier(src, ModifierType::eModifierType_Nodes);
-            forceBakeModifiers = node_modifier != nullptr && node_modifier->node_group->type == NTREE_GEOMETRY;
-#endif
-
-            if (m_settings.BakeModifiers || forceBakeModifiers) {
+            if (m_settings.BakeModifiers) {
                 auto blContext = bl::BlenderPyContext::get();
                 Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
@@ -809,7 +801,12 @@ void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj,
     }
 }
 
-void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data)
+
+void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object* obj, Mesh* data) {
+    doExtractNonEditMeshData(dst, obj, data, m_settings);
+}
+
+void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, BlenderSyncSettings& settings)
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
@@ -857,7 +854,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
     }
 
     // normals
-    if (m_settings.sync_normals) {
+    if (settings.sync_normals) {
 #if 0
         // per-vertex
         dst.normals.resize_discard(num_vertices);
@@ -876,13 +873,13 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
 
 
     // uv
-    if (m_settings.sync_uvs) {
+    if (settings.sync_uvs) {
 
         blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
     }
 
     // colors
-    if (m_settings.sync_colors) {
+    if (settings.sync_colors) {
         blender::barray_range<struct MLoopCol> colors = bmesh.colors();
         if (!colors.empty()) {
             dst.colors.resize_discard(num_indices);
@@ -891,7 +888,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
         }
     }
 
-    if (!m_settings.BakeModifiers) {
+    if (!settings.BakeModifiers) {
         // bones
 
         auto extract_bindpose = [](auto *bone) {
@@ -900,7 +897,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
             return mu::invert(mu::swap_yz(mu::flip_z(mat_bone)));
         };
 
-        if (m_settings.sync_bones) {
+        if (settings.sync_bones) {
             const ArmatureModifierData* arm_mod = (const ArmatureModifierData*)FindModifier(
                 obj, eModifierType_Armature);
             if (arm_mod) {
@@ -941,7 +938,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
         }
 
         // blend shapes
-        if (m_settings.sync_blendshapes && mesh.key) {
+        if (settings.sync_blendshapes && mesh.key) {
             RawVector<mu::float3> basis;
             int bi = 0;
             each_key(&mesh, [&](const KeyBlock *kb) {
@@ -1103,6 +1100,41 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh
         blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
 
     }
+}
+
+void msblenContext::doExtactMeshDataWithoutObject(ms::MeshPtr msMesh, Mesh* mesh)
+{
+    BlenderSyncSettings meshExtractionSettings;
+    meshExtractionSettings.sync_meshes = true;
+    meshExtractionSettings.sync_normals = true;
+    meshExtractionSettings.sync_uvs = true;
+    meshExtractionSettings.sync_colors = true;
+    meshExtractionSettings.sync_bones = false;
+
+    auto path = std::string(mesh->id.name);
+    path += std::to_string(mesh->id.session_uuid);
+
+
+    doExtractNonEditMeshData(*(msMesh), nullptr, mesh, meshExtractionSettings);
+
+    if (msMesh->normals.empty())
+        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
+    if (msMesh->tangents.empty())
+        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+
+    msMesh->path = path;
+    msMesh->world_matrix = mu::float4x4::identity();
+    msMesh->local_matrix = mu::float4x4::identity();
+    msMesh->visibility.active = false;
+
+#if BLENDER_VERSION >= 300
+    msMesh->refine_settings.local2world = m_geometryNodeUtils.blenderToUnityWorldMatrixMesh();
+#endif
+
+    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_LOCAL2WORLD, true);
+    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_FLIP_FACES, true);
+
+    msMesh->refine();
 }
 
 ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
@@ -1399,6 +1431,34 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
+void msblenContext::exportInstances(std::string str, std::vector<mu::float4x4> mat) {
+        auto info = ms::InstanceInfo::create();
+        info->path = str;
+        info->transforms = mat;
+        info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
+
+        // If an object that is added has been marked for deletion
+        // it will be removed from the deletion list
+        m_instances_manager.add(std::move(info));
+}
+
+void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4> mat)
+{
+    auto msMesh = ms::Mesh::create();
+
+    doExtactMeshDataWithoutObject(msMesh, mesh);
+
+    auto info = ms::InstanceInfo::create();
+    info->type = ms::InstanceInfo::ReferenceType::MESH_PATH;
+    info->path = msMesh->path;
+    info->transforms = mat;
+
+    // If an object that is added has been marked for deletion
+    // it will be removed from the deletion list
+    m_instances_manager.add(std::move(info));
+    m_instances_manager.add(std::move(msMesh));
+}
+
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
@@ -1436,7 +1496,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
 #if BLENDER_VERSION >= 300
-    if (m_geometryNodeUtils.getInstancesDirty()) {
+    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
 
         // Assume everything needs to be deleted
         m_instances_manager.deleteAll();
@@ -1444,19 +1504,12 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         // Assume everything is now dirty
         m_instances_manager.setAlwaysMarkDirty(true);
 
-        auto func = [&](std::string str, std::vector<mu::float4x4> mat) {
-            auto info = ms::InstanceInfo::create();
-            info->path = str;
-            info->transforms = mat;
+        auto instancesHandler = std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2);
+        auto instancesWithMeshHandler = std::bind(&msblenContext::exportInstancesWithMesh, this, std::placeholders::_1, std::placeholders::_2);
+        blender::GeometryNodesUtils::foreach_instance(instancesHandler, instancesWithMeshHandler);
 
-            // If an object that is added has been marked for deletion
-            // it will be removed from the deletion list
-            m_instances_manager.add(std::move(info));
-        };
-
-        blender::GeometryNodesUtils::foreach_instance(func);
+        m_geometryNodeUtils.setInstancesDirty(false);
     }
-    m_geometryNodeUtils.setInstancesDirty(false);
 #endif
 
     WaitAndKickAsyncExport();
@@ -1664,11 +1717,13 @@ void msblenContext::WaitAndKickAsyncExport()
         t.geometries = m_entity_manager.getDirtyGeometries();
         t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.propertyInfos = m_property_manager.getAllProperties();
+        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
-        t.deleted_instanceInfos = m_instances_manager.getDeleted();
+        t.deleted_instanceInfos = m_instances_manager.getDeletedInstanceInfos();
+        t.deleted_instanceMeshes = m_instances_manager.getDeletedMeshes();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1697,7 +1752,6 @@ void msblenContext::WaitAndKickAsyncExport()
 /// </summary>
 void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 {
-    //TODO - Check thread safety
 #if BLENDER_VERSION >= 300
     m_geometryNodeUtils.setInstancesDirty(true);
 #endif
