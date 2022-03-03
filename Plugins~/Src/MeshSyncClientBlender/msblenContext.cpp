@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <map>
+
 #include "msblenBinder.h"
 #include "msblenContext.h"
 #include "msblenUtils.h"
@@ -191,7 +193,7 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
     m_material_manager.eraseStaleMaterials();
 }
 
-int EndsWith(const char* str, const char* suffix)
+bool EndsWith(const char* str, const char* suffix)
 {
     if (!str || !suffix)
         return 0;
@@ -212,110 +214,8 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     bl::BMaterial bm(mat);
     struct Material* color_src = mat;
     stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
-    
-    
-    /*
-    auto tree = mat->nodetree;
-
-    //auto tree = mat->nodetree;
-    if (tree) {
-        bl::blist_range<struct bNode> nodes = bl::list_range((bNode*)tree->nodes.first);
-
-        for (struct bNode* node : nodes) {
-            auto name = node->name;
-
-            if (node->type == SH_NODE_BSDF_PRINCIPLED) {
-                auto inputs = bl::list_range((bNodeSocket*)node->inputs.first);
-                for (auto input : inputs) {
-                    auto socketName = input->name;
-                    auto link = input->link;
-                    
-
-
-
-                    char* baseColor = "Base Color";
-                    if (strncmp(socketName, baseColor, sizeof baseColor) == 0) {
-                        auto value = static_cast<bNodeSocketValueRGBA*>(input->default_value);
-                        auto x = 1;
-                    }
-
-                    if (link) {
-                        auto linkFrom = link->fromnode;
-                        auto linkTo = link->tonode;
-                    }
-                }
-            }
-
-            if (node->type == SH_NODE_TEX_IMAGE) {
-                Image* ima = (Image*)node->id;
-                auto fullpath = bl::abspath(ima->filepath);
-
-                auto outputs = bl::list_range((bNodeSocket*)node->outputs.first);
-                for (auto output : outputs) {
-                    auto socketName = output->name;
-                    auto link = output->link;
-
-                    auto x = 1;
-                }
-
-                if (fullpath.size() == 0) continue;
-
-                std::shared_ptr<ms::Texture> texture = ms::Texture::create();
-                texture->readFromFile(fullpath.c_str());
-
-                //potential overflow - what is a good id?
-                texture->id = ima->id.session_uuid;
-                m_texture_manager.add(texture);
-
-                auto other = ima->id;
-            }
-        }
-    }
-
-    */
 
     // todo: handle texture
-    //exportImages();
-        
-    int counter = 1;
-    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
-    //std::vector<std::shared_ptr<ms::Texture>> textures;
-    for (struct Image* image : bpy_data.images()) {
-        auto thing = image->id;
-        auto name = thing.name;
-        auto path = image->filepath;
-        
-        auto result = bl::abspath(path);
-
-        if (result.size() == 0) continue;
-
-        if (image->gputexture) {
-            auto pixels = bl::BlenderPyContext::GetPixels(image);
-            auto pixelsLen = bl::BlenderPyContext::GetPixelsLength(image);
-        }
-
-        std::shared_ptr<ms::Texture> texture = ms::Texture::create();
-        texture->readFromFile(result.c_str());
-        texture->id = counter;
-        m_texture_manager.add(texture);
-
-        //textures.push_back(texture);
-        if (EndsWith(name, "normal")) {
-            stdmat.setBumpMap(texture);
-        }
-            
-        if (EndsWith(name, "color")) {
-            stdmat.setColorMap(texture);
-        }  
-
-        //if (EndsWith(name, "ao")) {
-        //    stdmat.setOcclusionMap(texture);
-        //    stdmat.setOcclusionStrength(0);
-        //}
-
-        counter++;
-            
-    }
        
 #if 0
         if (m_settings.sync_textures) {
@@ -335,28 +235,47 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     
 }
 
+void msblenContext::RegisterMaterialForObjectWithBakedTextures(Material* mat,
+    const uint32_t matIndex,
+    std::map<std::string, std::shared_ptr<ms::Texture>> textures) 
+{
+    std::shared_ptr<ms::Material> ret = ms::Material::create();
+    ret->name = get_name(mat);
+    ret->id = m_material_ids.getID(mat);
+    ret->index = matIndex;
 
-//void msblenContext::exportImages(int x)
-//{
-//    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
-//    std::vector<std::shared_ptr<ms::Texture>> textures;
-//    for (struct Image* image : bpy_data.images()) {
-//        auto thing = image->id;
-//        auto name = thing.name;
-//        auto path = image->filepath;
-//        auto result = bl::abspath(path);
-//
-//        if (result.size() == 0) continue;
-//
-//        std::shared_ptr<ms::Texture> texture = ms::Texture::create();
-//        texture->readFromFile(result.c_str());
-//        //textures.push_back(texture);
-//        //mat->setColorMap(texture);
-//
-//        break;
-//    }
-//
-//}
+    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
+    //bl::BMaterial bm(mat);
+    //struct Material* color_src = mat;
+    //stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
+
+    auto color = textures.find(std::string("Color"));
+    if (color != textures.end()) {
+        auto texture = color->second;
+        stdmat.setColorMap(texture);
+        stdmat.addProperty(ms::MaterialProperty("_SmoothnessTextureChannel", 1));
+        stdmat.setMetallic(0.0f);
+        m_texture_manager.add(texture);
+    }
+
+    /*auto rough = textures.find(std::string("Rough"));
+    if (rough != textures.end()) {
+        auto texture = rough->second;
+        stdmat.setMetallicMap(texture);
+        m_texture_manager.add(texture);
+    }*/
+
+    auto ao = textures.find(std::string("Ao"));
+    if (ao != textures.end()) {
+        auto texture = ao->second;
+        m_texture_manager.add(texture);
+        stdmat.addProperty(ms::MaterialProperty("_OcclusionMap", texture));
+        stdmat.addProperty(ms::MaterialProperty("_OcclusionStrength", 0.0f));
+    }
+
+    m_material_manager.add(ret);
+
+}
 
 
 static inline mu::float4x4 camera_correction(const mu::float4x4& v)
@@ -1694,6 +1613,96 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     m_settings = settings_old;
     m_cache_writer.close();
     return true;
+}
+
+
+
+void msblenContext::SendActiveObject(py::object selectedPyObject)
+{
+    using namespace std;
+
+    BPy_StructRNA* rna = (BPy_StructRNA*)selectedPyObject.ptr();
+    printf(rna->ob_base.ob_type->tp_name);
+    if (strcmp(rna->ob_base.ob_type->tp_name, "Object") != 0) {
+        return;
+    }
+
+    m_entity_manager.setAlwaysMarkDirty(true);
+    m_material_manager.setAlwaysMarkDirty(true);
+    m_texture_manager.setAlwaysMarkDirty(true);
+
+    Object* object = (Object*)rna->ptr.data;
+    auto objName = string(object->id.name);
+
+    // All Blender object names start with "OB"
+    if (objName.size() <= 2) return;
+    objName = objName.substr(2);
+
+    int matIndex = 0;
+    m_material_manager.add(CreateDefaultMaterial(matIndex++));
+
+    map<string, shared_ptr<ms::Texture>> textures;
+
+    bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
+    for (struct Image* image : bpy_data.images()) {
+        auto imageName = string(image->id.name);
+
+        // All Blender image names start with "IM"
+        if (imageName.size() <= 2) continue;
+        imageName = imageName.substr(2);
+
+        auto path = image->filepath;
+
+        auto absPath = bl::abspath(path);
+        if (absPath.size() == 0) continue;
+
+        auto colorName =  objName + string("_bake_color");
+        if (imageName == colorName) {
+            auto texture = CreateTextureFromImage(absPath, image);
+            textures.insert(pair(string("Color"), texture));
+            continue;
+        }
+
+        auto roughName = objName + string("_bake_rough");
+        if (imageName == roughName) {
+            auto texture = CreateTextureFromImage(absPath, image);
+            textures.insert(pair(string("Rough"), texture));
+            continue;
+        }
+
+        auto aoName = objName + string("_bake_ao");
+        if (imageName == aoName) {
+            auto texture = CreateTextureFromImage(absPath, image);
+            textures.insert(pair(string("Ao"), texture));
+            continue;
+        }
+    }
+
+    const short numMaterials = blender::BlenderUtility::GetNumMaterials(object);
+    auto materials = blender::BlenderUtility::GetMaterials(object);
+    for (int i = 0; i < numMaterials; i++) {
+        auto mat = materials[i];
+        RegisterMaterialForObjectWithBakedTextures(mat, matIndex++, textures);
+    }
+    
+    m_material_ids.eraseStaleRecords();
+    m_material_manager.eraseStaleMaterials();
+
+    exportObject(object, false);
+
+    eraseStaleObjects();
+    
+
+    WaitAndKickAsyncExport();
+}
+
+std::shared_ptr<ms::Texture> msblenContext::CreateTextureFromImage(std::string& absPath, Image* image)
+{
+    std::shared_ptr<ms::Texture> texture = ms::Texture::create();
+    texture->readFromFile(absPath.c_str());
+    // potential overflow - what is a good id?
+    texture->id = image->id.session_uuid;
+    return texture;
 }
 
 

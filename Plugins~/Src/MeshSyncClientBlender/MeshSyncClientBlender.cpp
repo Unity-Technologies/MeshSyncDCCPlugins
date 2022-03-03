@@ -150,11 +150,18 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(multithreaded,
                 [](const self_t& self) { return self->getSettings().multithreaded; },
                 [](self_t& self, int v) { self->getSettings().multithreaded = v; })
+            BindProperty(is_setup,
+                [](const self_t& self) { return self->getSettings().is_setup; },
+                [](self_t& self, int v) { self->getSettings().is_setup = v; })
 
             BindMethod(flushPendingList, [](self_t& self) { self->flushPendingList(); })
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
-            BindMethod(setup, [](self_t& self, py::object ctx) { bl::setup(ctx); })
+            BindMethod(setup, [](self_t& self, py::object ctx) { 
+                self->getSettings().is_setup = true;
+                bl::setup(ctx); 
+                })
             BindMethod(clear, [](self_t& self) { self->clear(); })
+            BindMethod(sendActiveObject, [](self_t& self, py::object activeObject) { self->SendActiveObject(activeObject); })
             BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); })
             BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
             ;

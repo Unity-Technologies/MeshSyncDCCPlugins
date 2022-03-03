@@ -17,8 +17,6 @@ namespace blender
         Depsgraph* evaluated_depsgraph_get();
 
         static void UpdateDepsgraph(Depsgraph* depsgraph);
-        static float* GetPixels(Image* image);
-        static int GetPixelsLength(Image* image);
     };
 
 } // namespace blender

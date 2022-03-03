@@ -46,6 +46,10 @@ public:
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
+    void SendActiveObject(py::object selectedObject);
+
+    std::shared_ptr<ms::Texture> CreateTextureFromImage(std::string& absPath, Image* image);
+
     void flushPendingList();
 
 private:
@@ -119,6 +123,9 @@ private:
     void RegisterSceneMaterials();
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
+    void RegisterMaterialForObjectWithBakedTextures(Material* mat, 
+        const uint32_t matIndex, 
+        std::map<std::string, std::shared_ptr<ms::Texture>> textures);
 
 
     //void exportImages(ms::StandardMaterial x);

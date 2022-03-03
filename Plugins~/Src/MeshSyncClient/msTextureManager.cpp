@@ -120,6 +120,11 @@ int TextureManager::add(TexturePtr tex)
         rec.texture = tex;
         rec.dirty = true;
     }
+
+    if (m_always_mark_dirty) {
+        rec.dirty = true;
+    }
+        
     return tex->id;
 }
 

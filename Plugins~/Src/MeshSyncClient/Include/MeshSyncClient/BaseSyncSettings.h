@@ -8,6 +8,8 @@ struct BaseSyncSettings {
 
     ms::ClientSettings client_settings;
 
+    bool is_setup = false;
+
     bool sync_meshes = true;
     bool sync_normals = true;
     bool sync_uvs = true;

@@ -7,6 +7,7 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
+#include "BlenderPyObjects/BlenderPyImage.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
 #include <iostream>
@@ -65,10 +66,11 @@ extern PropertyRNA* BlenderPyContext_blend_data;
 extern PropertyRNA* BlenderPyContext_scene;
 extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
-extern PropertyRNA* BlenderPyContext_image_pixels;
-extern PropertyRNA* BlenderPyContext_image_file_format;
-extern PropertyRNA* BlenderPyContext_image_size;
-extern PropertyRNA* BlenderPyContext_image_channels;
+
+extern PropertyRNA* BlenderPyImage_pixels;
+extern PropertyRNA* BlenderPyImage_file_format;
+extern PropertyRNA* BlenderPyImage_size;
+extern PropertyRNA* BlenderPyImage_channels;
 
 bool ready()
 {
@@ -210,10 +212,10 @@ void setup(py::object bpy_context)
         }
         else if (match_type("Image")) {
             each_prop{
-                if (match_prop("pixels")) BlenderPyContext_image_pixels = prop;
-                if (match_prop("file_format")) BlenderPyContext_image_file_format = prop;
-                if (match_prop("size")) BlenderPyContext_image_size = prop;
-                if (match_prop("channels")) BlenderPyContext_image_channels = prop;
+                if (match_prop("pixels")) BlenderPyImage_pixels = prop;
+                if (match_prop("file_format")) BlenderPyImage_file_format = prop;
+                if (match_prop("size")) BlenderPyImage_size = prop;
+                if (match_prop("channels")) BlenderPyImage_channels = prop;
             }
 
             
