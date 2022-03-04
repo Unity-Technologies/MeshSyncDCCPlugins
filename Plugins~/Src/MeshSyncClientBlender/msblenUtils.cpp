@@ -78,7 +78,7 @@ const ModifierData* FindModifier(const Object *obj, ModifierType type)
     for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->type == type)
             return it;
-    return nullptr;;
+    return nullptr;
 }
 
 Bone* find_bone_recursive(Bone *bone, const char *name)

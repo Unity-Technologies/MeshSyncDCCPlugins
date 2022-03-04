@@ -1732,13 +1732,16 @@ void msblenContext::WaitAndKickAsyncExport()
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
         }
     };
-    exporter->on_success = [this]() {
+    exporter->on_success = [this, exporter]() {
         m_material_ids.clearDirtyFlags();
         m_texture_manager.clearDirtyFlags();
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
         m_instances_manager.clearDirtyFlags();
+#if BLENDER_VERSION >= 300
+        blender::msblenModifiers::applyModifiers(exporter->properties);
+#endif
     };
 
     exporter->kick();

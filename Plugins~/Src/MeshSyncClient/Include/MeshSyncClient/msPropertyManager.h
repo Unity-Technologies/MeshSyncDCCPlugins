@@ -17,6 +17,8 @@ namespace ms {
         void add(PropertyInfoPtr propertyInfo);
         void clear();
 
+        void updateFromServer(std::vector<PropertyInfo> properties);
+
     private:
         struct Record
         {

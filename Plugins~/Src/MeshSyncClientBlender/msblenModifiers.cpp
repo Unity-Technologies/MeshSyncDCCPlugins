@@ -87,10 +87,10 @@ namespace blender {
 				//auto variant = ms::Variant();
 				// variant.name = socket->name;
 				auto propertyInfo = ms::PropertyInfo::create();
-				
+
 				switch (property->type) {
 				case IDP_INT: {
-					auto defaultValue = (bNodeSocketValueInt*)socket->default_value;	
+					auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
 					propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
 					//variant.type = ms::Variant::Type::Int;
 					//variant.set(std::move(val));
@@ -113,6 +113,7 @@ namespace blender {
 
 				propertyInfo->path = get_path(obj);
 				propertyInfo->name = socket->name;
+				propertyInfo->modifierName = modifier->name;
 				propertyManager->add(propertyInfo);
 
 				//names << variant.name << std::endl;
@@ -168,6 +169,13 @@ namespace blender {
 			modifierManifest.set(streamString.c_str(), streamString.length());
 
 			transform->addUserProperty(std::move(modifierManifest));
+		}
+	}
+
+	void msblenModifiers::applyModifiers(std::vector<ms::PropertyInfo> props) {
+		// Apply returned properties:
+		for (auto& prop : props) {
+			prop.path
 		}
 	}
 
