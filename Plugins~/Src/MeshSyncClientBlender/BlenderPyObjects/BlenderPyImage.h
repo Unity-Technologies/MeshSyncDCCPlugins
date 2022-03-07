@@ -6,7 +6,7 @@ namespace blender {
 class BlenderPyImage {
 public:
 	static int GetPixelsArrayCount(Image* image);
-	static float* GetPixels(Image* image);
+	static std::vector<float> GetPixels(Image* image);
 };
 
 

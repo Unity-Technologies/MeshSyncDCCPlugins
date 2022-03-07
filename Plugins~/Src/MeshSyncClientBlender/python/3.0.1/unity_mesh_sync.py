@@ -13,7 +13,6 @@ import bpy
 import gpu
 from mathutils import Matrix
 from gpu_extras.batch import batch_for_shader
-from datetime import datetime
 from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 from unity_mesh_sync_common import *
@@ -86,15 +85,11 @@ class MESHSYNC_PT_MaterialBake(MESHSYNC_PT, bpy.types.Panel):
 
         row = col.row(align = True)
         row.label(text="Width:")
-        # row.operator("brm.bakeuiincrement", text="", icon="REMOVE").target = "width/2"
         row.prop(context.scene, "bakeWidth", text="")
-        # row.operator("brm.bakeuiincrement", text="", icon="ADD").target = "width*2"
         
         row = col.row(align = True)
         row.label(text="Height:")
-        # row.operator("brm.bakeuiincrement", text="", icon="REMOVE").target = "height/2"
         row.prop(context.scene, "bakeHeight", text="")
-        # row.operator("brm.bakeuiincrement", text="", icon="ADD").target = "height*2"
         
         layout.label(text="Export Dir:")
         layout.prop(context.scene, 'bakeFolder', text="")
@@ -131,8 +126,6 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
             #############################################
 
             vertex_shader = '''
-                
-
                 in vec2 position;
                 in vec2 uv;
 
@@ -180,18 +173,8 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
             
         offscreen.free()
         
-        now = datetime.now()
-
-        current_time = now.strftime("%H:%M:%S")
-        print("Before Time =", current_time)
-        
         buffer.dimensions = width * height * 4
         colorImage.pixels = [v / 255 for v in buffer]
-        
-        now = datetime.now()
-
-        current_time = now.strftime("%H:%M:%S")
-        print("After Time =", current_time)
 
     
     def execute(self, context): 
@@ -199,7 +182,7 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         active_object = bpy.context.active_object
         
         if active_object is None:
-            self.report({'WARNING'}, "No active object selected!")
+            self.report({'WARNING'}, "No active object selected")
             return {'FINISHED'}
         
         if not msb_context.is_setup:
@@ -210,7 +193,7 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         
         hasfolder = os.access(scene.bakeFolder, os.W_OK)
         if hasfolder is False:
-            self.report({'WARNING'}, "Select a valid export folder!")
+            self.report({'WARNING'}, "Selected an invalid export folder")
             return {'FINISHED'}
             
         if scene.smartUV :
@@ -218,11 +201,10 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
                 bpy.ops.object.mode_set(mode='EDIT')
                  
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.select_linked(delimit={'SEAM'})
-            bpy.ops.uv.smart_project(island_margin=0.01, # angle_limit=math.radians(settings.uvAngleLimit), 
-                                    scale_to_bounds=True)
-            bpy.ops.uv.pack_islands(rotate=True, margin=0.001)
+            bpy.ops.mesh.select_all(action = 'SELECT')
+            bpy.ops.mesh.select_linked(delimit = {'SEAM'})
+            bpy.ops.uv.smart_project(island_margin = 0.01, scale_to_bounds = True)
+            bpy.ops.uv.pack_islands(rotate = True, margin = 0.001)
             
         if bpy.context.object.mode == 'EDIT':
                 bpy.ops.object.mode_set(mode='OBJECT')
@@ -231,11 +213,14 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         scene.cycles.device = "GPU"
         scene.cycles.samples = scene.samples
         
+        bakePrefix = "_bake"
+        diffuseSuffix = "_diffuse"
+        roughSuffix = "_rough"
+        aoSuffix = "_ao"
         
-
-        diffuseBakeImageName = active_object.name + scene.bakePrefix + scene.affixColor
-        roughnessBakeImageName = active_object.name + scene.bakePrefix + scene.affixRoughness
-        aoBakeImageName = active_object.name+scene.bakePrefix+scene.affixAO
+        diffuseBakeImageName = active_object.name + bakePrefix + diffuseSuffix
+        roughnessBakeImageName = active_object.name + bakePrefix + roughSuffix
+        aoBakeImageName = active_object.name + bakePrefix + aoSuffix
         
         diffuseBakeImage = None
         roughnessBakeImage = None
@@ -276,22 +261,8 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         scene.render.bake.use_pass_color = True
 
         bpy.ops.object.bake(type='DIFFUSE', use_clear=True, use_selected_to_active=False)
-        diffuseBakeImage.filepath_raw = scene.bakeFolder+active_object.name+scene.bakePrefix+scene.affixColor+".png"
+        diffuseBakeImage.filepath_raw = scene.bakeFolder + active_object.name + bakePrefix + diffuseSuffix + ".png"
         diffuseBakeImage.file_format = 'PNG'
-        
-        # ----- NORMAL -----
-        
-        # normalBakeImage = bpy.data.images.new(active_object.name+scene.bakePrefix+scene.affixNormal, width=scene.bakeWidth, height=scene.bakeHeight)
-
-        # for mat in bpy.context.active_object.data.materials:
-            # node_tree = mat.node_tree
-            # node = node_tree.nodes.active
-            # node.image = normalBakeImage
-        
-        # bpy.ops.object.bake(type='NORMAL', use_clear=True, use_selected_to_active=False, normal_space='TANGENT')
-        # normalBakeImage.filepath_raw = scene.bakeFolder+active_object.name+scene.bakePrefix+scene.affixNormal+".png"
-        # normalBakeImage.file_format = 'PNG'
-        # normalBakeImage.save()
         
         # ----- ROUGHNESS -----
 
@@ -302,10 +273,7 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         
         bpy.ops.object.bake(type='ROUGHNESS', use_clear=True, use_selected_to_active=False)
         
-        # bpy.ops.image.invert(invert_r = True, invert_g = True, invert_b = True, invert_a = True)
-        # roughnessBakeImage.invert(invert_r = True, invert_g = True, invert_b = True, invert_a = True)
-        
-        roughnessBakeImage.filepath_raw = scene.bakeFolder+active_object.name+scene.bakePrefix+scene.affixRoughness+".png"
+        roughnessBakeImage.filepath_raw = scene.bakeFolder + active_object.name + bakePrefix + roughSuffix + ".png"
         roughnessBakeImage.file_format = 'PNG'
         roughnessBakeImage.save()
         
@@ -321,12 +289,13 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
             node.image = aoBakeImage
         
         bpy.ops.object.bake(type='AO', use_clear=True, use_selected_to_active=False)
-        aoBakeImage.filepath_raw = scene.bakeFolder+active_object.name+scene.bakePrefix+scene.affixAO+".png"
+        aoBakeImage.filepath_raw = scene.bakeFolder + active_object.name + bakePrefix + aoSuffix + ".png"
         aoBakeImage.file_format = 'PNG'
         aoBakeImage.save()
         
         
         # ----- UV -----
+        uvSuffix = "_uv"
         
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action='SELECT')
@@ -334,13 +303,12 @@ class MESHSYNC_PT_BakeTextures(bpy.types.Operator):
         
         original_type = bpy.context.area.type
         bpy.context.area.type = "IMAGE_EDITOR"
-        uvfilepath = scene.bakeFolder+active_object.name+scene.bakePrefix+scene.affixUV+".png"
+        uvfilepath = scene.bakeFolder + active_object.name + bakePrefix + uvSuffix + ".png"
         bpy.ops.uv.export_layout(filepath=uvfilepath, size=(context.scene.bakeWidth, context.scene.bakeHeight))
         bpy.context.area.type = original_type
         
         msb_context.sendActiveObject(active_object)
     
-
         return {'FINISHED'} 
         
 
@@ -563,21 +531,12 @@ def register():
     for c in classes:
         bpy.utils.register_class(c)
         
-    bpy.types.Scene.bakeWidth = bpy.props.IntProperty (name = "bakeWidth",default = 512,description = "Export Texture Width")  
-    bpy.types.Scene.bakeHeight = bpy.props.IntProperty (name = "bakeHeight",default = 512,description = "Export Texture Height")
-    bpy.types.Scene.bakePrefix = bpy.props.StringProperty (name = "bakePrefix",default = "_bake", description = "bake prefix")
-    bpy.types.Scene.bakeFolder = bpy.props.StringProperty (name = "bakeFolder",default = "C:\\temp\\", description = "Destination folder", subtype = 'DIR_PATH')
+    bpy.types.Scene.bakeWidth = bpy.props.IntProperty (name = "bakeWidth", default = 512, description = "Export Texture Width")  
+    bpy.types.Scene.bakeHeight = bpy.props.IntProperty (name = "bakeHeight", default = 512, description = "Export Texture Height")
+    bpy.types.Scene.bakeFolder = bpy.props.StringProperty (name = "bakeFolder", default = "C:\\temp\\", description = "Destination folder", subtype = 'DIR_PATH')
     
-    bpy.types.Scene.smartUV = bpy.props.BoolProperty (name = "smartUV",default = False,description = "Do a Smart UV Project on object")
-    bpy.types.Scene.samples = bpy.props.IntProperty (name = "samples",default = 10,description = "Sample Count")
-    
-    bpy.types.Scene.affixNormal = bpy.props.StringProperty (name = "affixNormal",default = "_normal",description = "normal map affix")
-    bpy.types.Scene.affixObject = bpy.props.StringProperty (name = "affixObject",default = "_object",description = "object affix")
-    bpy.types.Scene.affixAO = bpy.props.StringProperty (name = "affixAO",default = "_ao",description = "AO map affix")
-    bpy.types.Scene.affixColor = bpy.props.StringProperty (name = "affixColor",default = "_color",description = "color map affix")
-    bpy.types.Scene.affixRoughness = bpy.props.StringProperty (name = "affixRoughness",default = "_rough",description = "Roughness map affix")
-    bpy.types.Scene.affixEmission = bpy.props.StringProperty (name = "affixEmission",default = "_emit",description = "Emission map affix")
-    bpy.types.Scene.affixUV = bpy.props.StringProperty (name = "affixUV",default = "_uv",description = "UV map affix")
+    bpy.types.Scene.smartUV = bpy.props.BoolProperty (name = "smartUV", default = False, description = "Do a Smart UV Project on object")
+    bpy.types.Scene.samples = bpy.props.IntProperty (name = "samples", default = 10, description = "Sample Count")
 
 def unregister():
     msb_context.Destroy()

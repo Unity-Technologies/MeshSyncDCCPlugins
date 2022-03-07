@@ -65,7 +65,6 @@ extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
 
 extern PropertyRNA* BlenderPyImage_pixels;
-extern PropertyRNA* BlenderPyImage_file_format;
 extern PropertyRNA* BlenderPyImage_size;
 extern PropertyRNA* BlenderPyImage_channels;
 
@@ -207,7 +206,6 @@ void setup(py::object bpy_context)
         else if (match_type("Image")) {
             each_prop{
                 if (match_prop("pixels")) BlenderPyImage_pixels = prop;
-                if (match_prop("file_format")) BlenderPyImage_file_format = prop;
                 if (match_prop("size")) BlenderPyImage_size = prop;
                 if (match_prop("channels")) BlenderPyImage_channels = prop;
             }

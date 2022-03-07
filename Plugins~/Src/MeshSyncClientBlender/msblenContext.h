@@ -127,9 +127,6 @@ private:
         const uint32_t matIndex, 
         std::map<std::string, std::shared_ptr<ms::Texture>> textures);
 
-
-    //void exportImages(ms::StandardMaterial x);
-
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(const Object *obj);
     ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj);

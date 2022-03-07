@@ -234,7 +234,7 @@ void msblenContext::RegisterMaterialForObjectWithBakedTextures(Material* mat,
 
     ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
 
-    auto color = textures.find(std::string("Color"));
+    auto color = textures.find(std::string("Diffuse"));
     if (color != textures.end()) {
         auto texture = color->second;
         stdmat.setColorMap(texture);
@@ -1633,10 +1633,10 @@ void msblenContext::SendActiveObject(py::object selectedPyObject)
         auto absPath = bl::abspath(path);
         if (absPath.size() == 0) continue;
 
-        auto colorName =  objName + string("_bake_color");
+        auto colorName =  objName + string("_bake_diffuse");
         if (imageName == colorName) {
             auto texture = CreateTextureFromImage(absPath, image);
-            textures.insert(pair(string("Color"), texture));
+            textures.insert(pair(string("Diffuse"), texture));
             continue;
         }
 
