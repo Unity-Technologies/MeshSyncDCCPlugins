@@ -193,17 +193,6 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
     m_material_manager.eraseStaleMaterials();
 }
 
-bool EndsWith(const char* str, const char* suffix)
-{
-    if (!str || !suffix)
-        return 0;
-    size_t lenstr = strlen(str);
-    size_t lensuffix = strlen(suffix);
-    if (lensuffix > lenstr)
-        return 0;
-    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-}
-
 void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     std::shared_ptr<ms::Material> ret = ms::Material::create();
     ret->name = get_name(mat);
@@ -224,7 +213,6 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
                     return -1;
                 return exportTexture(bl::abspath(mtex->tex->ima->id.name), type);
             };
->>>>>>> Stashed changes
 #if BLENDER_VERSION < 280
         stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
 #endif
@@ -245,9 +233,6 @@ void msblenContext::RegisterMaterialForObjectWithBakedTextures(Material* mat,
     ret->index = matIndex;
 
     ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-    //bl::BMaterial bm(mat);
-    //struct Material* color_src = mat;
-    //stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
 
     auto color = textures.find(std::string("Color"));
     if (color != textures.end()) {
@@ -257,13 +242,6 @@ void msblenContext::RegisterMaterialForObjectWithBakedTextures(Material* mat,
         stdmat.setMetallic(0.0f);
         m_texture_manager.add(texture);
     }
-
-    /*auto rough = textures.find(std::string("Rough"));
-    if (rough != textures.end()) {
-        auto texture = rough->second;
-        stdmat.setMetallicMap(texture);
-        m_texture_manager.add(texture);
-    }*/
 
     auto ao = textures.find(std::string("Ao"));
     if (ao != textures.end()) {
@@ -1193,7 +1171,6 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const
     return rec;
 }
 
-
 void msblenContext::eraseStaleObjects()
 {
     for (auto i = m_obj_records.begin(); i != m_obj_records.end(); /**/) {
@@ -1663,13 +1640,6 @@ void msblenContext::SendActiveObject(py::object selectedPyObject)
             continue;
         }
 
-        auto roughName = objName + string("_bake_rough");
-        if (imageName == roughName) {
-            auto texture = CreateTextureFromImage(absPath, image);
-            textures.insert(pair(string("Rough"), texture));
-            continue;
-        }
-
         auto aoName = objName + string("_bake_ao");
         if (imageName == aoName) {
             auto texture = CreateTextureFromImage(absPath, image);
@@ -1687,11 +1657,14 @@ void msblenContext::SendActiveObject(py::object selectedPyObject)
     
     m_material_ids.eraseStaleRecords();
     m_material_manager.eraseStaleMaterials();
+    
+
+    msblenContext::ObjectRecord& rec = touchRecord(object);
+    if (rec.dst) {
+        m_entity_manager.erase(rec.dst);
+    }
 
     exportObject(object, false);
-
-    eraseStaleObjects();
-    
 
     WaitAndKickAsyncExport();
 }

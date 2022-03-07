@@ -10,9 +10,6 @@
 #include "BlenderPyObjects/BlenderPyImage.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
 
-#include <iostream>
-#include <fstream>
-
 namespace blender {
 
 bContext *g_context;
@@ -93,9 +90,6 @@ void setup(py::object bpy_context)
         first_type = (StructRNA*)first_type->cont.prev;
     }
     rna_sdata(bpy_context, g_context);
-
-    std::ofstream myfile;
-    myfile.open("c:/export/example.txt");
 
     // resolve blender types and functions
 #define match_type(N) strcmp(type->identifier, N) == 0
@@ -217,27 +211,9 @@ void setup(py::object bpy_context)
                 if (match_prop("size")) BlenderPyImage_size = prop;
                 if (match_prop("channels")) BlenderPyImage_channels = prop;
             }
-
-            
-            myfile << "Functions" << "\n";
-            myfile << "========" << "\n";
-
-            for (auto* func : list_range((FunctionRNA*)type->functions.first)) {
-                myfile << func->identifier << "\n";
-            }
-
-
-            myfile << "========" << "\n";
-            myfile << "Properties" << "\n";
-            myfile << "========" << "\n";
-
-            for (auto* prop : list_range((PropertyRNA*)type->cont.properties.first)) {
-                myfile << prop->identifier << "\n";
-            }
         }
     }
 
-    myfile.close();
 #undef each_iprop
 #undef each_nprop
 #undef each_func
