@@ -1459,6 +1459,16 @@ void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4
     m_instances_manager.add(std::move(msMesh));
 }
 
+void msblenContext::requestProperties()
+{
+    if (m_settings.ExportSceneCache) {
+        return;
+    }
+
+    m_sender.on_properties_received = [](auto properties) { blender::msblenModifiers::importModifiers(properties); };
+    m_sender.requestProperties();
+}
+
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
@@ -1739,9 +1749,6 @@ void msblenContext::WaitAndKickAsyncExport()
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
         m_instances_manager.clearDirtyFlags();
-#if BLENDER_VERSION >= 300
-        blender::msblenModifiers::applyModifiers(exporter->properties);
-#endif
     };
 
     exporter->kick();

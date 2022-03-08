@@ -3,6 +3,8 @@
 #include "msblenBinder.h"
 #include "msblenUtils.h"
 
+#include "BlenderPyObjects/BlenderPyScene.h"
+
 namespace bl = blender;
 
 std::string get_name(const Material *obj)
@@ -64,6 +66,31 @@ std::string get_path(const Object *arm, const Bone *obj)
     return ret;
 }
 
+Object* get_object_from_path(std::string path) {
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+
+    auto lastIndexOfDivider = path.find_last_of('/');
+    if (lastIndexOfDivider < 0) {
+        return nullptr;
+    }
+
+    auto objName = path.substr(path.find_last_of('/') + 1);
+    Object* result = nullptr;
+    scene.each_objects([&](Object* obj) {
+        if (result != nullptr) {
+            return;
+        }
+
+        auto name = get_name(obj);
+
+        if (name == objName) {
+            result = obj;
+        }
+    });
+
+    return result;
+}
+
 bool visible_in_render(const Object *obj)
 {
     return !bl::BObject(obj).hide_render();
@@ -73,10 +100,18 @@ bool visible_in_viewport(const Object *obj)
     return !bl::BObject(obj).hide_viewport();
 }
 
-const ModifierData* FindModifier(const Object *obj, ModifierType type)
+const ModifierData* FindModifier(const Object* obj, ModifierType type)
 {
-    for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
+    for (auto* it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->type == type)
+            return it;
+    return nullptr;
+}
+
+const ModifierData* FindModifier(const Object* obj, const std::string name)
+{
+    for (auto* it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
+        if (it->name == name)
             return it;
     return nullptr;
 }

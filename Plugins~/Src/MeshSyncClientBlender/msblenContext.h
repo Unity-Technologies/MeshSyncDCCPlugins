@@ -58,6 +58,8 @@ public:
 
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
+    void requestProperties();
+
 private:
     // todo
     struct NodeRecord {

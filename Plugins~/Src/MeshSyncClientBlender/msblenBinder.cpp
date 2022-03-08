@@ -30,6 +30,7 @@ static FunctionRNA* BObject_to_mesh_clear;
 
 StructRNA* BMesh::s_type;
 static FunctionRNA* BMesh_calc_normals_split;
+static FunctionRNA* BMesh_update;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
@@ -139,6 +140,7 @@ void setup(py::object bpy_context)
             BMesh::s_type = type;
             each_func {
                 if (match_func("calc_normals_split")) BMesh_calc_normals_split = func;
+                if (match_func("update")) BMesh_update = func;
             }
         }
         else if (match_type("UVLoopLayers")) {
@@ -412,6 +414,10 @@ void BMesh::calc_normals_split()
     call<Mesh, void>(g_context, m_ptr, BMesh_calc_normals_split);
 }
 
+void BMesh::update() 
+{
+    call<Mesh, void>(g_context, m_ptr, BMesh_update);    
+}
 
 
 barray_range<BMFace*> BEditMesh::polygons()

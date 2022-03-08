@@ -171,7 +171,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
             BindMethod(setup, [](self_t& self, py::object ctx) { bl::setup(ctx); })
             BindMethod(clear, [](self_t& self) { self->clear(); })
-            BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); })
+            BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjects(MeshSyncClient::ObjectScope::Updated, false); self->requestProperties(); })
             BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
             BindMethod(OnDepsgraphUpdatePost,
                 [](self_t& self, py::object depsgraph) {

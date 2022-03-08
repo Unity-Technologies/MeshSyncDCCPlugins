@@ -14,9 +14,7 @@ namespace blender
     int CustomData_get_offset(const CustomData& data, int type);
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
-
-
-
+    
     struct ListHeader { ListHeader *next, *prev; };
 
 	template<typename T> inline T rna_sdata(py::object p) { 
@@ -115,6 +113,7 @@ namespace blender
         inline uint32_t GetNumUVs() const;
 
         void calc_normals_split();
+        void update();
     };
 
     uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }

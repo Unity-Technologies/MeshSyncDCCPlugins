@@ -7,6 +7,8 @@
 #include <msblenBinder.h>
 #include "MeshSync/SceneGraph/msPropertyInfo.h"
 #include <msblenUtils.h>
+#include "BlenderPyObjects/BlenderPyContext.h"
+#include "msblenBinder.h"
 
 // Copied from blender source that we cannot include:
 #define LISTBASE_FOREACH(type, var, list) \
@@ -25,7 +27,6 @@ namespace blender {
 
 	bNodeSocket* getSocketForProperty(IDProperty* property, bNodeTree* group, BlenderPyNodeTree blNodeTree) {
 		CollectionPropertyIterator it;
-		//blNodeTree.inputs_begin(&it, group);
 		for (blNodeTree.inputs_begin(&it, group); it.valid; blNodeTree.inputs_next(&it)) {
 			auto input = blNodeTree.inputs_get(&it);
 			auto socket = (bNodeSocket*)input.data;
@@ -36,33 +37,6 @@ namespace blender {
 
 		return nullptr;
 	}
-
-	//void addUserProperty(std::string name, IDProperty* property, ms::TransformPtr transform) {
-	//	auto variant = ms::Variant();
-	//	variant.name = name;
-
-	//	switch (property->type) {
-	//	case IDP_INT: {
-	//		auto val = IDP_Int(property);
-
-	//		variant.type = ms::Variant::Type::Int;
-	//		//variant.set(std::move(val));
-	//		variant.set(val);
-	//		break;
-	//	}
-	//	case IDP_FLOAT: {
-	//		auto val = IDP_Float(property);
-
-	//		variant.type = ms::Variant::Type::Float;
-	//		variant.set(val);
-	//		break;
-	//	}
-	//	default:
-	//		return;
-	//	}
-
-	//	transform->addUserProperty(std::move(variant));
-	//}
 
 	bool addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, std::stringstream& names, const Object* obj, ms::PropertyManager* propertyManager)
 	{
@@ -84,25 +58,15 @@ namespace blender {
 			auto socket = getSocketForProperty(property, group, blNodeTree);
 
 			if (socket != nullptr) {
-				//auto variant = ms::Variant();
-				// variant.name = socket->name;
 				auto propertyInfo = ms::PropertyInfo::create();
 
 				switch (property->type) {
 				case IDP_INT: {
 					auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
 					propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
-					//variant.type = ms::Variant::Type::Int;
-					//variant.set(std::move(val));
-					//variant.set(val);
 					break;
 				}
-				case IDP_FLOAT: {
-					/*auto val = IDP_Float(property);
-
-					variant.type = ms::Variant::Type::Float;
-					variant.set(val);*/
-
+				case IDP_FLOAT: {					
 					auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
 					propertyInfo->set(IDP_Float(property), defaultValue->min, defaultValue->max);
 					break;
@@ -114,27 +78,8 @@ namespace blender {
 				propertyInfo->path = get_path(obj);
 				propertyInfo->name = socket->name;
 				propertyInfo->modifierName = modifier->name;
+				propertyInfo->propertyName = property->name;
 				propertyManager->add(propertyInfo);
-
-				//names << variant.name << std::endl;
-				//transform->addUserProperty(std::move(variant));
-
-				//if (variant.type != ms::Variant::Type::Unknown) {
-				//	names << variant.name << std::endl;
-
-				//	switch (variant.type)
-				//	{
-				//	case ms::Variant::Type::Int:
-				//	{
-				//		auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
-				//		variant.set(std::move(defaultValue->min));
-
-				//		break;
-				//	}
-				//	default:
-				//		break;
-				//	}
-				//}
 			}
 		}
 
@@ -146,6 +91,7 @@ namespace blender {
 
 	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager)
 	{
+#if BLENDER_VERSION >= 300
 		// Add the geometry node properties as a user property
 
 		// Create a manifest with the names of the modifiers
@@ -170,13 +116,54 @@ namespace blender {
 
 			transform->addUserProperty(std::move(modifierManifest));
 		}
+#endif // BLENDER_VERSION >= 300
 	}
 
-	void msblenModifiers::applyModifiers(std::vector<ms::PropertyInfo> props) {
+	void msblenModifiers::importModifiers(std::vector<ms::PropertyInfo> props) {
+#if BLENDER_VERSION >= 300
 		// Apply returned properties:
-		for (auto& prop : props) {
-			prop.path
-		}
-	}
+		for (auto& receivedProp : props) {
+			auto obj = get_object_from_path(receivedProp.path);
 
+			if (!obj) {
+				continue;
+			}
+
+			auto modifier = FindModifier(obj, receivedProp.modifierName);
+
+			auto nodeModifier = (NodesModifierData*)modifier;
+
+			LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
+				if (property->name == receivedProp.propertyName) {
+
+					switch (receivedProp.type) {
+					case ms::PropertyInfo::Type::Int: {
+						auto val = receivedProp.get<int>();
+						IDP_Int(property) = val;
+						break;
+					}
+					case ms::PropertyInfo::Type::Float: {
+						auto val = receivedProp.get<float>();
+						IDP_Float(property) = val;
+						break;
+					}
+					}
+
+					switch (obj->type) {
+					case OB_MESH:
+					{
+						auto mesh = (BMesh*)obj->data;
+						BMesh(mesh).update();
+						break;
+					}
+					}
+				}
+			}
+		}
+
+		auto pyContext = blender::BlenderPyContext::get();
+		auto depsGraph = pyContext.evaluated_depsgraph_get();
+		BlenderPyContext::UpdateDepsgraph(depsGraph);
+#endif // BLENDER_VERSION >= 300
+	}
 } // namespace blender 

@@ -9,6 +9,6 @@ namespace blender {
 	public:
 		static void exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager);
 
-		static void applyModifiers(std::vector<ms::PropertyInfo> props);
+		static void importModifiers(std::vector<ms::PropertyInfo> props);
 	};
 }
