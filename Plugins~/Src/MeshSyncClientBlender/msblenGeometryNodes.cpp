@@ -40,14 +40,14 @@ namespace blender {
         return result;
     }
 
-    mu::float4x4& GeometryNodesUtils::blenderToUnityWorldMatrixMesh()
+    mu::float4x4 GeometryNodesUtils::blenderToUnityWorldMatrixMesh()
     {
-        auto rotation = rotate_x(90 * DegToRad);
+        auto rotation = rotate_x(90.0f * DegToRad);
         auto scale = float3::one();
         scale.x = -1;
 
-        auto result = 
-            to_mat4x4(rotation) *
+        auto result =
+            to_mat4x4(rotation)*
             scale44(scale);
 
         return result;

@@ -20,7 +20,7 @@ namespace blender {
         /// /// </summary>
 		static mu::float4x4& blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
 
-		static mu::float4x4& blenderToUnityWorldMatrixMesh();
+		static mu::float4x4 blenderToUnityWorldMatrixMesh();
 
 		/// <summary>
 		/// Will invoke f for every instance. The first argument of f is the name
