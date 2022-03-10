@@ -16,7 +16,6 @@
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
-#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include "DNA_node_types.h"
 #include <sstream>
 

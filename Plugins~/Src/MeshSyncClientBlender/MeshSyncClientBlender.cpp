@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "msblenBinder.h"
 #include "msblenContext.h"
-#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include "BlenderPyObjects/BlenderPyContext.h"
 
 #include "MeshSyncClient/ExportTarget.h"
