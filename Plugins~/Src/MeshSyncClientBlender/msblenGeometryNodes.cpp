@@ -19,7 +19,7 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4& GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
 
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
