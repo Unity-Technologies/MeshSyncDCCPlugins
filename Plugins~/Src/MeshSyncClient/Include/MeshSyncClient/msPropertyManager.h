@@ -18,7 +18,8 @@ namespace ms {
         void clear();
 
         void updateFromServer(std::vector<PropertyInfo> properties);
-
+        std::vector<PropertyInfo> getReceivedProperties();
+        void clearReceivedProperties();
     private:
         struct Record
         {
@@ -27,7 +28,7 @@ namespace ms {
         };
 
         std::vector<Record> m_records;
-        std::vector<Identifier> m_deleted;
+        std::vector<PropertyInfo> m_receivedProperties;
         std::mutex m_mutex;
         bool m_always_mark_dirty;
     };

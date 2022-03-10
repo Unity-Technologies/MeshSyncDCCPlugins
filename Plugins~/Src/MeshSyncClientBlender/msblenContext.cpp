@@ -1465,7 +1465,7 @@ void msblenContext::requestProperties()
         return;
     }
 
-    m_sender.on_properties_received = [](auto properties) { blender::msblenModifiers::importModifiers(properties); };
+    m_sender.on_properties_received = [this](auto properties) { m_property_manager.updateFromServer(properties); };
     m_sender.requestProperties();
 }
 
@@ -1473,6 +1473,9 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
+
+    blender::msblenModifiers::importModifiers(m_property_manager.getReceivedProperties());
+    m_property_manager.clearReceivedProperties();
 
     m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);

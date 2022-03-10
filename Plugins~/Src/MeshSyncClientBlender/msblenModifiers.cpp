@@ -10,7 +10,13 @@
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "msblenBinder.h"
 
-// Copied from blender source that we cannot include:
+namespace blender {
+#if BLENDER_VERSION < 300
+	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager) {}
+	void msblenModifiers::importModifiers(std::vector<ms::PropertyInfo> props) {}
+#else
+
+	// Copied from blender source that we cannot include:
 #define LISTBASE_FOREACH(type, var, list) \
   for (type var = (type)((list)->first); var != NULL; var = (type)(((Link *)(var))->next))
 
@@ -23,7 +29,7 @@
 #define IDP_Id(prop) ((ID *)(prop)->data.pointer)
 
 
-namespace blender {
+	std::mutex m_mutex;
 
 	bNodeSocket* getSocketForProperty(IDProperty* property, bNodeTree* group, BlenderPyNodeTree blNodeTree) {
 		CollectionPropertyIterator it;
@@ -38,11 +44,23 @@ namespace blender {
 		return nullptr;
 	}
 
-	bool addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, std::stringstream& names, const Object* obj, ms::PropertyManager* propertyManager)
+	bool doesPropertyUseAttribute(std::string propertyName, NodesModifierData* nodeModifier) {
+		auto attributeName = propertyName + "_use_attribute";
+
+		// Loop through modifier data and get the values:
+		LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
+			if (property->name == attributeName) {
+				return IDP_Int(property);
+			}
+		}
+
+		return false;
+	}
+
+	void addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, const Object* obj, ms::PropertyManager* propertyManager)
 	{
-#if BLENDER_VERSION >= 300
 		if (modifier->type != ModifierType::eModifierType_Nodes) {
-			return false;
+			return;
 		}
 
 		auto blNodeTree = blender::BlenderPyNodeTree();
@@ -52,6 +70,10 @@ namespace blender {
 		// Loop through modifier data and get the values:
 		LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
 			if (strstr(property->name, "_use_attribute") || strstr(property->name, "_attribute_name")) {
+				continue;
+			}
+
+			if (doesPropertyUseAttribute(property->name, nodeModifier)) {
 				continue;
 			}
 
@@ -66,9 +88,23 @@ namespace blender {
 					propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
 					break;
 				}
-				case IDP_FLOAT: {					
+				case IDP_FLOAT: {
 					auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
 					propertyInfo->set(IDP_Float(property), defaultValue->min, defaultValue->max);
+					break;
+				}
+				case IDP_ARRAY: {
+					auto defaultValue = (bNodeSocketValueVector*)socket->default_value;
+					switch (property->subtype) {
+					case IDP_INT: {
+						propertyInfo->set((int*)IDP_Array(property), defaultValue->min, defaultValue->max, property->len);
+						break;
+					}
+					case IDP_FLOAT: {
+						propertyInfo->set((float*)IDP_Array(property), defaultValue->min, defaultValue->max, property->len);
+						break;
+					}
+					}
 					break;
 				}
 				default:
@@ -82,20 +118,12 @@ namespace blender {
 				propertyManager->add(propertyInfo);
 			}
 		}
-
-		return true;
-#else
-		return false;
-#endif // BLENDER_VERSION >= 300
 	}
 
 	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager)
 	{
-#if BLENDER_VERSION >= 300
-		// Add the geometry node properties as a user property
+		std::unique_lock<std::mutex> lock(m_mutex);
 
-		// Create a manifest with the names of the modifiers
-		std::stringstream modifierNames;
 		blender::BObject bObj(obj);
 		auto modifiers = bObj.modifiers();
 		for (auto it = modifiers.begin(); it != modifiers.end(); ++it) {
@@ -103,24 +131,16 @@ namespace blender {
 			auto modifier = *it;
 
 			// Add each modifier as a variant
-			addModifierProperties(transform, modifier, modifierNames, obj, propertyManager);
+			addModifierProperties(transform, modifier, obj, propertyManager);
 		}
-
-		auto streamString = modifierNames.str();
-		if (!streamString.empty()) {
-			ms::Variant modifierManifest;
-			modifierManifest.name = "modifiers";
-			modifierManifest.type = ms::Variant::Type::String;
-
-			modifierManifest.set(streamString.c_str(), streamString.length());
-
-			transform->addUserProperty(std::move(modifierManifest));
-		}
-#endif // BLENDER_VERSION >= 300
 	}
 
 	void msblenModifiers::importModifiers(std::vector<ms::PropertyInfo> props) {
-#if BLENDER_VERSION >= 300
+		if (props.size() == 0) {
+			return;
+		}
+
+		std::unique_lock<std::mutex> lock(m_mutex);
 		// Apply returned properties:
 		for (auto& receivedProp : props) {
 			auto obj = get_object_from_path(receivedProp.path);
@@ -147,6 +167,12 @@ namespace blender {
 						IDP_Float(property) = val;
 						break;
 					}
+					case ms::PropertyInfo::Type::FloatArray:
+					case ms::PropertyInfo::Type::IntArray:
+						receivedProp.copy(IDP_Array(property));
+						break;
+					default:
+						break;
 					}
 
 					switch (obj->type) {
@@ -164,6 +190,8 @@ namespace blender {
 		auto pyContext = blender::BlenderPyContext::get();
 		auto depsGraph = pyContext.evaluated_depsgraph_get();
 		BlenderPyContext::UpdateDepsgraph(depsGraph);
-#endif // BLENDER_VERSION >= 300
 	}
+
+#endif // BLENDER_VERSION < 300
+
 } // namespace blender 

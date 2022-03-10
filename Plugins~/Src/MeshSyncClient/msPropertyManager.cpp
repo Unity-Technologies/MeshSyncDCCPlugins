@@ -32,6 +32,29 @@ namespace ms {
 	void PropertyManager::clear()
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
+
 		m_records.clear();
+	}
+
+	void PropertyManager::updateFromServer(std::vector<PropertyInfo> properties)
+	{
+		std::unique_lock<std::mutex> lock(m_mutex);
+
+		for (auto prop : properties) {
+			m_receivedProperties.push_back(prop);
+		}
+	}
+
+	std::vector<PropertyInfo> PropertyManager::getReceivedProperties()
+	{
+		std::unique_lock<std::mutex> lock(m_mutex);
+
+		return m_receivedProperties;
+	}
+
+	void PropertyManager::clearReceivedProperties() {
+		std::unique_lock<std::mutex> lock(m_mutex);
+
+		m_receivedProperties.clear();
 	}
 }
