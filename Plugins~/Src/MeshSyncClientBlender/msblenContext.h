@@ -159,7 +159,8 @@ private:
     void doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractNonEditMeshData(ms::Mesh& dst,const Object* obj, Mesh* data, BlenderSyncSettings& settings);
     void doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtactMeshDataWithoutObject(ms::MeshPtr, Mesh*);
+
+
 
     ms::TransformPtr findBone(Object *armature, Bone *bone);
     ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
@@ -175,8 +176,11 @@ private:
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
+#if BLENDER_VERSION >= 300
+    void doExtactMeshDataWithoutObject(ms::MeshPtr, Mesh*);
     void exportInstances(std::string, std::vector<mu::float4x4>);
     void exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4>);
+#endif
 
 private:
 
