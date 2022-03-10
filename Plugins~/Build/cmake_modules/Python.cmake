@@ -105,6 +105,12 @@ function(configure_python python_ver_no_dots)
             "  Path: ${PYTHON_SRC_ROOT}"
         )
     endif()    
+
+    if(WIN32 AND NOT DEFINED PYTHON_${python_full_version}_LIBRARY)
+        message(FATAL_ERROR "Failed to find and configure Python libraries for ${python_full_version}. \n"
+            "  Path: ${PYTHON_SRC_ROOT}"
+        )
+    endif()
         
 endfunction()
 
