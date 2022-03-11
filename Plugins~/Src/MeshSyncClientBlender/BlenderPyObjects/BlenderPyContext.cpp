@@ -17,7 +17,7 @@ PropertyRNA* BlenderPyContext_depsgraph_is_instance = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_world_matrix = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_parent = nullptr;
 PropertyRNA* BlenderPyContext_depsgraph_object = nullptr;
-
+PropertyRNA* BlenderPyContext_viewlayer = nullptr;
 
 
 BlenderPyContext BlenderPyContext::get()
@@ -31,6 +31,10 @@ Main* BlenderPyContext::data()
 Scene* BlenderPyContext::scene()
 {
     return (Scene*)get_pointer(m_ptr, BlenderPyContext_scene);
+}
+
+ViewLayer* BlenderPyContext::viewLayer() {
+    return (ViewLayer*)get_pointer(m_ptr, BlenderPyContext_viewlayer);
 }
 
 Depsgraph* BlenderPyContext::evaluated_depsgraph_get()

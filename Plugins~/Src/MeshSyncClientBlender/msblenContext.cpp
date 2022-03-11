@@ -19,6 +19,7 @@
 #include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include "DNA_node_types.h"
 #include <sstream>
+#include "msblenBinder.h"
 
 
 
@@ -293,11 +294,43 @@ static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& 
     s = mu::swap_yz(s);
 }
 
+bool isVisibleInCollection(LayerCollection* layerCollection, const Object* obj) {
+    // Check if the object is in the layer collection, if it is, check if the layer is excluded:
+    for (auto collectionObject : blender::list_range((CollectionObject*)layerCollection->collection->gobject.first)) {
+        if (collectionObject->ob == obj) {
+            if (!(layerCollection->flag & LAYER_COLLECTION_EXCLUDE)) {
+                return true;
+            }
+        }
+    }
+
+    // Check child layer collections:
+    for (auto childCollection : blender::list_range((LayerCollection*)layerCollection->layer_collections.first)) {
+        if (isVisibleInCollection(childCollection, obj)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool isVisibleInCollection(const Object* obj) {
+    auto viewLayer = bl::BlenderPyContext::get().viewLayer();
+
+    for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
+        if (isVisibleInCollection(layerCollection, obj)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void msblenContext::extractTransformData(const Object *obj,
     mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
-    vis = { true, visible_in_render(obj), visible_in_viewport(obj) };
+    vis = { isVisibleInCollection(obj), visible_in_render(obj), visible_in_viewport(obj) };
 
     const mu::float4x4 local = getLocalMatrix(obj);
     const mu::float4x4 world = getWorldMatrix(obj);
@@ -544,8 +577,8 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
     auto assign_base_params = [&]() {
         extractTransformData(src, *dst);
         dst->path = path;
-        // todo:
-        dst->visibility = {};
+        
+        dst->visibility = { isVisibleInCollection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
     };
 
@@ -611,7 +644,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
 
     std::shared_ptr<ms::Transform> dst = ms::Transform::create();
     dst->path = path;
-    dst->visibility = { true, visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
+    dst->visibility = { isVisibleInCollection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host)};
 
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = m_settings.BakeTransform ? mu::float3::zero() : offset_pos;
@@ -626,7 +659,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
         auto obj = go->ob;
         if (auto t = exportObject(obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
-            t->visibility = { true, non_lib, non_lib };
+            t->visibility = { isVisibleInCollection(obj), non_lib, non_lib };
         }
         exportReference(obj, ctx2);
     }

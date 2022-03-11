@@ -15,6 +15,7 @@ namespace blender
         static BlenderPyContext get();
         Main* data();
         Scene* scene();
+        ViewLayer* viewLayer();
         Depsgraph* evaluated_depsgraph_get();
 
         static void UpdateDepsgraph(Depsgraph* depsgraph);
@@ -23,8 +24,7 @@ namespace blender
         void object_instances_end(CollectionPropertyIterator* it);
         void object_instances_next(CollectionPropertyIterator* it);
         PointerRNA object_instances_get(CollectionPropertyIterator* it);
-
-
+        
         Object* instance_object_get(PointerRNA instance);
         bool object_instances_is_instance(PointerRNA instance);
         void world_matrix_get(PointerRNA* instance, mu::float4x4* world_matrix);

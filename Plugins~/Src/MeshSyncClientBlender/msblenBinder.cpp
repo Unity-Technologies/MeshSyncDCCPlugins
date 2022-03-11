@@ -65,6 +65,7 @@ extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
+extern PropertyRNA* BlenderPyContext_viewlayer;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_instance_object;
 extern PropertyRNA* BlenderPyContext_depsgraph_is_instance;
@@ -204,6 +205,7 @@ void setup(py::object bpy_context)
             each_prop{
                 if (match_prop("blend_data")) BlenderPyContext_blend_data = prop;
                 if (match_prop("scene")) BlenderPyContext_scene = prop;
+                if (match_prop("view_layer")) BlenderPyContext_viewlayer = prop;                
             }
             each_func{
                 if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
@@ -483,6 +485,10 @@ blist_range<Mesh> BData::meshes(){
 
 blist_range<Material> BData::materials(){
     return list_range((Material*)m_ptr->materials.first);
+}
+
+blist_range<Collection> BData::collections() {
+    return list_range((Collection*)m_ptr->collections.first);
 }
 
 bool BData::objects_is_updated() {

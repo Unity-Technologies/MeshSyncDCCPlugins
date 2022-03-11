@@ -175,9 +175,10 @@ namespace blender
     public:
         MSBLEN_BOILERPLATE2(BData, Main)
 
-        blist_range<Object>   objects();
-        blist_range<Mesh>     meshes();
-        blist_range<Material> materials();
+        blist_range<Object>     objects();
+        blist_range<Mesh>       meshes();
+        blist_range<Material>   materials();
+        blist_range<Collection> collections();
 
         bool objects_is_updated();
         void remove(Mesh *v);
