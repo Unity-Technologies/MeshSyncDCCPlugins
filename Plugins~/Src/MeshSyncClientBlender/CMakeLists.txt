@@ -43,7 +43,12 @@ target_link_libraries(${MESHSYNC_CLIENT_BLENDER}
 )
   
 if(LINUX)
-    set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}m-x86_64-linux-gnu.so")
+    set(LINUX_SO_SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}-x86_64-linux-gnu.so")    
+    if (${BLENDER_PYTHON_SHORT_VERSION} LESS_EQUAL 37)        
+        set(LINUX_SO_SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}m-x86_64-linux-gnu.so")    
+    endif()
+
+    set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ${LINUX_SO_SUFFIX})
 elseif(MAC)
     set(MAC_SO_SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}-darwin.so")    
     if (${BLENDER_PYTHON_SHORT_VERSION} LESS_EQUAL 37)        
