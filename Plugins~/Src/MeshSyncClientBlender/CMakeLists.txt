@@ -8,6 +8,7 @@ get_blender(${BLENDER_VERSION})
 setup_blender(${BLENDER_VERSION})
 
 set(BLENDER_PYTHON_VERSION ${BLENDER${BLENDER_VERSION}_PYTHON_VERSION})
+set(BLENDER_PYTHON_SHORT_VERSION ${BLENDER${BLENDER_VERSION}_PYTHON_SHORT_VERSION})
 include(Python)
 get_python(${BLENDER_PYTHON_VERSION})
 configure_python(${BLENDER_PYTHON_VERSION})
@@ -42,11 +43,11 @@ target_link_libraries(${MESHSYNC_CLIENT_BLENDER}
 )
   
 if(LINUX)
-    set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-x86_64-linux-gnu.so")
+    set_target_properties(${MESHSYNC_CLIENT_BLENDER} PROPERTIES SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}m-x86_64-linux-gnu.so")
 elseif(MAC)
-    set(MAC_SO_SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}-darwin.so")    
-    if (${BLENDER_PYTHON_VERSION} LESS_EQUAL 37)        
-        set(MAC_SO_SUFFIX ".cpython-${BLENDER_PYTHON_VERSION}m-darwin.so")    
+    set(MAC_SO_SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}-darwin.so")    
+    if (${BLENDER_PYTHON_SHORT_VERSION} LESS_EQUAL 37)        
+        set(MAC_SO_SUFFIX ".cpython-${BLENDER_PYTHON_SHORT_VERSION}m-darwin.so")    
     endif()
     
     target_link_libraries(${MESHSYNC_CLIENT_BLENDER} PRIVATE "-undefined dynamic_lookup")    
