@@ -73,9 +73,13 @@ function(configure_python python_full_version)
                 PCbuild/amd64            
         )
         
+        if(NOT DEFINED PYTHON_${python_full_version}_LIBRARY)
+            message(FATAL_ERROR "Failed to find and configure Python libraries for ${python_full_version}. \n"
+                "  Path: ${PYTHON_SRC_ROOT}"
+            )
+        endif()
     endif()
-    
-    
+        
         
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args("Python_${python_full_version}"
@@ -89,11 +93,6 @@ function(configure_python python_full_version)
         )
     endif()    
 
-    if(NOT DEFINED PYTHON_${python_full_version}_LIBRARY)
-        message(FATAL_ERROR "Failed to find and configure Python libraries for ${python_full_version}. \n"
-            "  Path: ${PYTHON_SRC_ROOT}"
-        )
-    endif()
         
 endfunction()
 
