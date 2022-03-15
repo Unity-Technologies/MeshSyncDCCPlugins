@@ -6,7 +6,7 @@
 #include "MeshSync/SceneGraph/msLight.h"
 #include "MeshSync/SceneGraph/msTexture.h" //TextureType
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
-#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
+#include "MeshSync/SceneCache/msSceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSync/msIDGenerator.h"
 #include "MeshSync/MeshSyncMacros.h"
 
