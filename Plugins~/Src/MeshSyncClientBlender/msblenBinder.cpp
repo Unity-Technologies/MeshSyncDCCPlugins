@@ -16,6 +16,7 @@ bContext *g_context;
 extern PropertyRNA* BlenderPyID_is_updated;
 extern PropertyRNA* BlenderPyID_is_updated_data;
 extern FunctionRNA* BlenderPyID_evaluated_get;
+extern FunctionRNA* BlenderPyID_update_tag;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -119,6 +120,7 @@ void setup(py::object bpy_context)
             }
             each_func {
                 if (match_func("evaluated_get")) BlenderPyID_evaluated_get = func;
+                if (match_func("update_tag")) BlenderPyID_update_tag = func;
             }
         }
         else if (match_type("Object")) {

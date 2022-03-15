@@ -17,6 +17,7 @@ public:
     bool is_updated() const;
     bool is_updated_data() const;
     ID* evaluated_get(Depsgraph *depsgraph);
+    void update_tag();
 };
 
 

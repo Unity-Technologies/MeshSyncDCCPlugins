@@ -519,11 +519,11 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
 
             exportDupliGroup(obj, ctx);
         }
+    }
 
 #if BLENDER_VERSION >= 300
-        blender::msblenModifiers::exportModifiers(rec.dst, obj, &m_property_manager);
+        blender::msblenModifiers::exportProperties(obj, &m_property_manager);
 #endif
-    }
 
     return rec.dst;
 }
@@ -1507,7 +1507,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
-    blender::msblenModifiers::importModifiers(m_property_manager.getReceivedProperties());
+    blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
     m_property_manager.clearReceivedProperties();
 
     m_settings.Validate();

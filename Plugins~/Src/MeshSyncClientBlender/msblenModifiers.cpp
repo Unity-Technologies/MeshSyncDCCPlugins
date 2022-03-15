@@ -12,14 +12,11 @@
 
 namespace blender {
 #if BLENDER_VERSION < 300
-	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager) {}
-	void msblenModifiers::importModifiers(std::vector<ms::PropertyInfo> props) {}
+	void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager) {}
+	void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {}
 #else
 
 	// Copied from blender source that we cannot include:
-#define LISTBASE_FOREACH(type, var, list) \
-  for (type var = (type)((list)->first); var != NULL; var = (type)(((Link *)(var))->next))
-
 #define IDP_Int(prop) ((prop)->data.val)
 #define IDP_Array(prop) ((prop)->data.pointer)
 #define IDP_Float(prop) (*(float *)&(prop)->data.val)
@@ -48,7 +45,7 @@ namespace blender {
 		auto attributeName = propertyName + "_use_attribute";
 
 		// Loop through modifier data and get the values:
-		LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
+		for (auto property : blender::list_range((IDProperty*)nodeModifier->settings.properties->data.group.first)) {
 			if (property->name == attributeName) {
 				return IDP_Int(property);
 			}
@@ -57,7 +54,7 @@ namespace blender {
 		return false;
 	}
 
-	void addModifierProperties(ms::TransformPtr transform, ModifierData* modifier, const Object* obj, ms::PropertyManager* propertyManager)
+	void addModifierProperties(ModifierData* modifier, const Object* obj, ms::PropertyManager* propertyManager)
 	{
 		if (modifier->type != ModifierType::eModifierType_Nodes) {
 			return;
@@ -68,7 +65,7 @@ namespace blender {
 		auto group = nodeModifier->node_group;
 
 		// Loop through modifier data and get the values:
-		LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
+		for (auto property : blender::list_range((IDProperty*)nodeModifier->settings.properties->data.group.first)) {
 			if (strstr(property->name, "_use_attribute") || strstr(property->name, "_attribute_name")) {
 				continue;
 			}
@@ -115,27 +112,125 @@ namespace blender {
 				propertyInfo->name = socket->name;
 				propertyInfo->modifierName = modifier->name;
 				propertyInfo->propertyName = property->name;
+				propertyInfo->sourceType = ms::PropertyInfo::SourceType::GEO_NODES;
 				propertyManager->add(propertyInfo);
 			}
 		}
 	}
 
-	void msblenModifiers::exportModifiers(ms::TransformPtr transform, const Object* obj, ms::PropertyManager* propertyManager)
+	void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager) {
+		if (obj->id.properties) {
+			for (auto property : blender::list_range((IDProperty*)obj->id.properties->data.group.first)) {
+				if (property->ui_data == nullptr) {
+					continue;
+				}
+
+				auto propertyInfo = ms::PropertyInfo::create();
+				switch (property->type) {
+				case IDP_INT: {
+					auto uiData = (IDPropertyUIDataInt*)property->ui_data;
+					propertyInfo->set(IDP_Int(property), uiData->min, uiData->max);
+					break;
+				}
+				case IDP_FLOAT: {
+					auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
+					propertyInfo->set(IDP_Float(property), uiData->min, uiData->max);
+					break;
+				}
+				case IDP_STRING: {
+					auto uiData = (IDPropertyUIDataString*)property->ui_data;
+					auto val = IDP_String(property);
+					propertyInfo->set(val, strlen(val));
+					break;
+				}
+				default:
+					continue;
+				}
+
+				propertyInfo->path = get_path(obj);
+				propertyInfo->name = std::string(property->name);
+				propertyInfo->modifierName = "";
+				propertyInfo->propertyName = std::string(property->name);
+				propertyInfo->sourceType = ms::PropertyInfo::SourceType::CUSTOM_PROPERTY;
+				propertyManager->add(propertyInfo);
+			}
+		}
+	}
+
+	void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager)
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		blender::BObject bObj(obj);
 		auto modifiers = bObj.modifiers();
 		for (auto it = modifiers.begin(); it != modifiers.end(); ++it) {
-
 			auto modifier = *it;
 
 			// Add each modifier as a variant
-			addModifierProperties(transform, modifier, obj, propertyManager);
+			addModifierProperties(modifier, obj, propertyManager);
+		}
+
+		addCustomProperties(obj, propertyManager);
+	}
+
+	void setProperty(const Object* obj, IDProperty* property, ms::PropertyInfo& receivedProp) {
+		switch (receivedProp.type) {
+		case ms::PropertyInfo::Type::Int: {
+			IDP_Int(property) = receivedProp.get<int>();
+			break;
+		}
+		case ms::PropertyInfo::Type::Float: {
+			IDP_Float(property) = receivedProp.get<float>();
+			break;
+		}
+		case ms::PropertyInfo::Type::FloatArray:
+		case ms::PropertyInfo::Type::IntArray:
+			receivedProp.copy(IDP_Array(property));
+			break;
+		default:
+			break;
+		}
+
+		//property->flag &= ~IDP_FLAG_GHOST;
+		
+		switch (obj->type) {
+		case OB_MESH:
+		{
+			auto mesh = (BMesh*)obj->data;
+			BMesh(mesh).update();
+			break;
+		}
 		}
 	}
 
-	void msblenModifiers::importModifiers(std::vector<ms::PropertyInfo> props) {
+	void applyGeoNodeProperty(const Object* obj, ms::PropertyInfo& receivedProp) {
+		auto modifier = FindModifier(obj, receivedProp.modifierName);
+
+		// Should never happen but just in case:
+		if (!modifier) {
+			return;
+		}
+
+		auto nodeModifier = (NodesModifierData*)modifier;
+
+		for (auto property : blender::list_range((IDProperty*)nodeModifier->settings.properties->data.group.first)) {
+			if (property->name == receivedProp.propertyName) {
+				setProperty(obj, property, receivedProp);
+			}
+		}
+	}
+
+	void applyCustomProperty(const Object* obj, ms::PropertyInfo& receivedProp) {
+		if (obj->id.properties) {
+			for (auto property : blender::list_range((IDProperty*)obj->id.properties->data.group.first)) {
+				if (property->name == receivedProp.name) {
+					setProperty(obj, property, receivedProp);
+				}
+			}
+		}
+	}
+
+	void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {
 		if (props.size() == 0) {
 			return;
 		}
@@ -145,51 +240,28 @@ namespace blender {
 		for (auto& receivedProp : props) {
 			auto obj = get_object_from_path(receivedProp.path);
 
+			// Should never happen but just in case:
 			if (!obj) {
 				continue;
 			}
 
-			auto modifier = FindModifier(obj, receivedProp.modifierName);
-
-			auto nodeModifier = (NodesModifierData*)modifier;
-
-			LISTBASE_FOREACH(IDProperty*, property, &nodeModifier->settings.properties->data.group) {
-				if (property->name == receivedProp.propertyName) {
-
-					switch (receivedProp.type) {
-					case ms::PropertyInfo::Type::Int: {
-						auto val = receivedProp.get<int>();
-						IDP_Int(property) = val;
-						break;
-					}
-					case ms::PropertyInfo::Type::Float: {
-						auto val = receivedProp.get<float>();
-						IDP_Float(property) = val;
-						break;
-					}
-					case ms::PropertyInfo::Type::FloatArray:
-					case ms::PropertyInfo::Type::IntArray:
-						receivedProp.copy(IDP_Array(property));
-						break;
-					default:
-						break;
-					}
-
-					switch (obj->type) {
-					case OB_MESH:
-					{
-						auto mesh = (BMesh*)obj->data;
-						BMesh(mesh).update();
-						break;
-					}
-					}
-				}
+			switch (receivedProp.sourceType)
+			{
+			case ms::PropertyInfo::SourceType::GEO_NODES:
+				applyGeoNodeProperty(obj, receivedProp);
+				break;
+			case ms::PropertyInfo::SourceType::CUSTOM_PROPERTY:
+				applyCustomProperty(obj, receivedProp);
+				break;
 			}
+			
+		 	blender::BlenderPyID bID(obj);
+			bID.update_tag(); 
 		}
 
-		auto pyContext = blender::BlenderPyContext::get();
+	/*	auto pyContext = blender::BlenderPyContext::get();
 		auto depsGraph = pyContext.evaluated_depsgraph_get();
-		BlenderPyContext::UpdateDepsgraph(depsGraph);
+		BlenderPyContext::UpdateDepsgraph(depsGraph);*/
 	}
 
 #endif // BLENDER_VERSION < 300
