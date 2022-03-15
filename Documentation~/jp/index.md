@@ -46,6 +46,7 @@ MeshSync と MeshSyncDCCPlugin が連携することで、ゲーム上でどう�
 | Blender 2.92       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
