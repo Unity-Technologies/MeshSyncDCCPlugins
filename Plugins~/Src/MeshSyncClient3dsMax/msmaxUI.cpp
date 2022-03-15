@@ -3,6 +3,8 @@
 #include "msmaxUtils.h"
 #include "resource.h"
 
+#include "MeshUtils/muMisc.h" //ToMBS()
+
 #define msmaxTitle L"UnityMeshSync"
 
 #define msmaxMenuTitle_Window           L"Window"
