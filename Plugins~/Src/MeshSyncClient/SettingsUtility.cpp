@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MeshSync/SceneCache/msSceneCacheSettings.h" //OSceneCacheSettings
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h" //SceneCacheOutputSettings
 
 
 #include "MeshSyncClient/SettingsUtility.h"
@@ -21,13 +21,13 @@ void SettingsUtility::ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSet
 
 //----------------------------------------------------------------------------------------------------------------------
 
-ms::OSceneCacheSettings SettingsUtility::CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings) {
-    ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = sampleRate;
-    oscs.encoder_settings.zstd.compression_level = cacheSettings.zstd_compression_level;
-    oscs.flatten_hierarchy = cacheSettings.flatten_hierarchy;
-    oscs.strip_normals = cacheSettings.strip_normals;
-    oscs.strip_tangents = cacheSettings.strip_tangents;
+ms::SceneCacheOutputSettings SettingsUtility::CreateSceneCacheOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings) {
+    ms::SceneCacheOutputSettings oscs;
+    oscs.exportSettings.sampleRate = sampleRate;
+    oscs.exportSettings.encoderSettings.zstd.compressionLevel = cacheSettings.zstd_compression_level;
+    oscs.exportSettings.flattenHierarchy = cacheSettings.flatten_hierarchy;
+    oscs.exportSettings.stripNormals = cacheSettings.strip_normals;
+    oscs.exportSettings.stripTangents = cacheSettings.strip_tangents;
     return oscs;
 }
 

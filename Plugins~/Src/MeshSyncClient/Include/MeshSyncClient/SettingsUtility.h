@@ -1,7 +1,7 @@
 #pragma once
 
 namespace ms {
-    struct OSceneCacheSettings;
+    struct SceneCacheOutputSettings;
 }
 
 namespace MeshSyncClient {
@@ -13,7 +13,7 @@ class SettingsUtility {
 
 public:
     static void ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings);
-    static ms::OSceneCacheSettings CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings);
+    static ms::SceneCacheOutputSettings CreateSceneCacheOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings);
 
     
 };
