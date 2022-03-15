@@ -8,7 +8,7 @@
 #include "MeshSync/msClient.h"
 #include "MeshSync/SceneExporter.h"
 #include "MeshSync/AsyncSceneSender.h"
-#include "MeshSync/SceneCache/SceneCacheWriter.h"
+#include "MeshSync/SceneCache/msSceneCacheWriter.h"
 #include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/msEntityManager.h"

@@ -13,10 +13,10 @@
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
-#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include "DNA_node_types.h"
 #include <sstream>
 
@@ -1521,9 +1521,9 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
+    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
-    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+    if (!m_cache_writer.Open(destPath.c_str(), oscs)) {
         logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
@@ -1585,7 +1585,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
 
     m_settings = settings_old;
-    m_cache_writer.close();
+    m_cache_writer.Close();
     return true;
 }
 
@@ -1636,7 +1636,7 @@ void msblenContext::WaitAndKickAsyncExport()
             sender->client_settings = m_settings.client_settings;
         }
         else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
-            writer->time = m_anim_time;
+            writer->SetTime(m_anim_time);
         }
 
         ms::SceneExporter& t = *exporter;
