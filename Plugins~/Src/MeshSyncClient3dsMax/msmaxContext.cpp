@@ -3,9 +3,15 @@
 #include "msmaxUtils.h"
 #include "msmaxCallbacks.h"
 
+#include "MeshUtils/muMisc.h" //ToWCS()
+
+
 #include "MeshSync/MeshSyncConstants.h"
+#include "MeshSync/SceneGraph/msAnimation.h" //AnimationClip
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
+
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 #include "MeshSyncClient/SettingsUtility.h"
@@ -385,10 +391,10 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
-    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
+    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateSceneCacheOutputSettings(sampleRate, cache_settings);
 
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
-    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+    if (!m_cache_writer.Open(destPath.c_str(), oscs)) {
         logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
@@ -458,7 +464,7 @@ bool msmaxContext::ExportCache(const std::string& path, const MaxCacheSettings& 
     m_material_records.clear();
 
     m_settings = settings_old;
-    m_cache_writer.close();
+    m_cache_writer.Close();
     return true;
 }
 
@@ -620,7 +626,7 @@ void msmaxContext::WaitAndKickAsyncExport()
             sender->client_settings = m_settings.client_settings;
         }
         else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
-            writer->time = m_anim_time;
+            writer->SetTime(m_anim_time);
         }
 
         ms::SceneExporter& t = *exporter;
