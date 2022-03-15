@@ -4,6 +4,7 @@
 #include "resource.h"
 
 #include "MeshUtils/muMisc.h" //ToMBS()
+#include "MeshSync/Utility/msEncodingUtility.h" //ClampZSTDCompressionLevel()
 
 #define msmaxTitle L"UnityMeshSync"
 
@@ -716,7 +717,7 @@ static INT_PTR CALLBACK msmaxCacheWindowCB(HWND hDlg, UINT msg, WPARAM wParam, L
         case IDC_ZSTD_COMPRESSION_LEVEL:
             handle_edit([&]() {
                 int tmp = CtrlGetInt(IDC_ZSTD_COMPRESSION_LEVEL, cacheSettings.zstd_compression_level);
-                tmp = ms::ClampZSTDCompressionLevel(tmp);
+                tmp = ms::EncodingUtility::ClampZSTDCompressionLevel(tmp);
                 CtrlSetText(IDC_ZSTD_COMPRESSION_LEVEL, tmp);
                 cacheSettings.zstd_compression_level = tmp;
             });
