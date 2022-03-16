@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "msmaxUtils.h"
 #include "msmaxContext.h"
+#include "MeshUtils/muMisc.h" //ToMBS()
+
 
 TimeValue GetTime()
 {
