@@ -3,6 +3,8 @@
 #include "msblenContext.h"
 #include "msblenUtils.h"
 
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
+#include "MeshSync/SceneGraph/msAnimation.h" //TransformAnimation
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msSceneSettings.h"
 #include "MeshSync/SceneGraph/msMesh.h"
@@ -1521,7 +1523,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
+    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateSceneCacheOutputSettings(frameRate, cache_settings);
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
     if (!m_cache_writer.Open(destPath.c_str(), oscs)) {
         logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());

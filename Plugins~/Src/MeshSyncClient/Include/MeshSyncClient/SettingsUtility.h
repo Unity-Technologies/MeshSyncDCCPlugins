@@ -13,7 +13,7 @@ class SettingsUtility {
 
 public:
     static void ApplyCacheToSyncSettings(const BaseCacheSettings& cacheSettings, BaseSyncSettings* syncSettings);
-    static ms::SceneCacheOutputSettings CreateOSceneCacheSettings(float sampleRate, const BaseCacheSettings& cacheSettings);
+    static ms::SceneCacheOutputSettings CreateSceneCacheOutputSettings(float sampleRate, const BaseCacheSettings& cacheSettings);
 
     
 };

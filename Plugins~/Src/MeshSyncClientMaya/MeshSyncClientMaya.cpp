@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "mscore/msCoreAPI.h"
 
 #ifdef _WIN32
 #pragma comment(lib, "Foundation.lib")
