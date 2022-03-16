@@ -54,7 +54,7 @@ namespace blender {
 
 
     void GeometryNodesUtils::foreach_instance(
-        std::function<void(string, float4x4)> pathHandler, 
+        std::function<void(string&, float4x4&)> pathHandler, 
         std::function<void(Mesh*, float4x4)> meshHandler)
     {
 

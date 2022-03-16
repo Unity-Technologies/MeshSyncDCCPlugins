@@ -29,7 +29,7 @@ namespace blender {
 		/// </summary>
 		/// <param name="f"></param>
 		static void foreach_instance(
-			std::function<void (std:: string, mu::float4x4)> pathHandler, 
+			std::function<void (std::string&, mu::float4x4&)> pathHandler, 
 			std::function<void(Mesh*, mu::float4x4)> meshHandler);
 
 		static void foreach_instance(

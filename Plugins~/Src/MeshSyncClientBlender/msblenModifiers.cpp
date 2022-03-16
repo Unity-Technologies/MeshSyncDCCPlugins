@@ -1,5 +1,4 @@
 #include "msblenModifiers.h"
-#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include <sstream>
 #include <BlenderPyObjects/BlenderPyContext.h>
 #include <MeshSync/SceneGraph/msMesh.h>

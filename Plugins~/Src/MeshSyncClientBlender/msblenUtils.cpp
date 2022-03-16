@@ -37,8 +37,14 @@ std::string get_name(const Bone *obj)
     return ret;
 }
 
+std::map<const Object*, std::string> nameCache;
 std::string get_path(const Object *obj)
 {
+    auto cachedName = nameCache.find(obj);
+    if (cachedName != nameCache.end()) {
+        return cachedName->second;
+    }
+
     std::string ret;
     if (obj->parent) {
         if (obj->partype == PARBONE) {
@@ -52,6 +58,13 @@ std::string get_path(const Object *obj)
     }
     ret += '/';
     ret += get_name(obj);
+
+    if (nameCache.size() > 100) {
+        nameCache.clear();
+    }
+
+    nameCache[obj] = ret;
+
     return ret;
 }
 std::string get_path(const Object *arm, const Bone *obj)
