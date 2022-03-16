@@ -1724,18 +1724,18 @@ void msblenContext::doExtactMeshDataWithoutObject(ms::MeshPtr msMesh, Mesh* mesh
     msMesh->refine();
 }
 
-void msblenContext::exportInstances(std::string str, std::vector<mu::float4x4> mat) {
+void msblenContext::exportInstances(std::string str, SharedVector<mu::float4x4> mat) {
     auto info = ms::InstanceInfo::create();
     info->path = str;
-    info->transforms = mat;
+    info->transforms = std::move(mat);
     info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
 
     // If an object that is added has been marked for deletion
     // it will be removed from the deletion list
-    m_instances_manager.add(std::move(info));
+    m_instances_manager.add(info);
 }
 
-void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4> mat)
+void msblenContext::exportInstancesWithMesh(Mesh* mesh, SharedVector<mu::float4x4> mat)
 {
     auto msMesh = ms::Mesh::create();
 
@@ -1744,12 +1744,12 @@ void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4
     auto info = ms::InstanceInfo::create();
     info->type = ms::InstanceInfo::ReferenceType::MESH_PATH;
     info->path = msMesh->path;
-    info->transforms = mat;
+    info->transforms = std::move(mat);
 
     // If an object that is added has been marked for deletion
     // it will be removed from the deletion list
-    m_instances_manager.add(std::move(info));
-    m_instances_manager.add(std::move(msMesh));
+    m_instances_manager.add(info);
+    m_instances_manager.add(msMesh);
 }
 #endif
 

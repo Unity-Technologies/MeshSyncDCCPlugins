@@ -127,10 +127,10 @@ namespace blender {
     }
 
     void GeometryNodesUtils::foreach_instance(
-        std::function<void(string, vector<float4x4>)> pathHandler,
-        std::function<void(Mesh*, vector<float4x4>)> meshHandler) {
-        map<string, vector<float4x4>> pathMap;
-        map<Mesh*, vector<float4x4>> meshMap;
+        std::function<void(string, SharedVector<float4x4>)> pathHandler,
+        std::function<void(Mesh*, SharedVector<float4x4>)> meshHandler) {
+        map<string, SharedVector<float4x4>> pathMap;
+        map<Mesh*, SharedVector<float4x4>> meshMap;
         foreach_instance([&](string name, float4x4 matrix) {
             pathMap[name].push_back(matrix);
             }, [&](Mesh* mesh, float4x4 matrix) {
@@ -138,10 +138,10 @@ namespace blender {
             });
 
         for (auto& entry : pathMap) {
-            pathHandler(entry.first, entry.second);
+            pathHandler(entry.first, std::move(entry.second));
         }
         for (auto& entry : meshMap) {
-            meshHandler(entry.first, entry.second);
+            meshHandler(entry.first, std::move(entry.second));
         }
     }
 
