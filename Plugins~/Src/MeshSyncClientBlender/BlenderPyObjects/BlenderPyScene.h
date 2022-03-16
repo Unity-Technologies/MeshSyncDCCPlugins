@@ -6,6 +6,8 @@
 #include "BlenderPyID.h" //BID
 #include "../msblenBinder.h" //list_range
 
+#include "msblenUtils.h" // get_name
+
 namespace blender {
 
 class BlenderPyScene {
@@ -47,6 +49,21 @@ public:
             if (bo.is_selected())
                 body(obj);
         });
+    }
+
+    Object* get_object_by_name(std::string objName) {
+        for (auto* c : list_range((CollectionChild*)m_ptr->master_collection->children.first)) {
+            for (auto* o : list_range((CollectionObject*)c->collection->gobject.first)) {
+                auto obj = o->ob;
+                auto name = get_name(obj);
+
+                if (name == objName) {
+                    return obj;
+                }
+            }
+        }
+
+        return nullptr;
     }
 };
 

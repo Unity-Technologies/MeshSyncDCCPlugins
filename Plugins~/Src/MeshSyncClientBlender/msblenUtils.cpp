@@ -67,28 +67,15 @@ std::string get_path(const Object *arm, const Bone *obj)
 }
 
 Object* get_object_from_path(std::string path) {
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-
     auto lastIndexOfDivider = path.find_last_of('/');
     if (lastIndexOfDivider < 0) {
         return nullptr;
     }
 
-    auto objName = path.substr(path.find_last_of('/') + 1);
-    Object* result = nullptr;
-    scene.each_objects([&](Object* obj) {
-        if (result != nullptr) {
-            return;
-        }
+    auto objName = path.substr(lastIndexOfDivider + 1);
 
-        auto name = get_name(obj);
-
-        if (name == objName) {
-            result = obj;
-        }
-    });
-
-    return result;
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    return scene.get_object_by_name(objName);
 }
 
 bool visible_in_render(const Object *obj)

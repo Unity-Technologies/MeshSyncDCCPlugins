@@ -132,9 +132,9 @@ namespace blender {
         std::function<void(Mesh*, vector<float4x4>)> meshHandler) {
         map<string, vector<float4x4>> pathMap;
         map<Mesh*, vector<float4x4>> meshMap;
-        foreach_instance([&](string name, float4x4 matrix) {
+        foreach_instance([&](string& name, float4x4& matrix) {
             pathMap[name].push_back(matrix);
-            }, [&](Mesh* mesh, float4x4 matrix) {
+            }, [&](Mesh* mesh, float4x4& matrix) {
                 meshMap[mesh].push_back(matrix);
             });
 

@@ -48,7 +48,7 @@ namespace ms {
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 
-		for (auto prop : properties) {
+		for (auto& prop : properties) {
 			m_receivedProperties.push_back(prop);
 		}
 	}
