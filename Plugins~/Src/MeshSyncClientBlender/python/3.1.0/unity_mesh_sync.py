@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (3, 0, 1),
+    "blender": (3, 1, 0),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -25,7 +25,6 @@ class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
 
     def draw(self, context):
         pass
-            
 
 
 class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
@@ -114,9 +113,6 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def __del__(self):
         MESHSYNC_OT_AutoSync._timer = None
 
-    def execute(self, context):
-        return self.invoke(context, None)
-
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
@@ -143,8 +139,6 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
         msb_context.exportUpdatedObjects()
-    
-
 
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
@@ -304,6 +298,9 @@ def unregister():
 def DestroyMeshSyncContext():
     msb_context.Destroy()
 
+import atexit
+atexit.register(DestroyMeshSyncContext)
+
 @persistent
 def on_depsgraph_update_post(scene):
     graph = bpy.context.evaluated_depsgraph_get()
@@ -312,9 +309,6 @@ def on_depsgraph_update_post(scene):
 
 bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
 bpy.app.handlers.load_post.append(on_depsgraph_update_post)
-
-import atexit
-atexit.register(DestroyMeshSyncContext)
     
 # ---------------------------------------------------------------------------------------------------------------------
 

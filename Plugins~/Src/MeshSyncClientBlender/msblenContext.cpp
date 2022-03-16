@@ -13,10 +13,10 @@
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
-#include "BlenderPyObjects/BlenderPyDepsgraphUpdate.h"
 #include "DNA_node_types.h"
 #include <sstream>
 #include "msblenBinder.h"
@@ -1135,40 +1135,6 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh
     }
 }
 
-void msblenContext::doExtactMeshDataWithoutObject(ms::MeshPtr msMesh, Mesh* mesh)
-{
-    BlenderSyncSettings meshExtractionSettings;
-    meshExtractionSettings.sync_meshes = true;
-    meshExtractionSettings.sync_normals = true;
-    meshExtractionSettings.sync_uvs = true;
-    meshExtractionSettings.sync_colors = true;
-    meshExtractionSettings.sync_bones = false;
-
-    auto path = std::string(mesh->id.name);
-    path += std::to_string(mesh->id.session_uuid);
-
-
-    doExtractNonEditMeshData(*(msMesh), nullptr, mesh, meshExtractionSettings);
-
-    if (msMesh->normals.empty())
-        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
-    if (msMesh->tangents.empty())
-        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
-
-    msMesh->path = path;
-    msMesh->world_matrix = mu::float4x4::identity();
-    msMesh->local_matrix = mu::float4x4::identity();
-    msMesh->visibility.active = false;
-
-#if BLENDER_VERSION >= 300
-    msMesh->refine_settings.local2world = m_geometryNodeUtils.blenderToUnityWorldMatrixMesh();
-#endif
-
-    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_LOCAL2WORLD, true);
-    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_FLIP_FACES, true);
-
-    msMesh->refine();
-}
 
 ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
 {
@@ -1464,33 +1430,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-void msblenContext::exportInstances(std::string str, std::vector<mu::float4x4> mat) {
-        auto info = ms::InstanceInfo::create();
-        info->path = str;
-        info->transforms = mat;
-        info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
 
-        // If an object that is added has been marked for deletion
-        // it will be removed from the deletion list
-        m_instances_manager.add(std::move(info));
-}
-
-void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4> mat)
-{
-    auto msMesh = ms::Mesh::create();
-
-    doExtactMeshDataWithoutObject(msMesh, mesh);
-
-    auto info = ms::InstanceInfo::create();
-    info->type = ms::InstanceInfo::ReferenceType::MESH_PATH;
-    info->path = msMesh->path;
-    info->transforms = mat;
-
-    // If an object that is added has been marked for deletion
-    // it will be removed from the deletion list
-    m_instances_manager.add(std::move(info));
-    m_instances_manager.add(std::move(msMesh));
-}
 
 void msblenContext::requestProperties()
 {
@@ -1634,9 +1574,9 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     m_settings.curves_as_mesh = cache_settings.curves_as_mesh;
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
-    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
+    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateOSceneCacheSettings(frameRate, cache_settings);
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
-    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+    if (!m_cache_writer.Open(destPath.c_str(), oscs)) {
         logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
@@ -1698,7 +1638,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     logInfo("MeshSync: Finished writing scene cache to %s (%f) ms", destPath.c_str(), timer.elapsed());
 
     m_settings = settings_old;
-    m_cache_writer.close();
+    m_cache_writer.Close();
     return true;
 }
 
@@ -1749,7 +1689,7 @@ void msblenContext::WaitAndKickAsyncExport()
             sender->client_settings = m_settings.client_settings;
         }
         else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
-            writer->time = m_anim_time;
+            writer->SetTime(m_anim_time);
         }
 
         ms::SceneExporter& t = *exporter;
@@ -1803,4 +1743,67 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 #endif
 
 }
+
+/// Geometry Nodes Blender Context Functionality ///
+#if BLENDER_VERSION >= 300
+void msblenContext::doExtactMeshDataWithoutObject(ms::MeshPtr msMesh, Mesh* mesh)
+{
+    BlenderSyncSettings meshExtractionSettings;
+    meshExtractionSettings.sync_meshes = true;
+    meshExtractionSettings.sync_normals = true;
+    meshExtractionSettings.sync_uvs = true;
+    meshExtractionSettings.sync_colors = true;
+    meshExtractionSettings.sync_bones = false;
+
+    auto path = std::string(mesh->id.name);
+    path += std::to_string(mesh->id.session_uuid);
+
+
+    doExtractNonEditMeshData(*(msMesh), nullptr, mesh, meshExtractionSettings);
+
+    if (msMesh->normals.empty())
+        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
+    if (msMesh->tangents.empty())
+        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
+
+    msMesh->path = path;
+    msMesh->world_matrix = mu::float4x4::identity();
+    msMesh->local_matrix = mu::float4x4::identity();
+    msMesh->visibility.active = false;
+
+    msMesh->refine_settings.local2world = m_geometryNodeUtils.blenderToUnityWorldMatrixMesh();
+    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_LOCAL2WORLD, true);
+    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_FLIP_FACES, true);
+
+    msMesh->refine();
+}
+
+void msblenContext::exportInstances(std::string str, std::vector<mu::float4x4> mat) {
+    auto info = ms::InstanceInfo::create();
+    info->path = str;
+    info->transforms = mat;
+    info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
+
+    // If an object that is added has been marked for deletion
+    // it will be removed from the deletion list
+    m_instances_manager.add(std::move(info));
+}
+
+void msblenContext::exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4> mat)
+{
+    auto msMesh = ms::Mesh::create();
+
+    doExtactMeshDataWithoutObject(msMesh, mesh);
+
+    auto info = ms::InstanceInfo::create();
+    info->type = ms::InstanceInfo::ReferenceType::MESH_PATH;
+    info->path = msMesh->path;
+    info->transforms = mat;
+
+    // If an object that is added has been marked for deletion
+    // it will be removed from the deletion list
+    m_instances_manager.add(std::move(info));
+    m_instances_manager.add(std::move(msMesh));
+}
+#endif
 
