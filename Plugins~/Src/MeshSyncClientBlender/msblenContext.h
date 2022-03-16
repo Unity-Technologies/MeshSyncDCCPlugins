@@ -182,8 +182,8 @@ private:
 
 #if BLENDER_VERSION >= 300
     void doExtactMeshDataWithoutObject(ms::MeshPtr, Mesh*);
-    void exportInstances(std::string, std::vector<mu::float4x4>);
-    void exportInstancesWithMesh(Mesh* mesh, std::vector<mu::float4x4>);
+    void exportInstances(std::string, SharedVector<mu::float4x4>);
+    void exportInstancesWithMesh(Mesh* mesh, SharedVector<mu::float4x4>);
 #endif
 
 private:
