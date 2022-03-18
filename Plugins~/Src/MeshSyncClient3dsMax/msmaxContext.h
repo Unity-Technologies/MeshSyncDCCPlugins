@@ -5,7 +5,7 @@
 #include "msmaxUtils.h"
 #include "MeshSync/SceneGraph/msTexture.h" //ms::TextureType
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
-#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
+#include "MeshSync/SceneCache/msSceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/AsyncTasksController.h"
