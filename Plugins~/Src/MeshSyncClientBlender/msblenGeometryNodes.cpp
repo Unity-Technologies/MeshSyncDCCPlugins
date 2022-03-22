@@ -5,6 +5,7 @@
 #include "BlenderPyObjects/BlenderPyNodeTree.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
 #include <msblenUtils.h>
+#include <BLI_listbase.h>
 
 
 using namespace std;
@@ -53,26 +54,10 @@ namespace blender {
     }
 
 
-    void GeometryNodesUtils::foreach_instance(
-        std::function<void(string, float4x4)> pathHandler, 
-        std::function<void(Mesh*, float4x4)> meshHandler)
+    void GeometryNodesUtils::foreach_instance(std::function<void(ID*, float4x4)> handler)
     {
 
         auto blContext = blender::BlenderPyContext::get();
-        // Build a map between data and the objects they belong to
-        auto scene = blContext.scene();
-        auto mscene = BlenderPyScene(scene);
-
-        map<string, Object*> dataToObject;
-
-        mscene.each_objects([&](Object* obj) {
-            if (obj == nullptr || obj->data == nullptr)
-                return;
-            auto data_id = (ID*)obj->data;
-            dataToObject[data_id->name] = obj;
-            });
-
-        
 
 
         // BlenderPyContext is an interface between depsgraph operations and anything that interacts with it
@@ -82,6 +67,8 @@ namespace blender {
         CollectionPropertyIterator it;
 
         blContext.object_instances_begin(&it, depsgraph);
+
+
 
         for (; it.valid; blContext.object_instances_next(&it)) {
             // Get the instance as a Pointer RNA.
@@ -101,47 +88,37 @@ namespace blender {
 
             auto object = blContext.object_get(instance);
 
-            if (object->type != OB_MESH)
+            if (object->type != OB_MESH) {
                 continue;
-
-            auto data_id = (ID*)object->data;
-            auto hierarchyObject = dataToObject[data_id->name];
+            }
 
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
 
             auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
 
-            if (hierarchyObject == nullptr) {
-                auto mesh = (Mesh*)object->data;
-                meshHandler(move(mesh),move(unityMatrix));
-            }
-            else {
-                auto path = get_path(hierarchyObject);
-                pathHandler(move(path), move(unityMatrix));
-            }
+            handler(&object->id, move(unityMatrix));
         }
 
         // Cleanup resources
         blContext.object_instances_end(&it);
     }
 
-    void GeometryNodesUtils::foreach_instance(
-        std::function<void(string, SharedVector<float4x4>)> pathHandler,
-        std::function<void(Mesh*, SharedVector<float4x4>)> meshHandler) {
-        map<string, SharedVector<float4x4>> pathMap;
-        map<Mesh*, SharedVector<float4x4>> meshMap;
-        foreach_instance([&](string name, float4x4 matrix) {
-            pathMap[name].push_back(matrix);
-            }, [&](Mesh* mesh, float4x4 matrix) {
-                meshMap[mesh].push_back(matrix);
+    void GeometryNodesUtils::foreach_instance(function<void(Object*, SharedVector<float4x4>)> handler) {
+
+        map<string, SharedVector<float4x4>> transformsMap;
+        foreach_instance([&](ID* id, float4x4 matrix) {
+            transformsMap[id->name].push_back(matrix);
             });
 
-        for (auto& entry : pathMap) {
-            pathHandler(entry.first, std::move(entry.second));
-        }
-        for (auto& entry : meshMap) {
-            meshHandler(entry.first, std::move(entry.second));
+        auto ctx = blender::BlenderPyContext::get();
+
+        auto objects = ctx.data()->objects;
+        LISTBASE_FOREACH(Object*, obj, &objects){
+            auto result = transformsMap.find(obj->id.name);
+            if (result != transformsMap.end()) {
+                handler(obj, std::move(result->second));
+            }
         }
     }
 

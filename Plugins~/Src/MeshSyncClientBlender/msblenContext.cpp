@@ -394,22 +394,21 @@ void msblenContext::extractLightData(const Object *src,
 }
 
 
-ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, bool tip)
-{
+ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::TransformManager& manager, bool tip) {
     if (!obj)
         return nullptr;
 
-    msblenContext::ObjectRecord& rec = touchRecord(obj);
+    msblenContext::ObjectRecord& rec = touchRecord(manager, obj);
     if (rec.dst)
         return rec.dst; // already exported
 
     auto handle_parent = [&]() {
         if (parent)
-            exportObject(obj->parent, parent, false);
+            exportObject(obj->parent, parent, manager, false);
     };
     auto handle_transform = [&]() {
         handle_parent();
-        rec.dst = exportTransform(obj);
+        rec.dst = exportTransform(obj, manager);
     };
 
     switch (obj->type) {
@@ -417,7 +416,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     {
         if (!tip || (!m_settings.BakeModifiers && m_settings.sync_bones)) {
             handle_parent();
-            rec.dst = exportArmature(obj);
+            rec.dst = exportArmature(obj, manager);
         }
         else if (!tip && parent)
             handle_transform();
@@ -426,12 +425,12 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     case OB_MESH:
     {
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
-            if (auto *arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
-                exportObject(arm_mod->object, parent);
+            if (auto* arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
+                exportObject(arm_mod->object, parent, manager);
         }
         if (m_settings.sync_meshes || (!m_settings.BakeModifiers && m_settings.sync_blendshapes)) {
             handle_parent();
-            rec.dst = exportMesh(obj);
+            rec.dst = exportMesh(obj, manager);
         }
         else if (!tip && parent)
             handle_transform();
@@ -444,7 +443,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     {
         if (m_settings.sync_meshes && m_settings.curves_as_mesh) {
             handle_parent();
-            rec.dst = exportMesh(obj);
+            rec.dst = exportMesh(obj, manager);
         }
         else if (!tip && parent)
             handle_transform();
@@ -454,7 +453,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     {
         if (m_settings.sync_cameras) {
             handle_parent();
-            rec.dst = exportCamera(obj);
+            rec.dst = exportCamera(obj, manager);
         }
         else if (!tip && parent)
             handle_transform();
@@ -464,7 +463,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     {
         if (m_settings.sync_lights) {
             handle_parent();
-            rec.dst = exportLight(obj);
+            rec.dst = exportLight(obj, manager);
         }
         else if (!tip && parent)
             handle_transform();
@@ -474,7 +473,7 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
     {
         if (get_instance_collection(obj) || (!tip && parent)) {
             handle_parent();
-            rec.dst = exportTransform(obj);
+            rec.dst = exportTransform(obj, manager);
         }
         break;
     }
@@ -486,51 +485,57 @@ ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, boo
             ctx.group_host = obj;
             ctx.dst = rec.dst;
 
-            exportDupliGroup(obj, ctx);
+            exportDupliGroup(obj, ctx, manager);
         }
     }
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportTransform(const Object *src)
+ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, bool tip)
+{
+    return exportObject(obj, parent, m_entity_manager, tip);
+}
+
+ms::TransformPtr msblenContext::exportTransform(const Object *src, ms::TransformManager& manager)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
-    m_entity_manager.add(ret);
+    manager.add(ret);
+
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportPose(const Object *armature, bPoseChannel *src)
+ms::TransformPtr msblenContext::exportPose(const Object *armature, bPoseChannel *src, ms::TransformManager& manager)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(armature, src->bone);
     extractTransformData(src, dst.position, dst.rotation, dst.scale);
-    m_entity_manager.add(ret);
+    manager.add(ret);
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportArmature(const Object *src)
+ms::TransformPtr msblenContext::exportArmature(const Object *src, ms::TransformManager& manager)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
-    m_entity_manager.add(ret);
+    manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
         struct Bone* bone = pose->bone;
         std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = m_bones[bone];
-        dst = exportPose(src, pose);
+        dst = exportPose(src, pose, manager);
     }
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupContext& ctx)
+ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupContext& ctx, ms::TransformManager& manager)
 {
-    msblenContext::ObjectRecord& rec = touchRecord(src);
+    msblenContext::ObjectRecord& rec = touchRecord(manager, src);
     if (!rec.dst)
         return nullptr;
 
@@ -555,14 +560,14 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
-            auto do_merge = [this, dst, &dst_mesh, &src_mesh]() {
+            auto do_merge = [this, dst, &dst_mesh, &src_mesh, &manager]() {
                 dst_mesh.merge(src_mesh);
                 if (m_settings.ExportSceneCache)
                     dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
-                m_entity_manager.add(dst);
+                manager.add(dst);
             };
             if (m_settings.multithreaded)
                 // deferred to execute after extracting src mesh data is completed
@@ -574,17 +579,17 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
             dst = ms::Transform::create();
             assign_base_params();
             dst->reference = local_path;
-            m_entity_manager.add(dst);
+            manager.add(dst);
         }
     }
     else {
         dst = std::static_pointer_cast<ms::Transform>(rec.dst->clone());
         assign_base_params();
-        m_entity_manager.add(dst);
+        manager.add(dst);
     }
 
     each_child(src, [&](Object *child) {
-        exportReference(child, ctx);
+        exportReference(child, ctx, manager);
     });
 
     if (get_instance_collection(src)) {
@@ -592,12 +597,12 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
         ctx2.group_host = src;
         ctx2.dst = dst;
 
-        exportDupliGroup(src, ctx2);
+        exportDupliGroup(src, ctx2, manager);
     }
     return dst;
 }
 
-ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliGroupContext& ctx)
+ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliGroupContext& ctx, ms::TransformManager& manager)
 {
     Collection* group = get_instance_collection(src);
     if (!group)
@@ -613,7 +618,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = m_settings.BakeTransform ? mu::float3::zero() : offset_pos;
     dst->world_matrix = mu::translate(offset_pos) * ctx.dst->world_matrix;
-    m_entity_manager.add(dst);
+    manager.add(dst);
 
     DupliGroupContext ctx2;
     ctx2.group_host = src;
@@ -625,35 +630,35 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
             const bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
         }
-        exportReference(obj, ctx2);
+        exportReference(obj, ctx2, manager);
     }
 
     return dst;
 }
 
-ms::CameraPtr msblenContext::exportCamera(const Object *src)
+ms::CameraPtr msblenContext::exportCamera(const Object *src, ms::TransformManager& manager)
 {
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
-    m_entity_manager.add(ret);
+    manager.add(ret);
     return ret;
 }
 
-ms::LightPtr msblenContext::exportLight(const Object *src)
+ms::LightPtr msblenContext::exportLight(const Object *src, ms::TransformManager& manager)
 {
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
-    m_entity_manager.add(ret);
+    manager.add(ret);
     return ret;
 }
 
-ms::MeshPtr msblenContext::exportMesh(const Object *src)
+ms::MeshPtr msblenContext::exportMesh(const Object *src, ms::TransformManager& manager)
 {
     // ignore particles
     if (//FindModifier(src, eModifierType_ParticleSystem) ||
@@ -713,10 +718,10 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src)
     }
 
     if (data) {
-        auto task = [this, ret, src, data]() {
+        auto task = [this, ret, src, data, &manager]() {
             auto& dst = *ret;
             doExtractMeshData(dst, src, data, dst.world_matrix);
-            m_entity_manager.add(ret);
+            manager.add(ret);
         };
 
         if (m_settings.multithreaded)
@@ -1105,7 +1110,11 @@ ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
     return it != m_bones.end() ? it->second : nullptr;
 }
 
-msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const std::string& base_path, bool children)
+msblenContext::ObjectRecord& msblenContext::touchRecord(const Object* obj, const std::string& base_path, bool children) {
+    return touchRecord(m_entity_manager, obj, base_path, children);
+}
+
+msblenContext::ObjectRecord& msblenContext::touchRecord(ms::TransformManager& manager, const Object *obj, const std::string& base_path, bool children)
 {
     std::map<void*, ObjectRecord>::mapped_type& rec = m_obj_records[obj];
     if (rec.touched && base_path.empty())
@@ -1119,32 +1128,32 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const
         rec.path = local_path;
     }
     std::string path = base_path + local_path;
-    m_entity_manager.touch(path);
+    manager.touch(path);
 
     // trace bones
     if (is_armature(obj)) {
         blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
         for (struct bPoseChannel* pose : poses) {
             m_obj_records[pose->bone].touched = true;
-            m_entity_manager.touch(base_path + get_path(obj, pose->bone));
+            manager.touch(base_path + get_path(obj, pose->bone));
         }
     }
 
     // care children
     if (children) {
         each_child(obj, [&](Object *child) {
-            touchRecord(child, base_path, true);
+            touchRecord(manager, child, base_path, true);
         });
     }
 
     // trace dupli group
     if (Collection* group = get_instance_collection(obj)) {
         const std::string group_path = path + '/' + (group->id.name + 2);
-        m_entity_manager.touch(group_path);
+        manager.touch(group_path);
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
         for (auto go : gobjects)
-            touchRecord(go->ob, group_path, true);
+            touchRecord(manager, go->ob, group_path, true);
     }
     return rec;
 }
@@ -1440,8 +1449,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         m_instances_manager.setAlwaysMarkDirty(true);
 
         auto instancesHandler = std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2);
-        auto instancesWithMeshHandler = std::bind(&msblenContext::exportInstancesWithMesh, this, std::placeholders::_1, std::placeholders::_2);
-        blender::GeometryNodesUtils::foreach_instance(instancesHandler, instancesWithMeshHandler);
+        blender::GeometryNodesUtils::foreach_instance(instancesHandler);
 
         m_geometryNodeUtils.setInstancesDirty(false);
     }
@@ -1663,6 +1671,7 @@ void msblenContext::WaitAndKickAsyncExport()
             ms::ScaleConverter cv(scale_factor);
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.transforms) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
+            for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.instanceMeshes) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
         }
     };
@@ -1694,64 +1703,19 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 /// Geometry Nodes Blender Context Functionality ///
 #if BLENDER_VERSION >= 300
-void msblenContext::doExtactMeshDataWithoutObject(ms::MeshPtr msMesh, Mesh* mesh)
-{
-    BlenderSyncSettings meshExtractionSettings;
-    meshExtractionSettings.sync_meshes = true;
-    meshExtractionSettings.sync_normals = true;
-    meshExtractionSettings.sync_uvs = true;
-    meshExtractionSettings.sync_colors = true;
-    meshExtractionSettings.sync_bones = false;
 
-    auto path = std::string(mesh->id.name);
-    path += std::to_string(mesh->id.session_uuid);
+void msblenContext::exportInstances(Object* object, SharedVector<mu::float4x4> mat) {
 
+    exportObject(object, false, m_instances_manager);
 
-    doExtractNonEditMeshData(*(msMesh), nullptr, mesh, meshExtractionSettings);
-
-    if (msMesh->normals.empty())
-        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
-    if (msMesh->tangents.empty())
-        msMesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
-
-    msMesh->path = path;
-    msMesh->world_matrix = mu::float4x4::identity();
-    msMesh->local_matrix = mu::float4x4::identity();
-    msMesh->visibility.active = false;
-
-    msMesh->refine_settings.local2world = m_geometryNodeUtils.blenderToUnityWorldMatrixMesh();
-    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_LOCAL2WORLD, true);
-    msMesh->refine_settings.flags.Set(ms::MeshRefineFlagsBit::MESH_REFINE_FLAG_FLIP_FACES, true);
-
-    msMesh->refine();
-}
-
-void msblenContext::exportInstances(std::string str, SharedVector<mu::float4x4> mat) {
     auto info = ms::InstanceInfo::create();
-    info->path = str;
+    info->path = get_path(object);
     info->transforms = std::move(mat);
     info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
 
     // If an object that is added has been marked for deletion
     // it will be removed from the deletion list
     m_instances_manager.add(info);
-}
-
-void msblenContext::exportInstancesWithMesh(Mesh* mesh, SharedVector<mu::float4x4> mat)
-{
-    auto msMesh = ms::Mesh::create();
-
-    doExtactMeshDataWithoutObject(msMesh, mesh);
-
-    auto info = ms::InstanceInfo::create();
-    info->type = ms::InstanceInfo::ReferenceType::MESH_PATH;
-    info->path = msMesh->path;
-    info->transforms = std::move(mat);
-
-    // If an object that is added has been marked for deletion
-    // it will be removed from the deletion list
-    m_instances_manager.add(info);
-    m_instances_manager.add(msMesh);
 }
 #endif
 

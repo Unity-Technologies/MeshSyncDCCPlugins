@@ -49,14 +49,8 @@ namespace ms {
     }
 
     void InstancesManager::add(TransformPtr mesh) {
-        
-        auto path = mesh->path;
-        auto it = std::find_if(m_deleted_meshes.begin(), m_deleted_meshes.end(), [&path](Identifier& v) { return v.name == path; });
-        if (it != m_deleted_meshes.end()) {
-            m_deleted_meshes.erase(it);
-        }
 
-        auto& rec = m_records[path];
+        auto& rec = lockAndGet(mesh->path);
 
         if (m_always_mark_dirty  || rec.mesh == nullptr || rec.mesh->hash() != mesh->hash()) {
             rec.dirtyMesh = true;
@@ -65,16 +59,11 @@ namespace ms {
         rec.mesh = mesh;
     }
 
+    
+
     void InstancesManager::add(InstanceInfoPtr info)
     {
-        auto path = info->path;
-        
-        auto it = std::find_if(m_deleted_instanceInfo.begin(), m_deleted_instanceInfo.end(), [&path](Identifier& v) { return v.name == path; });
-        if (it != m_deleted_instanceInfo.end()) {
-            m_deleted_instanceInfo.erase(it);
-        }
-
-        auto& rec = m_records[path];
+        auto& rec = lockAndGet(info->path);
 
         //TODO implement hash for InstanceInfo and check
         if (m_always_mark_dirty || rec.instances == nullptr) {
@@ -102,5 +91,23 @@ namespace ms {
 
     void InstancesManager::setAlwaysMarkDirty(bool alwaysDirty) {
         m_always_mark_dirty = alwaysDirty;
+    }
+
+    InstancesManager::Record& InstancesManager::lockAndGet(const std::string& path)
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (!m_deleted_meshes.empty()) {
+            auto it = std::find_if(m_deleted_meshes.begin(), m_deleted_meshes.end(), [&path](Identifier& v) { return v.name == path; });
+            if (it != m_deleted_meshes.end())
+                m_deleted_meshes.erase(it);
+        }
+
+        if (!m_deleted_instanceInfo.empty()) {
+            auto it = std::find_if(m_deleted_instanceInfo.begin(), m_deleted_instanceInfo.end(), [&path](Identifier& v) { return v.name == path; });
+            if (it != m_deleted_instanceInfo.end())
+                m_deleted_instanceInfo.erase(it);
+        }
+
+        return m_records[path];
     }
 }

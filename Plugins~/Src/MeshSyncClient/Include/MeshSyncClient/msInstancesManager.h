@@ -4,6 +4,7 @@
 #include "MeshSync/SceneGraph/msIdentifier.h"
 #include<map>
 #include <unordered_map>
+#include "msTransformManager.h"
 
 #ifndef msRuntime
 
@@ -11,7 +12,7 @@ msDeclClassPtr(InstanceInfo)
 
 namespace ms {
 
-    class InstancesManager
+    class InstancesManager : public TransformManager
     {
     public:
         std::vector<TransformPtr> getDirtyMeshes();
@@ -23,22 +24,28 @@ namespace ms {
         void add(TransformPtr mesh);
         void clear();
         void deleteAll();
+        void touch(const std::string& path) { ; }
 
         void setAlwaysMarkDirty(bool alwaysDirty);
 
     private:
+
         struct Record
         {
             bool dirtyInstances = false;
             bool dirtyMesh = false;
-            InstanceInfoPtr instances;
-            TransformPtr mesh;
+            InstanceInfoPtr instances = nullptr;
+            TransformPtr mesh = nullptr;
         };
 
         std::map<std::string, Record> m_records;
         std::vector<Identifier> m_deleted_instanceInfo;
         std::vector<Identifier> m_deleted_meshes;
         bool m_always_mark_dirty;
+
+        std::mutex m_mutex;
+
+        Record& lockAndGet(const std::string& path);
     };
 
 

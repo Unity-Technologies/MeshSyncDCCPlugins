@@ -22,10 +22,13 @@
 #include "msblenGeometryNodes.h"
 
 #include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msTransformManager.h"
 
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodes.h>
 #endif
+#include <MeshSyncClient/msEntityManager.h>
+#include <MeshSyncClient/msTransformManager.h>
 
 class msblenContext;
 
@@ -130,14 +133,15 @@ private:
 
 
     ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
-    ms::TransformPtr exportTransform(const Object *obj);
-    ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(const Object *obj);
-    ms::TransformPtr exportReference(Object *obj, const DupliGroupContext& ctx);
-    ms::TransformPtr exportDupliGroup(const Object *obj, const DupliGroupContext& ctx);
-    ms::CameraPtr exportCamera(const Object *obj);
-    ms::LightPtr exportLight(const Object *obj);
-    ms::MeshPtr exportMesh(const Object *obj);
+    ms::TransformPtr exportObject(const Object* obj, bool parent, ms::TransformManager& manager, bool tip = true);
+    ms::TransformPtr exportTransform(const Object *obj, ms::TransformManager& manager);
+    ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj, ms::TransformManager& manager);
+    ms::TransformPtr exportArmature(const Object *obj, ms::TransformManager& manager);
+    ms::TransformPtr exportReference(Object *obj, const DupliGroupContext& ctx, ms::TransformManager& manager);
+    ms::TransformPtr exportDupliGroup(const Object *obj, const DupliGroupContext& ctx, ms::TransformManager& manager);
+    ms::CameraPtr exportCamera(const Object *obj, ms::TransformManager& manager);
+    ms::LightPtr exportLight(const Object *obj, ms::TransformManager& manager);
+    ms::MeshPtr exportMesh(const Object *obj, ms::TransformManager& manager);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
@@ -164,6 +168,7 @@ private:
 
     ms::TransformPtr findBone(Object *armature, Bone *bone);
     ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
+    ObjectRecord& touchRecord(ms::TransformManager& manager, const Object* obj, const std::string& base_path = "", bool children = false);
     void eraseStaleObjects();
 
     void exportAnimation(Object *obj, bool force, const std::string& base_path = "");
@@ -177,9 +182,7 @@ private:
     void WaitAndKickAsyncExport();
 
 #if BLENDER_VERSION >= 300
-    void doExtactMeshDataWithoutObject(ms::MeshPtr, Mesh*);
-    void exportInstances(std::string, SharedVector<mu::float4x4>);
-    void exportInstancesWithMesh(Mesh* mesh, SharedVector<mu::float4x4>);
+    void exportInstances(Object* object, SharedVector<mu::float4x4>);
 #endif
 
 private:
