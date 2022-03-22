@@ -1711,10 +1711,7 @@ void msblenContext::exportInstances(Object* object, SharedVector<mu::float4x4> m
     auto info = ms::InstanceInfo::create();
     info->path = get_path(object);
     info->transforms = std::move(mat);
-    info->type = ms::InstanceInfo::ReferenceType::ENTITY_PATH;
 
-    // If an object that is added has been marked for deletion
-    // it will be removed from the deletion list
     m_instances_manager.add(info);
 }
 #endif
