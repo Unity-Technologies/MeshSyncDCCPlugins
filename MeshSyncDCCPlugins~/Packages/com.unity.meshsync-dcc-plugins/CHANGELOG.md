@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.0-preview] - 2022-03-18
+
+### Added
+* blender: add support for Blender 3.1 
+
+### Changed
+* blender: use the appropriate Python version for building different versions of Blender plugins
+* chore: update code to adhere to MeshSync@0.12.x-preview
+
+### Fixed
+* blender: fix auto sync status when file is loaded 
+
 ## [0.11.0-preview] - 2022-02-08
 
 ### Added
