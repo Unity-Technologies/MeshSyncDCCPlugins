@@ -10,7 +10,7 @@ namespace ms {
         for (auto& p : m_records) {
             Record& r = p.second;
             if (r.dirtyMesh) {
-                ret.push_back(r.mesh);
+                ret.push_back(r.entity);
             }
         }
         return ret;
@@ -27,13 +27,8 @@ namespace ms {
         return ret;
     }
 
-    vector<Identifier>& InstancesManager::getDeletedInstanceInfos()
-    {
-        return m_deleted_instanceInfo;
-    }
-
-    vector<Identifier>& InstancesManager::getDeletedMeshes() {
-        return m_deleted_meshes;
+    vector<Identifier>& InstancesManager::getDeleted() {
+        return m_deleted;
     }
 
     void InstancesManager::clearDirtyFlags()
@@ -42,21 +37,22 @@ namespace ms {
             Record& r = p.second;
             r.dirtyInstances = false;
             r.dirtyMesh = false;
+            r.updated = false;
         }
 
-        m_deleted_instanceInfo.clear();
-        m_deleted_meshes.clear();
+        m_deleted.clear();
     }
 
     void InstancesManager::add(TransformPtr mesh) {
 
         auto& rec = lockAndGet(mesh->path);
 
-        if (m_always_mark_dirty  || rec.mesh == nullptr || rec.mesh->hash() != mesh->hash()) {
+        if (m_always_mark_dirty  || rec.entity == nullptr || rec.entity->hash() != mesh->hash()) {
             rec.dirtyMesh = true;
         }
 
-        rec.mesh = mesh;
+        rec.updated = true;
+        rec.entity = mesh;
     }
 
     
@@ -76,16 +72,24 @@ namespace ms {
     void InstancesManager::clear()
     {
         m_records.clear();
-        m_deleted_instanceInfo.clear();
     }
 
-    void InstancesManager::deleteAll()
+    void InstancesManager::touch(const std::string& path)
     {
-        for (auto& record : m_records) {
-            m_deleted_instanceInfo.push_back(record.second.instances->getIdentifier());
-            if (record.second.mesh != nullptr) {
-                m_deleted_meshes.push_back(record.second.mesh->getIdentifier());
+        auto it = m_records.find(path);
+        if (it != m_records.end())
+            it->second.updated = true;
+    }
+
+    void InstancesManager::eraseStaleEntities()
+    {
+        for (auto it = m_records.begin(); it != m_records.end(); ) {
+            if (!it->second.updated) {
+                m_deleted.push_back(it->second.entity->getIdentifier());
+                m_records.erase(it++);
             }
+            else
+                ++it;
         }
     }
 
@@ -96,16 +100,10 @@ namespace ms {
     InstancesManager::Record& InstancesManager::lockAndGet(const std::string& path)
     {
         std::unique_lock<std::mutex> lock(m_mutex);
-        if (!m_deleted_meshes.empty()) {
-            auto it = std::find_if(m_deleted_meshes.begin(), m_deleted_meshes.end(), [&path](Identifier& v) { return v.name == path; });
-            if (it != m_deleted_meshes.end())
-                m_deleted_meshes.erase(it);
-        }
-
-        if (!m_deleted_instanceInfo.empty()) {
-            auto it = std::find_if(m_deleted_instanceInfo.begin(), m_deleted_instanceInfo.end(), [&path](Identifier& v) { return v.name == path; });
-            if (it != m_deleted_instanceInfo.end())
-                m_deleted_instanceInfo.erase(it);
+        if (!m_deleted.empty()) {
+            auto it = std::find_if(m_deleted.begin(), m_deleted.end(), [&path](Identifier& v) { return v.name == path; });
+            if (it != m_deleted.end())
+                m_deleted.erase(it);
         }
 
         return m_records[path];

@@ -60,35 +60,44 @@ void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
 }
 
 
-void msblenContext::ObjectRecord::clearState()
-{
-    touched = renamed = false;
-    dst = nullptr;
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-msblenContext& msblenContext::getInstance() {
-    static msblenContext s_instance;
-    return s_instance;
+static msblenContext* s_instance = nullptr;
+
+msblenContext& msblenContext::getInstance()
+{
+    if (s_instance == nullptr) {
+        s_instance = new msblenContext();
+    }
+
+    return *s_instance;
 }
 
 void msblenContext::Destroy() {
     m_texture_manager.clear();
     m_material_manager.clear();
-    m_entity_manager.clear();
-    m_instances_manager.clear();
+
+    m_entities_state->clear();
+    m_instances_state->clear();
+
+    delete s_instance;
 }
 
 
 
 msblenContext::msblenContext()
 {
+    m_entities_state = new msblenContextState(m_entity_manager);
+    m_instances_state = new  msblenContextState(m_instances_manager);
+
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
 }
 
 msblenContext::~msblenContext()
 {
+    delete m_entities_state;
+    delete m_instances_state;
     // no wait() because it can cause deadlock...
 }
 
@@ -393,22 +402,26 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
+ms::TransformPtr msblenContext::exportObject(
+    msblenContextState& state,
+    const Object* obj, 
+    bool parent,
+    bool tip) {
 
-ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::TransformManager& manager, bool tip) {
     if (!obj)
         return nullptr;
 
-    msblenContext::ObjectRecord& rec = touchRecord(manager, obj);
+    msblenContextState::ObjectRecord& rec = state.touchRecord(obj);
     if (rec.dst)
         return rec.dst; // already exported
 
     auto handle_parent = [&]() {
         if (parent)
-            exportObject(obj->parent, parent, manager, false);
+            exportObject(state, obj->parent, parent, false);
     };
     auto handle_transform = [&]() {
         handle_parent();
-        rec.dst = exportTransform(obj, manager);
+        rec.dst = exportTransform(state, obj);
     };
 
     switch (obj->type) {
@@ -416,7 +429,7 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (!tip || (!m_settings.BakeModifiers && m_settings.sync_bones)) {
             handle_parent();
-            rec.dst = exportArmature(obj, manager);
+            rec.dst = exportArmature(state, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -426,11 +439,11 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
             if (auto* arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
-                exportObject(arm_mod->object, parent, manager);
+                exportObject(state, arm_mod->object, parent);
         }
         if (m_settings.sync_meshes || (!m_settings.BakeModifiers && m_settings.sync_blendshapes)) {
             handle_parent();
-            rec.dst = exportMesh(obj, manager);
+            rec.dst = exportMesh(state, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -443,7 +456,7 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (m_settings.sync_meshes && m_settings.curves_as_mesh) {
             handle_parent();
-            rec.dst = exportMesh(obj, manager);
+            rec.dst = exportMesh(state, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -453,7 +466,7 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (m_settings.sync_cameras) {
             handle_parent();
-            rec.dst = exportCamera(obj, manager);
+            rec.dst = exportCamera(state, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -463,7 +476,7 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (m_settings.sync_lights) {
             handle_parent();
-            rec.dst = exportLight(obj, manager);
+            rec.dst = exportLight(state, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -473,7 +486,7 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
     {
         if (get_instance_collection(obj) || (!tip && parent)) {
             handle_parent();
-            rec.dst = exportTransform(obj, manager);
+            rec.dst = exportTransform(state, obj);
         }
         break;
     }
@@ -485,57 +498,52 @@ ms::TransformPtr msblenContext::exportObject(const Object* obj, bool parent,ms::
             ctx.group_host = obj;
             ctx.dst = rec.dst;
 
-            exportDupliGroup(obj, ctx, manager);
+            exportDupliGroup(state, obj, ctx);
         }
     }
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportObject(const Object *obj, bool parent, bool tip)
-{
-    return exportObject(obj, parent, m_entity_manager, tip);
-}
-
-ms::TransformPtr msblenContext::exportTransform(const Object *src, ms::TransformManager& manager)
+ms::TransformPtr msblenContext::exportTransform(msblenContextState& state, const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
-    manager.add(ret);
+    state.manager.add(ret);
 
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportPose(const Object *armature, bPoseChannel *src, ms::TransformManager& manager)
+ms::TransformPtr msblenContext::exportPose(msblenContextState& state, const Object *armature, bPoseChannel *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(armature, src->bone);
     extractTransformData(src, dst.position, dst.rotation, dst.scale);
-    manager.add(ret);
+    state.manager.add(ret);
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportArmature(const Object *src, ms::TransformManager& manager)
+ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
-    manager.add(ret);
+    state.manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
         struct Bone* bone = pose->bone;
-        std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = m_bones[bone];
-        dst = exportPose(src, pose, manager);
+        std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = state.bones[bone];
+        dst = exportPose(state, src, pose);
     }
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupContext& ctx, ms::TransformManager& manager)
+ms::TransformPtr msblenContext::exportReference(msblenContextState& state, Object *src, const DupliGroupContext& ctx)
 {
-    msblenContext::ObjectRecord& rec = touchRecord(manager, src);
+    auto& rec = state.touchRecord(src);
     if (!rec.dst)
         return nullptr;
 
@@ -560,6 +568,7 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
+            auto& manager = state.manager;
             auto do_merge = [this, dst, &dst_mesh, &src_mesh, &manager]() {
                 dst_mesh.merge(src_mesh);
                 if (m_settings.ExportSceneCache)
@@ -579,17 +588,17 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
             dst = ms::Transform::create();
             assign_base_params();
             dst->reference = local_path;
-            manager.add(dst);
+            state.manager.add(dst);
         }
     }
     else {
         dst = std::static_pointer_cast<ms::Transform>(rec.dst->clone());
         assign_base_params();
-        manager.add(dst);
+        state.manager.add(dst);
     }
 
     each_child(src, [&](Object *child) {
-        exportReference(child, ctx, manager);
+        exportReference(state, child, ctx);
     });
 
     if (get_instance_collection(src)) {
@@ -597,12 +606,12 @@ ms::TransformPtr msblenContext::exportReference(Object *src, const DupliGroupCon
         ctx2.group_host = src;
         ctx2.dst = dst;
 
-        exportDupliGroup(src, ctx2, manager);
+        exportDupliGroup(state, src, ctx2);
     }
     return dst;
 }
 
-ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliGroupContext& ctx, ms::TransformManager& manager)
+ms::TransformPtr msblenContext::exportDupliGroup(msblenContextState& state, const Object *src, const DupliGroupContext& ctx)
 {
     Collection* group = get_instance_collection(src);
     if (!group)
@@ -618,7 +627,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = m_settings.BakeTransform ? mu::float3::zero() : offset_pos;
     dst->world_matrix = mu::translate(offset_pos) * ctx.dst->world_matrix;
-    manager.add(dst);
+    state.manager.add(dst);
 
     DupliGroupContext ctx2;
     ctx2.group_host = src;
@@ -626,39 +635,39 @@ ms::TransformPtr msblenContext::exportDupliGroup(const Object *src, const DupliG
     auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
     for (auto go : gobjects) {
         auto obj = go->ob;
-        if (auto t = exportObject(obj, true, false)) {
+        if (auto t = exportObject(state, obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
         }
-        exportReference(obj, ctx2, manager);
+        exportReference(state, obj, ctx2);
     }
 
     return dst;
 }
 
-ms::CameraPtr msblenContext::exportCamera(const Object *src, ms::TransformManager& manager)
+ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, const Object *src)
 {
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
-    manager.add(ret);
+    state.manager.add(ret);
     return ret;
 }
 
-ms::LightPtr msblenContext::exportLight(const Object *src, ms::TransformManager& manager)
+ms::LightPtr msblenContext::exportLight(msblenContextState& state, const Object *src)
 {
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
     dst.path = get_path(src);
     extractTransformData(src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
-    manager.add(ret);
+    state.manager.add(ret);
     return ret;
 }
 
-ms::MeshPtr msblenContext::exportMesh(const Object *src, ms::TransformManager& manager)
+ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, const Object *src)
 {
     // ignore particles
     if (//FindModifier(src, eModifierType_ParticleSystem) ||
@@ -678,7 +687,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src, ms::TransformManager& m
             struct BMesh* bm = edit_mesh->bm;
             if (bm->elem_table_dirty) {
                 // mesh is editing and dirty. just add to pending list
-                m_pending.insert(src);
+                state.pending.insert(src);
                 return nullptr;
             }
         }
@@ -718,10 +727,10 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src, ms::TransformManager& m
     }
 
     if (data) {
-        auto task = [this, ret, src, data, &manager]() {
+        auto task = [this, ret, src, data, &state]() {
             auto& dst = *ret;
-            doExtractMeshData(dst, src, data, dst.world_matrix);
-            manager.add(ret);
+            doExtractMeshData(state, dst, src, data, dst.world_matrix);
+            state.manager.add(ret);
         };
 
         if (m_settings.multithreaded)
@@ -732,7 +741,7 @@ ms::MeshPtr msblenContext::exportMesh(const Object *src, ms::TransformManager& m
     return ret;
 }
 
-void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
+void msblenContext::doExtractMeshData(msblenContextState& state, ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world)
 {
     if (m_settings.sync_meshes) {
         bl::BObject bobj(obj);
@@ -742,10 +751,10 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *da
         // on edit mode, editing is applied to EditMesh and base Mesh is intact. so get data from EditMesh on edit mode.
         // todo: Blender 2.8 displays transparent final mesh on edit mode. extract data from it.
         if (is_editing) {
-            doExtractEditMeshData(dst, obj, data);
+            doExtractEditMeshData(state, dst, obj, data);
         }
         else {
-            doExtractNonEditMeshData(dst, obj, data);
+            doExtractNonEditMeshData(state, dst, obj, data);
         }
 
         if (!m_settings.BakeModifiers&& !is_editing) {
@@ -769,7 +778,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *da
     }
     else {
         if (!m_settings.BakeModifiers&& m_settings.sync_blendshapes) {
-            doExtractBlendshapeWeights(dst, obj, data);
+            doExtractBlendshapeWeights(state, dst, obj, data);
         }
     }
 
@@ -781,7 +790,7 @@ void msblenContext::doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *da
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, m_settings.make_double_sided);
 }
 
-void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj, Mesh *data)
+void msblenContext::doExtractBlendshapeWeights(msblenContextState& state, ms::Mesh& dst, const Object *obj, Mesh *data)
 {
     struct Mesh& mesh = *data;
     if (!m_settings.BakeModifiers) {
@@ -803,11 +812,11 @@ void msblenContext::doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj,
 }
 
 
-void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object* obj, Mesh* data) {
-    doExtractNonEditMeshData(dst, obj, data, m_settings);
+void msblenContext::doExtractNonEditMeshData(msblenContextState& state, ms::Mesh& dst, const Object* obj, Mesh* data) {
+    doExtractNonEditMeshData(state, dst, obj, data, m_settings);
 }
 
-void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, BlenderSyncSettings& settings)
+void msblenContext::doExtractNonEditMeshData(msblenContextState& state, ms::Mesh& dst, const Object *obj, Mesh *data, BlenderSyncSettings& settings)
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
@@ -912,7 +921,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
                     bool found = false;
                     Bone* bone = find_bone(arm_obj, g->name);
                     if (bone) {
-                        ms::TransformPtr trans = findBone(arm_obj, bone);
+                        ms::TransformPtr trans = findBone(state, arm_obj, bone);
                         if (trans) {
                             found = true;
                             ms::BoneDataPtr b = dst.addBone(trans->path);
@@ -1016,7 +1025,7 @@ void msblenContext::doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, M
 #endif
 }
 
-void msblenContext::doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data)
+void msblenContext::doExtractEditMeshData(msblenContextState& state, ms::Mesh& dst, const Object *obj, Mesh *data)
 {
     bl::BObject bobj(obj);
     bl::BMesh bmesh(data);
@@ -1103,71 +1112,10 @@ void msblenContext::doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh
     }
 }
 
-
-ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
+ms::TransformPtr msblenContext::findBone(msblenContextState& state, Object *armature, Bone *bone)
 {
-    std::map<struct Bone*, std::shared_ptr<ms::Transform>>::iterator it = m_bones.find(bone);
-    return it != m_bones.end() ? it->second : nullptr;
-}
-
-msblenContext::ObjectRecord& msblenContext::touchRecord(const Object* obj, const std::string& base_path, bool children) {
-    return touchRecord(m_entity_manager, obj, base_path, children);
-}
-
-msblenContext::ObjectRecord& msblenContext::touchRecord(ms::TransformManager& manager, const Object *obj, const std::string& base_path, bool children)
-{
-    std::map<void*, ObjectRecord>::mapped_type& rec = m_obj_records[obj];
-    if (rec.touched && base_path.empty())
-        return rec; // already touched
-
-    rec.touched = true;
-
-    std::string local_path = get_path(obj);
-    if (local_path != rec.path) {
-        rec.renamed = true;
-        rec.path = local_path;
-    }
-    std::string path = base_path + local_path;
-    manager.touch(path);
-
-    // trace bones
-    if (is_armature(obj)) {
-        blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
-        for (struct bPoseChannel* pose : poses) {
-            m_obj_records[pose->bone].touched = true;
-            manager.touch(base_path + get_path(obj, pose->bone));
-        }
-    }
-
-    // care children
-    if (children) {
-        each_child(obj, [&](Object *child) {
-            touchRecord(manager, child, base_path, true);
-        });
-    }
-
-    // trace dupli group
-    if (Collection* group = get_instance_collection(obj)) {
-        const std::string group_path = path + '/' + (group->id.name + 2);
-        manager.touch(group_path);
-
-        auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
-        for (auto go : gobjects)
-            touchRecord(manager, go->ob, group_path, true);
-    }
-    return rec;
-}
-
-
-void msblenContext::eraseStaleObjects()
-{
-    for (auto i = m_obj_records.begin(); i != m_obj_records.end(); /**/) {
-        if (!i->second.touched)
-            m_obj_records.erase(i++);
-        else
-            ++i;
-    }
-    m_entity_manager.eraseStaleEntities();
+    std::map<struct Bone*, std::shared_ptr<ms::Transform>>::iterator it = state.bones.find(bone);
+    return it != state.bones.end() ? it->second : nullptr;
 }
 
 
@@ -1413,7 +1361,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
-    m_instances_manager.setAlwaysMarkDirty(dirty_all);
+    m_instances_state->manager.setAlwaysMarkDirty(dirty_all);
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1427,33 +1375,36 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(obj, false);
+                exportObject(*m_entities_state, obj, false);
             else
-                touchRecord(obj); // this cannot be covered by getNodes()
+                m_entities_state->touchRecord(obj); // this cannot be covered by getNodes()                
         });
-        eraseStaleObjects();
     }
     else {
         for(std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(obj, true);
-        eraseStaleObjects();
+            exportObject(*m_entities_state, obj, true);
     }
 
 #if BLENDER_VERSION >= 300
     if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
 
-        // Assume everything needs to be deleted
-        m_instances_manager.deleteAll();
-
         // Assume everything is now dirty
-        m_instances_manager.setAlwaysMarkDirty(true);
+        m_instances_state->manager.setAlwaysMarkDirty(true);
 
         auto instancesHandler = std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2);
         blender::GeometryNodesUtils::foreach_instance(instancesHandler);
 
         m_geometryNodeUtils.setInstancesDirty(false);
+
+        m_asyncTasksController.Wait();
+
+        m_instances_state->eraseStaleObjects();
     }
+#else
+    m_asyncTasksController.Wait();
 #endif
+
+    m_entities_state->eraseStaleObjects();
 
     WaitAndKickAsyncExport();
     return true;
@@ -1603,7 +1554,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
     for (const std::vector<Object*>::value_type& n : nodes)
-        exportObject(n, true);
+        exportObject(*m_entities_state, n, true);
 
     m_texture_manager.clearDirtyFlags();
     WaitAndKickAsyncExport();
@@ -1612,13 +1563,20 @@ void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 //----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::flushPendingList() {
-    if (!m_pending.empty() && !m_sender.isExporting()) {
-        for (auto p : m_pending)
-            exportObject(p, false);
-        m_pending.clear();
+    flushPendingList(*m_entities_state);
+    flushPendingList(*m_instances_state);
+}
+
+void msblenContext::flushPendingList(msblenContextState& state) {
+    if (!state.pending.empty() && !m_sender.isExporting()) {
+        for (auto p : state.pending)
+            exportObject(state, p, false);
+        state.pending.clear();
+
         WaitAndKickAsyncExport();
     }
 }
+
 
 void msblenContext::WaitAndKickAsyncExport()
 {
@@ -1633,9 +1591,10 @@ void msblenContext::WaitAndKickAsyncExport()
         m_meshes_to_clear.clear();
     }
 
-    for (std::map<const void*, ObjectRecord>::value_type& kvp : m_obj_records)
-        kvp.second.clearState();
-    m_bones.clear();
+    m_entities_state->clearRecordsState();
+    m_instances_state->clearRecordsState();
+
+    m_entities_state->bones.clear();
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
@@ -1658,14 +1617,14 @@ void msblenContext::WaitAndKickAsyncExport()
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
-        t.instanceInfos = m_instances_manager.getDirtyInstances();
-        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
+        t.instanceInfos = m_instances_state->GetManager<ms::InstancesManager>().getDirtyInstances();
+        t.instanceMeshes = m_instances_state->GetManager<ms::InstancesManager>().getDirtyMeshes();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
-        t.deleted_instanceInfos = m_instances_manager.getDeletedInstanceInfos();
-        t.deleted_instanceMeshes = m_instances_manager.getDeletedMeshes();
+
+        t.deleted_instances = m_instances_state->GetManager<ms::InstancesManager>().getDeleted();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1681,7 +1640,7 @@ void msblenContext::WaitAndKickAsyncExport()
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
-        m_instances_manager.clearDirtyFlags();
+        m_instances_state->GetManager<ms::InstancesManager>().clearDirtyFlags();
     };
 
     exporter->kick();
@@ -1706,13 +1665,13 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 void msblenContext::exportInstances(Object* object, SharedVector<mu::float4x4> mat) {
 
-    exportObject(object, false, m_instances_manager);
+    exportObject(*m_instances_state, object, false);
 
     auto info = ms::InstanceInfo::create();
     info->path = get_path(object);
     info->transforms = std::move(mat);
 
-    m_instances_manager.add(info);
+    m_instances_state->GetManager<ms::InstancesManager>().add(info);
 }
 #endif
 
