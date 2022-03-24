@@ -54,7 +54,7 @@ namespace blender {
     }
 
 
-    void GeometryNodesUtils::foreach_instance(std::function<void(ID*, float4x4)> handler)
+    void GeometryNodesUtils::foreach_instance(std::function<void(Object*, float4x4)> handler)
     {
 
         auto blContext = blender::BlenderPyContext::get();
@@ -97,8 +97,7 @@ namespace blender {
 
             auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
 
-            auto id = (ID*)object->data;
-            handler(id, move(unityMatrix));
+            handler(object, move(unityMatrix));
         }
 
         // Cleanup resources
@@ -107,11 +106,13 @@ namespace blender {
 
     void GeometryNodesUtils::foreach_instance(function<void(Object*, SharedVector<float4x4>)> handler) {
 
-        map<string, SharedVector<float4x4>> transformsMap;
+        map<string, Record> records;
         
-        foreach_instance([&](ID* id, float4x4 matrix) {
-            auto& rec = transformsMap[id->name];
-                rec.push_back(matrix);
+        foreach_instance([&](Object* obj, float4x4 matrix) {
+            auto id = (ID*)obj->data;
+            auto& rec = records[id->name];
+            rec.obj = obj;
+            rec.matrices.push_back(matrix);
             });
 
         auto ctx = blender::BlenderPyContext::get();
@@ -124,10 +125,18 @@ namespace blender {
 
             auto id = (ID*)obj->data;
 
-            auto result = transformsMap.find(id->name);
-            if (result != transformsMap.end()) {
-                handler(obj, std::move(result->second));
+            auto rec = records.find(id->name);
+            if (rec != records.end()) {
+                handler(obj, std::move(rec->second.matrices));
+                rec->second.handled = true;
             }
+        }
+
+        for(auto& rec : records) {
+            if (rec.second.handled)
+                continue;
+
+           // handler(rec.second.obj, std::move(rec.second.matrices));
         }
     }
 

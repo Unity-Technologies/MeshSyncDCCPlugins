@@ -28,7 +28,7 @@ namespace blender {
 		/// of the instance in the Unity3D Coordinate system
 		/// </summary>
 		/// <param name="f"></param>
-		static void foreach_instance(std::function<void (ID*, mu::float4x4)> transformHandler);
+		static void foreach_instance(std::function<void (Object*, mu::float4x4)> transformHandler);
 
 		static void foreach_instance(std::function<void(Object*, SharedVector<mu::float4x4>)> transformHandler);
 
@@ -37,6 +37,12 @@ namespace blender {
 
 	private:
 		bool m_instances_dirty;
+
+		struct Record {
+			Object* obj = nullptr;
+			SharedVector<mu::float4x4> matrices;
+			bool handled = false;
+		};
 	};
 #endif
 }
