@@ -97,7 +97,8 @@ namespace blender {
 
             auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
 
-            handler(&object->id, move(unityMatrix));
+            auto id = (ID*)object->data;
+            handler(id, move(unityMatrix));
         }
 
         // Cleanup resources
@@ -107,15 +108,23 @@ namespace blender {
     void GeometryNodesUtils::foreach_instance(function<void(Object*, SharedVector<float4x4>)> handler) {
 
         map<string, SharedVector<float4x4>> transformsMap;
+        
         foreach_instance([&](ID* id, float4x4 matrix) {
-            transformsMap[id->name].push_back(matrix);
+            auto& rec = transformsMap[id->name];
+                rec.push_back(matrix);
             });
 
         auto ctx = blender::BlenderPyContext::get();
 
         auto objects = ctx.data()->objects;
         LISTBASE_FOREACH(Object*, obj, &objects){
-            auto result = transformsMap.find(obj->id.name);
+
+            if (obj->data == nullptr)
+                continue;
+
+            auto id = (ID*)obj->data;
+
+            auto result = transformsMap.find(id->name);
             if (result != transformsMap.end()) {
                 handler(obj, std::move(result->second));
             }
