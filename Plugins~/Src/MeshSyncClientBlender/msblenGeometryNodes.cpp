@@ -54,7 +54,7 @@ namespace blender {
     }
 
 
-    void GeometryNodesUtils::foreach_instance(std::function<void(Object*, float4x4)> handler)
+    void GeometryNodesUtils::foreach_instance(std::function<void(Object*, Object* , float4x4)> handler)
     {
 
         auto blContext = blender::BlenderPyContext::get();
@@ -67,8 +67,6 @@ namespace blender {
         CollectionPropertyIterator it;
 
         blContext.object_instances_begin(&it, depsgraph);
-
-
 
         for (; it.valid; blContext.object_instances_next(&it)) {
             // Get the instance as a Pointer RNA.
@@ -96,22 +94,24 @@ namespace blender {
             blContext.world_matrix_get(&instance, &world_matrix);
 
             auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
+            auto parent = blContext.instance_parent_get(&instance);
 
-            handler(object, move(unityMatrix));
+            handler(object, parent, move(unityMatrix));
         }
 
         // Cleanup resources
         blContext.object_instances_end(&it);
     }
 
-    void GeometryNodesUtils::foreach_instance(function<void(Object*, SharedVector<float4x4>)> handler) {
+    void GeometryNodesUtils::foreach_instanced_object(function<void(Object*, Object*, SharedVector<float4x4>)> handler) {
 
         map<string, Record> records;
         
-        foreach_instance([&](Object* obj, float4x4 matrix) {
+        foreach_instance([&](Object* obj, Object* parent, float4x4 matrix) {
             auto id = (ID*)obj->data;
             auto& rec = records[id->name];
             rec.obj = obj;
+            rec.parent = parent;
             rec.matrices.push_back(matrix);
             });
 
@@ -127,7 +127,7 @@ namespace blender {
 
             auto rec = records.find(id->name);
             if (rec != records.end()) {
-                handler(obj, std::move(rec->second.matrices));
+                handler(obj, rec->second.parent, std::move(rec->second.matrices));
                 rec->second.handled = true;
             }
         }
