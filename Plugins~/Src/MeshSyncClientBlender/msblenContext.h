@@ -159,7 +159,7 @@ private:
     void WaitAndKickAsyncExport();
 
 #if BLENDER_VERSION >= 300
-    void exportInstances(Object* object, SharedVector<mu::float4x4>);
+    void exportInstances(Object* object, Object* parent, SharedVector<mu::float4x4>);
 #endif
 
 private:

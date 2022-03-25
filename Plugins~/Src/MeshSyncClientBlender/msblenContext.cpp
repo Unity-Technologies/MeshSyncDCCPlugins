@@ -1391,8 +1391,9 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         // Assume everything is now dirty
         m_instances_state->manager.setAlwaysMarkDirty(true);
 
-        auto instancesHandler = std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2);
-        blender::GeometryNodesUtils::foreach_instance(instancesHandler);
+        auto instancesHandler = 
+            std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+        blender::GeometryNodesUtils::foreach_instanced_object(instancesHandler);
 
         m_geometryNodeUtils.setInstancesDirty(false);
 
@@ -1400,10 +1401,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
         m_instances_state->eraseStaleObjects();
     }
-#else
-    m_asyncTasksController.Wait();
 #endif
-
+    m_asyncTasksController.Wait();
     m_entities_state->eraseStaleObjects();
 
     WaitAndKickAsyncExport();
@@ -1663,12 +1662,13 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 /// Geometry Nodes Blender Context Functionality ///
 #if BLENDER_VERSION >= 300
 
-void msblenContext::exportInstances(Object* object, SharedVector<mu::float4x4> mat) {
+void msblenContext::exportInstances(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat) {
 
-    exportObject(*m_instances_state, object, false);
+    exportObject(*m_instances_state, instancedObject, false);
 
     auto info = ms::InstanceInfo::create();
-    info->path = get_path(object);
+    info->path = get_path(instancedObject);
+    info->parent_path = get_path(parent);
     info->transforms = std::move(mat);
 
     m_instances_state->GetManager<ms::InstancesManager>().add(info);
