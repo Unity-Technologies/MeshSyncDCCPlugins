@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "msmaxContext.h"
+#include "MeshUtils/muMisc.h" //ToWCS()
 
 HINSTANCE g_msmax_hinstance;
 

@@ -28,19 +28,21 @@ namespace blender {
 		/// of the instance in the Unity3D Coordinate system
 		/// </summary>
 		/// <param name="f"></param>
-		static void foreach_instance(
-			std::function<void (std::string&, mu::float4x4&)> pathHandler, 
-			std::function<void(Mesh*, mu::float4x4)> meshHandler);
+		static void foreach_instance(std::function<void (Object*, mu::float4x4)> transformHandler);
 
-		static void foreach_instance(
-			std::function<void(std::string, SharedVector<mu::float4x4>)> pathHandler, 
-			std::function<void(Mesh*, SharedVector<mu::float4x4>)> meshHandler);
+		static void foreach_instance(std::function<void(Object*, SharedVector<mu::float4x4>)> transformHandler);
 
 		void setInstancesDirty(bool dirty);
 		bool getInstancesDirty();
 
 	private:
 		bool m_instances_dirty;
+
+		struct Record {
+			Object* obj = nullptr;
+			SharedVector<mu::float4x4> matrices;
+			bool handled = false;
+		};
 	};
 #endif
 }

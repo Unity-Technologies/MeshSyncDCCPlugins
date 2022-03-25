@@ -1,5 +1,6 @@
 #pragma once
 #include "MeshSync/MeshSync.h" //msDeclClassPtr
+#include "msTransformManager.h"
 
 msDeclStructPtr(Identifier)
 msDeclClassPtr(Transform)
@@ -7,7 +8,7 @@ msDeclClassPtr(Transform)
 #ifndef msRuntime
 namespace ms {
 
-class EntityManager
+class EntityManager : public TransformManager
 {
 public:
     EntityManager();

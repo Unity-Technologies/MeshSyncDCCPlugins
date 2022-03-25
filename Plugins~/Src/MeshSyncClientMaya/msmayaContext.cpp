@@ -4,10 +4,13 @@
 #include "msmayaCommand.h"
 #include <cstdarg>
 
-#include "MeshSync/SceneCache/msSceneCacheSettings.h"
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
 #include "MeshSync/SceneGraph/msAnimation.h"
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneCache/msSceneCacheWriter.h"
+
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
@@ -634,10 +637,10 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     SettingsUtility::ApplyCacheToSyncSettings(cache_settings, &m_settings);
 
     const float sampleRate = frameRate * std::max(1.0f / frameStep, 1.0f);
-    const ms::OSceneCacheSettings oscs = SettingsUtility::CreateOSceneCacheSettings(sampleRate, cache_settings);
+    const ms::SceneCacheOutputSettings oscs = SettingsUtility::CreateSceneCacheOutputSettings(sampleRate, cache_settings);
 
     const std::string destPath = SceneCacheUtility::BuildFilePath(path);
-    if (!m_cache_writer.open(destPath.c_str(), oscs)) {
+    if (!m_cache_writer.Open(destPath.c_str(), oscs)) {
         logInfo("MeshSync: Can't write scene cache to %s", destPath.c_str());
         m_settings = settings_old;
         return false;
@@ -694,7 +697,7 @@ bool msmayaContext::ExportCache(const std::string& path, const MayaCacheSettings
     logInfo("MeshSync: Finished writing scene cache to %s", destPath.c_str());
 
     m_settings = settings_old;
-    m_cache_writer.close();
+    m_cache_writer.Close();
     return true;
 }
 
@@ -771,7 +774,7 @@ void msmayaContext::WaitAndKickAsyncExport()
             sender->client_settings = m_settings.client_settings;
         }
         else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
-            writer->time = m_anim_time;
+            writer->SetTime(m_anim_time);
         }
 
         ms::SceneExporter& t = *exporter;

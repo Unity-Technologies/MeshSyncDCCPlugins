@@ -3,7 +3,7 @@
 #include "MeshSync/MeshSync.h"
 #include "MeshSync/msClient.h"
 #include "MeshSync/AsyncSceneSender.h" //AsyncSceneSender
-#include "MeshSync/SceneCache/SceneCacheWriter.h" //SceneCacheWriter
+#include "MeshSync/SceneCache/msSceneCacheWriter.h" //SceneCacheWriter
 #include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/msEntityManager.h"
