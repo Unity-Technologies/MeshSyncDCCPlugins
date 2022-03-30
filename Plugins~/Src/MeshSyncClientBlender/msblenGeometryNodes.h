@@ -63,8 +63,8 @@ namespace blender {
 			bool updated = false;
 		};
 
-		std::map<unsigned int, Record> m_records;
-		std::map<std::string, Record*> m_records_by_name;
+		std::unordered_map<unsigned int, Record> m_records;
+		std::unordered_map<std::string, Record*> m_records_by_name;
 	};
 
 
