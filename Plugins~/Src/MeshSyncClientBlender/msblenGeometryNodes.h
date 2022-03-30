@@ -15,12 +15,13 @@ namespace blender {
 	class GeometryNodesUtils
 	{
 	public:
+
+		GeometryNodesUtils();
+
         /// <summary>
         /// /// Converts the world matrix from blender to Unity coordinate system
         /// /// </summary>
-		static mu::float4x4 blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
-
-		static mu::float4x4 blenderToUnityWorldMatrixMesh();
+		mu::float4x4 blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
 
 		/// <summary>
 		/// Invokes the handler function for each instance.
@@ -50,6 +51,9 @@ namespace blender {
 
 	private:
 		bool m_instances_dirty;
+
+		mu::float4x4 m_blender_to_unity_local;
+		mu::float4x4 m_blender_to_unity_world;
 
 		struct Record {
 			Object object_copy;

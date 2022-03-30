@@ -13,14 +13,8 @@ using namespace mu;
 
 namespace blender {
 
-#if BLENDER_VERSION >= 300
-    /// <summary>
-    /// Converts the world matrix from blender to Unity coordinate systems
-    /// </summary>
-    /// <param name="blenderMatrix"></param>
-    /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
-
+    GeometryNodesUtils::GeometryNodesUtils()
+    {
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
         auto scale_z = float3::one();
@@ -29,30 +23,31 @@ namespace blender {
         auto scale_x = float3::one();
         scale_x.x = -1;
 
-        auto result =
+        m_blender_to_unity_world =
             to_mat4x4(rotation) *
-            scale44(scale_x) *
-            blenderMatrix *
+            scale44(scale_x);
+
+        m_blender_to_unity_local = 
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
             scale44(scale_z);
 
-        return result;
+
     }
 
-    mu::float4x4 GeometryNodesUtils::blenderToUnityWorldMatrixMesh()
-    {
-        auto rotation = rotate_x(90.0f * DegToRad);
-        auto scale = float3::one();
-        scale.x = -1;
+#if BLENDER_VERSION >= 300
+    /// <summary>
+    /// Converts the world matrix from blender to Unity coordinate systems
+    /// </summary>
+    /// <param name="blenderMatrix"></param>
+    /// <returns></returns>
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {            
 
-        auto result =
-            to_mat4x4(rotation)*
-            scale44(scale);
-
-        return result;
+        return 
+            m_blender_to_unity_world *
+            blenderMatrix *
+            m_blender_to_unity_local;;
     }
-
 
     void GeometryNodesUtils::foreach_instance(std::function<void(Object*, Object* , float4x4)> handler)
     {
@@ -109,6 +104,7 @@ namespace blender {
         m_records_by_name.clear();
 
         foreach_instance([&](Object* obj, Object* parent, float4x4 matrix) {
+            // Critical path, must do as few things as possible
             auto id = (ID*)obj->data;
             auto& rec = m_records[id->session_uuid];
             

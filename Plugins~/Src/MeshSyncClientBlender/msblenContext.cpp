@@ -1373,6 +1373,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             return true; // nothing to send
 
         bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1389,6 +1390,13 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 #if BLENDER_VERSION >= 300
     if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
 
+        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+
+        scene.each_objects([this](Object* obj)
+            {
+                scene_objects.insert(obj->id.name);
+            });
+
         // Assume everything is now dirty
         m_instances_state->manager.setAlwaysMarkDirty(true);
 
@@ -1398,6 +1406,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         m_geometryNodeUtils.foreach_instanced_object(instancesHandler);
 
         m_geometryNodeUtils.setInstancesDirty(false);
+
+        scene_objects.clear();
 
         m_asyncTasksController.Wait();
 
@@ -1667,8 +1677,6 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 #if BLENDER_VERSION >= 300
 
 void msblenContext::doExportInstances(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat) {
-    exportObject(state, paths, settings, instancedObject, false);
-
     auto info = ms::InstanceInfo::create();
     info->path = paths.get_path(instancedObject);
     info->parent_path = m_default_paths.get_path(parent); // parent will always be part of the scene
@@ -1681,11 +1689,21 @@ void msblenContext::exportInstances(Object* instancedObject, Object* parent, Sha
     auto settings = m_settings;
     settings.BakeTransform = false;
     if (fromFile) {
+
+        // Export the object from file only if its not part of the scene
+        auto scene_object = scene_objects.find(instancedObject->id.name);
+        if (scene_object == scene_objects.end()) {
+            exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
+        }
+
         doExportInstances(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
     }
     else {
         settings.BakeModifiers = false;
         settings.multithreaded = false;
+        
+        exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
+
         doExportInstances(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
     }
 }

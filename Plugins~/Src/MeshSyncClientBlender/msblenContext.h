@@ -174,6 +174,7 @@ private:
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;
+    std::unordered_set<std::string> scene_objects;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
