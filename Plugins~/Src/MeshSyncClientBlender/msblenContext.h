@@ -164,7 +164,18 @@ private:
 
 #if BLENDER_VERSION >= 300
     void exportInstances(Object* object, Object* parent, SharedVector<mu::float4x4>, bool fromFile);
-    void doExportInstances(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat);
+    void exportInstacesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstacesFromScene(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
+
+    ms::InstanceInfoPtr exportInstanceInfo(
+        msblenContextState& state, 
+        msblenContextPathProvider& paths, 
+        BlenderSyncSettings& settings, 
+        Object* instancedObject, 
+        Object* parent, 
+        SharedVector<mu::float4x4> mat);
+
 #endif
 
 private:
@@ -174,7 +185,7 @@ private:
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;
-    std::unordered_set<std::string> scene_objects;
+    std::unordered_set<Object*> scene_objects;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;

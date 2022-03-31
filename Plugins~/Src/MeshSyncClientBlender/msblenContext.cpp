@@ -1394,7 +1394,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
         scene.each_objects([this](Object* obj)
             {
-                scene_objects.insert(obj->id.name);
+                scene_objects.insert(obj);
             });
 
         // Assume everything is now dirty
@@ -1676,36 +1676,90 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 /// Geometry Nodes Blender Context Functionality ///
 #if BLENDER_VERSION >= 300
 
-void msblenContext::doExportInstances(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat) {
+ms::InstanceInfoPtr msblenContext::exportInstanceInfo(
+    msblenContextState& state, 
+    msblenContextPathProvider& paths, 
+    BlenderSyncSettings& settings, 
+    Object* instancedObject, 
+    Object* parent, 
+    SharedVector<mu::float4x4> mat) {
+
     auto info = ms::InstanceInfo::create();
     info->path = paths.get_path(instancedObject);
     info->parent_path = m_default_paths.get_path(parent); // parent will always be part of the scene
+
     info->transforms = std::move(mat);
 
     m_instances_state->GetManager<ms::InstancesManager>().add(info);
+
+    return info;
 }
 
 void msblenContext::exportInstances(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, bool fromFile) {
-    auto settings = m_settings;
-    settings.BakeTransform = false;
+   
     if (fromFile) {
 
         // Export the object from file only if its not part of the scene
-        auto scene_object = scene_objects.find(instancedObject->id.name);
+        auto scene_object = scene_objects.find(instancedObject);
         if (scene_object == scene_objects.end()) {
-            exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
+            exportInstacesFromFile(instancedObject, parent, std::move(mat));
         }
-
-        doExportInstances(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
+        else {
+            exportInstacesFromScene(instancedObject, parent, std::move(mat));
+        }
     }
     else {
-        settings.BakeModifiers = false;
-        settings.multithreaded = false;
-        
-        exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
-
-        doExportInstances(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
+        exportInstancesFromTree(instancedObject, parent, std::move(mat));
     }
+}
+void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+{
+    auto settings = m_settings;
+    settings.BakeTransform = false;
+
+    auto transform = exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
+    transform.reset();
+
+    auto object_world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(instancedObject));
+    auto inverse = mu::invert(object_world_matrix);
+
+    auto parent_world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(parent));
+    for (int i = 0; i < mat.size(); i++) {
+        mat[i] = parent_world_matrix * m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]) * inverse;
+    }
+
+    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
+}
+void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+{
+    auto settings = m_settings;
+    settings.BakeTransform = false;
+
+    auto world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(instancedObject));
+    auto inverse = mu::invert(world_matrix);
+    for (int i = 0; i < mat.size(); i++) {
+        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]) * inverse;
+    }
+
+    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
+}
+
+void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+{
+    auto settings = m_settings;
+    settings.BakeTransform = false;
+    settings.BakeModifiers = false;
+    settings.multithreaded = false;
+
+    auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
+    transform->reset();
+
+    auto world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(parent));
+    for (int i = 0; i < mat.size(); i++) {
+        mat[i] = world_matrix * m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
+    }
+
+    exportInstanceInfo(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
 }
 #endif
 

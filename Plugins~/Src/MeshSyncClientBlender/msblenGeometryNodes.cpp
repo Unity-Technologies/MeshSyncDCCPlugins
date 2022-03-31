@@ -46,8 +46,9 @@ namespace blender {
         return 
             m_blender_to_unity_world *
             blenderMatrix *
-            m_blender_to_unity_local;;
+            m_blender_to_unity_local;
     }
+
 
     void GeometryNodesUtils::foreach_instance(std::function<void(Object*, Object* , float4x4)> handler)
     {
@@ -88,10 +89,9 @@ namespace blender {
             auto world_matrix = float4x4();
             blContext.world_matrix_get(&instance, &world_matrix);
 
-            auto unityMatrix = blenderToUnityWorldMatrix(world_matrix);
             auto parent = blContext.instance_parent_get(&instance);
 
-            handler(object, parent, move(unityMatrix));
+            handler(object, parent, move(world_matrix));
         }
 
         // Cleanup resources

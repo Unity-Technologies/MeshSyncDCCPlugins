@@ -9,14 +9,14 @@ std::string append_id(std::string path, const Object* obj) {
     return path;
 }
 
-std::string get_path_with_id(const Object* obj, const Bone* bone = nullptr) {
+std::string get_name_with_id(const Object* obj, const Bone* bone = nullptr) {
     
     std::string path;
     if (bone) {
         path = msblenUtils::get_path(obj, bone);
     }
     else {
-        path = msblenUtils::get_path(obj);
+        path = "/" + msblenUtils::get_name(obj);
     }
 
     auto data = (ID*)obj->data;
@@ -27,12 +27,12 @@ std::string get_path_with_id(const Object* obj, const Bone* bone = nullptr) {
 
 std::string msblenContextIntermediatePathProvider::get_path(const Object* obj)
 {
-    auto path = get_path_with_id(obj);
+    auto path = get_name_with_id(obj);
     return path;
 }
 
 std::string msblenContextIntermediatePathProvider::get_path(const Object* obj, const Bone* bone)
 {
-    auto path = get_path_with_id(obj, bone);
+    auto path = get_name_with_id(obj, bone);
     return path;
 }
