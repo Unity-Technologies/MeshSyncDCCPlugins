@@ -1390,30 +1390,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 #if BLENDER_VERSION >= 300
     if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
 
-        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-
-        scene.each_objects([this](Object* obj)
-            {
-                scene_objects.insert(obj);
-            });
-
-        // Assume everything is now dirty
-        m_instances_state->manager.setAlwaysMarkDirty(true);
-
-        auto instancesHandler = 
-            std::bind(&msblenContext::exportInstances, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-
-        m_geometryNodeUtils.foreach_instanced_object(instancesHandler);
-
-        m_geometryNodeUtils.setInstancesDirty(false);
-
-        scene_objects.clear();
+        exportInstances();
 
         m_asyncTasksController.Wait();
 
         m_instances_state->eraseStaleObjects();
     }
 #endif
+
     m_asyncTasksController.Wait();
     m_entities_state->eraseStaleObjects();
 
@@ -1695,22 +1679,38 @@ ms::InstanceInfoPtr msblenContext::exportInstanceInfo(
     return info;
 }
 
-void msblenContext::exportInstances(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, bool fromFile) {
+void msblenContext::exportInstances() {
    
-    if (fromFile) {
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
-        // Export the object from file only if its not part of the scene
-        auto scene_object = scene_objects.find(instancedObject);
+    std::unordered_set<Object*> scene_objects;
+    scene.each_objects([this, &scene_objects](Object* obj)
+        {
+            scene_objects.insert(obj);
+        });
+
+    // Assume everything is now dirty
+    m_instances_state->manager.setAlwaysMarkDirty(true);
+
+    m_geometryNodeUtils.each_instanced_object([this, &scene_objects](Object* instanced, Object* parent, SharedVector<mu::float4x4> matrices, bool fromFile){
+        // If the instanced object is not present in the file
+        if (!fromFile) {
+            return exportInstancesFromTree(instanced, parent, std::move(matrices));
+        }
+
+        // check if the object has been already exported as part of the scene
+        auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
-            exportInstacesFromFile(instancedObject, parent, std::move(mat));
+            return exportInstacesFromFile(instanced, parent, std::move(matrices));
         }
         else {
-            exportInstacesFromScene(instancedObject, parent, std::move(mat));
+            return exportInstacesFromScene(instanced, parent, std::move(matrices));
         }
-    }
-    else {
-        exportInstancesFromTree(instancedObject, parent, std::move(mat));
-    }
+    });
+
+    m_geometryNodeUtils.setInstancesDirty(false);
+
+    scene_objects.clear();   
 }
 void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {

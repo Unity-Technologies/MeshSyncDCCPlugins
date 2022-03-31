@@ -31,7 +31,7 @@ namespace blender {
 		/// instancedObject is the object that is being instanced.
 		/// transform is the transform of the instance
 		/// </param>
-		void foreach_instance(std::function<void (Object*, Object*, mu::float4x4)> handler);
+		void each_instance(std::function<void (Object*, Object*, mu::float4x4)> handler);
 
 		/// <summary>
 		/// Invokes the handler function for each instanced object.
@@ -42,7 +42,7 @@ namespace blender {
 		/// parent is the object that has the geometry node modifier.
 		/// transforms is the collection of transforms for the instanced object.
 		/// </param>
-		void foreach_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>, bool)> handler);
+		void each_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>, bool)> handler);
 
 		void setInstancesDirty(bool dirty);
 		bool getInstancesDirty();

@@ -49,8 +49,8 @@ namespace blender {
             m_blender_to_unity_local;
     }
 
-
-    void GeometryNodesUtils::foreach_instance(std::function<void(Object*, Object* , float4x4)> handler)
+ 
+    void GeometryNodesUtils::each_instance(std::function<void(Object*, Object* , float4x4)> handler)
     {
 
         auto blContext = blender::BlenderPyContext::get();
@@ -91,19 +91,19 @@ namespace blender {
 
             auto parent = blContext.instance_parent_get(&instance);
 
-            handler(object, parent, move(world_matrix));
+            handler(object, parent, world_matrix);
         }
 
         // Cleanup resources
         blContext.object_instances_end(&it);
     }
 
-    void GeometryNodesUtils::foreach_instanced_object(function<void(Object*, Object*, SharedVector<float4x4>, bool)> handler) {
+    void GeometryNodesUtils::each_instanced_object(function<void(Object*, Object*, SharedVector<float4x4>, bool)> handler) {
         
         m_records.clear();
         m_records_by_name.clear();
 
-        foreach_instance([&](Object* obj, Object* parent, float4x4 matrix) {
+        each_instance([&](Object* obj, Object* parent, float4x4 matrix) {
             // Critical path, must do as few things as possible
             auto id = (ID*)obj->data;
             auto& rec = m_records[id->session_uuid];
@@ -149,7 +149,7 @@ namespace blender {
                 continue;
             
             handler(&rec.second.object_copy, rec.second.parent, std::move(rec.second.matrices), false);
-            rec.second.handled= true;
+            rec.second.handled = true;
         }
     }
 
