@@ -20,7 +20,7 @@ namespace ms {
         std::vector<Identifier>& getDeleted();
         void clearDirtyFlags();
         void add(InstanceInfoPtr instanceInfo);
-        void add(TransformPtr mesh);
+        void add(TransformPtr entity);
         void clear();
         void touch(const std::string& path);
 

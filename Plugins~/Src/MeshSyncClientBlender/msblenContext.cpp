@@ -1718,14 +1718,12 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
     settings.BakeTransform = false;
 
     auto transform = exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
-    transform.reset();
 
     auto object_world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(instancedObject));
     auto inverse = mu::invert(object_world_matrix);
 
-    auto parent_world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(parent));
     for (int i = 0; i < mat.size(); i++) {
-        mat[i] = parent_world_matrix * m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]) * inverse;
+        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]) * inverse;
     }
 
     exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
@@ -1754,9 +1752,8 @@ void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* par
     auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
     transform->reset();
 
-    auto world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(getWorldMatrix(parent));
     for (int i = 0; i < mat.size(); i++) {
-        mat[i] = world_matrix * m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
+        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
     }
 
     exportInstanceInfo(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
