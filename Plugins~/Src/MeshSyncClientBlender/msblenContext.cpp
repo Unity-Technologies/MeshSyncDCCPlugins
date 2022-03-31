@@ -76,6 +76,10 @@ msblenContext& msblenContext::getInstance()
 }
 
 void msblenContext::Destroy() {
+    if (!s_instance) {
+        return;
+    }
+
     m_texture_manager.clear();
     m_material_manager.clear();
 
@@ -83,6 +87,7 @@ void msblenContext::Destroy() {
     m_instances_state->clear();
 
     delete s_instance;
+    s_instance = nullptr;
 }
 
 
