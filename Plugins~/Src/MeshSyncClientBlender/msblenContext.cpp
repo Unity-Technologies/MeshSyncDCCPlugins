@@ -1612,14 +1612,14 @@ void msblenContext::WaitAndKickAsyncExport()
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
-        t.instanceInfos = m_instances_state->GetManager<ms::InstancesManager>().getDirtyInstances();
-        t.instanceMeshes = m_instances_state->GetManager<ms::InstancesManager>().getDirtyMeshes();
+        t.instanceInfos = m_instances_manager.getDirtyInstances();
+        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
 
-        t.deleted_instances = m_instances_state->GetManager<ms::InstancesManager>().getDeleted();
+        t.deleted_instances = m_instances_manager.getDeleted();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1635,9 +1635,7 @@ void msblenContext::WaitAndKickAsyncExport()
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
-        m_instances_state->GetManager<ms::InstancesManager>().clearDirtyFlags();
-
-        m_geometryNodeUtils.clear();
+        m_instances_manager.clearDirtyFlags();
     };
 
     exporter->kick();
@@ -1674,7 +1672,7 @@ ms::InstanceInfoPtr msblenContext::exportInstanceInfo(
 
     info->transforms = std::move(mat);
 
-    m_instances_state->GetManager<ms::InstancesManager>().add(info);
+    m_instances_manager.add(info);
 
     return info;
 }

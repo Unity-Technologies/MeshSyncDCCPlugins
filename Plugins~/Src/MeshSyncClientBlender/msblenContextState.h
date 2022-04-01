@@ -37,9 +37,6 @@ public:
 
     ms::TransformManager& manager;
 
-    template<typename T>
-    T& GetManager() { return (T&)manager; }
-
     void msblenContextState::eraseObjectRecords();
     void msblenContextState::eraseStaleObjects();
     void clear();
