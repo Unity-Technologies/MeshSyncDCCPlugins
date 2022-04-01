@@ -12,6 +12,10 @@ namespace msblenUtils {
     std::string get_path(const Object* arm, const Bone* obj);
     bool visible_in_render(const Object* obj);
     bool visible_in_viewport(const Object* obj);
+    
+    bool visible_in_collection(LayerCollection* layerCollection, const Object* obj);
+    bool visible_in_collection(const Object* obj);
+    
     const ModifierData* FindModifier(const Object* obj, ModifierType type);
     Bone* find_bone_recursive(Bone* bone, const char* name);
     Bone* find_bone(Object* obj, const char* name);
