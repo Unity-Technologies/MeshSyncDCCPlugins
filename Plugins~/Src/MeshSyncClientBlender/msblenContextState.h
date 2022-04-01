@@ -1,5 +1,7 @@
+#pragma once
 #include <MeshSyncClient/msTransformManager.h>
 #include "MeshSync/MeshSyncMacros.h"
+#include <msblenContextPathProvider.h>
 
 class msblenContextState {
 public:
@@ -43,5 +45,9 @@ public:
     void clear();
     void clearRecordsState();
 
-    msblenContextState::ObjectRecord& msblenContextState::touchRecord(const Object* obj, const std::string& base_path = "", bool children = false);
+    msblenContextState::ObjectRecord& msblenContextState::touchRecord(
+        msblenContextPathProvider& path, 
+        const Object* obj, 
+        const std::string& base_path = "", 
+        bool children = false);
 };

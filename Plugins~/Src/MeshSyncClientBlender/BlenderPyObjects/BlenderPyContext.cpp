@@ -96,7 +96,7 @@ bool BlenderPyContext::object_instances_is_instance(PointerRNA object) {
 void BlenderPyContext::world_matrix_get(PointerRNA* instance, mu::float4x4* result)
 {
     auto floatProp = (FloatPropertyRNA*)BlenderPyContext_depsgraph_world_matrix;
-    floatProp->getarray(instance, &(result->m[0][0])); // Sean Dillon - TODO: is the matrix object memory guaranteed to be aligned?
+    floatProp->getarray(instance, &(result->m[0][0]));
 }
 
 Object* BlenderPyContext::instance_parent_get(PointerRNA* instance) {

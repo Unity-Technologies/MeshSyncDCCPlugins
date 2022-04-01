@@ -1,6 +1,8 @@
 #include "msblenContextState.h"
 #include <msblenUtils.h>
 
+using namespace msblenUtils;
+
 void msblenContextState::ObjectRecord::clearState()
 {
     touched = renamed = false;
@@ -33,6 +35,7 @@ void msblenContextState::clearRecordsState() {
 }
 
 msblenContextState::ObjectRecord& msblenContextState::touchRecord(
+    msblenContextPathProvider& paths,
     const Object* obj,
     const std::string& base_path,
     bool children)
@@ -43,7 +46,7 @@ msblenContextState::ObjectRecord& msblenContextState::touchRecord(
 
     rec.touched = true;
 
-    std::string local_path = get_path(obj);
+    std::string local_path = paths.get_path(obj);
     if (local_path != rec.path) {
         rec.renamed = true;
         rec.path = local_path;
@@ -56,14 +59,14 @@ msblenContextState::ObjectRecord& msblenContextState::touchRecord(
         blender::blist_range<struct bPoseChannel> poses = blender::list_range((bPoseChannel*)obj->pose->chanbase.first);
         for (struct bPoseChannel* pose : poses) {
             records[pose->bone].touched = true;
-            manager.touch(base_path + get_path(obj, pose->bone));
+            manager.touch(base_path + paths.get_path(obj, pose->bone));
         }
     }
 
     // care children
     if (children) {
         each_child(obj, [&](Object* child) {
-            touchRecord(child, base_path, true);
+            touchRecord(paths, child, base_path, true);
             });
     }
 
@@ -74,7 +77,7 @@ msblenContextState::ObjectRecord& msblenContextState::touchRecord(
 
         auto gobjects = blender::list_range((CollectionObject*)group->gobject.first);
         for (auto go : gobjects)
-            touchRecord(go->ob, group_path, true);
+            touchRecord(paths, go->ob, group_path, true);
     }
     return rec;
 }

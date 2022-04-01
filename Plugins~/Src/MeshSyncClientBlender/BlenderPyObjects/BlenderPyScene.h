@@ -55,7 +55,7 @@ public:
         for (auto* c : list_range((CollectionChild*)m_ptr->master_collection->children.first)) {
             for (auto* o : list_range((CollectionObject*)c->collection->gobject.first)) {
                 auto obj = o->ob;
-                auto name = get_name(obj);
+                auto name = msblenUtils::get_name(obj);
 
                 if (name == objName) {
                     return obj;

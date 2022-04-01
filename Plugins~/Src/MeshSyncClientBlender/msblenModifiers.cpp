@@ -107,7 +107,7 @@ namespace blender {
 					continue;
 				}
 
-				propertyInfo->path = get_path(obj);
+				propertyInfo->path = msblenUtils::get_path(obj);
 				propertyInfo->name = socket->name;
 				propertyInfo->modifierName = modifier->name;
 				propertyInfo->propertyName = property->name;
@@ -146,7 +146,7 @@ namespace blender {
 					continue;
 				}
 
-				propertyInfo->path = get_path(obj);
+				propertyInfo->path = msblenUtils::get_path(obj);
 				propertyInfo->name = std::string(property->name);
 				propertyInfo->modifierName = "";
 				propertyInfo->propertyName = std::string(property->name);
@@ -203,7 +203,7 @@ namespace blender {
 	}
 
 	void applyGeoNodeProperty(const Object* obj, ms::PropertyInfo& receivedProp) {
-		auto modifier = FindModifier(obj, receivedProp.modifierName);
+		auto modifier = msblenUtils::FindModifier(obj, receivedProp.modifierName);
 
 		// Should never happen but just in case:
 		if (!modifier) {
@@ -237,7 +237,7 @@ namespace blender {
 		std::unique_lock<std::mutex> lock(m_mutex);
 		// Apply returned properties:
 		for (auto& receivedProp : props) {
-			auto obj = get_object_from_path(receivedProp.path);
+			auto obj = msblenUtils::get_object_from_path(receivedProp.path);
 
 			// Should never happen but just in case:
 			if (!obj) {

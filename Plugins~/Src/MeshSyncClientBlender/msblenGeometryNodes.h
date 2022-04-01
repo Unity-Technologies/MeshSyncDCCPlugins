@@ -15,12 +15,13 @@ namespace blender {
 	class GeometryNodesUtils
 	{
 	public:
+
+		GeometryNodesUtils();
+
         /// <summary>
         /// /// Converts the world matrix from blender to Unity coordinate system
         /// /// </summary>
-		static mu::float4x4 blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
-
-		static mu::float4x4 blenderToUnityWorldMatrixMesh();
+		mu::float4x4 blenderToUnityWorldMatrix(mu::float4x4& blenderMatrix);
 
 		/// <summary>
 		/// Invokes the handler function for each instance.
@@ -30,7 +31,7 @@ namespace blender {
 		/// instancedObject is the object that is being instanced.
 		/// transform is the transform of the instance
 		/// </param>
-		static void foreach_instance(std::function<void (Object*, Object*, mu::float4x4)> handler);
+		void foreach_instance(std::function<void (Object*, Object*, mu::float4x4)> handler);
 
 		/// <summary>
 		/// Invokes the handler function for each instanced object.
@@ -41,21 +42,32 @@ namespace blender {
 		/// parent is the object that has the geometry node modifier.
 		/// transforms is the collection of transforms for the instanced object.
 		/// </param>
-		static void foreach_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>)> handler);
+		void foreach_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>, bool)> handler);
 
 		void setInstancesDirty(bool dirty);
 		bool getInstancesDirty();
 
+		void clear();
+
 	private:
 		bool m_instances_dirty;
 
+		mu::float4x4 m_blender_to_unity_local;
+		mu::float4x4 m_blender_to_unity_world;
+
 		struct Record {
-			Object* obj = nullptr;
+			Object object_copy;
 			Object* parent = nullptr;
 			SharedVector<mu::float4x4> matrices;
 			bool handled = false;
+			bool updated = false;
 		};
+
+		std::unordered_map<unsigned int, Record> m_records;
+		std::unordered_map<std::string, Record*> m_records_by_name;
 	};
+
+
 #endif
 }
 

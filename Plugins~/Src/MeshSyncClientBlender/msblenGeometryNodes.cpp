@@ -14,13 +14,8 @@ using namespace mu;
 namespace blender {
 
 #if BLENDER_VERSION >= 300
-    /// <summary>
-    /// Converts the world matrix from blender to Unity coordinate systems
-    /// </summary>
-    /// <param name="blenderMatrix"></param>
-    /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {
-
+    GeometryNodesUtils::GeometryNodesUtils()
+    {
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
         auto scale_z = float3::one();
@@ -29,30 +24,30 @@ namespace blender {
         auto scale_x = float3::one();
         scale_x.x = -1;
 
-        auto result =
+        m_blender_to_unity_world =
             to_mat4x4(rotation) *
-            scale44(scale_x) *
-            blenderMatrix *
+            scale44(scale_x);
+
+        m_blender_to_unity_local = 
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
             scale44(scale_z);
 
-        return result;
+
     }
 
-    mu::float4x4 GeometryNodesUtils::blenderToUnityWorldMatrixMesh()
-    {
-        auto rotation = rotate_x(90.0f * DegToRad);
-        auto scale = float3::one();
-        scale.x = -1;
+    /// <summary>
+    /// Converts the world matrix from blender to Unity coordinate systems
+    /// </summary>
+    /// <param name="blenderMatrix"></param>
+    /// <returns></returns>
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {            
 
-        auto result =
-            to_mat4x4(rotation)*
-            scale44(scale);
-
-        return result;
+        return 
+            m_blender_to_unity_world *
+            blenderMatrix *
+            m_blender_to_unity_local;;
     }
-
 
     void GeometryNodesUtils::foreach_instance(std::function<void(Object*, Object* , float4x4)> handler)
     {
@@ -103,40 +98,58 @@ namespace blender {
         blContext.object_instances_end(&it);
     }
 
-    void GeometryNodesUtils::foreach_instanced_object(function<void(Object*, Object*, SharedVector<float4x4>)> handler) {
-
-        map<string, Record> records;
+    void GeometryNodesUtils::foreach_instanced_object(function<void(Object*, Object*, SharedVector<float4x4>, bool)> handler) {
         
+        m_records.clear();
+        m_records_by_name.clear();
+
         foreach_instance([&](Object* obj, Object* parent, float4x4 matrix) {
+            // Critical path, must do as few things as possible
             auto id = (ID*)obj->data;
-            auto& rec = records[id->name];
-            rec.obj = obj;
-            rec.parent = parent;
+            auto& rec = m_records[id->session_uuid];
+            
+            if (!rec.updated) {
+                rec.parent = parent;
+                rec.object_copy = *obj;
+                rec.updated = true;
+
+                m_records_by_name[obj->id.name] = &rec;
+            }
+            
             rec.matrices.push_back(matrix);
             });
 
+        // Look for objects in the file
         auto ctx = blender::BlenderPyContext::get();
-
         auto objects = ctx.data()->objects;
         LISTBASE_FOREACH(Object*, obj, &objects){
 
             if (obj->data == nullptr)
                 continue;
 
-            auto id = (ID*)obj->data;
-
-            auto rec = records.find(id->name);
-            if (rec != records.end()) {
-                handler(obj, rec->second.parent, std::move(rec->second.matrices));
-                rec->second.handled = true;
-            }
-        }
-
-        for(auto& rec : records) {
-            if (rec.second.handled)
+            // Check if there is record with the same object name
+            auto rec = m_records_by_name.find(obj->id.name);
+            if (rec == m_records_by_name.end())
                 continue;
 
-           // handler(rec.second.obj, std::move(rec.second.matrices));
+            // Check if the data names also match
+            auto recDataId = (ID*)rec->second->object_copy.data;
+            auto sceneDataId = (ID*)obj->data;
+
+            if (strcmp(sceneDataId->name + 2, recDataId->name + 2) != 0)
+                continue;
+
+            handler(obj, rec->second->parent, std::move(rec->second->matrices), true);
+            rec->second->handled = true;
+        }
+
+        // Export objects that are not in the file
+        for(auto& rec : m_records) {
+            if (rec.second.handled)
+                continue;
+            
+            handler(&rec.second.object_copy, rec.second.parent, std::move(rec.second.matrices), false);
+            rec.second.handled= true;
         }
     }
 
@@ -147,6 +160,12 @@ namespace blender {
     bool GeometryNodesUtils::getInstancesDirty()
     {
         return m_instances_dirty;
+    }
+
+    void blender::GeometryNodesUtils::clear()
+    {
+        m_records.clear();
+        m_records_by_name.clear();
     }
 #endif
 }

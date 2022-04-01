@@ -66,6 +66,7 @@ namespace ms {
             rec.dirtyInstances = true;
         }
 
+        rec.updated = true;
         rec.instances = info;
     }
 
@@ -85,7 +86,7 @@ namespace ms {
     {
         for (auto it = m_records.begin(); it != m_records.end(); ) {
             if (!it->second.updated) {
-                m_deleted.push_back(it->second.entity->getIdentifier());
+                m_deleted.push_back(it->second.instances->getIdentifier());
                 m_records.erase(it++);
             }
             else
