@@ -1724,10 +1724,6 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
         });
 
-    for (int i = 0; i < mat.size(); i++) {
-       
-    }
-
     exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
 }
 void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
