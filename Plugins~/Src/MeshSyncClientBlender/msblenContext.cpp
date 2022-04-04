@@ -1714,6 +1714,10 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
     auto settings = m_settings;
     settings.BakeTransform = false;
 
+    // There is some race condition that is causing rendering glitches on Unity. Seems related to UVs or triangle indices.
+    // Not using threads seems to fix it but should be investigated more.
+    settings.multithreaded = false;
+
     auto transform = exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
 
     auto object_world_matrix = getWorldMatrix(instancedObject);
@@ -1728,9 +1732,6 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
 }
 void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-
     auto world_matrix = getWorldMatrix(instancedObject);
     auto inverse = mu::invert(world_matrix);
 
