@@ -1718,9 +1718,14 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
 
     auto object_world_matrix = getWorldMatrix(instancedObject);
     auto inverse = mu::invert(object_world_matrix);
+;
+    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i) 
+        {
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
+        });
 
     for (int i = 0; i < mat.size(); i++) {
-        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix( mat[i] * inverse);
+       
     }
 
     exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
@@ -1732,9 +1737,11 @@ void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* par
 
     auto world_matrix = getWorldMatrix(instancedObject);
     auto inverse = mu::invert(world_matrix);
-    for (int i = 0; i < mat.size(); i++) {
-        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]* inverse);
-    }
+
+    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i)
+        {
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
+        });
 
     exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
 }
@@ -1749,9 +1756,10 @@ void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* par
     auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
     transform->reset();
 
-    for (int i = 0; i < mat.size(); i++) {
-        mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
-    }
+    mu::parallel_for(0, mat.size(), 10, [this, &mat](int i)
+        {
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
+        });
 
     exportInstanceInfo(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
 }
