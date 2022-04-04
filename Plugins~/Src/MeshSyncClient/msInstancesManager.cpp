@@ -43,16 +43,16 @@ namespace ms {
         m_deleted.clear();
     }
 
-    void InstancesManager::add(TransformPtr mesh) {
+    void InstancesManager::add(TransformPtr entity) {
 
-        auto& rec = lockAndGet(mesh->path);
+        auto& rec = lockAndGet(entity->path);
 
-        if (m_always_mark_dirty  || rec.entity == nullptr || rec.entity->hash() != mesh->hash()) {
+        if (m_always_mark_dirty  || rec.entity == nullptr || rec.entity->hash() != entity->hash()) {
             rec.dirtyMesh = true;
         }
 
         rec.updated = true;
-        rec.entity = mesh;
+        rec.entity = entity;
     }
 
     

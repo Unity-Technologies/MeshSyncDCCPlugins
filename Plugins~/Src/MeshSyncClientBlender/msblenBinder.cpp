@@ -5,6 +5,8 @@
 
 #include "MeshUtils/muLog.h"
 
+#include "BlenderPyObjects/BlenderPyDepsgraph.h"
+#include "BlenderPyObjects/BlenderPyDepsgraphObjectInstance.h"
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
@@ -64,16 +66,17 @@ extern PropertyRNA* BlenderPyContext_blend_data;
 extern PropertyRNA* BlenderPyContext_scene;
 extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
-
-extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 extern PropertyRNA* BlenderPyContext_viewlayer;
 
-extern PropertyRNA* BlenderPyContext_depsgraph_instance_object;
-extern PropertyRNA* BlenderPyContext_depsgraph_is_instance;
-extern PropertyRNA* BlenderPyContext_depsgraph_world_matrix;
-extern PropertyRNA* BlenderPyContext_depsgraph_parent;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_instance_object;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_is_instance;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_world_matrix;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_parent;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_object;
 
-extern PropertyRNA* BlenderPyContext_depsgraph_object;
+extern PropertyRNA* BlenderPyDepsgraph_object_instances;
+
+extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 
 extern PropertyRNA* BlenderPyNodeTree_inputs;
 extern PropertyRNA* BlenderPyNodeTree_nodes;
@@ -204,7 +207,7 @@ void setup(py::object bpy_context)
             each_prop{
                 if (match_prop("blend_data")) BlenderPyContext_blend_data = prop;
                 if (match_prop("scene")) BlenderPyContext_scene = prop;
-                if (match_prop("view_layer")) BlenderPyContext_viewlayer = prop;                
+                if (match_prop("view_layer")) BlenderPyContext_viewlayer = prop;
             }
             each_func{
                 if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
@@ -213,7 +216,7 @@ void setup(py::object bpy_context)
         else if (match_type("Depsgraph")) {
             each_prop{
                 if (match_prop("object_instances")) {
-                    BlenderPyContext_depsgraph_object_instances = prop;
+                    BlenderPyDepsgraph_object_instances = prop;
                 }
             }
             each_func{
@@ -225,20 +228,20 @@ void setup(py::object bpy_context)
         else if (match_type("DepsgraphObjectInstance")) {
             each_prop{
                 if (match_prop("instance_object")) {
-                    BlenderPyContext_depsgraph_instance_object = prop;
+                    BlenderPyDepsgraphObjectInstance_instance_object = prop;
                 }
 
                 if (match_prop("is_instance")) {
-                    BlenderPyContext_depsgraph_is_instance = prop;
+                    BlenderPyDepsgraphObjectInstance_is_instance = prop;
                 }
                 if (match_prop("matrix_world")) {
-                    BlenderPyContext_depsgraph_world_matrix = prop;
+                    BlenderPyDepsgraphObjectInstance_world_matrix = prop;
                 }
                 if (match_prop("parent")) {
-                    BlenderPyContext_depsgraph_parent = prop;
+                    BlenderPyDepsgraphObjectInstance_parent = prop;
                 }
                 if (match_prop("object")) {
-                    BlenderPyContext_depsgraph_object = prop;
+                    BlenderPyDepsgraphObjectInstance_object = prop;
                 }
             }
         }
