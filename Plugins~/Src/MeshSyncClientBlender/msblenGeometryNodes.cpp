@@ -14,6 +14,7 @@ using namespace mu;
 
 namespace blender {
 
+#if BLENDER_VERSION >= 300
     GeometryNodesUtils::GeometryNodesUtils()
     {
         auto rotation = rotate_x(-90 * DegToRad);
@@ -34,7 +35,6 @@ namespace blender {
             scale44(scale_z);
     }
 
-#if BLENDER_VERSION >= 300
     /// <summary>
     /// Converts the world matrix from blender to Unity coordinate systems
     /// </summary>
