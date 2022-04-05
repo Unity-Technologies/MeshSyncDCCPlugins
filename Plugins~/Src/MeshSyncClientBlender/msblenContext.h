@@ -171,7 +171,6 @@ private:
     ms::InstanceInfoPtr exportInstanceInfo(
         msblenContextState& state, 
         msblenContextPathProvider& paths, 
-        BlenderSyncSettings& settings, 
         Object* instancedObject, 
         Object* parent, 
         SharedVector<mu::float4x4> mat);

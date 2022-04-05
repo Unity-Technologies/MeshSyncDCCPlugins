@@ -1659,8 +1659,7 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 ms::InstanceInfoPtr msblenContext::exportInstanceInfo(
     msblenContextState& state, 
-    msblenContextPathProvider& paths, 
-    BlenderSyncSettings& settings, 
+    msblenContextPathProvider& paths,  
     Object* instancedObject, 
     Object* parent, 
     SharedVector<mu::float4x4> mat) {
@@ -1728,7 +1727,7 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
         });
 
-    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
+    exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
 }
 void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {
@@ -1740,7 +1739,7 @@ void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* par
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
         });
 
-    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
+    exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
 }
 
 void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
@@ -1758,7 +1757,7 @@ void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* par
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
         });
 
-    exportInstanceInfo(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
+    exportInstanceInfo(*m_instances_state, m_intermediate_paths, instancedObject, parent, std::move(mat));
 }
 #endif
 
