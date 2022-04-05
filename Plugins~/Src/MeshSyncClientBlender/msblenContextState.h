@@ -37,12 +37,12 @@ public:
 
     ms::TransformManager& manager;
 
-    void msblenContextState::eraseObjectRecords();
-    void msblenContextState::eraseStaleObjects();
+    void eraseObjectRecords();
+    void eraseStaleObjects();
     void clear();
     void clearRecordsState();
 
-    msblenContextState::ObjectRecord& msblenContextState::touchRecord(
+    msblenContextState::ObjectRecord& touchRecord(
         msblenContextPathProvider& path, 
         const Object* obj, 
         const std::string& base_path = "", 

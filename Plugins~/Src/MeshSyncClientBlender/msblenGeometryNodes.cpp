@@ -40,7 +40,7 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(float4x4& blenderMatrix) {            
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const float4x4& blenderMatrix) {            
 
         return 
             m_blender_to_unity_world *
