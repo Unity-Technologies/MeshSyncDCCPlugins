@@ -15,17 +15,17 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.film-internal-utilities": {
-      "version": "0.12.2-preview",
+      "version": "0.14.1-preview",
       "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.modules.uielements": "1.0.0",
-        "com.unity.timeline": "1.2.14"
+        "com.unity.timeline": "1.2.18"
       },
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.12",
+      "version": "3.0.13",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -34,7 +34,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.14",
+      "version": "2.0.15",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -50,11 +50,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.meshsync": {
-      "version": "0.10.2-preview",
+      "version": "0.12.7-preview",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.film-internal-utilities": "0.12.2-preview",
+        "com.unity.film-internal-utilities": "0.14.1-preview",
         "com.unity.editorcoroutines": "1.0.0",
         "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
@@ -63,7 +63,7 @@
         "com.unity.modules.particlesystem": "1.0.0",
         "com.unity.modules.screencapture": "1.0.0",
         "com.unity.sharp-zip-lib": "1.2.2-preview.2",
-        "com.unity.timeline": "1.2.14"
+        "com.unity.timeline": "1.2.18"
       },
       "url": "https://packages.unity.com"
     },
@@ -83,7 +83,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.package-validation-suite": {
-      "version": "0.23.5-preview",
+      "version": "0.23.7-preview",
       "depth": 0,
       "source": "registry",
       "dependencies": {
