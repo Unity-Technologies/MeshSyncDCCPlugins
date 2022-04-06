@@ -2,10 +2,10 @@
   "dependencies": {
     "com.unity.ide.rider": "3.0.12",
     "com.unity.ide.visualstudio": "2.0.14",
-    "com.unity.ide.vscode": "1.2.4",
+    "com.unity.ide.vscode": "1.2.5",
     "com.unity.meshsync": "0.10.2-preview",
     "com.unity.package-validation-suite": "0.23.5-preview",
-    "com.unity.test-framework": "1.1.30",
+    "com.unity.test-framework": "1.1.31",
     "com.unity.textmeshpro": "2.1.6",
     "com.unity.timeline": "1.2.18",
     "com.unity.ugui": "1.0.0",
