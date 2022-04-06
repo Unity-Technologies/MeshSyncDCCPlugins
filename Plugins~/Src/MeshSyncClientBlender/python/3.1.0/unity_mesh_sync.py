@@ -226,7 +226,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         self.material_frame_range = str(ctx.material_frame_range);
         self.frame_end = ctx.frame_end;
         self.zstd_compression_level = ctx.zstd_compression_level;
-        self.frame_step = ctx.frame_step;
+        self.frame_step = round(ctx.frame_step);
         self.curves_as_mesh = ctx.curves_as_mesh;
         self.make_double_sided = ctx.make_double_sided;
         self.bake_modifiers = ctx.bake_modifiers;
