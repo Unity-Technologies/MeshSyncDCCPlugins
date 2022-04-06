@@ -15,7 +15,7 @@ for i in "$@"; do
       shift # past argument=value
       ;;
     -r|--release*)
-      BUILD_TYPE_ARG="Debug"
+      BUILD_TYPE_ARG="Release"
       shift 
       ;;
     -*|--*)
