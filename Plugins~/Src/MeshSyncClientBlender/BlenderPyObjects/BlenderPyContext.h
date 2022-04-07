@@ -2,7 +2,6 @@
 
 #include <BKE_context.h> //bContext
 #include "msblenMacros.h" //MSBLEN_BOILERPLATE2
-#include "MeshUtils/muMath.h"
 
 namespace blender
 {
@@ -16,9 +15,9 @@ namespace blender
         Main* data();
         Scene* scene();
         Depsgraph* evaluated_depsgraph_get();
-        ViewLayer* viewLayer();
 
         static void UpdateDepsgraph(Depsgraph* depsgraph);
+
     };
 
 } // namespace blender
