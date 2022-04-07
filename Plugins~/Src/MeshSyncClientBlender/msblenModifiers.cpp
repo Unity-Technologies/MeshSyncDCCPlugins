@@ -80,13 +80,23 @@ namespace blender {
 
 				switch (property->type) {
 				case IDP_INT: {
-					auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
-					propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
+					if (socket->type == SOCK_BOOLEAN) {
+						propertyInfo->set(IDP_Int(property), 0, 1);
+					}
+					else {
+						auto defaultValue = (bNodeSocketValueInt*)socket->default_value;
+						propertyInfo->set(IDP_Int(property), defaultValue->min, defaultValue->max);
+					}
 					break;
 				}
 				case IDP_FLOAT: {
 					auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
 					propertyInfo->set(IDP_Float(property), defaultValue->min, defaultValue->max);
+					break;
+				}
+				case IDP_DOUBLE: {
+					auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
+					propertyInfo->set((float)IDP_Double(property), defaultValue->min, defaultValue->max);
 					break;
 				}
 				case IDP_ARRAY: {
@@ -101,6 +111,12 @@ namespace blender {
 						break;
 					}
 					}
+					break;
+				}
+				case IDP_STRING: {
+					auto uiData = (bNodeSocketValueString*)property->ui_data;
+					auto val = IDP_String(property);
+					propertyInfo->set(val, strlen(val));
 					break;
 				}
 				default:
