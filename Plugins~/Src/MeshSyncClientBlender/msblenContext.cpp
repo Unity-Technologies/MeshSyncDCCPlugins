@@ -65,15 +65,12 @@ void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static msblenContext* s_instance = nullptr;
 
 msblenContext& msblenContext::getInstance()
 {
-    if (s_instance == nullptr) {
-        s_instance = new msblenContext();
-    }
+    static msblenContext Instance;
 
-    return *s_instance;
+    return Instance;
 }
 
 void msblenContext::Destroy() {
@@ -82,24 +79,17 @@ void msblenContext::Destroy() {
 
     m_entities_state->clear();
     m_instances_state->clear();
-
-    delete s_instance;
 }
 
 
 
 msblenContext::msblenContext()
 {
-    m_entities_state = new msblenContextState(m_entity_manager);
-    m_instances_state = new  msblenContextState(m_instances_manager);
-
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
 }
 
 msblenContext::~msblenContext()
 {
-    delete m_entities_state;
-    delete m_instances_state;
     // no wait() because it can cause deadlock...
 }
 

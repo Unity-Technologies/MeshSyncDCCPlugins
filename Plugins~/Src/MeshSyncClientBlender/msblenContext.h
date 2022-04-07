@@ -179,8 +179,11 @@ private:
 
 private:
 
-    msblenContextState* m_entities_state = nullptr;
-    msblenContextState* m_instances_state = nullptr;
+    std::shared_ptr<msblenContextState> m_entities_state = 
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_entity_manager));
+
+    std::shared_ptr<msblenContextState> m_instances_state = 
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_instances_manager));
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;
