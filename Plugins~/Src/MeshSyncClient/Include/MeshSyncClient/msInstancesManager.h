@@ -20,13 +20,13 @@ namespace ms {
         std::vector<Identifier>& getDeleted();
         void clearDirtyFlags();
         void add(InstanceInfoPtr instanceInfo);
-        void add(TransformPtr entity);
-        void clear();
-        void touch(const std::string& path);
+        void add (TransformPtr entity) override;
+        void clear() override;
+        void touch(const std::string& path) override;
 
-        void eraseStaleEntities();
+        void eraseStaleEntities() override;
 
-        void setAlwaysMarkDirty(bool alwaysDirty);
+        void setAlwaysMarkDirty(bool alwaysDirty) override;
 
     private:
 

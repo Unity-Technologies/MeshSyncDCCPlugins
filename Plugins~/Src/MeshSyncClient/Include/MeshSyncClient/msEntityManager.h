@@ -16,7 +16,7 @@ public:
     bool empty() const;
 
     // clear all states (both entity and delete record will be cleared)
-    void clear();
+    void clear() override;
     void clearEntityRecords();
     void clearDeleteRecords();
 
@@ -28,9 +28,9 @@ public:
     bool eraseThreadSafe(TransformPtr v);
 
     // thread safe
-    void add(TransformPtr v);
+    void add(TransformPtr v) override;
 
-    void touch(const std::string& path);
+    void touch(const std::string& path) override;
 
     std::vector<TransformPtr> getAllEntities();
     std::vector<TransformPtr> getDirtyTransforms();
@@ -40,9 +40,9 @@ public:
     void clearDirtyFlags();
 
     std::vector<TransformPtr> getStaleEntities();
-    void eraseStaleEntities();
+    void eraseStaleEntities() override;
 
-    void setAlwaysMarkDirty(bool v);
+    void setAlwaysMarkDirty(bool v) override;
 
 private:
     struct Record
