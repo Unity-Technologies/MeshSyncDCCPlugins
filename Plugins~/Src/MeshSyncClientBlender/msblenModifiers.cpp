@@ -131,15 +131,51 @@ namespace blender {
 					propertyInfo->set(IDP_Int(property), uiData->min, uiData->max);
 					break;
 				}
-				case IDP_FLOAT: {
+				case IDP_FLOAT: 
+				{
 					auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
 					propertyInfo->set(IDP_Float(property), uiData->min, uiData->max);
+					break;
+				}
+				case IDP_DOUBLE: {
+					auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
+					propertyInfo->set((float)IDP_Double(property), uiData->min, uiData->max);
 					break;
 				}
 				case IDP_STRING: {
 					auto uiData = (IDPropertyUIDataString*)property->ui_data;
 					auto val = IDP_String(property);
 					propertyInfo->set(val, strlen(val));
+					break;
+				}
+				case IDP_ARRAY: {
+					switch (property->subtype) {
+					case IDP_INT: {
+						auto uiData = (IDPropertyUIDataInt*)property->ui_data;
+						propertyInfo->set((int*)IDP_Array(property), uiData->min, uiData->max, property->len);
+						break;
+					}
+					case IDP_FLOAT: {
+						auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
+						propertyInfo->set((float*)IDP_Array(property), uiData->min, uiData->max, property->len);
+						break;
+					}
+					case IDP_DOUBLE: {
+						auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
+
+						// Convert double array to floats:
+						double* doubleArray = (double*)IDP_Array(property);
+						int arrayLength = sizeof(double) * property->len;
+						float* floatArray = new float[arrayLength];
+						for (int i = 0; i < arrayLength; i++)
+						{
+							floatArray[i] = (float)doubleArray[i];
+						}
+
+						propertyInfo->set(floatArray, uiData->min, uiData->max, property->len);
+						break;
+					}
+					}
 					break;
 				}
 				default:
@@ -165,7 +201,6 @@ namespace blender {
 		for (auto it = modifiers.begin(); it != modifiers.end(); ++it) {
 			auto modifier = *it;
 
-			// Add each modifier as a variant
 			addModifierProperties(modifier, obj, propertyManager);
 		}
 
@@ -179,19 +214,33 @@ namespace blender {
 			break;
 		}
 		case ms::PropertyInfo::Type::Float: {
-			IDP_Float(property) = receivedProp.get<float>();
+			if (property->type == IDP_DOUBLE) {
+				IDP_Double(property) = (double)receivedProp.get<float>();
+			}
+			else {
+				IDP_Float(property) = receivedProp.get<float>();
+			}
 			break;
 		}
 		case ms::PropertyInfo::Type::FloatArray:
 		case ms::PropertyInfo::Type::IntArray:
-			receivedProp.copy(IDP_Array(property));
+			if (property->subtype == IDP_DOUBLE) {
+				// Convert float array to doubles:
+				float* floatArray = receivedProp.getArray<float>();
+				int arrayLength = receivedProp.getArrayLength();
+				for (int i = 0; i < arrayLength; i++)
+				{
+					((double*)IDP_Array(property))[i] = (double)floatArray[i];
+				}
+			}
+			else {
+				receivedProp.copy(IDP_Array(property));
+			}
 			break;
 		default:
 			break;
 		}
 
-		//property->flag &= ~IDP_FLAG_GHOST;
-		
 		switch (obj->type) {
 		case OB_MESH:
 		{
