@@ -164,8 +164,8 @@ private:
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
-    void exportInstacesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>);
-    void exportInstacesFromScene(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstancesFromScene(Object* object, Object* parent, SharedVector<mu::float4x4>);
     void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
 
     ms::InstanceInfoPtr exportInstanceInfo(

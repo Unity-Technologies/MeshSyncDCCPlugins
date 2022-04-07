@@ -1689,10 +1689,10 @@ void msblenContext::exportInstances() {
         // check if the object has been already exported as part of the scene
         auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
-            return exportInstacesFromFile(instanced, parent, std::move(matrices));
+            return exportInstancesFromFile(instanced, parent, std::move(matrices));
         }
         else {
-            return exportInstacesFromScene(instanced, parent, std::move(matrices));
+            return exportInstancesFromScene(instanced, parent, std::move(matrices));
         }
     });
 
@@ -1700,7 +1700,7 @@ void msblenContext::exportInstances() {
 
     scene_objects.clear();   
 }
-void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {
     auto settings = m_settings;
     settings.BakeTransform = false;
@@ -1721,7 +1721,7 @@ void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* pare
 
     exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
 }
-void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+void msblenContext::exportInstancesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {
     auto world_matrix = getWorldMatrix(instancedObject);
     auto inverse = mu::invert(world_matrix);
