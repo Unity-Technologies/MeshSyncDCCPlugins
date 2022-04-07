@@ -59,21 +59,21 @@ namespace blender {
 
     void GeometryNodesUtils::each_instanced_object(std::function<void(Object*, Object*, SharedVector<float4x4>, bool)> handler) {
 
-        std::unordered_map<unsigned int, Record> m_records;
-        std::unordered_map<std::string, Record*> m_records_by_name;
+        std::unordered_map<unsigned int, Record> records;
+        std::unordered_map<std::string, Record*> records_by_name;
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
             {
                 // Critical path, must do as few things as possible
                 auto id = (ID*)obj->data;
-                auto& rec = m_records[id->session_uuid];
+                auto& rec = records[id->session_uuid];
                 if (!rec.updated)
                 {
                     rec.parent = parent;
                      rec.object_copy = *obj;
                     rec.updated = true;
     
-                    m_records_by_name[obj->id.name] = &rec;
+                    records_by_name[obj->id.name] = &rec;
                 }
 
                 rec.matrices.push_back(matrix);
@@ -88,8 +88,8 @@ namespace blender {
                     continue;
 
                 // Check if there is record with the same object name
-                auto rec = m_records_by_name.find(obj->id.name);
-                if (rec == m_records_by_name.end())
+                auto rec = records_by_name.find(obj->id.name);
+                if (rec == records_by_name.end())
                     continue;
 
                 // Check if the data names also match
@@ -105,7 +105,7 @@ namespace blender {
             }
 
             // Export objects that are not in the file
-            for (auto& rec : m_records) {
+            for (auto& rec : records) {
                 if (rec.second.handled)
                     continue;
 
