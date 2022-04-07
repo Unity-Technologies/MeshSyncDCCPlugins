@@ -1681,18 +1681,33 @@ void msblenContext::exportInstances() {
     m_instances_state->manager.setAlwaysMarkDirty(true);
 
     m_geometryNodeUtils.each_instanced_object([this, &scene_objects](Object* instanced, Object* parent, SharedVector<mu::float4x4> matrices, bool fromFile){
+
+        auto settings = m_settings;
+        settings.BakeTransform = false;
+        
+        // There is some race condition that is causing rendering glitches on Unity. Seems related to UVs or triangle indices.
+        // Not using threads seems to fix it but should be investigated more.
+        settings.multithreaded = false;
+
         // If the instanced object is not present in the file
         if (!fromFile) {
+            settings.BakeModifiers = false;
+            auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instanced, false);
+            transform->reset();
             return exportInstancesFromTree(instanced, parent, std::move(matrices));
         }
+
+        auto world_matrix = getWorldMatrix(instanced);
+        auto inverse = mu::invert(world_matrix);
 
         // check if the object has been already exported as part of the scene
         auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
-            return exportInstancesFromFile(instanced, parent, std::move(matrices));
+            exportObject(*m_instances_state, m_default_paths, settings, instanced, false);
+            return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
         }
         else {
-            return exportInstancesFromScene(instanced, parent, std::move(matrices));
+            return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
         }
     });
 
@@ -1700,33 +1715,9 @@ void msblenContext::exportInstances() {
 
     scene_objects.clear();   
 }
-void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
+void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse)
 {
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-
-    // There is some race condition that is causing rendering glitches on Unity. Seems related to UVs or triangle indices.
-    // Not using threads seems to fix it but should be investigated more.
-    settings.multithreaded = false;
-
-    auto transform = exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
-
-    auto object_world_matrix = getWorldMatrix(instancedObject);
-    auto inverse = mu::invert(object_world_matrix);
-;
     mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i) 
-        {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
-        });
-
-    exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
-}
-void msblenContext::exportInstancesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
-{
-    auto world_matrix = getWorldMatrix(instancedObject);
-    auto inverse = mu::invert(world_matrix);
-
-    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i)
         {
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
         });
@@ -1736,13 +1727,6 @@ void msblenContext::exportInstancesFromScene(Object* instancedObject, Object* pa
 
 void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
 {
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-    settings.BakeModifiers = false;
-    settings.multithreaded = false;
-
-    auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
-    transform->reset();
 
     mu::parallel_for(0, mat.size(), 10, [this, &mat](int i)
         {
