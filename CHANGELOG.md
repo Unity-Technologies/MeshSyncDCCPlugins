@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.1-preview] - 2022-04-06
+
+### Fixed
+* blender: could not export SceneCache in Blender 3.1
+
 ## [0.12.0-preview] - 2022-03-18
 
 ### Added
