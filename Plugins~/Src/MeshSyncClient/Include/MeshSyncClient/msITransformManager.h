@@ -4,6 +4,10 @@
 #include "MeshSync/MeshSync.h"
 
 namespace ms{
+
+/// <summary>
+/// Interface for managers that deal with Transforms.
+/// </summary>
 class ITransformManager {
 public:
 	virtual void add(TransformPtr transform) = 0;

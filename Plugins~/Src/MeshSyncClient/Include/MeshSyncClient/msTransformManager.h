@@ -6,6 +6,11 @@
 #include "MeshSync/SceneGraph/msIdentifier.h"
 
 namespace ms{
+
+/// <summary>
+/// Abstraction for managers that handle records with TransformPtr data.
+/// </summary>
+/// <typeparam name="T">The type of record that the manager uses</typeparam>
 template <class T>
 class TransformManager : public ITransformManager {
 public:
