@@ -5,40 +5,40 @@
 #include "BlenderPyObjects/BlenderPyContext.h" 
 
 namespace msblenUtils {
-std::string get_name(const Material* obj);
-std::string get_name(const Object* obj);
-std::string get_name(const Bone* obj);
-std::string get_path(const Object* obj);
-std::string get_path(const Object* arm, const Bone* obj);
-bool visible_in_render(const Object* obj);
-bool visible_in_viewport(const Object* obj);
-    
-const ModifierData* FindModifier(const Object* obj, ModifierType type);
-Bone* find_bone_recursive(Bone* bone, const char* name);
-Bone* find_bone(Object* obj, const char* name);
-bPoseChannel* find_pose(Object* obj, const char* name);
+std::string get_name(const Material *obj);
+std::string get_name(const Object *obj);
+std::string get_name(const Bone *obj);
+std::string get_path(const Object *obj);
+std::string get_path(const Object *arm, const Bone *obj);
+bool visible_in_render(const Object *obj);
+bool visible_in_viewport(const Object *obj);
 
-bool is_mesh(const Object* obj);
-bool is_camera(const Object* obj);
-bool is_light(const Object* obj);
-bool is_armature(const Object* obj);
+const ModifierData* FindModifier(const Object *obj, ModifierType type);
+Bone* find_bone_recursive(Bone *bone, const char *name);
+Bone* find_bone(Object *obj, const char *name);
+bPoseChannel* find_pose(Object *obj, const char *name);
 
-inline Collection* get_instance_collection(const Object* obj) {
+bool is_mesh(const Object *obj);
+bool is_camera(const Object *obj);
+bool is_light(const Object *obj);
+bool is_armature(const Object *obj);
+
+inline Collection* get_instance_collection(const Object *obj) {
     return obj->instance_collection;
 }
 
-inline const mu::float3& get_instance_offset(const Collection* col) {
+inline const mu::float3& get_instance_offset(const Collection *col) {
     return (mu::float3&)col->instance_offset;
 }
 
-inline BMEditMesh* get_edit_mesh(Mesh* mesh) {
+inline BMEditMesh* get_edit_mesh(Mesh *mesh) {
     return mesh->edit_mesh;
 }
 
 
 // Body: [](const FCurve*) -> void
 template<class Body>
-static inline void each_child(const Object* obj, const Body& body)
+static inline void each_child(const Object *obj, const Body& body)
 {
     // Object doesn't have children data. need to enumerate all objects and check its parent...
     auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
@@ -50,38 +50,38 @@ static inline void each_child(const Object* obj, const Body& body)
 
 // Body: [](const FCurve*) -> void
 template<class Body>
-static inline void each_fcurve(Object* obj, const Body& body)
+static inline void each_fcurve(Object *obj, const Body& body)
 {
     if (!obj->adt || !obj->adt->action) return;
-    for (auto* curve = (FCurve*)obj->adt->action->curves.first; curve; curve = curve->next) {
+    for (auto *curve = (FCurve*)obj->adt->action->curves.first; curve; curve = curve->next) {
         body(curve);
     }
 }
 
 // Body: [](const ModifierData*) -> void
 template<class Body>
-inline void each_modifier(Object* obj, const Body& body)
+inline void each_modifier(Object *obj, const Body& body)
 {
-    auto* it = (const ModifierData*)obj->modifiers.first;
-    auto* end = (const ModifierData*)obj->modifiers.last;
+    auto *it = (const ModifierData*)obj->modifiers.first;
+    auto *end = (const ModifierData*)obj->modifiers.last;
     for (; it != end; it = it->next)
         body(it);
 }
 
 // Body: [](const bDeformGroup*) -> void
 template<class Body>
-static inline void each_deform_group(const Object* obj, const Body& body)
+static inline void each_deform_group(const Object *obj, const Body& body)
 {
-    for (auto* it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
+    for (auto *it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
         body(it);
 }
 
 // Body: [](const KeyBlock*) -> void
 template<class Body>
-static inline void each_key(Mesh* obj, const Body& body)
+static inline void each_key(Mesh *obj, const Body& body)
 {
     if (obj->key == nullptr || obj->key->block.first == nullptr) { return; }
-    for (auto* it = (const KeyBlock*)obj->key->block.first; it != nullptr; it = it->next)
+    for (auto *it = (const KeyBlock*)obj->key->block.first; it != nullptr; it = it->next)
         body(it);
 }
 
