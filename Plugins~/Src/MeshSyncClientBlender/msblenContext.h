@@ -19,14 +19,14 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
-#include "msblenGeometryNodes.h"
+#include "msblenGeometryNodeUtils.h"
 
 #include "MeshSyncClient/msInstancesManager.h"
 #include "MeshSyncClient/msTransformManager.h"
 
 
 #if BLENDER_VERSION >= 300
-#include <msblenGeometryNodes.h>
+#include <msblenGeometryNodeUtils.h>
 #endif
 
 #include "../MeshSyncClientBlender/msblenContextState.h"
