@@ -109,6 +109,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
     bl_label = "Auto Sync"
     _timer = None
+    
+    def __del__(self):
+        MESHSYNC_OT_AutoSync._timer = None
 
     def execute(self, context):
         return self.invoke(context, None)
@@ -122,6 +125,13 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
                 return {'FINISHED'}
             MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
             context.window_manager.modal_handler_add(self)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(0.1)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -297,6 +307,15 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
+
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
 
 import atexit
 atexit.register(DestroyMeshSyncContext)

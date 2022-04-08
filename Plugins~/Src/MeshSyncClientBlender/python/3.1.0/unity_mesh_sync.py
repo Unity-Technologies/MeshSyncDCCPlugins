@@ -125,6 +125,13 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
                 return {'FINISHED'}
             MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
             context.window_manager.modal_handler_add(self)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(0.1)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
