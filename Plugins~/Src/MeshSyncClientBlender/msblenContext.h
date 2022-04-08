@@ -151,8 +151,8 @@ private:
     void doExtractNonEditMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
 
-    ms::TransformPtr findBone(Object* armature, Bone* bone);
-    ObjectRecord& touchRecord(const Object* obj, const std::string& base_path = "", bool children = false);
+    ms::TransformPtr findBone(Object *armature, Bone *bone);
+    ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
     void eraseStaleObjects();
 
     void exportAnimation(BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
