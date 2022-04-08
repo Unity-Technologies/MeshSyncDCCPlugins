@@ -30,6 +30,8 @@
 
 namespace bl = blender;
 
+using namespace msblenUtils;
+
 static const mu::float4x4 g_arm_to_world = mu::float4x4{
     1, 0, 0, 0,
     0, 0,-1, 0,
@@ -389,22 +391,22 @@ void msblenContext::extractLightData(const Object *src,
 }
 
 
-ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip)
+ms::TransformPtr msblenContext::exportObject(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip)
 {
     if (!obj)
         return nullptr;
 
-    msblenContext::ObjectRecord& rec = touchRecord(obj);
+    msblenContext::ObjectRecord& rec = touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
 
     auto handle_parent = [&]() {
         if (parent)
-            exportObject(settings, obj->parent, parent, false);
+            exportObject(paths, settings, obj->parent, parent, false);
     };
     auto handle_transform = [&]() {
         handle_parent();
-        rec.dst = exportTransform(settings, obj);
+        rec.dst = exportTransform(paths, settings, obj);
     };
 
     switch (obj->type) {
@@ -412,7 +414,7 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (!tip || (!settings.BakeModifiers && settings.sync_bones)) {
             handle_parent();
-            rec.dst = exportArmature(settings, obj);
+            rec.dst = exportArmature(paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -422,11 +424,11 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (!settings.BakeModifiers && settings.sync_bones) {
             if (auto *arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
-                exportObject(settings, arm_mod->object, parent);
+                exportObject(paths, settings, arm_mod->object, parent);
         }
         if (settings.sync_meshes || (!settings.BakeModifiers && settings.sync_blendshapes)) {
             handle_parent();
-            rec.dst = exportMesh(settings, obj);
+            rec.dst = exportMesh(paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -439,7 +441,7 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (settings.sync_meshes && settings.curves_as_mesh) {
             handle_parent();
-            rec.dst = exportMesh(settings, obj);
+            rec.dst = exportMesh(paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -449,7 +451,7 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (settings.sync_cameras) {
             handle_parent();
-            rec.dst = exportCamera(settings, obj);
+            rec.dst = exportCamera(paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -459,7 +461,7 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (settings.sync_lights) {
             handle_parent();
-            rec.dst = exportLight(settings, obj);
+            rec.dst = exportLight(paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
@@ -469,7 +471,7 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
     {
         if (get_instance_collection(obj) || (!tip && parent)) {
             handle_parent();
-            rec.dst = exportTransform(settings, obj);
+            rec.dst = exportTransform(paths, settings, obj);
         }
         break;
     }
@@ -481,55 +483,55 @@ ms::TransformPtr msblenContext::exportObject(BlenderSyncSettings& settings, cons
             ctx.group_host = obj;
             ctx.dst = rec.dst;
 
-            exportDupliGroup(settings, obj, ctx);
+            exportDupliGroup(paths, settings, obj, ctx);
         }
     }
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportTransform(BlenderSyncSettings& settings, const Object *src)
+ms::TransformPtr msblenContext::exportTransform(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
-    dst.path = get_path(src);
+    dst.path = paths.get_path(src);
     extractTransformData(settings, src, dst);
     m_entity_manager.add(ret);
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportPose(BlenderSyncSettings& settings, const Object *armature, bPoseChannel *src)
+ms::TransformPtr msblenContext::exportPose(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
-    dst.path = get_path(armature, src->bone);
+    dst.path = paths.get_path(armature, src->bone);
     extractTransformData(settings, src, dst.position, dst.rotation, dst.scale);
     m_entity_manager.add(ret);
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportArmature(BlenderSyncSettings& settings, const Object *src)
+ms::TransformPtr msblenContext::exportArmature(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
-    dst.path = get_path(src);
+    dst.path = paths.get_path(src);
     extractTransformData(settings, src, dst);
     m_entity_manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
         struct Bone* bone = pose->bone;
         std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = m_bones[bone];
-        dst = exportPose(settings, src, pose);
+        dst = exportPose(paths, settings, src, pose);
     }
     return ret;
 }
 
-ms::TransformPtr msblenContext::exportReference(BlenderSyncSettings& settings, Object *src, const DupliGroupContext& ctx)
+ms::TransformPtr msblenContext::exportReference(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *src, const DupliGroupContext& ctx)
 {
-    msblenContext::ObjectRecord& rec = touchRecord(src);
+    msblenContext::ObjectRecord& rec = touchRecord(paths, src);
     if (!rec.dst)
         return nullptr;
 
-    const std::string local_path = get_path(src);
+    const std::string local_path = paths.get_path(src);
     std::string path = ctx.dst->path + local_path;
 
     ms::TransformPtr dst;
@@ -579,7 +581,7 @@ ms::TransformPtr msblenContext::exportReference(BlenderSyncSettings& settings, O
     }
 
     each_child(src, [&](Object *child) {
-        exportReference(settings, child, ctx);
+        exportReference(paths, settings, child, ctx);
     });
 
     if (get_instance_collection(src)) {
@@ -587,12 +589,12 @@ ms::TransformPtr msblenContext::exportReference(BlenderSyncSettings& settings, O
         ctx2.group_host = src;
         ctx2.dst = dst;
 
-        exportDupliGroup(settings, src, ctx2);
+        exportDupliGroup(paths, settings, src, ctx2);
     }
     return dst;
 }
 
-ms::TransformPtr msblenContext::exportDupliGroup(BlenderSyncSettings& settings, const Object *src, const DupliGroupContext& ctx)
+ms::TransformPtr msblenContext::exportDupliGroup(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src, const DupliGroupContext& ctx)
 {
     Collection* group = get_instance_collection(src);
     if (!group)
@@ -616,39 +618,39 @@ ms::TransformPtr msblenContext::exportDupliGroup(BlenderSyncSettings& settings, 
     auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
     for (auto go : gobjects) {
         auto obj = go->ob;
-        if (auto t = exportObject(settings, obj, true, false)) {
+        if (auto t = exportObject(paths, settings, obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
             t->visibility = { true, non_lib, non_lib };
         }
-        exportReference(settings, obj, ctx2);
+        exportReference(paths, settings, obj, ctx2);
     }
 
     return dst;
 }
 
-ms::CameraPtr msblenContext::exportCamera(BlenderSyncSettings& settings, const Object *src)
+ms::CameraPtr msblenContext::exportCamera(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
-    dst.path = get_path(src);
+    dst.path = paths.get_path(src);
     extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
     m_entity_manager.add(ret);
     return ret;
 }
 
-ms::LightPtr msblenContext::exportLight(BlenderSyncSettings& settings, const Object *src)
+ms::LightPtr msblenContext::exportLight(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
-    dst.path = get_path(src);
+    dst.path = paths.get_path(src);
     extractTransformData(settings, src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
     m_entity_manager.add(ret);
     return ret;
 }
 
-ms::MeshPtr msblenContext::exportMesh(BlenderSyncSettings& settings, const Object *src)
+ms::MeshPtr msblenContext::exportMesh(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     // ignore particles
     if (//FindModifier(src, eModifierType_ParticleSystem) ||
@@ -676,7 +678,7 @@ ms::MeshPtr msblenContext::exportMesh(BlenderSyncSettings& settings, const Objec
 
     std::shared_ptr<ms::Mesh> ret = ms::Mesh::create();
     ms::Mesh& dst = *ret;
-    dst.path = get_path(src);
+    dst.path = paths.get_path(src);
 
     // transform
     extractTransformData(settings, src, dst);
@@ -1092,7 +1094,7 @@ ms::TransformPtr msblenContext::findBone(Object *armature, Bone *bone)
     return it != m_bones.end() ? it->second : nullptr;
 }
 
-msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const std::string& base_path, bool children)
+msblenContext::ObjectRecord& msblenContext::touchRecord(msblenContextPathProvider& paths, const Object *obj, const std::string& base_path, bool children)
 {
     std::map<void*, ObjectRecord>::mapped_type& rec = m_obj_records[obj];
     if (rec.touched && base_path.empty())
@@ -1100,7 +1102,7 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const
 
     rec.touched = true;
 
-    std::string local_path = get_path(obj);
+    std::string local_path = paths.get_path(obj);
     if (local_path != rec.path) {
         rec.renamed = true;
         rec.path = local_path;
@@ -1113,14 +1115,14 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const
         blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
         for (struct bPoseChannel* pose : poses) {
             m_obj_records[pose->bone].touched = true;
-            m_entity_manager.touch(base_path + get_path(obj, pose->bone));
+            m_entity_manager.touch(base_path + paths.get_path(obj, pose->bone));
         }
     }
 
     // care children
     if (children) {
         each_child(obj, [&](Object *child) {
-            touchRecord(child, base_path, true);
+            touchRecord(paths, child, base_path, true);
         });
     }
 
@@ -1131,7 +1133,7 @@ msblenContext::ObjectRecord& msblenContext::touchRecord(const Object *obj, const
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
         for (auto go : gobjects)
-            touchRecord(go->ob, group_path, true);
+            touchRecord(paths, go->ob, group_path, true);
     }
     return rec;
 }
@@ -1149,12 +1151,12 @@ void msblenContext::eraseStaleObjects()
 }
 
 
-void msblenContext::exportAnimation(BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path)
+void msblenContext::exportAnimation(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path)
 {
     if (!obj)
         return;
 
-    std::string path = base_path + get_path(obj);
+    std::string path = base_path + paths.get_path(obj);
     if (m_anim_records.find(path) != m_anim_records.end())
         return;
 
@@ -1176,34 +1178,34 @@ void msblenContext::exportAnimation(BlenderSyncSettings& settings, Object *obj, 
     case OB_CAMERA:
     {
         // camera
-        exportAnimation(settings, obj->parent, true, base_path);
+        exportAnimation(paths, settings, obj->parent, true, base_path);
         add_animation(path, obj, ms::CameraAnimation::create(), &msblenContext::extractCameraAnimationData);
         break;
     }
     case OB_LAMP:
     {
         // lights
-        exportAnimation(settings, obj->parent, true, base_path);
+        exportAnimation(paths, settings, obj->parent, true, base_path);
         add_animation(path, obj, ms::LightAnimation::create(), &msblenContext::extractLightAnimationData);
         break;
     }
     case OB_MESH:
     {
         // meshes
-        exportAnimation(settings, obj->parent, true, base_path);
+        exportAnimation(paths, settings, obj->parent, true, base_path);
         add_animation(path, obj, ms::MeshAnimation::create(), &msblenContext::extractMeshAnimationData);
         break;
     }
     default:
     if (force || obj->type == OB_ARMATURE || group) {
-        exportAnimation(settings, obj->parent, true, base_path);
+        exportAnimation(paths, settings, obj->parent, true, base_path);
         add_animation(path, obj, ms::TransformAnimation::create(), &msblenContext::extractTransformAnimationData);
 
         if (obj->type == OB_ARMATURE && (!settings.BakeModifiers && settings.sync_bones)) {
             // bones
             blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
             for (struct bPoseChannel* pose : poses) {
-                auto pose_path = base_path + get_path(obj, pose->bone);
+                auto pose_path = base_path + paths.get_path(obj, pose->bone);
                 add_animation(pose_path, pose, ms::TransformAnimation::create(), &msblenContext::extractPoseAnimationData);
             }
         }
@@ -1221,7 +1223,7 @@ void msblenContext::exportAnimation(BlenderSyncSettings& settings, Object *obj, 
 
         auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
         for (auto go : gobjects) {
-            exportAnimation(settings, go->ob, false, group_path);
+            exportAnimation(paths, settings, go->ob, false, group_path);
         }
     }
 }
@@ -1402,15 +1404,15 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(m_settings, obj, false);
+                exportObject(m_default_paths, m_settings, obj, false);
             else
-                touchRecord(obj); // this cannot be covered by getNodes()
+                touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
         eraseStaleObjects();
     }
     else {
         for(std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(m_settings, obj, true);
+            exportObject(m_default_paths, m_settings, obj, true);
         eraseStaleObjects();
     }
 
@@ -1438,7 +1440,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
 
     // list target objects
     for (std::vector<Object*>::value_type obj : getNodes(scope))
-        exportAnimation(m_settings, obj, false);
+        exportAnimation(m_default_paths, m_settings, obj, false);
 
     // advance frame and record animations
     {
@@ -1562,7 +1564,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
     for (const std::vector<Object*>::value_type& n : nodes)
-        exportObject(m_settings, n, true);
+        exportObject(m_default_paths, m_settings, n, true);
 
     m_texture_manager.clearDirtyFlags();
     WaitAndKickAsyncExport();
@@ -1573,7 +1575,7 @@ void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 void msblenContext::flushPendingList() {
     if (!m_pending.empty() && !m_sender.isExporting()) {
         for (auto p : m_pending)
-            exportObject(m_settings, p, false);
+            exportObject(m_default_paths, m_settings, p, false);
         m_pending.clear();
         WaitAndKickAsyncExport();
     }

@@ -4,7 +4,7 @@
 #include "msblenUtils.h"
 
 namespace bl = blender;
-
+namespace msblenUtils {
 std::string get_name(const Material *obj)
 {
     std::string ret;
@@ -122,3 +122,4 @@ bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
 bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
+}
