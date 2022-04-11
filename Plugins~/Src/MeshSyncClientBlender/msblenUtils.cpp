@@ -73,6 +73,40 @@ bool visible_in_viewport(const Object *obj)
     return !bl::BObject(obj).hide_viewport();
 }
 
+bool visible_in_collection(LayerCollection* layerCollection, const Object* obj)
+{
+    // Check if the object is in the layer collection, if it is, check if the layer is excluded:
+    for (auto collectionObject : blender::list_range((CollectionObject*)layerCollection->collection->gobject.first)) {
+        if (collectionObject->ob == obj) {
+            if (!(layerCollection->flag & LAYER_COLLECTION_EXCLUDE)) {
+                return true;
+            }
+        }
+    }
+
+    // Check child layer collections:
+    for (auto childCollection : blender::list_range((LayerCollection*)layerCollection->layer_collections.first)) {
+        if (visible_in_collection(childCollection, obj)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool visible_in_collection(const Object* obj)
+{
+    auto viewLayer = bl::BlenderPyContext::get().view_layer();
+
+    for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
+        if (visible_in_collection(layerCollection, obj)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const ModifierData* FindModifier(const Object *obj, ModifierType type)
 {
     for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
