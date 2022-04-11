@@ -123,13 +123,14 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
+            update_step = 0.0001 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
             context.window_manager.modal_handler_add(self)
 
             if bpy.app.background:
                 import time
                 while True:
-                    time.sleep(0.1)
+                    time.sleep(update_step)
                     self.update()
 
             return {'RUNNING_MODAL'}
