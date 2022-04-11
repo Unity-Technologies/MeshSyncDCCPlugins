@@ -294,7 +294,7 @@ void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Ob
     mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
-    vis = { true, visible_in_render(obj), visible_in_viewport(obj) };
+    vis = { visible_in_collection(obj), visible_in_render(obj), visible_in_viewport(obj) };
 
     const mu::float4x4 local = getLocalMatrix(obj);
     const mu::float4x4 world = getWorldMatrix(obj);
@@ -536,8 +536,7 @@ ms::TransformPtr msblenContext::exportReference(BlenderSyncSettings& settings, O
     auto assign_base_params = [&]() {
         extractTransformData(settings, src, *dst);
         dst->path = path;
-        // todo:
-        dst->visibility = {};
+        dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
     };
 
@@ -603,7 +602,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(BlenderSyncSettings& settings, 
 
     std::shared_ptr<ms::Transform> dst = ms::Transform::create();
     dst->path = path;
-    dst->visibility = { true, visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
+    dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
 
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = settings.BakeTransform ? mu::float3::zero() : offset_pos;
@@ -618,7 +617,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(BlenderSyncSettings& settings, 
         auto obj = go->ob;
         if (auto t = exportObject(settings, obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
-            t->visibility = { true, non_lib, non_lib };
+            t->visibility = { visible_in_collection(obj), non_lib, non_lib };
         }
         exportReference(settings, obj, ctx2);
     }
