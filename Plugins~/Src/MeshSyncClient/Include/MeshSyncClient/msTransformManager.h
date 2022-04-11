@@ -19,10 +19,10 @@ public:
         m_always_mark_dirty = v;
     }
 
-	virtual void add(TransformPtr transform) = 0;
-	virtual void touch(const std::string& path) = 0;
-	virtual void eraseStaleEntities() = 0;
-	virtual void clear() = 0;
+    virtual void add(TransformPtr transform) = 0;
+    virtual void touch(const std::string& path) = 0;
+    virtual void eraseStaleEntities() = 0;
+    virtual void clear() = 0;
 
     TransformManager() {}
     ~TransformManager() {}
