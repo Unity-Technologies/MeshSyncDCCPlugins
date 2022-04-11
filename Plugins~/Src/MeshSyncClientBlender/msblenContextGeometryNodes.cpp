@@ -60,11 +60,10 @@ void msblenContext::exportInstances() {
         auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
             exportObject(*m_instances_state, m_default_paths, settings, instanced, false);
-            return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
         }
-        else {
-            return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
-        }
+
+        return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
+
         });
 
     m_geometryNodeUtils.setInstancesDirty(false);
