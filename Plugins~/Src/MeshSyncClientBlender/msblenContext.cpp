@@ -300,7 +300,7 @@ void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Ob
     mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
-    vis = { true, visible_in_render(obj), visible_in_viewport(obj) };
+    vis = { visible_in_collection(obj), visible_in_render(obj), visible_in_viewport(obj) };
 
     const mu::float4x4 local = getLocalMatrix(obj);
     const mu::float4x4 world = getWorldMatrix(obj);
@@ -549,9 +549,8 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
     auto assign_base_params = [&]() {
         extractTransformData(settings, src, *dst);
         dst->path = path;
-        // todo
 
-        dst->visibility = {};
+        dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
     };
 
@@ -618,7 +617,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(msblenContextState& state, msbl
 
     std::shared_ptr<ms::Transform> dst = ms::Transform::create();
     dst->path = path;
-    dst->visibility = { true, visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
+    dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
 
     const mu::tvec3<float> offset_pos = -get_instance_offset(group);
     dst->position = settings.BakeTransform ? mu::float3::zero() : offset_pos;
@@ -633,7 +632,7 @@ ms::TransformPtr msblenContext::exportDupliGroup(msblenContextState& state, msbl
         auto obj = go->ob;
         if (auto t = exportObject(state, paths, settings, obj, true, false)) {
             const bool non_lib = obj->id.lib == nullptr;
-            t->visibility = { true, non_lib, non_lib };
+            t->visibility = { visible_in_collection(obj), non_lib, non_lib };
         }
         exportReference(state, paths, settings, obj, ctx2);
     }
@@ -701,10 +700,8 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
             (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-
-            if (settings.BakeModifiers) {
-                auto blContext = bl::BlenderPyContext::get();
-                Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
+            if (settings.BakeModifiers ) {
+                Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
             if (Mesh *tmp = bobj.to_mesh()) {
@@ -997,7 +994,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         if (num_lines > 0) {
             num_indices = dst.indices.size();
 
-            if (!dst.normals.empty() && m_settings.sync_normals == msbNormalSyncMode::PerIndex) {
+            if (!dst.normals.empty() && settings.sync_normals == msbNormalSyncMode::PerIndex) {
                 dst.normals.resize(num_indices, mu::float3::zero());
             }
             if (!dst.uv0.empty()) {
