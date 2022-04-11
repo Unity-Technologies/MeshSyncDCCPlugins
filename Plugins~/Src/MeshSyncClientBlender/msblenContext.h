@@ -91,14 +91,15 @@ private:
 
     struct AnimationRecord  {
         MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
-        using extractor_t = void (msblenContext::*)(ms::TransformAnimation& dst, void *obj);
+        using extractor_t = void (msblenContext::*)(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
 
         void *obj = nullptr;
         ms::TransformAnimationPtr dst;
         extractor_t extractor = nullptr;
+        BlenderSyncSettings settings;
 
         void operator()(msblenContext *_this) {
-            (_this->*extractor)(*dst, obj);
+            (_this->*extractor)(settings,*dst, obj);
         }
     };
 
@@ -120,46 +121,46 @@ private:
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
 
-    ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
-    ms::TransformPtr exportTransform(const Object *obj);
-    ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(const Object *obj);
-    ms::TransformPtr exportReference(Object *obj, const DupliGroupContext& ctx);
-    ms::TransformPtr exportDupliGroup(const Object *obj, const DupliGroupContext& ctx);
-    ms::CameraPtr exportCamera(const Object *obj);
-    ms::LightPtr exportLight(const Object *obj);
-    ms::MeshPtr exportMesh(const Object *obj);
+    ms::TransformPtr exportObject(BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
+    ms::TransformPtr exportTransform(BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportPose(BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
+    ms::TransformPtr exportArmature(BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportReference(BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
+    ms::TransformPtr exportDupliGroup(BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
+    ms::CameraPtr exportCamera(BlenderSyncSettings& settings, const Object *obj);
+    ms::LightPtr exportLight(BlenderSyncSettings& settings, const Object *obj);
+    ms::MeshPtr exportMesh(BlenderSyncSettings& settings, const Object *obj);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Bone *bone);
     mu::float4x4 getLocalMatrix(const bPoseChannel *pose);
-    void extractTransformData(const Object *src,
+    void extractTransformData(BlenderSyncSettings& settings, const Object *src,
         mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
         mu::float4x4 *dst_world = nullptr, mu::float4x4 *dst_local = nullptr);
-    void extractTransformData(const Object *src, ms::Transform& dst);
-    void extractTransformData(const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
+    void extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst);
+    void extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
 
     void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
     void extractLightData(const Object *src,
         ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle);
 
-    void doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world);
-    void doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world);
+    void doExtractBlendshapeWeights(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractNonEditMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractEditMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
 
     ms::TransformPtr findBone(Object *armature, Bone *bone);
     ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
     void eraseStaleObjects();
 
-    void exportAnimation(Object *obj, bool force, const std::string& base_path = "");
-    void extractTransformAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractPoseAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractCameraAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractLightAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
+    void exportAnimation(BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
+    void extractTransformAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractPoseAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractCameraAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractLightAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractMeshAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
 
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
