@@ -53,7 +53,11 @@ include(UnityPackage)
 setup_unity_package_version()
 add_definitions(-DMESHSYNC_DCC_PLUGIN_VER="${UNITY_PACKAGE_VERSION}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+if(WIN32)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+elseif(APPLE)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+endif()
 
 # Force Unicode character set
 add_definitions(-DUNICODE -D_UNICODE)
