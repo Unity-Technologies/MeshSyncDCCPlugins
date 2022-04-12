@@ -4,6 +4,7 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h" 
 
+namespace msblenUtils {
 std::string get_name(const Material *obj);
 std::string get_name(const Object *obj);
 std::string get_name(const Bone *obj);
@@ -109,5 +110,6 @@ inline mu::float4 to_float4(const MLoopCol& c)
         c.b * (1.0f / 255.0f),
         c.a * (1.0f / 255.0f),
     };
+}
 }
 

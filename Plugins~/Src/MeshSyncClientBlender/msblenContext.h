@@ -19,6 +19,7 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
+#include <msblenContextDefaultPathProvider.h>
 
 class msblenContext;
 
@@ -121,15 +122,15 @@ private:
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
 
-    ms::TransformPtr exportObject(BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
-    ms::TransformPtr exportTransform(BlenderSyncSettings& settings, const Object *obj);
-    ms::TransformPtr exportPose(BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(BlenderSyncSettings& settings, const Object *obj);
-    ms::TransformPtr exportReference(BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
-    ms::TransformPtr exportDupliGroup(BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
-    ms::CameraPtr exportCamera(BlenderSyncSettings& settings, const Object *obj);
-    ms::LightPtr exportLight(BlenderSyncSettings& settings, const Object *obj);
-    ms::MeshPtr exportMesh(BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportObject(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
+    ms::TransformPtr exportTransform(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportPose(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
+    ms::TransformPtr exportArmature(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportReference(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
+    ms::TransformPtr exportDupliGroup(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
+    ms::CameraPtr exportCamera(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::LightPtr exportLight(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::MeshPtr exportMesh(msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
@@ -152,10 +153,10 @@ private:
     void doExtractEditMeshData(BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
 
     ms::TransformPtr findBone(Object *armature, Bone *bone);
-    ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
+    ObjectRecord& touchRecord(msblenContextPathProvider& paths, const Object *obj, const std::string& base_path = "", bool children = false);
     void eraseStaleObjects();
 
-    void exportAnimation(BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
+    void exportAnimation(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
     void extractTransformAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractPoseAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractCameraAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
@@ -167,6 +168,8 @@ private:
     void WaitAndKickAsyncExport();
 
 private:
+    msblenContextDefaultPathProvider m_default_paths;
+
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
     std::set<const Object*> m_pending;
