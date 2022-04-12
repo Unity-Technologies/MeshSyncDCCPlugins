@@ -67,9 +67,9 @@ msblenContext& msblenContext::getInstance() {
 void msblenContext::Destroy() {
     m_texture_manager.clear();
     m_material_manager.clear();
-    m_entity_manager.clear();
 
     m_entities_state->clear();
+    m_instances_state->clear();
 }
 
 
@@ -1102,12 +1102,13 @@ void msblenContext::exportAnimation(msblenContextPathProvider& paths, BlenderSyn
     AnimationRecord::extractor_t extractor = nullptr;
     Collection* group = get_instance_collection(obj);
 
-    auto add_animation = [this, &clip](const std::string& path, void *obj, ms::TransformAnimationPtr dst, AnimationRecord::extractor_t extractor) {
+    auto add_animation = [this, &clip](BlenderSyncSettings& settings, const std::string& path, void *obj, ms::TransformAnimationPtr dst, AnimationRecord::extractor_t extractor) {
         dst->path = path;
         std::map<std::basic_string<char>, AnimationRecord>::mapped_type& rec = m_anim_records[path];
         rec.extractor = extractor;
         rec.obj = obj;
         rec.dst = dst;
+        rec.settings = settings;
         clip->addAnimation(dst);
     };
 
@@ -1116,34 +1117,34 @@ void msblenContext::exportAnimation(msblenContextPathProvider& paths, BlenderSyn
     {
         // camera
         exportAnimation(paths, settings, obj->parent, true, base_path);
-        add_animation(path, obj, ms::CameraAnimation::create(), &msblenContext::extractCameraAnimationData);
+        add_animation(settings, path, obj, ms::CameraAnimation::create(), &msblenContext::extractCameraAnimationData);
         break;
     }
     case OB_LAMP:
     {
         // lights
         exportAnimation(paths, settings, obj->parent, true, base_path);
-        add_animation(path, obj, ms::LightAnimation::create(), &msblenContext::extractLightAnimationData);
+        add_animation(settings, path, obj, ms::LightAnimation::create(), &msblenContext::extractLightAnimationData);
         break;
     }
     case OB_MESH:
     {
         // meshes
         exportAnimation(paths, settings, obj->parent, true, base_path);
-        add_animation(path, obj, ms::MeshAnimation::create(), &msblenContext::extractMeshAnimationData);
+        add_animation(settings, path, obj, ms::MeshAnimation::create(), &msblenContext::extractMeshAnimationData);
         break;
     }
     default:
     if (force || obj->type == OB_ARMATURE || group) {
         exportAnimation(paths, settings, obj->parent, true, base_path);
-        add_animation(path, obj, ms::TransformAnimation::create(), &msblenContext::extractTransformAnimationData);
+        add_animation(settings, path, obj, ms::TransformAnimation::create(), &msblenContext::extractTransformAnimationData);
 
         if (obj->type == OB_ARMATURE && (!settings.BakeModifiers && settings.sync_bones)) {
             // bones
             blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
             for (struct bPoseChannel* pose : poses) {
                 auto pose_path = base_path + paths.get_path(obj, pose->bone);
-                add_animation(pose_path, pose, ms::TransformAnimation::create(), &msblenContext::extractPoseAnimationData);
+                add_animation(settings, pose_path, pose, ms::TransformAnimation::create(), &msblenContext::extractPoseAnimationData);
             }
         }
         break;
@@ -1328,6 +1329,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
+    m_instances_state->manager.setAlwaysMarkDirty(dirty_all);
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1345,13 +1347,21 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
-        m_entities_state->eraseStaleObjects();
     }
     else {
         for(std::vector<Object*>::value_type obj : getNodes(scope))
             exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
-        m_entities_state->eraseStaleObjects();
     }
+
+#if BLENDER_VERSION >= 300
+    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
+        exportInstances();
+    }
+#endif
+
+    m_asyncTasksController.Wait();
+    m_entities_state->eraseStaleObjects();
+    m_instances_state->eraseStaleObjects();
 
     WaitAndKickAsyncExport();
     return true;
@@ -1510,10 +1520,16 @@ void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 //----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::flushPendingList() {
-    if (!m_entities_state->pending.empty() && !m_sender.isExporting()) {
-        for (auto p : m_entities_state->pending)
-            exportObject(*m_entities_state,m_default_paths, m_settings, p, false);
-        m_entities_state->pending.clear();
+    flushPendingList(*m_entities_state, m_default_paths, m_settings);
+    flushPendingList(*m_instances_state, m_default_paths, m_settings);
+}
+
+void msblenContext::flushPendingList(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings) {
+    if (!state.pending.empty() && !m_sender.isExporting()) {
+        for (auto p : state.pending)
+            exportObject(state, paths, settings, p, false);
+        state.pending.clear();
+
         WaitAndKickAsyncExport();
     }
 }
@@ -1533,6 +1549,9 @@ void msblenContext::WaitAndKickAsyncExport()
 
     m_entities_state->clearRecordsState();
     m_entities_state->bones.clear();
+
+    m_instances_state->clearRecordsState();
+    m_instances_state->bones.clear();
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
@@ -1555,15 +1574,19 @@ void msblenContext::WaitAndKickAsyncExport()
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
         t.geometries = m_entity_manager.getDirtyGeometries();
+        t.instanceInfos = m_instances_manager.getDirtyInstances();
+        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
+        t.deleted_instances = m_instances_manager.getDeleted();
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.transforms) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
+            for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.instanceMeshes) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
         }
     };
@@ -1573,6 +1596,21 @@ void msblenContext::WaitAndKickAsyncExport()
         m_material_manager.clearDirtyFlags();
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
+        m_instances_manager.clearDirtyFlags();
     };
     exporter->kick();
+}
+
+/// Application Handler Events ///
+
+/// <summary>
+/// Event corresponding to the application handler
+/// https://docs.blender.org/api/current/bpy.app.handlers.html
+/// </summary>
+void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
+{
+#if BLENDER_VERSION >= 300
+    m_geometryNodeUtils.setInstancesDirty(true);
+#endif
+
 }

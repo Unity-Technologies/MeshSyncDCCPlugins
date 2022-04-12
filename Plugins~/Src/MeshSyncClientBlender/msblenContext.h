@@ -19,8 +19,20 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
-#include <msblenContextDefaultPathProvider.h>
+#include "msblenGeometryNodeUtils.h"
+
+#include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msTransformManager.h"
+
+
+#if BLENDER_VERSION >= 300
+#include <msblenGeometryNodeUtils.h>
+#endif
+
 #include "../MeshSyncClientBlender/msblenContextState.h"
+#include <MeshSyncClient/msEntityManager.h>
+#include <msblenContextDefaultPathProvider.h>
+#include <msblenContextIntermediatePathProvider.h>
 
 class msblenContext;
 
@@ -48,6 +60,9 @@ public:
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
     void flushPendingList();
+    void flushPendingList(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings);
+
+    void onDepsgraphUpdatedPost(Depsgraph* graph);
 
 private:
     // todo
@@ -144,11 +159,29 @@ private:
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
+#if BLENDER_VERSION >= 300
+    void exportInstances();
+    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse);
+    void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
+
+    ms::InstanceInfoPtr exportInstanceInfo(
+        msblenContextState& state,
+        msblenContextPathProvider& paths,
+        Object* instancedObject,
+        Object* parent,
+        SharedVector<mu::float4x4> mat);
+
+#endif
+
 private:
     std::shared_ptr<msblenContextState> m_entities_state =
         std::shared_ptr<msblenContextState>(new msblenContextState(m_entity_manager));
 
+    std::shared_ptr<msblenContextState> m_instances_state =
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_instances_manager));
+
     msblenContextDefaultPathProvider m_default_paths;
+    msblenContextIntermediatePathProvider m_intermediate_paths;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
@@ -164,6 +197,11 @@ private:
     ms::EntityManager m_entity_manager;
     ms::AsyncSceneSender m_sender;
     ms::SceneCacheWriter m_cache_writer;
+    ms::InstancesManager m_instances_manager;
+
+#if BLENDER_VERSION >= 300
+    blender::GeometryNodesUtils m_geometryNodeUtils;
+#endif
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;
