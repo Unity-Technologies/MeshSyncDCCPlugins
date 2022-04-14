@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.2-preview] - 2022-04-14
+
+### Fixed
+* test release
+
 ## [0.12.1-preview] - 2022-04-06
 
 ### Fixed
