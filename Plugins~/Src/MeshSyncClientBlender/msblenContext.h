@@ -70,7 +70,7 @@ public:
 
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
-    void requestProperties();
+    void requestServerInitiatedMessage();
 
 private:
     // todo
@@ -131,6 +131,7 @@ private:
     ms::CameraPtr exportCamera(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::LightPtr exportLight(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::MeshPtr exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::CurvePtr exportCurve(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
@@ -152,6 +153,7 @@ private:
     void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
 
+    void doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world);
 
 
     ms::TransformPtr findBone(msblenContextState& state, Object* armature, Bone* bone);

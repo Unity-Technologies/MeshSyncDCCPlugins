@@ -8,6 +8,7 @@
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msSceneSettings.h"
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneGraph/msCurve.h"
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
@@ -490,9 +491,23 @@ ms::TransformPtr msblenContext::exportObject(
         else if (!tip && parent)
             handle_transform();
         break;
+    }  
+    case OB_CURVE: {
+        if (settings.sync_meshes) {
+            handle_parent();
+
+            if (settings.curves_as_mesh) {          
+                rec.dst = exportMesh(state, paths, settings, obj);
+            }
+            else {
+                rec.dst = exportCurve(state, paths, settings, obj);
+            }
+        }
+        else if (!tip && parent)
+            handle_transform();
+        break;
     }
     case OB_FONT:  //
-    case OB_CURVE: //
     case OB_SURF:  //
     case OB_MBALL: // these can be converted to mesh
     {
@@ -712,6 +727,74 @@ ms::LightPtr msblenContext::exportLight(msblenContextState& state, msblenContext
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
     state.manager.add(ret);
     return ret;
+}
+
+ms::CurvePtr msblenContext::exportCurve(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src)
+{
+    std::shared_ptr<ms::Curve> ret = ms::Curve::create();
+
+    bl::BObject bobj(src);
+    Curve* data = nullptr;
+    data = (Curve*)src->data;
+
+    ms::Curve& dst = *ret;
+    dst.path = paths.get_path(src);
+
+    bool is_editing = false;
+
+    // transform
+    extractTransformData(settings, src, dst);
+
+    if (settings.sync_curves) {
+        auto task = [this, ret, src, data, &state, &settings]() {
+            auto& dst = *ret;
+            doExtractCurveData(state, settings, dst, src, data, dst.world_matrix);
+            state.manager.add(ret);
+        };
+
+        if (settings.multithreaded)
+            m_asyncTasksController.AddTask(std::launch::async, task);
+        else
+            task();
+    }
+
+    return ret;
+}
+
+void msblenContext::doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world)
+{
+    if (settings.sync_curves) {
+        //bl::BObject bobj(obj);
+        //bl::BCurve bcurve(data);
+        const bool is_editing = data->editnurb != nullptr;
+
+        ListBase nurb;
+        if (is_editing) {
+            nurb = data->editnurb->nurbs;
+        }
+        else {
+            nurb = data->nurb;
+        }
+
+        dst.splines.clear();
+
+        for (auto nurb : blender::list_range((Nurb*)nurb.first)) {
+            dst.splines.push_back(ms::CurveSpline::create());
+            auto curveSpline = dst.splines.back();
+
+            curveSpline->cos.resize_discard(nurb->pntsu);
+            curveSpline->handles_left.resize_discard(nurb->pntsu);
+            curveSpline->handles_right.resize_discard(nurb->pntsu);
+
+            for (int i = 0; i < nurb->pntsu; i++) {
+                BezTriple* bezt = &nurb->bezt[i];
+
+                curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
+                curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
+                curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
+            }
+        }
+    }
 }
 
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
@@ -1160,7 +1243,6 @@ ms::TransformPtr msblenContext::findBone(msblenContextState& state, Object *arma
     return it != state.bones.end() ? it->second : nullptr;
 }
 
-
 void msblenContext::exportAnimation(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path)
 {
     if (!obj)
@@ -1395,14 +1477,14 @@ bool msblenContext::sendMaterials(bool dirty_all)
 
 
 
-void msblenContext::requestProperties()
+void msblenContext::requestServerInitiatedMessage()
 {
     if (m_settings.ExportSceneCache) {
         return;
     }
 
     m_sender.on_properties_received = [this](auto properties) { m_property_manager.updateFromServer(properties); };
-    m_sender.requestProperties();
+    m_sender.requestServerInitiatedMessage();
 }
 
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)

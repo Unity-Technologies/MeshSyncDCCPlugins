@@ -135,6 +135,29 @@ namespace blender
         MLoopUV* GetUV(const int index) const;
     };
 
+    //----------------------------------------------------------------------------------------------------------------------
+    
+    class BNurb {
+    public:
+        MSBLEN_BOILERPLATE(Nurb)
+        MSBLEN_COMPATIBLE(BlenderPyID)
+
+        barray_range<MLoop> indices();
+        barray_range<MEdge> edges();
+        barray_range<MPoly> polygons();
+        barray_range<MVert> bezier_points();
+    };
+
+    class BCurve {
+    public:
+        MSBLEN_BOILERPLATE(Curve)
+        MSBLEN_COMPATIBLE(BlenderPyID)
+
+        blist_range<Nurb> nurbs();
+    };
+
+    //----------------------------------------------------------------------------------------------------------------------
+
     class BMaterial
     {
     public:

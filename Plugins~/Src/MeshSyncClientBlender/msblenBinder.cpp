@@ -37,6 +37,9 @@ static FunctionRNA* BMesh_update;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
+StructRNA* BCurve::s_type;
+static PropertyRNA* BCurve_nurbs;
+
 StructRNA* BMaterial::s_type;
 static PropertyRNA* BMaterial_use_nodes;
 static PropertyRNA* BMaterial_active_node_material;
@@ -146,6 +149,12 @@ void setup(py::object bpy_context)
                 if (match_func("update")) BMesh_update = func;
             }
         }
+        else if (match_type("Curve")) {
+            BCurve::s_type = type;
+            each_prop{
+                if (match_prop("nurbs")) BCurve_nurbs = prop;
+            }
+        }
         else if (match_type("UVLoopLayers")) {
             each_prop{
                 if (match_prop("active")) UVLoopLayers_active = prop;
@@ -177,7 +186,7 @@ void setup(py::object bpy_context)
                 if (match_prop("use_nodes")) BMaterial_use_nodes = prop;
                 if (match_prop("active_node_material")) BMaterial_active_node_material = prop;
             }
-        }
+        }      
         else if (match_type("Scene")) {
             BlenderPyScene::s_type = type;
             each_prop{
@@ -442,6 +451,10 @@ MLoopUV* BEditMesh::GetUV(const int index) const {
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
+
+blist_range<Nurb> BCurve::nurbs() {
+    return list_range((Nurb*)m_ptr->nurb.first);
+}
 
 const char *BMaterial::name() const
 {
