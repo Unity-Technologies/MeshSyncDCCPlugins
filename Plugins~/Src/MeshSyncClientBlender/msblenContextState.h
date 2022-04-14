@@ -27,7 +27,7 @@ public:
             void clearState();
     };
 
-    msblenContextState(ms::TransformManager& manager) : manager(manager) 
+    msblenContextState(ms::ITransformManager& manager) : manager(manager) 
     {
     };
 
@@ -35,14 +35,14 @@ public:
     std::map<const void*, msblenContextState::ObjectRecord> records;
     std::map<Bone*, ms::TransformPtr> bones;
 
-    ms::TransformManager& manager;
+    ms::ITransformManager& manager;
 
-    void msblenContextState::eraseObjectRecords();
-    void msblenContextState::eraseStaleObjects();
+    void eraseObjectRecords();
+    void eraseStaleObjects();
     void clear();
     void clearRecordsState();
 
-    msblenContextState::ObjectRecord& msblenContextState::touchRecord(
+    msblenContextState::ObjectRecord& touchRecord(
         msblenContextPathProvider& path, 
         const Object* obj, 
         const std::string& base_path = "", 

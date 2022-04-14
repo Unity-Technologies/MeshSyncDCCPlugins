@@ -36,7 +36,6 @@ namespace msblenUtils {
         }
         return ret;
     }
-
     std::string get_path(const Object* obj)
     {
         std::string ret;
@@ -108,7 +107,7 @@ namespace msblenUtils {
     }
 
     bool visible_in_collection(const Object* obj) {
-        auto viewLayer = bl::BlenderPyContext::get().viewLayer();
+        auto viewLayer = bl::BlenderPyContext::get().view_layer();
 
         for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
             if (visible_in_collection(layerCollection, obj)) {

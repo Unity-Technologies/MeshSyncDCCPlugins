@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MeshSync/MeshSync.h"
-#include "MeshSync/SceneGraph/msIdentifier.h"
 #include<map>
 #include <unordered_map>
 #include "msTransformManager.h"
@@ -12,41 +11,69 @@ msDeclClassPtr(InstanceInfo)
 
 namespace ms {
 
-    class InstancesManager : public TransformManager
-    {
-    public:
-        std::vector<TransformPtr> getDirtyMeshes();
-        std::vector<InstanceInfoPtr> getDirtyInstances();
-        std::vector<Identifier>& getDeleted();
-        void clearDirtyFlags();
-        void add(InstanceInfoPtr instanceInfo);
-        void add(TransformPtr entity);
-        void clear();
-        void touch(const std::string& path);
+struct InstancesManagerRecord
+{
+    bool dirtyInstances = false;
+    bool dirtyMesh = false;
+    InstanceInfoPtr instances = nullptr;
+    TransformPtr entity = nullptr;
+    bool updated = false;
+};
 
-        void eraseStaleEntities();
+/// <summary>
+/// Manager for transforms and transform instances.
+/// </summary>
+class InstancesManager : public TransformManager<InstancesManagerRecord>
+{
+public:
+    /// <summary>
+    /// Returns meshes that have changed since the last export.
+    /// </summary>
+    std::vector<TransformPtr> getDirtyMeshes();
 
-        void setAlwaysMarkDirty(bool alwaysDirty);
+    /// <summary>
+    /// Returns instaces that have changed since the last export.
+    /// </summary>
+    std::vector<InstanceInfoPtr> getDirtyInstances();
 
-    private:
+    /// <summary>
+    /// Returns identifiers of records that have been deleted since the last export.
+    /// </summary>
+    std::vector<Identifier>& getDeleted();
 
-        struct Record
-        {
-            bool dirtyInstances = false;
-            bool dirtyMesh = false;
-            InstanceInfoPtr instances = nullptr;
-            TransformPtr entity = nullptr;
-            bool updated = false;
-        };
+    /// <summary>
+    /// Clears the dirty flags on the records.
+    /// </summary>
+    void clearDirtyFlags();
 
-        std::map<std::string, Record> m_records;
-        std::vector<Identifier> m_deleted;
-        bool m_always_mark_dirty;
+    /// <summary>
+    /// Adds a record about instancing information.
+    /// </summary>
+    void add(InstanceInfoPtr instanceInfo);
 
-        std::mutex m_mutex;
+    /// <summary>
+    /// Adds or updates a record about the transform.
+    /// </summary>
+    void add (TransformPtr entity) override;
 
-        Record& lockAndGet(const std::string& path);
-    };
+    /// <summary>
+    /// Clears the records collection.
+    /// </summary>
+    void clear() override;
+
+    /// <summary>
+    /// Touches the record at given path. 
+    /// The record will not be considered stale
+    /// at the end of exportation.
+    /// </summary>
+    void touch(const std::string& path) override;
+
+    /// <summary>
+    /// Erases records that have not 
+    /// been added or touched in the last exportation.
+    /// </summary>
+    void eraseStaleEntities() override;
+};
 
 
 

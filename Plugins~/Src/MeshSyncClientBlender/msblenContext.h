@@ -19,22 +19,22 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
-#include "msblenGeometryNodes.h"
 #include "msblenModifiers.h"
 
 #include "MeshSyncClient/msInstancesManager.h"
 #include "MeshSyncClient/msPropertyManager.h"
 #include "MeshSyncClient/msTransformManager.h"
 
+#include "msblenGeometryNodeUtils.h"
 
-#if BLENDER_VERSION >= 300
-#include <msblenGeometryNodes.h>
-#endif
+#include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msTransformManager.h"
 
 #include "../MeshSyncClientBlender/msblenContextState.h"
 #include <MeshSyncClient/msEntityManager.h>
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
+
 
 class msblenContext;
 
@@ -92,8 +92,6 @@ private:
         void recordAnimation(msblenContext *_this) const;
     };
 
-
-
     struct AnimationRecord  {
         MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
         using extractor_t = void (msblenContext::*)(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
@@ -104,7 +102,7 @@ private:
         BlenderSyncSettings settings;
 
         void operator()(msblenContext *_this) {
-            (_this->*extractor)(settings, *dst, obj);
+            (_this->*extractor)(settings,*dst, obj);
         }
     };
 
@@ -122,7 +120,8 @@ private:
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
-    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip = true);
+
+    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
     ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -152,12 +151,10 @@ private:
     void doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
-
     void doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world);
 
+    ms::TransformPtr findBone(msblenContextState& state, Object *armature, Bone *bone);
 
-    ms::TransformPtr findBone(msblenContextState& state, Object* armature, Bone* bone);
-    
     void exportAnimation(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
     void extractTransformAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractPoseAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
@@ -170,24 +167,24 @@ private:
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
-    void exportInstacesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>);
-    void exportInstacesFromScene(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse);
     void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
 
     ms::InstanceInfoPtr exportInstanceInfo(
-        msblenContextState& state, 
-        msblenContextPathProvider& paths, 
-        BlenderSyncSettings& settings, 
-        Object* instancedObject, 
-        Object* parent, 
+        msblenContextState& state,
+        msblenContextPathProvider& paths,
+        Object* instancedObject,
+        Object* parent,
         SharedVector<mu::float4x4> mat);
 
 #endif
 
 private:
+    std::shared_ptr<msblenContextState> m_entities_state =
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_entity_manager));
 
-    msblenContextState* m_entities_state = nullptr;
-    msblenContextState* m_instances_state = nullptr;
+    std::shared_ptr<msblenContextState> m_instances_state =
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_instances_manager));
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;

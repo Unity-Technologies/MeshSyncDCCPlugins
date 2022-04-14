@@ -3,6 +3,5 @@
 
 class msblenContextIntermediatePathProvider: public msblenContextPathProvider {
 public: 
-	std::string get_path(const Object* obj);
-	std::string get_path(const Object* obj, const Bone* bone);
+    std::string get_path(const Object* obj, const Bone* bone) override;
 };

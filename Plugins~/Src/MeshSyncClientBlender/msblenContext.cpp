@@ -63,8 +63,6 @@ void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
     (_this->*anim_extractor)(*dst_anim, obj);
 }
 
-
-
 //----------------------------------------------------------------------------------------------------------------------
 
 static msblenContext* s_instance = nullptr;
@@ -97,16 +95,11 @@ void msblenContext::Destroy() {
 
 msblenContext::msblenContext()
 {
-    m_entities_state = new msblenContextState(m_entity_manager);
-    m_instances_state = new  msblenContextState(m_instances_manager);
-
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
 }
 
 msblenContext::~msblenContext()
 {
-    delete m_entities_state;
-    delete m_instances_state;
     // no wait() because it can cause deadlock...
 }
 
@@ -313,38 +306,6 @@ static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& 
     s = mu::swap_yz(s);
 }
 
-bool isVisibleInCollection(LayerCollection* layerCollection, const Object* obj) {
-    // Check if the object is in the layer collection, if it is, check if the layer is excluded:
-    for (auto collectionObject : blender::list_range((CollectionObject*)layerCollection->collection->gobject.first)) {
-        if (collectionObject->ob == obj) {
-            if (!(layerCollection->flag & LAYER_COLLECTION_EXCLUDE)) {
-                return true;
-            }
-        }
-    }
-
-    // Check child layer collections:
-    for (auto childCollection : blender::list_range((LayerCollection*)layerCollection->layer_collections.first)) {
-        if (isVisibleInCollection(childCollection, obj)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool isVisibleInCollection(const Object* obj) {
-    auto viewLayer = bl::BlenderPyContext::get().viewLayer();
-
-    for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
-        if (isVisibleInCollection(layerCollection, obj)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Object *obj,
     mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
@@ -443,14 +404,8 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
-ms::TransformPtr msblenContext::exportObject(
-    msblenContextState& state,
-    msblenContextPathProvider& paths,
-    BlenderSyncSettings& settings,
-    const Object* obj, 
-    bool parent,
-    bool tip) {
-
+ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
+{
     if (!obj)
         return nullptr;
 
@@ -486,17 +441,17 @@ ms::TransformPtr msblenContext::exportObject(
         }
         if (settings.sync_meshes || (!settings.BakeModifiers && settings.sync_blendshapes)) {
             handle_parent();
-            rec.dst = exportMesh(state,paths, settings, obj);
+            rec.dst = exportMesh(state, paths, settings, obj);
         }
         else if (!tip && parent)
             handle_transform();
         break;
-    }  
+    }
     case OB_CURVE: {
         if (settings.sync_meshes) {
             handle_parent();
 
-            if (settings.curves_as_mesh) {          
+            if (settings.curves_as_mesh) {
                 rec.dst = exportMesh(state, paths, settings, obj);
             }
             else {
@@ -606,7 +561,7 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
 
 ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *src, const DupliGroupContext& ctx)
 {
-    auto& rec = state.touchRecord(paths, src);
+    msblenContextState::ObjectRecord& rec = state.touchRecord(paths, src);
     if (!rec.dst)
         return nullptr;
 
@@ -617,7 +572,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
     auto assign_base_params = [&]() {
         extractTransformData(settings, src, *dst);
         dst->path = path;
-        dst->visibility = {visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host)};
+        dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
     };
 
@@ -630,15 +585,14 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
-            auto& manager = state.manager;
-            auto do_merge = [this, dst, &dst_mesh, &src_mesh, &manager,&settings]() {
+            auto do_merge = [this, dst, &dst_mesh, &src_mesh, &settings, &state]() {
                 dst_mesh.merge(src_mesh);
                 if (settings.ExportSceneCache)
                     dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
-                manager.add(dst);
+                state.manager.add(dst);
             };
             if (settings.multithreaded)
                 // deferred to execute after extracting src mesh data is completed
@@ -835,10 +789,8 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
             (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
 
         if (need_convert) {
-
-            if (settings.BakeModifiers) {
-                auto blContext = bl::BlenderPyContext::get();
-                Depsgraph* depsgraph = blContext.evaluated_depsgraph_get();
+            if (settings.BakeModifiers ) {
+                Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
             if (Mesh *tmp = bobj.to_mesh()) {
@@ -857,7 +809,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     }
 
     if (data) {
-        auto task = [this, ret, src, data, &state, &settings]() {
+        auto task = [this, ret, src, data, &settings, &state]() {
             auto& dst = *ret;
             doExtractMeshData(state, settings, dst, src, data, dst.world_matrix);
             state.manager.add(ret);
@@ -1131,7 +1083,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         if (num_lines > 0) {
             num_indices = dst.indices.size();
 
-            if (!dst.normals.empty() && m_settings.sync_normals == msbNormalSyncMode::PerIndex) {
+            if (!dst.normals.empty() && settings.sync_normals == msbNormalSyncMode::PerIndex) {
                 dst.normals.resize(num_indices, mu::float3::zero());
             }
             if (!dst.uv0.empty()) {
@@ -1298,7 +1250,7 @@ void msblenContext::exportAnimation(msblenContextPathProvider& paths, BlenderSyn
             // bones
             blender::blist_range<struct bPoseChannel> poses = bl::list_range((bPoseChannel*)obj->pose->chanbase.first);
             for (struct bPoseChannel* pose : poses) {
-                auto pose_path = base_path + get_path(obj, pose->bone);
+                auto pose_path = base_path + paths.get_path(obj, pose->bone);
                 add_animation(settings, pose_path, pose, ms::TransformAnimation::create(), &msblenContext::extractPoseAnimationData);
             }
         }
@@ -1517,7 +1469,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             if (bid.is_updated() || bid.is_updated_data())
                 exportObject(*m_entities_state, m_default_paths, m_settings, obj, false);
             else
-                m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()                
+                m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
@@ -1527,7 +1479,6 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
 #if BLENDER_VERSION >= 300
     if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
-
         exportInstances();
 
         m_asyncTasksController.Wait();
@@ -1538,6 +1489,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     m_asyncTasksController.Wait();
     m_entities_state->eraseStaleObjects();
+    //m_instances_state->eraseStaleObjects();
 
     WaitAndKickAsyncExport();
     return true;
@@ -1687,7 +1639,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
 {
     for (const std::vector<Object*>::value_type& n : nodes)
-        exportObject(*m_entities_state, m_default_paths,m_settings, n, true);
+        exportObject(*m_entities_state, m_default_paths, m_settings, n, true);
 
     m_texture_manager.clearDirtyFlags();
     WaitAndKickAsyncExport();
@@ -1725,7 +1677,10 @@ void msblenContext::WaitAndKickAsyncExport()
     }
 
     m_entities_state->clearRecordsState();
+    m_entities_state->bones.clear();
+
     m_instances_state->clearRecordsState();
+    m_instances_state->bones.clear();
 
     m_entities_state->bones.clear();
 
@@ -1794,114 +1749,4 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 }
 
-/// Geometry Nodes Blender Context Functionality ///
-#if BLENDER_VERSION >= 300
-
-ms::InstanceInfoPtr msblenContext::exportInstanceInfo(
-    msblenContextState& state, 
-    msblenContextPathProvider& paths, 
-    BlenderSyncSettings& settings, 
-    Object* instancedObject, 
-    Object* parent, 
-    SharedVector<mu::float4x4> mat) {
-
-    auto info = ms::InstanceInfo::create();
-    info->path = paths.get_path(instancedObject);
-    info->parent_path = m_default_paths.get_path(parent); // parent will always be part of the scene
-
-    info->transforms = std::move(mat);
-
-    m_instances_manager.add(info);
-
-    return info;
-}
-
-void msblenContext::exportInstances() {
-   
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-
-    std::unordered_set<Object*> scene_objects;
-    scene.each_objects([this, &scene_objects](Object* obj)
-        {
-            scene_objects.insert(obj);
-        });
-
-    // Assume everything is now dirty
-    m_instances_state->manager.setAlwaysMarkDirty(true);
-
-    m_geometryNodeUtils.each_instanced_object([this, &scene_objects](Object* instanced, Object* parent, SharedVector<mu::float4x4> matrices, bool fromFile){
-        // If the instanced object is not present in the file
-        if (!fromFile) {
-            return exportInstancesFromTree(instanced, parent, std::move(matrices));
-        }
-
-        // check if the object has been already exported as part of the scene
-        auto scene_object = scene_objects.find(instanced);
-        if (scene_object == scene_objects.end()) {
-            return exportInstacesFromFile(instanced, parent, std::move(matrices));
-        }
-        else {
-            return exportInstacesFromScene(instanced, parent, std::move(matrices));
-        }
-    });
-
-    m_geometryNodeUtils.setInstancesDirty(false);
-
-    scene_objects.clear();   
-}
-void msblenContext::exportInstacesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
-{
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-
-    auto transform = exportObject(*m_instances_state, m_default_paths, settings, instancedObject, false);
-
-    auto object_world_matrix = getWorldMatrix(instancedObject);
-    auto inverse = mu::invert(object_world_matrix);
-;
-    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i) 
-        {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
-        });
-
-    for (int i = 0; i < mat.size(); i++) {
-       
-    }
-
-    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
-}
-void msblenContext::exportInstacesFromScene(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
-{
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-
-    auto world_matrix = getWorldMatrix(instancedObject);
-    auto inverse = mu::invert(world_matrix);
-
-    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i)
-        {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
-        });
-
-    exportInstanceInfo(*m_instances_state, m_default_paths, settings, instancedObject, parent, std::move(mat));
-}
-
-void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
-{
-    auto settings = m_settings;
-    settings.BakeTransform = false;
-    settings.BakeModifiers = false;
-    settings.multithreaded = false;
-
-    auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instancedObject, false);
-    transform->reset();
-
-    mu::parallel_for(0, mat.size(), 10, [this, &mat](int i)
-        {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
-        });
-
-    exportInstanceInfo(*m_instances_state, m_intermediate_paths, settings, instancedObject, parent, std::move(mat));
-}
-#endif
 

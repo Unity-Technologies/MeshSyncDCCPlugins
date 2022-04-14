@@ -6,8 +6,5 @@
 
 class msblenContextDefaultPathProvider : public msblenContextPathProvider {
 public:
-	std::string get_path(const Object* obj);
-	std::string get_path(const Object* arm, const Bone* obj);
-
-
+	std::string get_path(const Object* arm, const Bone* obj = nullptr) override;
 };

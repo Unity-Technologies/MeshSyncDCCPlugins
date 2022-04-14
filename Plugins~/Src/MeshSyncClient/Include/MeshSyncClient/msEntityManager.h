@@ -8,7 +8,22 @@ msDeclClassPtr(Transform)
 #ifndef msRuntime
 namespace ms {
 
-class EntityManager : public TransformManager
+
+struct EntityManagerRecord
+{
+    TransformPtr entity;
+    int order = 0;
+    uint64_t checksum_trans = 0;
+    uint64_t checksum_geom = 0;
+    bool dirty_trans = false;
+    bool dirty_geom = false;
+    bool updated = false;
+    std::future<void> task;
+
+    void waitTask();
+};
+
+class EntityManager : public TransformManager<EntityManagerRecord>
 {
 public:
     EntityManager();
@@ -16,7 +31,7 @@ public:
     bool empty() const;
 
     // clear all states (both entity and delete record will be cleared)
-    void clear();
+    void clear() override;
     void clearEntityRecords();
     void clearDeleteRecords();
 
@@ -28,9 +43,9 @@ public:
     bool eraseThreadSafe(TransformPtr v);
 
     // thread safe
-    void add(TransformPtr v);
+    void add(TransformPtr v) override;
 
-    void touch(const std::string& path);
+    void touch(const std::string& path) override;
 
     std::vector<TransformPtr> getAllEntities();
     std::vector<TransformPtr> getDirtyTransforms();
@@ -40,36 +55,18 @@ public:
     void clearDirtyFlags();
 
     std::vector<TransformPtr> getStaleEntities();
-    void eraseStaleEntities();
-
-    void setAlwaysMarkDirty(bool v);
+    void eraseStaleEntities() override;
 
 private:
-    struct Record
-    {
-        TransformPtr entity;
-        int order = 0;
-        uint64_t checksum_trans = 0;
-        uint64_t checksum_geom = 0;
-        bool dirty_trans = false;
-        bool dirty_geom = false;
-        bool updated = false;
-        std::future<void> task;
 
-        void waitTask();
-    };
     void waitTasks();
-    Record& lockAndGet(const std::string& path);
+
     void addTransform(TransformPtr v);
     void addGeometry(TransformPtr v);
 
-    using kvp = std::map<std::string, Record>::value_type;
+    using kvp = std::map<std::string, EntityManagerRecord>::value_type;
 
     int m_order = 0;
-    bool m_always_mark_dirty = false;
-    std::map<std::string, Record> m_records;
-    std::vector<Identifier> m_deleted;
-    std::mutex m_mutex;
 };
 
 } // namespace ms

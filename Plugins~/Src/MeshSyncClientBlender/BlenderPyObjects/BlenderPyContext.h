@@ -15,8 +15,8 @@ namespace blender
         static BlenderPyContext get();
         Main* data();
         Scene* scene();
-        ViewLayer* viewLayer();
         Depsgraph* evaluated_depsgraph_get();
+        ViewLayer* view_layer();
 
         static void UpdateDepsgraph(Depsgraph* depsgraph);
     };

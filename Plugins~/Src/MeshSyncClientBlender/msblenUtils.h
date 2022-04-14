@@ -5,23 +5,21 @@
 #include "BlenderPyObjects/BlenderPyContext.h" 
 
 namespace msblenUtils {
-    std::string get_name(const Material* obj);
-    std::string get_name(const Object* obj);
-    std::string get_name(const Bone* obj);
-    std::string get_path(const Object* obj);
-    std::string get_path(const Object* arm, const Bone* obj);
-    Object* get_object_from_path(std::string path);
-    bool visible_in_render(const Object* obj);
-    bool visible_in_viewport(const Object* obj);
-    
-    bool visible_in_collection(LayerCollection* layerCollection, const Object* obj);
-    bool visible_in_collection(const Object* obj);
-    
-    const ModifierData* FindModifier(const Object* obj, ModifierType type);
-    const ModifierData* FindModifier(const Object* obj, const std::string name);
-    Bone* find_bone_recursive(Bone* bone, const char* name);
-    Bone* find_bone(Object* obj, const char* name);
-    bPoseChannel* find_pose(Object* obj, const char* name);
+std::string get_name(const Material *obj);
+std::string get_name(const Object *obj);
+std::string get_name(const Bone *obj);
+std::string get_path(const Object *obj);
+std::string get_path(const Object *arm, const Bone *obj);
+bool visible_in_render(const Object *obj);
+bool visible_in_viewport(const Object *obj);
+bool visible_in_collection(LayerCollection* layerCollection, const Object* obj);
+bool visible_in_collection(const Object* obj);
+const ModifierData* FindModifier(const Object *obj, ModifierType type);
+const ModifierData* FindModifier(const Object* obj, const std::string name);
+Bone* find_bone_recursive(Bone *bone, const char *name);
+Bone* find_bone(Object *obj, const char *name);
+bPoseChannel* find_pose(Object *obj, const char *name);
+Object* get_object_from_path(std::string path);
 
     bool is_mesh(const Object* obj);
     bool is_camera(const Object* obj);

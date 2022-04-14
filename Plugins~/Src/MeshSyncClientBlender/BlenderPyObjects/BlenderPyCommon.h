@@ -2,6 +2,7 @@
 
 #include <RNA_define.h> //PropertyRNA
 #include "MeshSync/msFoundation.h" //msPacked
+#include "msblenMacros.h"
 
 namespace blender {
 

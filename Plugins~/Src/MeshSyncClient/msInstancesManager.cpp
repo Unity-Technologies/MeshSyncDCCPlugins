@@ -8,7 +8,7 @@ namespace ms {
     {
         vector<TransformPtr> ret;
         for (auto& p : m_records) {
-            Record& r = p.second;
+            InstancesManagerRecord& r = p.second;
             if (r.dirtyMesh) {
                 ret.push_back(r.entity);
             }
@@ -19,7 +19,7 @@ namespace ms {
     {
         vector<InstanceInfoPtr> ret;
         for (auto& p : m_records) {
-            Record& r = p.second;
+            InstancesManagerRecord& r = p.second;
             if (r.dirtyInstances) {
                 ret.push_back(r.instances);
             }
@@ -34,7 +34,7 @@ namespace ms {
     void InstancesManager::clearDirtyFlags()
     {
         for (auto& p : m_records) {
-            Record& r = p.second;
+            InstancesManagerRecord& r = p.second;
             r.dirtyInstances = false;
             r.dirtyMesh = false;
             r.updated = false;
@@ -61,7 +61,6 @@ namespace ms {
     {
         auto& rec = lockAndGet(info->path);
 
-        //TODO implement hash for InstanceInfo and check
         if (m_always_mark_dirty || rec.instances == nullptr) {
             rec.dirtyInstances = true;
         }
@@ -92,21 +91,5 @@ namespace ms {
             else
                 ++it;
         }
-    }
-
-    void InstancesManager::setAlwaysMarkDirty(bool alwaysDirty) {
-        m_always_mark_dirty = alwaysDirty;
-    }
-
-    InstancesManager::Record& InstancesManager::lockAndGet(const std::string& path)
-    {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        if (!m_deleted.empty()) {
-            auto it = std::find_if(m_deleted.begin(), m_deleted.end(), [&path](Identifier& v) { return v.name == path; });
-            if (it != m_deleted.end())
-                m_deleted.erase(it);
-        }
-
-        return m_records[path];
     }
 }
