@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pch.h"
 #include "MeshSync/MeshSync.h"
 
 namespace ms{
