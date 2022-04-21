@@ -5,6 +5,8 @@
 
 #include "MeshUtils/muLog.h"
 
+#include "BlenderPyObjects/BlenderPyDepsgraph.h"
+#include "BlenderPyObjects/BlenderPyDepsgraphObjectInstance.h"
 #include "BlenderPyObjects/BlenderPyContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h"
 #include "BlenderPyObjects/BlenderPyCommon.h" //call, etc
@@ -63,6 +65,14 @@ extern PropertyRNA* BlenderPyContext_scene;
 extern FunctionRNA* BlenderPyContext_evaluated_depsgraph_get;
 extern FunctionRNA* BlenderPyContext_depsgraph_update;
 extern PropertyRNA* BlenderPyContext_view_layer;
+
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_instance_object;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_is_instance;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_world_matrix;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_parent;
+extern PropertyRNA* BlenderPyDepsgraphObjectInstance_object;
+
+extern PropertyRNA* BlenderPyDepsgraph_object_instances;
 
 bool ready()
 {
@@ -194,9 +204,34 @@ void setup(py::object bpy_context)
             }
         }
         else if (match_type("Depsgraph")) {
+            each_prop{
+                if (match_prop("object_instances")) {
+                    BlenderPyDepsgraph_object_instances = prop;
+                }
+            }
             each_func{
                 if (match_func("update")) {
                     BlenderPyContext_depsgraph_update = func;
+                }
+            }
+        }
+        else if (match_type("DepsgraphObjectInstance")) {
+            each_prop{
+                if (match_prop("instance_object")) {
+                    BlenderPyDepsgraphObjectInstance_instance_object = prop;
+                }
+
+                if (match_prop("is_instance")) {
+                    BlenderPyDepsgraphObjectInstance_is_instance = prop;
+                }
+                if (match_prop("matrix_world")) {
+                    BlenderPyDepsgraphObjectInstance_world_matrix = prop;
+                }
+                if (match_prop("parent")) {
+                    BlenderPyDepsgraphObjectInstance_parent = prop;
+                }
+                if (match_prop("object")) {
+                    BlenderPyDepsgraphObjectInstance_object = prop;
                 }
             }
         }

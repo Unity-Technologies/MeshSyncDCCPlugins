@@ -298,6 +298,15 @@ def unregister():
 def DestroyMeshSyncContext():
     msb_context.Destroy()
 
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
+
 import atexit
 atexit.register(DestroyMeshSyncContext)
     
