@@ -160,26 +160,35 @@ endforeach(CUR_BLENDER_VER)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# 3DSMAX (Windows only)
+# 3DSMAX (Windows only) 
+# JW 2022/4: out of this list, only versions with installed SDK are getting build 
+
 list(APPEND 3DSMAX_VERSIONS
     3DSMAX_2018
     3DSMAX_2019
     3DSMAX_2020
     3DSMAX_2021
+    3DSMAX_2022
+    3DSMAX_2023
+    3DSMAX_2024
 ) 
 if(BUILD_3DSMAX_ALL)
     foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
-        option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" ON)
+		option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" ON)
     endforeach(CUR_3DSMAX_VER)   
 endif()
 
 if(WIN32)
-    foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
-        option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
-        if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
-            add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
-        endif()
-    endforeach(CUR_3DSMAX_VER)   
+	foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
+		string(REPLACE "3DSMAX_" "ADSK_3DSMAX_SDK_" CUR_3DSMAX_SDK ${CUR_3DSMAX_VER})
+		if(DEFINED ENV{${CUR_3DSMAX_SDK}})
+			message(STATUS "3ds Max SDK environment found: ${CUR_3DSMAX_SDK}") 
+			option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
+			if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
+				add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
+			endif()
+		endif()
+	endforeach(CUR_3DSMAX_VER)   
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
