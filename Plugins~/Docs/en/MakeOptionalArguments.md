@@ -22,6 +22,8 @@ with commands described in the following sections.
 * 3ds Max 2019: `-DBUILD_3DSMAX_2019_PLUGIN=ON`
 * 3ds Max 2020: `-DBUILD_3DSMAX_2020_PLUGIN=ON`
 * 3ds Max 2021: `-DBUILD_3DSMAX_2021_PLUGIN=ON`
+* 3ds Max 2022: `-DBUILD_3DSMAX_2022_PLUGIN=ON`
+* 3ds Max 2023: `-DBUILD_3DSMAX_2023_PLUGIN=ON`
 
 ## MotionBuilder
 
