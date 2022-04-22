@@ -207,6 +207,8 @@ private:
 
     ms::PropertyManager m_property_manager;
 
+    bool m_server_requested_sync;
+
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
 #endif

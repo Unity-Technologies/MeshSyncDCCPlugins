@@ -1435,7 +1435,13 @@ void msblenContext::requestServerInitiatedMessage()
         return;
     }
 
-    m_sender.on_properties_received = [this](auto properties) { m_property_manager.updateFromServer(properties); };
+    m_sender.on_server_initiated_response_received = [this](auto properties, std::string messageFromServer) {
+        m_property_manager.updateFromServer(properties);
+
+        if (messageFromServer == "sync") {
+            m_server_requested_sync = true;
+        }
+    };
     m_sender.requestServerInitiatedMessage();
 }
 
@@ -1446,6 +1452,12 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
     m_property_manager.clearReceivedProperties();
+
+    if (m_server_requested_sync) {
+        scope = MeshSyncClient::ObjectScope::All;
+        dirty_all = true;
+        m_server_requested_sync = false;
+    }
 
     m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
