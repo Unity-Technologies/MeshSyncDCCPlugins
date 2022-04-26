@@ -242,9 +242,9 @@ endif()
 
 # Modo
 list(APPEND MODO_VERSIONS
-    MODO_12
-    MODO_13    
-    MODO_14
+#    MODO_12
+#    MODO_13    
+#    MODO_14
 )
  
 if(BUILD_MODO_ALL)
