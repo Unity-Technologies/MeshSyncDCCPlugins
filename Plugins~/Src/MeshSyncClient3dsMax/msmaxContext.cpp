@@ -615,8 +615,14 @@ void msmaxContext::WaitAndKickAsyncExport()
     for (std::map<INode*, TreeNode>::value_type& kvp : m_node_records)
         kvp.second.clearState();
 
-
+#if MAX_VERSION_MAJOR <= 23
+    // 3ds Max 2021 and earlier
     float to_meter = static_cast<float>(GetMasterScale(UNITS_METERS));
+#else
+    // 3ds Max 2022 and later
+    float to_meter = static_cast<float>(GetSystemUnitScale(UNITS_METERS));
+#endif
+
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
@@ -948,7 +954,15 @@ void msmaxContext::extractCameraData(TreeNode& n, TimeValue t,
     }
 
     if (auto* pcam = dynamic_cast<MaxSDK::IPhysicalCamera*>(cam)) {
+
+#if MAX_VERSION_MAJOR <= 23
+        // 3ds Max 2021 and earlier
         float to_mm = (float)GetMasterScale(UNITS_MILLIMETERS);
+#else
+        // 3ds Max 2022 and later
+        float to_mm = (float)GetSystemUnitScale(UNITS_MILLIMETERS);
+#endif
+
         Interval interval;
 
         // focal length in mm
@@ -1451,7 +1465,13 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         frame.points[vi] = to_float3(channel.GetProgressiveMorphPoint(ti, vi)) - dst.points[vi];
                 }
                 if (!dbs->frames.empty()) {
+#if MAX_VERSION_MAJOR <= 23
+                    // 3ds Max 2021 and earlier
                     dbs->name = mu::ToMBS(channel.GetName());
+#else
+                    // 3ds Max 2022 and later
+                    dbs->name = mu::ToMBS(channel.GetName(false));
+#endif
                     dbs->weight = channel.GetMorphWeight(t);
                     dst.blendshapes.push_back(dbs);
                 }
@@ -1600,8 +1620,13 @@ void msmaxContext::extractMeshAnimation(ms::TransformAnimation& dst_, TreeNode *
                 auto tnode = channel.GetMorphTarget();
                 if (!tnode || !channel.IsActive() || !channel.IsValid())
                     continue;
-
+#if MAX_VERSION_MAJOR <= 23
+                // 3ds Max 2021 and earlier
                 auto name = mu::ToMBS(channel.GetName());
+#else
+                // 3ds Max 2022 and later
+                auto name = mu::ToMBS(channel.GetName(false));
+#endif                
                 dst.getBlendshapeCurve(name).push_back({ t, channel.GetMorphWeight(m_current_time_tick) });
             }
         }
