@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment version")    
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")    
 endif()
 
 PROJECT(MeshSyncDCCPlugins)
@@ -242,9 +242,9 @@ endif()
 
 # Modo
 list(APPEND MODO_VERSIONS
-    MODO_12
-    MODO_13    
-    MODO_14
+#    MODO_12
+#    MODO_13    
+#    MODO_14
 )
  
 if(BUILD_MODO_ALL)
