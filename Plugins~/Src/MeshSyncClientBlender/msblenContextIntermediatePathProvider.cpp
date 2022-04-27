@@ -4,7 +4,7 @@
 
 std::string append_id(std::string path, const Object* obj) {
     auto data = (ID*)obj->data;
-    path += "_" + std::to_string(data->session_uuid);
+    path += "_" + std::string(data->name); // std::to_string(data->session_uuid);
     return path;
 }
 
