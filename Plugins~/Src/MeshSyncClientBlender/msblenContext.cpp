@@ -10,6 +10,7 @@
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/SceneGraph/msCurve.h"
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
+#include "MeshSync/SceneGraph/msScene.h"
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
@@ -743,9 +744,57 @@ void msblenContext::doExtractCurveData(msblenContextState& state, BlenderSyncSet
             for (int i = 0; i < nurb->pntsu; i++) {
                 BezTriple* bezt = &nurb->bezt[i];
 
-                curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
-                curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
-                curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
+                if (bezt) {
+                    curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
+                    curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
+                    curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
+                }
+            }
+        }
+    }
+}
+
+void msblenContext::importCurves(std::vector<ms::CurvePtr> curves) {
+    for (auto& curve : curves) {
+        auto obj = msblenUtils::get_object_from_path(curve->path);
+
+        // Make sure the object still exists:
+        if (!obj) {
+            continue;
+        }
+         
+        Curve* data = (Curve*)obj->data;
+        bl::BCurve bcurve(data);
+
+        bcurve.clearSplines();
+        
+        for (auto& spline : curve->splines) {            
+            auto newSpline = bcurve.newSpline();
+            
+            auto bSpline = bl::BNurb(newSpline);
+
+            int knotCount = spline->cos.size();
+
+            // -1 because a new spline already has 1 point:
+            bSpline.add_bezier_points(knotCount - 1, obj);
+
+            for (int knotIndex = 0; knotIndex < knotCount; knotIndex++)
+            {
+                BezTriple* bezt = &newSpline->bezt[knotIndex];
+                auto& cos = spline->cos[knotIndex];
+                bezt->vec[1][0] = cos[0];
+                bezt->vec[1][1] = cos[1];
+                bezt->vec[1][2] = cos[2];
+
+                auto& handles_left = spline->handles_left[knotIndex];
+                bezt->vec[0][0] = handles_left[0];
+                bezt->vec[0][1] = handles_left[1];
+                bezt->vec[0][2] = handles_left[2];
+
+                auto& handles_right = spline->handles_right[knotIndex];
+                bezt->vec[2][0] = handles_right[0];
+                bezt->vec[2][1] = handles_right[1];
+                bezt->vec[2][2] = handles_right[2];
             }
         }
     }
@@ -1427,16 +1476,14 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-
-
 void msblenContext::requestServerInitiatedMessage()
 {
     if (m_settings.ExportSceneCache) {
         return;
     }
 
-    m_sender.on_server_initiated_response_received = [this](auto properties, std::string messageFromServer) {
-        m_property_manager.updateFromServer(properties);
+    m_sender.on_server_initiated_response_received = [this](auto properties, auto curves, std::string messageFromServer) {
+        m_property_manager.updateFromServer(properties, curves);
 
         if (messageFromServer == "sync") {
             m_server_requested_sync = true;
@@ -1451,6 +1498,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         return false;
 
     blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
+    importCurves(m_property_manager.getReceivedCurves());
+
     m_property_manager.clearReceivedProperties();
 
     if (m_server_requested_sync) {

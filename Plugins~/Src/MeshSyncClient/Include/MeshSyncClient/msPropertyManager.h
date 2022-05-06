@@ -17,8 +17,9 @@ namespace ms {
         void add(PropertyInfoPtr propertyInfo);
         void clear();
 
-        void updateFromServer(std::vector<PropertyInfo> properties);
+        void updateFromServer(std::vector<PropertyInfo> properties, std::vector<CurvePtr> curves);
         std::vector<PropertyInfo> getReceivedProperties();
+        std::vector<CurvePtr> getReceivedCurves();
         void clearReceivedProperties();
     private:
         struct Record
@@ -29,6 +30,7 @@ namespace ms {
 
         std::vector<Record> m_records;
         std::vector<PropertyInfo> m_receivedProperties;
+        std::vector<CurvePtr> m_receivedCurves;
         std::mutex m_mutex;
         bool m_always_mark_dirty;
     };

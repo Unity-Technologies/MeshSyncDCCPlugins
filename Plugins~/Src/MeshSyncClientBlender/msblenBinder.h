@@ -146,14 +146,17 @@ namespace blender
         barray_range<MEdge> edges();
         barray_range<MPoly> polygons();
         barray_range<MVert> bezier_points();
-    };
+
+        void add_bezier_points(int count, Object* obj);
+    };    
 
     class BCurve {
     public:
         MSBLEN_BOILERPLATE(Curve)
         MSBLEN_COMPATIBLE(BlenderPyID)
 
-        blist_range<Nurb> nurbs();
+        void clearSplines();
+        Nurb* newSpline();
     };
 
     //----------------------------------------------------------------------------------------------------------------------

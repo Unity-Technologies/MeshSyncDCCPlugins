@@ -38,7 +38,12 @@ static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
 StructRNA* BCurve::s_type;
-static PropertyRNA* BCurve_nurbs;
+static PropertyRNA* BCurve_splines;
+static FunctionRNA* BCurve_splines_clear;
+static FunctionRNA* BCurve_splines_new;
+
+StructRNA* BNurb::s_type;
+static FunctionRNA* BNurb_splines_bezier_add;
 
 StructRNA* BMaterial::s_type;
 static PropertyRNA* BMaterial_use_nodes;
@@ -152,9 +157,21 @@ void setup(py::object bpy_context)
         else if (match_type("Curve")) {
             BCurve::s_type = type;
             each_prop{
-                if (match_prop("nurbs")) BCurve_nurbs = prop;
+                if (match_prop("splines")) BCurve_splines = prop;
             }
         }
+        else if (match_type("CurveSplines")) {
+            each_func{
+                if (match_func("clear")) BCurve_splines_clear = func;
+                if (match_func("new")) BCurve_splines_new = func;            
+            }
+        }     
+        else if (match_type("SplineBezierPoints")) {
+            BNurb::s_type = type;
+            each_func{
+                if (match_func("add")) BNurb_splines_bezier_add = func;
+            }
+        }        
         else if (match_type("UVLoopLayers")) {
             each_prop{
                 if (match_prop("active")) UVLoopLayers_active = prop;
@@ -451,9 +468,16 @@ MLoopUV* BEditMesh::GetUV(const int index) const {
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
+void BNurb::add_bezier_points(int count, Object* obj) {
+    call<Nurb, void, int>(g_context, m_ptr, BNurb_splines_bezier_add, count, obj->id);
+}
 
-blist_range<Nurb> BCurve::nurbs() {
-    return list_range((Nurb*)m_ptr->nurb.first);
+void BCurve::clearSplines() {
+    call<Curve, void>(g_context, m_ptr, BCurve_splines_clear);
+}
+
+Nurb* BCurve::newSpline() {
+    return call<Curve, Nurb*, int>(g_context, m_ptr, BCurve_splines_new, CU_BEZIER);
 }
 
 const char *BMaterial::name() const

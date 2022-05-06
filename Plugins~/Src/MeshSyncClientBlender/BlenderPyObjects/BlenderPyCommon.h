@@ -102,10 +102,11 @@ struct param_holder5
 //----------------------------------------------------------------------------------------------------------------------
 
 template<typename T, typename R>
-R call(bContext* context, T *self, FunctionRNA *f)
+R call(bContext* context, T *self, FunctionRNA *f, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder0<R> params;
     ParameterList param_list;
@@ -116,10 +117,11 @@ R call(bContext* context, T *self, FunctionRNA *f)
 }
 
 template<typename T, typename R, typename A1>
-R call(bContext* context, T *self, FunctionRNA *f, const A1& a1)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder1<R, A1> params = { a1 };
     ParameterList param_list;
@@ -128,11 +130,13 @@ R call(bContext* context, T *self, FunctionRNA *f, const A1& a1)
     f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
+
 template<typename T, typename R, typename A1, typename A2>
-R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder2<R, A1, A2> params = { a1, a2 };
     ParameterList param_list;
@@ -142,10 +146,11 @@ R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2)
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3>
-R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder3<R, A1, A2, A3> params = { a1, a2, a3 };
     ParameterList param_list;
@@ -155,10 +160,11 @@ R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, c
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3, typename A4>
-R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder4<R, A1, A2, A3, A4> params = { a1, a2, a3, a4 };
     ParameterList param_list;
@@ -168,10 +174,11 @@ R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, c
     return params.get();
 }
 template<typename T, typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
-R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
+R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5, ID* ownerID = nullptr)
 {
     PointerRNA ptr;
     ptr.data = self;
+    ptr.owner_id = ownerID;
 
     param_holder5<R, A1, A2, A3, A4, A5> params = { a1, a2, a3, a4, a5 };
     ParameterList param_list;
@@ -180,6 +187,5 @@ R call(bContext* context, T *self, FunctionRNA *f, const A1& a1, const A2& a2, c
     f->call(context, nullptr, &ptr, &param_list);
     return params.get();
 }
-
 
 } // namespace blender
