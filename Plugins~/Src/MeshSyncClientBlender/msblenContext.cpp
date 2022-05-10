@@ -723,19 +723,21 @@ void msblenContext::doExtractCurveData(msblenContextState& state, BlenderSyncSet
         //bl::BCurve bcurve(data);
         const bool is_editing = data->editnurb != nullptr;
 
-        ListBase nurb;
+        ListBase nurbs;
         if (is_editing) {
-            nurb = data->editnurb->nurbs;
+            nurbs = data->editnurb->nurbs;
         }
         else {
-            nurb = data->nurb;
+            nurbs = data->nurb;
         }
 
         dst.splines.clear();
 
-        for (auto nurb : blender::list_range((Nurb*)nurb.first)) {
+        for (auto nurb : blender::list_range((Nurb*)nurbs.first)) {
             dst.splines.push_back(ms::CurveSpline::create());
             auto curveSpline = dst.splines.back();
+
+            curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
 
             curveSpline->cos.resize_discard(nurb->pntsu);
             curveSpline->handles_left.resize_discard(nurb->pntsu);
@@ -772,7 +774,7 @@ void msblenContext::importCurves(std::vector<ms::CurvePtr> curves) {
             auto newSpline = bcurve.newSpline();
             
             auto bSpline = bl::BNurb(newSpline);
-
+            
             int knotCount = spline->cos.size();
 
             // -1 because a new spline already has 1 point:
