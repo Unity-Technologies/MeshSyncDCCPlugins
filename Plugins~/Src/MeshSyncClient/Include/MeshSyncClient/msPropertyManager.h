@@ -8,6 +8,7 @@
 #ifndef msRuntime
 
 msDeclClassPtr(PropertyInfo)
+msDeclClassPtr(Entity)
 
 namespace ms {
     class PropertyManager
@@ -17,9 +18,9 @@ namespace ms {
         void add(PropertyInfoPtr propertyInfo);
         void clear();
 
-        void updateFromServer(std::vector<PropertyInfo> properties, std::vector<CurvePtr> curves);
+        void updateFromServer(std::vector<PropertyInfo> properties, std::vector<EntityPtr> entities);
         std::vector<PropertyInfo> getReceivedProperties();
-        std::vector<CurvePtr> getReceivedCurves();
+        std::vector<EntityPtr> getReceivedEntities();
         void clearReceivedProperties();
     private:
         struct Record
@@ -30,7 +31,7 @@ namespace ms {
 
         std::vector<Record> m_records;
         std::vector<PropertyInfo> m_receivedProperties;
-        std::vector<CurvePtr> m_receivedCurves;
+        std::vector<EntityPtr> m_receivedEntities;
         std::mutex m_mutex;
         bool m_always_mark_dirty;
     };

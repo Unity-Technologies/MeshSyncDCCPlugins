@@ -152,7 +152,9 @@ private:
     void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world);
-    void importCurves(std::vector<ms::CurvePtr> curves);
+    void importCurve(ms::Curve* curve);
+    void importMesh(ms::Mesh* mesh);
+    void importEntities(std::vector<ms::EntityPtr> entities);
 
     ms::TransformPtr findBone(msblenContextState& state, Object *armature, Bone *bone);
 

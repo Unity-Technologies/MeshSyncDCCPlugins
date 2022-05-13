@@ -44,17 +44,12 @@ namespace ms {
 		m_records.clear();
 	}
 
-	void PropertyManager::updateFromServer(std::vector<PropertyInfo> properties, std::vector<CurvePtr> curves)
+	void PropertyManager::updateFromServer(std::vector<PropertyInfo> properties, std::vector<EntityPtr> entities)
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 
-		for (auto& prop : properties) {
-			m_receivedProperties.push_back(prop);
-		}
-
-		for (auto& curve : curves) {
-			m_receivedCurves.push_back(curve);
-		}
+		m_receivedProperties.insert(m_receivedProperties.end(), properties.begin(), properties.end());
+		m_receivedEntities.insert(m_receivedEntities.end(), entities.begin(), entities.end());
 	}
 
 	std::vector<PropertyInfo> PropertyManager::getReceivedProperties()
@@ -64,16 +59,16 @@ namespace ms {
 		return m_receivedProperties;
 	}
 
-	std::vector<CurvePtr> PropertyManager::getReceivedCurves() {
+	std::vector<EntityPtr> PropertyManager::getReceivedEntities() {
 		std::unique_lock<std::mutex> lock(m_mutex);
 
-		return m_receivedCurves;
+		return m_receivedEntities;
 	}
 
 	void PropertyManager::clearReceivedProperties() {
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		m_receivedProperties.clear();
-		m_receivedCurves.clear();
+		m_receivedEntities.clear();
 	}
 }
