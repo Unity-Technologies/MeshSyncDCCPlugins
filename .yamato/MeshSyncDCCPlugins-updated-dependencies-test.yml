@@ -48,10 +48,10 @@ dependency_test_trigger:
       only:
         - "/.*/"
       except:
-        - "master"
-        - "**/master"
+        - "dev"
+        - "**/dev"
     recurring:
-      - branch: master
+      - branch: dev
         frequency: daily
         rerun: on_new_revision
         
