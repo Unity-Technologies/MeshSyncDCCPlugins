@@ -54,43 +54,43 @@ test_configs:
   - editor_version: 2019.4
     test_platforms:
       - platform_type: *platform_win
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_mac
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_linux
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
   - editor_version: 2020.3
     test_platforms:
       - platform_type: *platform_win
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_mac
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_linux
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
   - editor_version: 2021.3  
     test_platforms:
       - platform_type: *platform_win
-        test_type: *upm_ci_mono
+        test_type: *upm_ci_playedit
       - platform_type: *platform_mac
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_linux
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
   - editor_version: 2022.1  
     test_platforms:
       - platform_type: *platform_win
         test_type: *upm_ci_mono
       - platform_type: *platform_mac
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_linux
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
   - editor_version: trunk
     test_platforms:
       - platform_type: *platform_win
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_mac
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
       - platform_type: *platform_linux
-        test_type: *upm_ci_all
+        test_type: *upm_ci_playedit
 
 
 promotion_types:
