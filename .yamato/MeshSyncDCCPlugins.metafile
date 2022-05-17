@@ -103,4 +103,5 @@ promotion_types:
     job_name: Prerelease and promote MeshSyncDCCPlugins to Production
     test_name_prefix: Prerelease and test MeshSyncDCCPlugins Promotion 
     test_dependencies:
+      - .yamato/MeshSyncDCCPlugins-pack.yml#pack
       - .yamato/MeshSyncDCCPlugins-publish.yml#prerelease
