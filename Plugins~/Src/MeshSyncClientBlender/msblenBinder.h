@@ -114,6 +114,12 @@ namespace blender
 
         void calc_normals_split();
         void update();
+        void clear_geometry();
+        void addVertices(int count);
+        void addPolygons(int count);
+        void addLoops(int count);
+        void addEdges(int count);
+        void addNormals(int count);
     };
 
     uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }

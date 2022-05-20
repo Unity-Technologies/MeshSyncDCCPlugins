@@ -771,6 +771,11 @@ void msblenContext::importEntities(std::vector<ms::EntityPtr> entities) {
     }
 }
 
+#define copyFloatVector(DST, SRC) \
+DST[0] = SRC[0]; \
+DST[1] = SRC[1]; \
+DST[2] = SRC[2]; \
+
 void msblenContext::importCurve(ms::Curve* curve) {
     auto obj = msblenUtils::get_object_from_path(curve->path);
 
@@ -797,20 +802,20 @@ void msblenContext::importCurve(ms::Curve* curve) {
         for (int knotIndex = 0; knotIndex < knotCount; knotIndex++)
         {
             BezTriple* bezt = &newSpline->bezt[knotIndex];
+
             auto& cos = spline->cos[knotIndex];
-            bezt->vec[1][0] = cos[0];
-            bezt->vec[1][1] = cos[1];
-            bezt->vec[1][2] = cos[2];
+            copyFloatVector(bezt->vec[1], cos);
 
             auto& handles_left = spline->handles_left[knotIndex];
-            bezt->vec[0][0] = handles_left[0];
-            bezt->vec[0][1] = handles_left[1];
-            bezt->vec[0][2] = handles_left[2];
+            copyFloatVector(bezt->vec[0], handles_left);
 
             auto& handles_right = spline->handles_right[knotIndex];
-            bezt->vec[2][0] = handles_right[0];
-            bezt->vec[2][1] = handles_right[1];
-            bezt->vec[2][2] = handles_right[2];
+            copyFloatVector(bezt->vec[2], handles_right);
+        }
+
+        //curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
+        if (spline->closed) {
+            bSpline.m_ptr->flagu |= CU_NURB_CYCLIC;
         }
     }
 }
@@ -824,9 +829,108 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
     }
 
     auto data = (Mesh*)obj->data;
+
+    // Unrefine:
+    
+  /*  mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
+    mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
+    mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_NO_REINDEXING, false);    
+    mesh->refine();*/
+
+
     bl::BMesh bmesh(data);
+    
 
+    //std::vector<int> mid_table(mesh.totcol);
+    //for (int mi = 0; mi < mesh.totcol; ++mi)
+    //    mid_table[mi] = getMaterialID(mesh.mat[mi]);
+    //if (mid_table.empty())
+    //    mid_table.push_back(ms::InvalidID);
+    auto blenMesh = (Mesh*)obj->data;
+    std::vector<int> mid_table(blenMesh->totcol);
+    for (int mi = 0; mi < blenMesh->totcol; ++mi)
+        mid_table[mi] = getMaterialID(blenMesh->mat[mi]);
+    
+    // Make reverse lookup list:
+    std::vector<int> rev_mid_table(mid_table.size());
+    for (int i = 0; i < mid_table.size(); i++)
+    {
+        rev_mid_table[mid_table[i]] = i;
+    }
 
+    bmesh.clear_geometry();
+
+    int num_vertices = mesh->points.size();
+    int num_indices = mesh->indices.size();
+    int num_polygons = num_indices / 3;// mesh->counts.size();
+
+    bmesh.addVertices(num_vertices);
+    bmesh.addPolygons(num_polygons);
+    bmesh.addLoops(num_indices);
+    //bmesh.addEdges(0);
+
+    auto bmeshVerts = bmesh.vertices();
+    auto bmeshIndices = bmesh.indices();
+    auto bmeshPolygons = bmesh.polygons();
+   /* auto bmeshNormals = bmesh.normals();*/
+    //auto bmeshEdges = bmesh.edges();
+
+    // vertices
+    for (size_t vi = 0; vi < num_vertices; ++vi) {
+        copyFloatVector(bmeshVerts[vi].co, mesh->points[vi])
+    }
+
+    // faces  
+    int ii = 0;
+    for (size_t pi = 0; pi < num_polygons; ++pi) {
+        //int count = mesh->counts[pi];
+        // always 3 for triangles from unity:
+        int count = 3;
+        bmeshPolygons[pi].loopstart = ii;
+        bmeshPolygons[pi].totloop = count;
+
+        const int material_index = mesh->material_ids[pi];
+        if (material_index != ms::InvalidID) {
+            if (material_index < rev_mid_table.size()) {
+                bmeshPolygons[pi].mat_nr = rev_mid_table[material_index];
+            }
+            else {
+                bmeshPolygons[pi].mat_nr = 0;
+            }
+        }
+
+    /*    for (int li = 0; li < count; ++li) {
+            bmeshIndices[bmeshPolygons[pi].loopstart + li].v = mesh->indices[ii++];
+        }*/
+
+        // Reverse triangle:
+        bmeshIndices[bmeshPolygons[pi].loopstart + 0].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi].loopstart + 2].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi].loopstart + 1].v = mesh->indices[ii++];
+    }
+
+    // normals:
+
+    /*
+      blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
+        if (!normals.empty()) {
+            dst.normals.resize_discard(num_indices);
+            for (size_t ii = 0; ii < num_indices; ++ii)
+                dst.normals[ii] = normals[ii];
+        }
+        */
+
+    //bmesh.calc_normals_split();
+
+    // Calculate edges:
+    bmesh.update();
+
+  /*  bmesh.calc_normals_split();*/
+
+    /*auto bmeshNormals = bmesh.normals();
+    for (size_t ii = 0; ii < num_indices; ++ii) {
+        bmeshNormals[ii] = mesh->normals[ii]; 
+    }*/
 }
 
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
@@ -948,6 +1052,8 @@ void msblenContext::doExtractMeshData(msblenContextState& state, BlenderSyncSett
         dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, settings.make_double_sided);
+
+   // dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, false); // test
 }
 
 void msblenContext::doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data)

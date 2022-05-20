@@ -34,6 +34,12 @@ static FunctionRNA* BObject_to_mesh_clear;
 StructRNA* BMesh::s_type;
 static FunctionRNA* BMesh_calc_normals_split;
 static FunctionRNA* BMesh_update;
+static FunctionRNA* BMesh_clear_geometry;
+static FunctionRNA* BMesh_add_vertices;
+static FunctionRNA* BMesh_add_polygons;
+static FunctionRNA* BMesh_add_loops;
+static FunctionRNA* BMesh_add_edges;
+static FunctionRNA* BMesh_add_normals;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
@@ -152,8 +158,29 @@ void setup(py::object bpy_context)
             each_func {
                 if (match_func("calc_normals_split")) BMesh_calc_normals_split = func;
                 if (match_func("update")) BMesh_update = func;
+                if (match_func("clear_geometry")) BMesh_clear_geometry = func;
             }
         }
+        else if (match_type("MeshVertices")) {
+            each_func{
+                if (match_func("add")) BMesh_add_vertices = func;
+            }
+        }     
+        else if (match_type("MeshPolygons")) {
+            each_func{
+                if (match_func("add")) BMesh_add_polygons = func;
+            }
+        }        
+        else if (match_type("MeshLoops")) {
+            each_func{
+                if (match_func("add")) BMesh_add_loops = func;
+            }
+        }
+        else if (match_type("MeshEdges")) {
+            each_func{
+                if (match_func("add")) BMesh_add_edges = func;
+            }
+        }        
         else if (match_type("Curve")) {
             BCurve::s_type = type;
             each_prop{
@@ -443,6 +470,30 @@ void BMesh::update()
     call<Mesh, void>(g_context, m_ptr, BMesh_update);    
 }
 
+void BMesh::clear_geometry()
+{
+    call<Mesh, void>(g_context, m_ptr, BMesh_clear_geometry);
+}
+
+void BMesh::addVertices(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_vertices, count);
+}
+
+void BMesh::addPolygons(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_polygons, count);
+}
+
+void BMesh::addLoops(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_loops, count);
+}
+
+void BMesh::addEdges(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_edges, count);
+}
+
+void BMesh::addNormals(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_normals, count);
+}
 
 barray_range<BMFace*> BEditMesh::polygons()
 {
