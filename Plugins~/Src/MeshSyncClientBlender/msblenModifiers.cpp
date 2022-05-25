@@ -136,7 +136,7 @@ namespace blender {
 	void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager) {
 		if (obj->id.properties) {
 			for (auto property : blender::list_range((IDProperty*)obj->id.properties->data.group.first)) {
-				if (property->ui_data == nullptr) {
+				if (property->ui_data == nullptr && property->type != IDP_STRING) {
 					continue;
 				}
 
@@ -159,9 +159,8 @@ namespace blender {
 					break;
 				}
 				case IDP_STRING: {
-					auto uiData = (IDPropertyUIDataString*)property->ui_data;
 					auto val = IDP_String(property);
-					propertyInfo->set(val, strlen(val));
+					propertyInfo->set(val, property->len + 1); // strlen(val));
 					break;
 				}
 				case IDP_ARRAY: {
@@ -236,6 +235,11 @@ namespace blender {
 			else {
 				IDP_Float(property) = receivedProp.get<float>();
 			}
+			break;
+		}
+		case ms::PropertyInfo::Type::String: {
+			receivedProp.copy(IDP_String(property));
+			property->totallen = property->len = receivedProp.getArrayLength() + 1;
 			break;
 		}
 		case ms::PropertyInfo::Type::FloatArray:
