@@ -813,7 +813,6 @@ void msblenContext::importCurve(ms::Curve* curve) {
             copyFloatVector(bezt->vec[2], handles_right);
         }
 
-        //curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
         if (spline->closed) {
             bSpline.m_ptr->flagu |= CU_NURB_CYCLIC;
         }
@@ -1885,6 +1884,8 @@ void msblenContext::WaitAndKickAsyncExport()
     
     // kick async send
     exporter->on_prepare = [this, exporter]() {
+        callPythonMethod("meshsync_prepare");  
+
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
@@ -1926,6 +1927,12 @@ void msblenContext::WaitAndKickAsyncExport()
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
         m_instances_manager.clearDirtyFlags();
+
+        callPythonMethod("meshsync_post_export");
+    };
+
+    exporter->on_before_send = [this] {
+        callPythonMethod("meshsync_pre_export");
     };
 
     exporter->kick();
@@ -1945,4 +1952,10 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 }
 
-
+void msblenContext::callPythonMethod(const char* name) {
+    py::gil_scoped_acquire acquire;
+    auto module = py::module::import("unity_mesh_sync");
+    auto method = module.attr(name);
+    method();
+    py::gil_scoped_release release;
+}

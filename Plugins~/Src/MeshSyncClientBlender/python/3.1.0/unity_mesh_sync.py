@@ -14,6 +14,17 @@ from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 from unity_mesh_sync_common import *
 
+# Events that get called during the meshsync export stages, append your functions to these lists:
+# Called every frame when checking if something needs exporting:
+mesh_sync_on_prepare = []
+
+# Called before exporting
+mesh_sync_on_pre_export = []
+
+# Called after export is finished
+mesh_sync_on_post_export = []
+
+
 class MESHSYNC_PT:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -146,9 +157,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
-        msb_context.flushPendingList();
+        msb_context.flushPendingList()
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context);
+        msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
 
@@ -308,6 +319,18 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
+
+def meshsync_prepare():
+    for f in mesh_sync_on_prepare:
+        f()
+
+def meshsync_pre_export():
+    for f in mesh_sync_on_pre_export:
+        f()
+
+def meshsync_post_export():
+    for f in mesh_sync_on_post_export:
+        f()
 
 import atexit
 atexit.register(DestroyMeshSyncContext)
