@@ -801,7 +801,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
         int ret2 = wcstombs ( buffer, n->GetName(), sizeof(buffer) );
 
         bool renderable = IsRenderable(n);
-        ObjectState os = n->EvalWorldState(0);
+        ObjectState os = n->EvalWorldState(m_current_time_tick);
 
         ShapeObject* shape = dynamic_cast<ShapeObject*>(os.obj);
         if (nullptr != shape)  {
