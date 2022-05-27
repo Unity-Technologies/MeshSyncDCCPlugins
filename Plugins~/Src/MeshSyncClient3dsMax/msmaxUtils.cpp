@@ -81,6 +81,7 @@ bool IsRenderable(INode *n, TimeValue t)
     if (!renderable)
         return false;
 
+    //"Enable In Renderer" option
     ObjectState os = n->EvalWorldState(t);
     ShapeObject* shape = dynamic_cast<ShapeObject*>(os.obj);
     if (nullptr != shape)  {
