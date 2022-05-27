@@ -72,11 +72,21 @@ std::tuple<int, int> GetActiveFrameRange()
     };
 }
 
-bool IsRenderable(INode *n)
+bool IsRenderable(INode *n, TimeValue t)
 {
     if (!n)
         return false;
-    return n->Renderable() != 0;
+
+    bool renderable = (n->Renderable() !=0);
+    if (!renderable)
+        return false;
+
+    ObjectState os = n->EvalWorldState(t);
+    ShapeObject* shape = dynamic_cast<ShapeObject*>(os.obj);
+    if (nullptr != shape)  {
+        renderable = shape->GetRenderable();
+    }
+    return renderable;
 }
 
 bool VisibleInRender(INode *n, TimeValue t)
