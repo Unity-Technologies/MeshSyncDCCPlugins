@@ -875,7 +875,7 @@ mu::float4x4 msmaxContext::getWorldMatrix(INode *n, TimeValue t, bool cancel_cam
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t,
     mu::float3& pos, mu::quatf& rot, mu::float3& scale, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
@@ -923,7 +923,7 @@ void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t, ms::Transform& dst)
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t, ms::Transform& dst)
 {
     extractTransform(n, GetTime(), dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
 }
