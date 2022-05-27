@@ -126,7 +126,7 @@ private:
     int exportTexture(const std::string& path, ms::TextureType type = ms::TextureType::Default);
     void RegisterSceneMaterials();
 
-    bool ShouldSyncNode(INode *n);
+    bool ShouldExportNode(INode *n);
 
     ms::TransformPtr exportObject(INode *node, bool tip);
     template<class T> std::shared_ptr<T> createEntity(TreeNode& n);

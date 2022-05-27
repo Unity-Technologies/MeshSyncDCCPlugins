@@ -751,7 +751,7 @@ void msmaxContext::RegisterSceneMaterials()
 }
 
 
-bool msmaxContext::ShouldSyncNode(INode *n) {
+bool msmaxContext::ShouldExportNode(INode *n) {
     return (!m_settings.ignore_non_renderable || IsNodeRenderable(n,m_current_time_tick));
 }
 
@@ -782,7 +782,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
 
         // check if the node is instance
         EachInstance(n, [this, &rec, &ret](INode *instance) {
-            if (ret || !ShouldSyncNode(instance))
+            if (ret || !ShouldExportNode(instance))
                 return;
             const msmaxContext::TreeNode& irec = getNodeRecord(instance);
             if (irec.dst && irec.dst->reference.empty())
@@ -792,7 +792,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
     };
 
 
-    if (IsMesh(obj) && (ShouldSyncNode(n))) {
+    if (IsMesh(obj) && (ShouldExportNode(n))) {
         // export bones
         // this must be before extractMeshData() because meshes can be bones in 3ds Max
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
@@ -1506,7 +1506,7 @@ bool msmaxContext::exportAnimations(INode *n, bool force)
     ms::TransformAnimationPtr ret;
     AnimationRecord::extractor_t extractor = nullptr;
 
-    if (IsMesh(obj) && ShouldSyncNode(n)) {
+    if (IsMesh(obj) && ShouldExportNode(n)) {
         exportAnimations(n->GetParentNode(), true);
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             EachBone(n, [this](INode *bone) {
