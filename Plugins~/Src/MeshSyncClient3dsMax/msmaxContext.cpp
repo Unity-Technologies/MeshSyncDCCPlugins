@@ -750,12 +750,17 @@ void msmaxContext::RegisterSceneMaterials()
     m_material_manager.eraseStaleMaterials();
 }
 
+
+bool msmaxContext::ShouldExportNode(INode *n) {
+    return (!m_settings.ignore_non_renderable || IsNodeRenderable(n,m_current_time_tick));
+}
+
 ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
 {
     if (!n || !n->GetObjectRef())
         return nullptr;
 
-    auto& rec = getNodeRecord(n);
+    msmaxContext::TreeNode& rec = getNodeRecord(n);
     if (rec.dst)
         return nullptr;
 
@@ -777,17 +782,17 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
 
         // check if the node is instance
         EachInstance(n, [this, &rec, &ret](INode *instance) {
-            if (ret || (m_settings.ignore_non_renderable && !IsRenderable(instance,m_current_time_tick)))
+            if (ret || !ShouldExportNode(instance))
                 return;
-            auto& irec = getNodeRecord(instance);
-            if (irec.dst && irec.dst->reference.empty())
-                ret = exportInstance(rec, irec.dst);
+            const msmaxContext::TreeNode& instanceRec = getNodeRecord(instance);
+            if (instanceRec.dst && instanceRec.dst->reference.empty())
+                ret = exportInstance(rec, instanceRec.dst);
         });
         return ret != nullptr;
     };
 
 
-    if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n,m_current_time_tick))) {
+    if (IsMesh(obj) && (ShouldExportNode(n))) {
         // export bones
         // this must be before extractMeshData() because meshes can be bones in 3ds Max
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
@@ -875,7 +880,7 @@ mu::float4x4 msmaxContext::getWorldMatrix(INode *n, TimeValue t, bool cancel_cam
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t,
     mu::float3& pos, mu::quatf& rot, mu::float3& scale, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
@@ -923,7 +928,7 @@ void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t, ms::Transform& dst)
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t, ms::Transform& dst)
 {
     extractTransform(n, GetTime(), dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
 }
@@ -1036,8 +1041,8 @@ void msmaxContext::extractLightData(TreeNode& n, TimeValue t,
 template<class T>
 std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 {
-    auto ret = T::create();
-    auto& dst = *ret;
+    std::shared_ptr<T> ret = T::create();
+    T& dst = *ret;
     dst.path = n.path;
     dst.index = n.index;
     n.dst = ret;
@@ -1047,9 +1052,9 @@ std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 
 ms::TransformPtr msmaxContext::exportTransform(TreeNode& n)
 {
-    auto t = GetTime();
-    auto ret = createEntity<ms::Transform>(n);
-    auto& dst = *ret;
+    TimeValue t = GetTime();
+    std::shared_ptr<ms::Transform> ret = createEntity<ms::Transform>(n);
+    ms::Transform& dst = *ret;
 
     extractTransform(n, t, dst);
     m_entity_manager.add(ret);
@@ -1061,13 +1066,10 @@ ms::TransformPtr msmaxContext::exportInstance(TreeNode& n, ms::TransformPtr base
     if (!base)
         return nullptr;
 
-    auto t = GetTime();
-    auto ret = createEntity<ms::Transform>(n);
-    auto& dst = *ret;
+    ms::TransformPtr ret = exportTransform(n);
+    ms::Transform& dst = *ret;
 
-    extractTransform(n, t, dst);
     dst.reference = base->path;
-    m_entity_manager.add(ret);
     return ret;
 }
 
@@ -1504,7 +1506,7 @@ bool msmaxContext::exportAnimations(INode *n, bool force)
     ms::TransformAnimationPtr ret;
     AnimationRecord::extractor_t extractor = nullptr;
 
-    if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n,m_current_time_tick))) {
+    if (IsMesh(obj) && ShouldExportNode(n)) {
         exportAnimations(n->GetParentNode(), true);
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             EachBone(n, [this](INode *bone) {

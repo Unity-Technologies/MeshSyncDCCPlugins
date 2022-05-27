@@ -72,7 +72,7 @@ std::tuple<int, int> GetActiveFrameRange()
     };
 }
 
-bool IsRenderable(INode *n, TimeValue t)
+bool IsNodeRenderable(INode *n, TimeValue t)
 {
     if (!n)
         return false;
