@@ -784,9 +784,9 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
         EachInstance(n, [this, &rec, &ret](INode *instance) {
             if (ret || !ShouldExportNode(instance))
                 return;
-            const msmaxContext::TreeNode& irec = getNodeRecord(instance);
-            if (irec.dst && irec.dst->reference.empty())
-                ret = exportInstance(rec, irec.dst);
+            const msmaxContext::TreeNode& instanceRec = getNodeRecord(instance);
+            if (instanceRec.dst && instanceRec.dst->reference.empty())
+                ret = exportInstance(rec, instanceRec.dst);
         });
         return ret != nullptr;
     };
