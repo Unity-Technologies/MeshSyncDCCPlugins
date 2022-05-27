@@ -1061,13 +1061,10 @@ ms::TransformPtr msmaxContext::exportInstance(TreeNode& n, ms::TransformPtr base
     if (!base)
         return nullptr;
 
-    TimeValue t = GetTime();
-    std::shared_ptr<ms::Transform> ret = createEntity<ms::Transform>(n);
+    ms::TransformPtr ret = exportTransform(n);
     ms::Transform& dst = *ret;
 
-    extractTransform(n, t, dst);
     dst.reference = base->path;
-    m_entity_manager.add(ret);
     return ret;
 }
 
