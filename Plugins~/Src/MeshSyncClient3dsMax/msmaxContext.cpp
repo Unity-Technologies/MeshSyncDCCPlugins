@@ -779,7 +779,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
         EachInstance(n, [this, &rec, &ret](INode *instance) {
             if (ret || (m_settings.ignore_non_renderable && !IsRenderable(instance,m_current_time_tick)))
                 return;
-            auto& irec = getNodeRecord(instance);
+            const msmaxContext::TreeNode& irec = getNodeRecord(instance);
             if (irec.dst && irec.dst->reference.empty())
                 ret = exportInstance(rec, irec.dst);
         });
