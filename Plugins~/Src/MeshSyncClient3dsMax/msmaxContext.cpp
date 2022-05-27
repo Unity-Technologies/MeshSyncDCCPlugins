@@ -755,7 +755,7 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
     if (!n || !n->GetObjectRef())
         return nullptr;
 
-    auto& rec = getNodeRecord(n);
+    msmaxContext::TreeNode& rec = getNodeRecord(n);
     if (rec.dst)
         return nullptr;
 
