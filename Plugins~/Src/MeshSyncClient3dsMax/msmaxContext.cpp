@@ -796,6 +796,22 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
             });
         }
 
+        auto& ctx = msmaxGetContext();
+        char buffer[255];
+        int ret2 = wcstombs ( buffer, n->GetName(), sizeof(buffer) );
+
+        bool renderable = IsRenderable(n);
+        ObjectState os = n->EvalWorldState(0);
+
+        ShapeObject* shape = dynamic_cast<ShapeObject*>(os.obj);
+        if (nullptr != shape)  {
+            renderable = renderable && shape->GetRenderable();
+        }
+
+        ctx.logInfo("%s. Renderable: %d\n", buffer, renderable);
+
+
+
         if (m_settings.sync_meshes || m_settings.sync_blendshapes) {
             handle_parent();
             if (!handle_instance())
