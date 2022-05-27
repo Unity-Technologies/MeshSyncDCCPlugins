@@ -1047,9 +1047,9 @@ std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 
 ms::TransformPtr msmaxContext::exportTransform(TreeNode& n)
 {
-    auto t = GetTime();
-    auto ret = createEntity<ms::Transform>(n);
-    auto& dst = *ret;
+    TimeValue t = GetTime();
+    std::shared_ptr<ms::Transform> ret = createEntity<ms::Transform>(n);
+    ms::Transform& dst = *ret;
 
     extractTransform(n, t, dst);
     m_entity_manager.add(ret);
