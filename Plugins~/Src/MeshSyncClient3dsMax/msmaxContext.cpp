@@ -1036,8 +1036,8 @@ void msmaxContext::extractLightData(TreeNode& n, TimeValue t,
 template<class T>
 std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 {
-    auto ret = T::create();
-    auto& dst = *ret;
+    std::shared_ptr<T> ret = T::create();
+    T& dst = *ret;
     dst.path = n.path;
     dst.index = n.index;
     n.dst = ret;
