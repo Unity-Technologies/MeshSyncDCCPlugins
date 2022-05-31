@@ -30,6 +30,7 @@ static PropertyRNA* BObject_select;
 static FunctionRNA* BObject_select_get;
 static FunctionRNA* BObject_to_mesh;
 static FunctionRNA* BObject_to_mesh_clear;
+static FunctionRNA* BObject_modifiers_clear;
 
 StructRNA* BMesh::s_type;
 static FunctionRNA* BMesh_calc_normals_split;
@@ -153,6 +154,11 @@ void setup(py::object bpy_context)
                 if (match_func("to_mesh_clear")) BObject_to_mesh_clear = func;
             }
         }
+        else if (match_type("ObjectModifiers")) {
+            each_func{
+                if (match_func("clear")) BObject_modifiers_clear = func;
+            }
+        }        
         else if (match_type("Mesh")) {
             BMesh::s_type = type;
             each_func {
@@ -394,6 +400,11 @@ Mesh* BObject::to_mesh() const
 void BObject::to_mesh_clear()
 {
     call<Object, Mesh*>(g_context, m_ptr, BObject_to_mesh_clear);
+}
+
+void BObject::modifiers_clear() 
+{
+    call<Object, void>(g_context, m_ptr, BObject_modifiers_clear);
 }
 
 blist_range<ModifierData> BObject::modifiers()

@@ -24,7 +24,7 @@
 #include "DNA_node_types.h"
 #include <sstream>
 #include "msblenBinder.h"
-
+#include "MeshUtils/muLog.h"
 
 
 #ifdef mscDebug
@@ -765,12 +765,14 @@ void msblenContext::importEntities(std::vector<ms::EntityPtr> entities) {
             break;
         case ms::EntityType::Mesh:
             importMesh(dynamic_cast<ms::Mesh*>(entity.get()));
+            break;
         default:
             break;
         }
     }
 }
 
+// I don't think we can just mem copy here because this is also used for multidimensional arrays:
 #define copyFloatVector(DST, SRC) \
 DST[0] = SRC[0]; \
 DST[1] = SRC[1]; \
@@ -819,6 +821,17 @@ void msblenContext::importCurve(ms::Curve* curve) {
     }
 }
 
+void set_object_mode() {
+    try {
+        py::eval<py::eval_mode::eval_statements>(
+            "import bpy\n"
+            "bpy.ops.object.mode_set()");
+    }
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
+    }
+}
+
 void msblenContext::importMesh(ms::Mesh* mesh) {
     auto obj = msblenUtils::get_object_from_path(mesh->path);
 
@@ -827,24 +840,17 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         return;
     }
 
+    // Ensure we're in object mode, settiing data on the edit mesh is not supported:
+    set_object_mode();
+
+    // If we're baking modifiers, the mesh would contain the baked version so remove the modifiers now when the mesh is updated:
+    if (getSettings().BakeModifiers) {
+        blender::BObject bObj(obj);
+        bObj.modifiers_clear();
+    }
+
     auto data = (Mesh*)obj->data;
 
-    // Unrefine:
-    
-  /*  mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_NORMALS, true);
-    mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
-    mesh->refine_settings.flags.Set(ms::MESH_REFINE_FLAG_NO_REINDEXING, false);    
-    mesh->refine();*/
-
-
-    bl::BMesh bmesh(data);
-    
-
-    //std::vector<int> mid_table(mesh.totcol);
-    //for (int mi = 0; mi < mesh.totcol; ++mi)
-    //    mid_table[mi] = getMaterialID(mesh.mat[mi]);
-    //if (mid_table.empty())
-    //    mid_table.push_back(ms::InvalidID);
     auto blenMesh = (Mesh*)obj->data;
     std::vector<int> mid_table(blenMesh->totcol);
     for (int mi = 0; mi < blenMesh->totcol; ++mi)
@@ -857,34 +863,56 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         rev_mid_table[mid_table[i]] = i;
     }
 
-    bmesh.clear_geometry();
+    int num_indices = mesh->indices.size();
+    int num_polygons = num_indices / 3;
+
+    // The mesh for unity had split vertices, we need to undo that for blender so the faces are connected:
+    // Merge verts in the same location:
+    for (int i = 0; i < mesh->points.size(); i++)
+    {
+        for (int j = mesh->points.size() - 1; j > i; j--)
+        {
+            if (mesh->points[i] == mesh->points[j]) {
+                // Remove vert
+                mesh->points.erase(mesh->points.begin() + j);
+
+                // Adjust indices to match:
+                for (int ii = 0; ii < num_indices; ii++) {
+                    if (mesh->indices[ii] == j) {
+                        mesh->indices[ii] = i;
+                    }
+                    else if (mesh->indices[ii] > j) {
+                        mesh->indices[ii]--;
+                    }
+                }
+            }
+        }
+    }
 
     int num_vertices = mesh->points.size();
-    int num_indices = mesh->indices.size();
-    int num_polygons = num_indices / 3;// mesh->counts.size();
 
+    bl::BMesh bmesh(data);
+
+    bmesh.clear_geometry();
     bmesh.addVertices(num_vertices);
     bmesh.addPolygons(num_polygons);
     bmesh.addLoops(num_indices);
-    //bmesh.addEdges(0);
 
     auto bmeshVerts = bmesh.vertices();
     auto bmeshIndices = bmesh.indices();
     auto bmeshPolygons = bmesh.polygons();
-   /* auto bmeshNormals = bmesh.normals();*/
-    //auto bmeshEdges = bmesh.edges();
-
+  
     // vertices
     for (size_t vi = 0; vi < num_vertices; ++vi) {
         copyFloatVector(bmeshVerts[vi].co, mesh->points[vi])
     }
 
-    // faces  
+    // faces
     int ii = 0;
     for (size_t pi = 0; pi < num_polygons; ++pi) {
-        //int count = mesh->counts[pi];
+        // int count = mesh->counts[pi];
         // always 3 for triangles from unity:
-        int count = 3;
+        const int count = 3;
         bmeshPolygons[pi].loopstart = ii;
         bmeshPolygons[pi].totloop = count;
 
@@ -898,38 +926,28 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
             }
         }
 
-    /*    for (int li = 0; li < count; ++li) {
-            bmeshIndices[bmeshPolygons[pi].loopstart + li].v = mesh->indices[ii++];
-        }*/
-
-        // Reverse triangle:
+        // Reverse triangle back because it was reversed in unity during refine step:
         bmeshIndices[bmeshPolygons[pi].loopstart + 0].v = mesh->indices[ii++];
         bmeshIndices[bmeshPolygons[pi].loopstart + 2].v = mesh->indices[ii++];
         bmeshIndices[bmeshPolygons[pi].loopstart + 1].v = mesh->indices[ii++];
     }
 
-    // normals:
-
-    /*
-      blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
-        if (!normals.empty()) {
-            dst.normals.resize_discard(num_indices);
-            for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.normals[ii] = normals[ii];
-        }
-        */
-
-    //bmesh.calc_normals_split();
-
-    // Calculate edges:
+    // Calculate edges, normals, loops, etc:
     bmesh.update();
+    bmesh.calc_normals_split();
 
-  /*  bmesh.calc_normals_split();*/
+    Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
+    blender::BObject bObj(obj);
+    bObj = (Object*)bl::BlenderPyID(bObj).evaluated_get(depsgraph);
 
-    /*auto bmeshNormals = bmesh.normals();
-    for (size_t ii = 0; ii < num_indices; ++ii) {
-        bmeshNormals[ii] = mesh->normals[ii]; 
-    }*/
+    // Update the geometry hash so this is not sent back to unity, we just got it from there!
+    mesh->indices.clear();
+    mesh->points.clear();
+    mesh->counts.clear();
+    mesh->setupDataFlags();
+    doExtractMeshData(*m_entities_state, m_settings, *mesh, obj, data, mesh->world_matrix);
+
+    m_entity_manager.updateChecksumGeom(mesh);
 }
 
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
@@ -1954,8 +1972,14 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 
 void msblenContext::callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
-    auto module = py::module::import("unity_mesh_sync");
-    auto method = module.attr(name);
-    method();
+
+    try {
+        auto module = py::module::import("unity_mesh_sync");
+        auto method = module.attr(name);
+        method();
+    }
+    catch (...) {
+    }
+
     py::gil_scoped_release release;
 }

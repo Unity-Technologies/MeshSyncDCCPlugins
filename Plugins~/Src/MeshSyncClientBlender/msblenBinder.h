@@ -93,6 +93,7 @@ namespace blender
         bool hide_render() const;
         Mesh* to_mesh() const;
         void to_mesh_clear();
+        void modifiers_clear();
     };
 
 //----------------------------------------------------------------------------------------------------------------------
