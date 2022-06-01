@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.1-preview] - 2022-05-31
+
+### Fixed
+* blender-fix: do not handle already handled records when extracting geometry node instances
+* 3dsmax-fix: consider "Enable in Renderer" option for syncing with "Ignore Non-Renderable" set to on 
+
 ## [0.13.0-preview] - 2022-04-26
 
 ### Added
