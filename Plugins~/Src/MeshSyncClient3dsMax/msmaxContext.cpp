@@ -615,8 +615,14 @@ void msmaxContext::WaitAndKickAsyncExport()
     for (std::map<INode*, TreeNode>::value_type& kvp : m_node_records)
         kvp.second.clearState();
 
-
+#if MAX_VERSION_MAJOR <= 23
+    // 3ds Max 2021 and earlier
     float to_meter = static_cast<float>(GetMasterScale(UNITS_METERS));
+#else
+    // 3ds Max 2022 and later
+    float to_meter = static_cast<float>(GetSystemUnitScale(UNITS_METERS));
+#endif
+
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
 
@@ -744,12 +750,17 @@ void msmaxContext::RegisterSceneMaterials()
     m_material_manager.eraseStaleMaterials();
 }
 
+
+bool msmaxContext::ShouldExportNode(INode *n) {
+    return (!m_settings.ignore_non_renderable || IsNodeRenderable(n,m_current_time_tick));
+}
+
 ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
 {
     if (!n || !n->GetObjectRef())
         return nullptr;
 
-    auto& rec = getNodeRecord(n);
+    msmaxContext::TreeNode& rec = getNodeRecord(n);
     if (rec.dst)
         return nullptr;
 
@@ -771,17 +782,17 @@ ms::TransformPtr msmaxContext::exportObject(INode *n, bool tip)
 
         // check if the node is instance
         EachInstance(n, [this, &rec, &ret](INode *instance) {
-            if (ret || (m_settings.ignore_non_renderable && !IsRenderable(instance)))
+            if (ret || !ShouldExportNode(instance))
                 return;
-            auto& irec = getNodeRecord(instance);
-            if (irec.dst && irec.dst->reference.empty())
-                ret = exportInstance(rec, irec.dst);
+            const msmaxContext::TreeNode& instanceRec = getNodeRecord(instance);
+            if (instanceRec.dst && instanceRec.dst->reference.empty())
+                ret = exportInstance(rec, instanceRec.dst);
         });
         return ret != nullptr;
     };
 
 
-    if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n))) {
+    if (IsMesh(obj) && (ShouldExportNode(n))) {
         // export bones
         // this must be before extractMeshData() because meshes can be bones in 3ds Max
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
@@ -869,7 +880,7 @@ mu::float4x4 msmaxContext::getWorldMatrix(INode *n, TimeValue t, bool cancel_cam
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t,
     mu::float3& pos, mu::quatf& rot, mu::float3& scale, ms::VisibilityFlags& vis,
     mu::float4x4 *dst_world, mu::float4x4 *dst_local)
 {
@@ -917,7 +928,7 @@ void msmaxContext::extractTransform(TreeNode& n, TimeValue t,
     }
 }
 
-void msmaxContext::extractTransform(TreeNode& n, TimeValue t, ms::Transform& dst)
+void msmaxContext::extractTransform(const TreeNode& n, TimeValue t, ms::Transform& dst)
 {
     extractTransform(n, GetTime(), dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
 }
@@ -948,7 +959,15 @@ void msmaxContext::extractCameraData(TreeNode& n, TimeValue t,
     }
 
     if (auto* pcam = dynamic_cast<MaxSDK::IPhysicalCamera*>(cam)) {
+
+#if MAX_VERSION_MAJOR <= 23
+        // 3ds Max 2021 and earlier
         float to_mm = (float)GetMasterScale(UNITS_MILLIMETERS);
+#else
+        // 3ds Max 2022 and later
+        float to_mm = (float)GetSystemUnitScale(UNITS_MILLIMETERS);
+#endif
+
         Interval interval;
 
         // focal length in mm
@@ -1022,8 +1041,8 @@ void msmaxContext::extractLightData(TreeNode& n, TimeValue t,
 template<class T>
 std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 {
-    auto ret = T::create();
-    auto& dst = *ret;
+    std::shared_ptr<T> ret = T::create();
+    T& dst = *ret;
     dst.path = n.path;
     dst.index = n.index;
     n.dst = ret;
@@ -1033,9 +1052,9 @@ std::shared_ptr<T> msmaxContext::createEntity(TreeNode& n)
 
 ms::TransformPtr msmaxContext::exportTransform(TreeNode& n)
 {
-    auto t = GetTime();
-    auto ret = createEntity<ms::Transform>(n);
-    auto& dst = *ret;
+    TimeValue t = GetTime();
+    std::shared_ptr<ms::Transform> ret = createEntity<ms::Transform>(n);
+    ms::Transform& dst = *ret;
 
     extractTransform(n, t, dst);
     m_entity_manager.add(ret);
@@ -1047,13 +1066,10 @@ ms::TransformPtr msmaxContext::exportInstance(TreeNode& n, ms::TransformPtr base
     if (!base)
         return nullptr;
 
-    auto t = GetTime();
-    auto ret = createEntity<ms::Transform>(n);
-    auto& dst = *ret;
+    ms::TransformPtr ret = exportTransform(n);
+    ms::Transform& dst = *ret;
 
-    extractTransform(n, t, dst);
     dst.reference = base->path;
-    m_entity_manager.add(ret);
     return ret;
 }
 
@@ -1451,7 +1467,13 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         frame.points[vi] = to_float3(channel.GetProgressiveMorphPoint(ti, vi)) - dst.points[vi];
                 }
                 if (!dbs->frames.empty()) {
+#if MAX_VERSION_MAJOR <= 23
+                    // 3ds Max 2021 and earlier
                     dbs->name = mu::ToMBS(channel.GetName());
+#else
+                    // 3ds Max 2022 and later
+                    dbs->name = mu::ToMBS(channel.GetName(false));
+#endif
                     dbs->weight = channel.GetMorphWeight(t);
                     dst.blendshapes.push_back(dbs);
                 }
@@ -1484,7 +1506,7 @@ bool msmaxContext::exportAnimations(INode *n, bool force)
     ms::TransformAnimationPtr ret;
     AnimationRecord::extractor_t extractor = nullptr;
 
-    if (IsMesh(obj) && (!m_settings.ignore_non_renderable || IsRenderable(n))) {
+    if (IsMesh(obj) && ShouldExportNode(n)) {
         exportAnimations(n->GetParentNode(), true);
         if (m_settings.sync_bones && !m_settings.BakeModifiers) {
             EachBone(n, [this](INode *bone) {
@@ -1600,8 +1622,13 @@ void msmaxContext::extractMeshAnimation(ms::TransformAnimation& dst_, TreeNode *
                 auto tnode = channel.GetMorphTarget();
                 if (!tnode || !channel.IsActive() || !channel.IsValid())
                     continue;
-
+#if MAX_VERSION_MAJOR <= 23
+                // 3ds Max 2021 and earlier
                 auto name = mu::ToMBS(channel.GetName());
+#else
+                // 3ds Max 2022 and later
+                auto name = mu::ToMBS(channel.GetName(false));
+#endif                
                 dst.getBlendshapeCurve(name).push_back({ t, channel.GetMorphWeight(m_current_time_tick) });
             }
         }

@@ -91,7 +91,7 @@ namespace blender {
                 auto rec = records_by_name.find(obj->id.name);
                 if (rec == records_by_name.end())
                     continue;
-                
+
                 // Sometimes an object in the data might come up more than once
                 if (rec->second->handled)
                     continue;

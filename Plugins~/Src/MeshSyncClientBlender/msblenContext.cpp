@@ -1693,9 +1693,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 #if BLENDER_VERSION >= 300
     if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
         exportInstances();
-
         m_asyncTasksController.Wait();
-
         m_instances_state->eraseStaleObjects();
     }
 #endif

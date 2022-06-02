@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.13.1-preview] - 2022-05-31
+
+### Fixed
+* blender-fix: do not handle already handled records when extracting geometry node instances
+* 3dsmax-fix: consider "Enable in Renderer" option for syncing with "Ignore Non-Renderable" set to on 
+
+## [0.13.0-preview] - 2022-04-26
+
+### Added
+* blender: Geometry nodes support
+* 3ds Max: 3ds Max 2022, 2023+ compatibility 
+
+### Changed
+* chore: ensure to build Mac plugins targeting 10.15 at minimum
+
+### Fixed
+* blender: consider collection visibility for syncing 
+
 ## [0.12.1-preview] - 2022-04-06
 
 ### Fixed

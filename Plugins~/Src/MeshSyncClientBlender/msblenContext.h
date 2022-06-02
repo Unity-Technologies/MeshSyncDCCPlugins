@@ -25,13 +25,13 @@
 #include "MeshSyncClient/msPropertyManager.h"
 #include "MeshSyncClient/msTransformManager.h"
 
-#include "msblenGeometryNodeUtils.h"
-
-#include "MeshSyncClient/msInstancesManager.h"
-#include "MeshSyncClient/msTransformManager.h"
-
 #include "../MeshSyncClientBlender/msblenContextState.h"
 #include <MeshSyncClient/msEntityManager.h>
+
+#if BLENDER_VERSION >= 300
+#include <msblenGeometryNodeUtils.h>
+#endif
+
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
