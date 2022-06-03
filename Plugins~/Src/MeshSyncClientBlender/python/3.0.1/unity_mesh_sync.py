@@ -25,6 +25,7 @@ class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
 
     def draw(self, context):
         pass
+            
 
 
 class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
@@ -113,6 +114,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def __del__(self):
         MESHSYNC_OT_AutoSync._timer = None
 
+    def execute(self, context):
+        return self.invoke(context, None)
+
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
@@ -120,8 +124,16 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
+            update_step = 0.0001 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
             context.window_manager.modal_handler_add(self)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(update_step)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -139,6 +151,8 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
         msb_context.exportUpdatedObjects()
+    
+
 
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):

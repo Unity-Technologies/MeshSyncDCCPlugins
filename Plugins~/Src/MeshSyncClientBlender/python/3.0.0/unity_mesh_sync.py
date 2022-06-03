@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (2, 92, 0),
+    "blender": (3, 0, 0),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -123,8 +123,16 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
+            update_step = 0.0001 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
             context.window_manager.modal_handler_add(self)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(update_step)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -138,6 +146,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
+        deps = bpy.context.evaluated_depsgraph_get()
         msb_context.flushPendingList();
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
@@ -216,7 +225,6 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         ctx.strip_normals = self.strip_normals
         ctx.strip_tangents = self.strip_tangents
         ctx.export(self.filepath)
-        MS_MessageBox("Finished writing scene cache to " + self.filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -300,6 +308,15 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
+
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
 
 import atexit
 atexit.register(DestroyMeshSyncContext)

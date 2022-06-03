@@ -113,6 +113,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def __del__(self):
         MESHSYNC_OT_AutoSync._timer = None
 
+    def execute(self, context):
+        return self.invoke(context, None)
+
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
