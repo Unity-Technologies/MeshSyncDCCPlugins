@@ -6,7 +6,7 @@ import MeshSyncClientBlender as ms
 
 msb_context = ms.Context()
 msb_cache = ms.Cache()
-
+test
 def msb_apply_scene_settings(self = None, context = None):
     ctx = msb_context
     scene = bpy.context.scene
