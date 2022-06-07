@@ -67,8 +67,7 @@ void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
 
 static msblenContext* s_instance = nullptr;
 
-msblenContext& msblenContext::getInstance()
-{
+msblenContext& msblenContext::getInstance() {
     if (s_instance == nullptr) {
         s_instance = new msblenContext();
     }
