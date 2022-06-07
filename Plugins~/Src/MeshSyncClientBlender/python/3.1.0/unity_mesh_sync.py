@@ -162,7 +162,6 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
-
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
     bl_idname = "meshsync.export_cache"
     bl_label = "Export Cache"
