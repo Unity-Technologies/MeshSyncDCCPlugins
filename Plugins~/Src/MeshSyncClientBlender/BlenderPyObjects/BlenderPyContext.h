@@ -2,11 +2,9 @@
 
 #include <BKE_context.h> //bContext
 #include "msblenMacros.h" //MSBLEN_BOILERPLATE2
-#include "MeshUtils/muMath.h"
 
 namespace blender
 {
-
     class BlenderPyContext
     {
     public:
