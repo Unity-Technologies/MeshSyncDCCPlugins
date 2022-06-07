@@ -93,10 +93,6 @@ extern PropertyRNA* BlenderPyDepsgraph_object_instances;
 
 extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
 
-extern PropertyRNA* BlenderPyNodeTree_inputs;
-extern PropertyRNA* BlenderPyNodeTree_nodes;
-extern PropertyRNA* BlenderPyNodeTree_outputs;
-
 bool ready()
 {
     return g_context != nullptr;
@@ -301,19 +297,6 @@ void setup(py::object bpy_context)
                 }
                 if (match_prop("object")) {
                     BlenderPyDepsgraphObjectInstance_object = prop;
-                }
-            }
-        }
-        else if (match_type("NodeTree")) {
-            each_prop{
-                if (match_prop("inputs")) {
-                    BlenderPyNodeTree_inputs = prop;
-                }
-                if (match_prop("nodes")) {
-                    BlenderPyNodeTree_nodes = prop;
-                }
-                if (match_prop("outputs")) {
-                    BlenderPyNodeTree_outputs = prop;
                 }
             }
         }

@@ -2,7 +2,6 @@
 #include <sstream>
 #include <BlenderPyObjects/BlenderPyContext.h>
 #include <MeshSync/SceneGraph/msMesh.h>
-#include "BlenderPyObjects/BlenderPyNodeTree.h"
 #include <msblenBinder.h>
 #include "MeshSync/SceneGraph/msPropertyInfo.h"
 #include <msblenUtils.h>
@@ -27,11 +26,8 @@ namespace blender {
 
 	std::mutex m_mutex;
 
-	bNodeSocket* getSocketForProperty(IDProperty* property, bNodeTree* group, BlenderPyNodeTree blNodeTree) {
-		CollectionPropertyIterator it;
-		for (blNodeTree.inputs_begin(&it, group); it.valid; blNodeTree.inputs_next(&it)) {
-			auto input = blNodeTree.inputs_get(&it);
-			auto socket = (bNodeSocket*)input.data;
+	bNodeSocket* getSocketForProperty(IDProperty* property, bNodeTree* group) {
+		for(bNodeSocket* socket : blender::list_range((bNodeSocket*)group->inputs.first)) {
 			if (strcmp(socket->identifier, property->name) == 0) {
 				return socket;
 			}
@@ -59,7 +55,6 @@ namespace blender {
 			return;
 		}
 
-		auto blNodeTree = blender::BlenderPyNodeTree();
 		auto nodeModifier = (NodesModifierData*)modifier;
 		auto group = nodeModifier->node_group;
 
@@ -73,7 +68,7 @@ namespace blender {
 				continue;
 			}
 
-			auto socket = getSocketForProperty(property, group, blNodeTree);
+			auto socket = getSocketForProperty(property, group);
 
 			if (socket != nullptr) {
 				auto propertyInfo = ms::PropertyInfo::create();

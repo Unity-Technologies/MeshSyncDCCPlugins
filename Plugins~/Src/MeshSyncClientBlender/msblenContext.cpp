@@ -20,7 +20,6 @@
 #include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
-#include "BlenderPyObjects/BlenderPyNodeTree.h"
 #include "DNA_node_types.h"
 #include <sstream>
 #include "msblenBinder.h"
