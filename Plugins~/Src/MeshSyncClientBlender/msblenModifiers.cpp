@@ -21,7 +21,6 @@ namespace blender {
 #define IDP_IDPArray(prop) ((struct IDProperty *)(prop)->data.pointer)
 #define IDP_Id(prop) ((ID *)(prop)->data.pointer)
 
-
 	std::mutex m_mutex;
 
 	bNodeSocket* getSocketForProperty(IDProperty* property, bNodeTree* group) {
@@ -319,10 +318,6 @@ namespace blender {
 		 	blender::BlenderPyID bID(obj);
 			bID.update_tag(); 
 		}
-
-	/*	auto pyContext = blender::BlenderPyContext::get();
-		auto depsGraph = pyContext.evaluated_depsgraph_get();
-		BlenderPyContext::UpdateDepsgraph(depsGraph);*/
 	}
 
 #endif // BLENDER_VERSION < 300

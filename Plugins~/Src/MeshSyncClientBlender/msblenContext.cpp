@@ -717,8 +717,6 @@ ms::CurvePtr msblenContext::exportCurve(msblenContextState& state, msblenContext
 void msblenContext::doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world)
 {
     if (settings.sync_curves) {
-        //bl::BObject bobj(obj);
-        //bl::BCurve bcurve(data);
         const bool is_editing = data->editnurb != nullptr;
 
         ListBase nurbs;
@@ -945,6 +943,7 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
     mesh->setupDataFlags();
     doExtractMeshData(*m_entities_state, m_settings, *mesh, obj, data, mesh->world_matrix);
 
+    // Update the cached geometry checksum so this does not get sent back to unity:
     m_entity_manager.updateChecksumGeom(mesh);
 }
 
@@ -1890,8 +1889,6 @@ void msblenContext::WaitAndKickAsyncExport()
 
     m_instances_state->clearRecordsState();
     m_instances_state->bones.clear();
-
-    m_entities_state->bones.clear();
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
