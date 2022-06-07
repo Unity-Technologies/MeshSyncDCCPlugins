@@ -37,8 +37,10 @@ ViewLayer* BlenderPyContext::view_layer()
     return (ViewLayer*)get_pointer(m_ptr, BlenderPyContext_view_layer);
 }
 
+
 void BlenderPyContext::UpdateDepsgraph(Depsgraph* depsgraph) {
     call<Depsgraph, void>(g_context, depsgraph, BlenderPyContext_depsgraph_update);
 }
+
 
 } // namespace blender

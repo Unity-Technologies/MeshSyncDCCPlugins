@@ -5,6 +5,7 @@
 
 namespace blender
 {
+
     class BlenderPyContext
     {
     public:
@@ -17,6 +18,7 @@ namespace blender
         ViewLayer* view_layer();
 
         static void UpdateDepsgraph(Depsgraph* depsgraph);
+
     };
 
 } // namespace blender
