@@ -163,6 +163,8 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
+        if not bpy.context.scene.meshsync_auto_sync:
+            return
         msb_context.flushPendingList()
         msb_apply_scene_settings()
         msb_context.setup(bpy.context)
