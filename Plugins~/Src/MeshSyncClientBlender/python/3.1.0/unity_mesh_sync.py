@@ -14,6 +14,17 @@ from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 from unity_mesh_sync_common import *
 
+# Events that get called during the meshsync export stages, append your functions to these lists:
+# Called every frame when checking if something needs exporting:
+mesh_sync_on_prepare = []
+
+# Called before exporting
+mesh_sync_on_pre_export = []
+
+# Called after export is finished
+mesh_sync_on_post_export = []
+
+
 class MESHSYNC_PT:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -109,9 +120,13 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
     bl_label = "Auto Sync"
     _timer = None
-    
+    _registered = False
+
     def __del__(self):
         MESHSYNC_OT_AutoSync._timer = None
+
+    def execute(self, context):
+        return self.invoke(context, None)
 
     def invoke(self, context, event):
         scene = bpy.context.scene
@@ -120,8 +135,21 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
-            context.window_manager.modal_handler_add(self)
+            update_step = 0.01 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
+
+            # There is no way to unregister modal callbacks!
+            # To ensure this does not get repeatedly registered, keep track of it and only do it once:
+            if not MESHSYNC_OT_AutoSync._registered:
+                context.window_manager.modal_handler_add(self)
+                MESHSYNC_OT_AutoSync._registered = True
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(update_step)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -135,11 +163,12 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
-        msb_context.flushPendingList();
+        if not bpy.context.scene.meshsync_auto_sync:
+            return
+        msb_context.flushPendingList()
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context);
+        msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
-
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
     bl_idname = "meshsync.export_cache"
@@ -297,6 +326,18 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
+
+def meshsync_prepare():
+    for f in mesh_sync_on_prepare:
+        f()
+
+def meshsync_pre_export():
+    for f in mesh_sync_on_pre_export:
+        f()
+
+def meshsync_post_export():
+    for f in mesh_sync_on_post_export:
+        f()
 
 import atexit
 atexit.register(DestroyMeshSyncContext)
