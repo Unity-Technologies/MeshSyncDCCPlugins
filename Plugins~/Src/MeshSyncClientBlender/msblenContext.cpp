@@ -1592,6 +1592,8 @@ const std::string& msblenContext::getErrorMessage()
 
 void msblenContext::wait()
 {
+    py::gil_scoped_release release;
+
     m_sender.wait();
 }
 
@@ -1931,7 +1933,7 @@ void msblenContext::WaitAndKickAsyncExport()
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
         }
     };
-    exporter->on_success = [this, exporter]() {
+    exporter->on_success = [this]() {
         m_material_ids.clearDirtyFlags();
         m_texture_manager.clearDirtyFlags();
         m_material_manager.clearDirtyFlags();
