@@ -7,7 +7,7 @@
 
 namespace bl = blender;
 namespace msblenUtils {
-std::string get_name(const Material* obj)
+std::string get_name(const Material *obj)
 {
     std::string ret;
     if (obj) {
@@ -17,7 +17,7 @@ std::string get_name(const Material* obj)
     return ret;
 }
 
-std::string get_name(const Object* obj)
+std::string get_name(const Object *obj)
 {
     std::string ret;
     if (obj) {
@@ -27,7 +27,7 @@ std::string get_name(const Object* obj)
     return ret;
 }
 
-std::string get_name(const Bone* obj)
+std::string get_name(const Bone *obj)
 {
     std::string ret;
     if (obj) {
@@ -36,7 +36,7 @@ std::string get_name(const Bone* obj)
     }
     return ret;
 }
-std::string get_path(const Object* obj)
+std::string get_path(const Object *obj)
 {
     std::string ret;
     if (obj->parent) {
@@ -53,7 +53,7 @@ std::string get_path(const Object* obj)
     ret += get_name(obj);
     return ret;
 }
-std::string get_path(const Object* arm, const Bone* obj)
+std::string get_path(const Object *arm, const Bone *obj)
 {
     std::string ret;
     if (obj->parent)
@@ -77,11 +77,11 @@ Object* get_object_from_path(std::string path) {
     return scene.get_object_by_name(objName);
 }
 
-bool visible_in_render(const Object* obj)
+bool visible_in_render(const Object *obj)
 {
     return !bl::BObject(obj).hide_render();
 }
-bool visible_in_viewport(const Object* obj)
+bool visible_in_viewport(const Object *obj)
 {
     return !bl::BObject(obj).hide_viewport();
 }
@@ -112,7 +112,7 @@ bool visible_in_collection(LayerCollection* lc, const Object* obj) {
     return false;
 }
 
-bool visible_in_collection(const Object* obj) {
+bool visible_in_collection(const Object *obj) {
     auto viewLayer = bl::BlenderPyContext::get().view_layer();
 
     for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
@@ -124,7 +124,7 @@ bool visible_in_collection(const Object* obj) {
     return false;
 }
 
-const ModifierData* FindModifier(const Object* obj, ModifierType type)
+const ModifierData* FindModifier(const Object *obj, ModifierType type)
 {
     for (auto* it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->type == type)
@@ -140,7 +140,7 @@ const ModifierData* FindModifier(const Object* obj, const std::string name)
     return nullptr;
 }
 
-Bone* find_bone_recursive(Bone* bone, const char* name)
+Bone* find_bone_recursive(Bone *bone, const char *name)
 {
     if (strcmp(bone->name, name) == 0) {
         return bone;
@@ -155,7 +155,7 @@ Bone* find_bone_recursive(Bone* bone, const char* name)
     return nullptr;
 }
 
-Bone* find_bone(Object* obj, const char* name)
+Bone* find_bone(Object *obj, const char *name)
 {
     if (!obj) { return nullptr; }
     auto* arm = (bArmature*)obj->data;
@@ -168,7 +168,7 @@ Bone* find_bone(Object* obj, const char* name)
     return nullptr;
 }
 
-bPoseChannel* find_pose(Object* obj, const char* name)
+bPoseChannel* find_pose(Object *obj, const char *name)
 {
     if (!obj || !obj->pose) { return nullptr; }
     for (auto* it = (bPoseChannel*)obj->pose->chanbase.first; it != nullptr; it = it->next)
@@ -177,10 +177,10 @@ bPoseChannel* find_pose(Object* obj, const char* name)
     return nullptr;
 }
 
-bool is_mesh(const Object* obj) { return obj->type == OB_MESH; }
-bool is_camera(const Object* obj) { return obj->type == OB_CAMERA; }
-bool is_light(const Object* obj) { return obj->type == OB_LAMP; }
-bool is_armature(const Object* obj) { return obj->type == OB_ARMATURE; }
+bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
+bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
+bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
+bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
 
 bool is_valid_pointer(void* ptr) { return ptr != nullptr && ptr != ((void*)-1); }
 }
