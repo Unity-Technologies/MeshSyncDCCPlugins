@@ -15,7 +15,7 @@ bool visible_in_viewport(const Object *obj);
 bool visible_in_collection(LayerCollection* layerCollection, const Object* obj);
 bool visible_in_collection(const Object* obj);
 const ModifierData* FindModifier(const Object *obj, ModifierType type);
-const ModifierData* FindModifier(const Object* obj, const std::string name);
+const ModifierData* FindModifier(const Object *obj, const std::string name);
 Bone* find_bone_recursive(Bone *bone, const char *name);
 Bone* find_bone(Object *obj, const char *name);
 bPoseChannel* find_pose(Object *obj, const char *name);
