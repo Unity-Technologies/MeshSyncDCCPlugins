@@ -51,7 +51,7 @@ namespace blender {
             });
         }
 
-        Object* findObjectInCollection(std::string objName, Collection* col) {
+        Object* find_object_in_collection(std::string objName, Collection* col) {
             for (auto* o : list_range((CollectionObject*)col->gobject.first)) {
                 auto obj = o->ob;
                 auto name = msblenUtils::get_name(obj);
@@ -65,13 +65,13 @@ namespace blender {
         }
 
         Object* get_object_by_name(std::string objName) {
-            auto result = findObjectInCollection(objName, m_ptr->master_collection);
+            auto result = find_object_in_collection(objName, m_ptr->master_collection);
             if (result) {
                 return result;
             }
 
             for (auto* c : list_range((CollectionChild*)m_ptr->master_collection->children.first)) {
-                result = findObjectInCollection(objName, c->collection);
+                result = find_object_in_collection(objName, c->collection);
                 if (result) {
                     return result;
                 }
