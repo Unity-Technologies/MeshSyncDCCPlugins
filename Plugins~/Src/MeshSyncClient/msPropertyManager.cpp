@@ -12,9 +12,7 @@ namespace ms {
 		vector<PropertyInfoPtr> ret;
 
 		for (auto& r : m_records) {
-			if (r.dirty) {
-				ret.push_back(r.propertyInfo);
-			}
+			ret.push_back(r.propertyInfo);
 		}
 
 		return ret;

@@ -25,7 +25,6 @@ namespace ms {
     private:
         struct Record
         {
-            bool dirty = true;
             PropertyInfoPtr propertyInfo;
         };
 
