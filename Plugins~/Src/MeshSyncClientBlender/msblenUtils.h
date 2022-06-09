@@ -34,7 +34,7 @@ inline const mu::float3& get_instance_offset(const Collection *col) {
     return (mu::float3&)col->instance_offset;
 }
 
-inline BMEditMesh* get_edit_mesh(Mesh* mesh) {
+inline BMEditMesh* get_edit_mesh(Mesh *mesh) {
     return mesh->edit_mesh;
 }
 
@@ -56,7 +56,7 @@ template<class Body>
 static inline void each_fcurve(Object *obj, const Body& body)
 {
     if (!obj->adt || !obj->adt->action) return;
-    for (auto* curve = (FCurve*)obj->adt->action->curves.first; curve; curve = curve->next) {
+    for (auto *curve = (FCurve*)obj->adt->action->curves.first; curve; curve = curve->next) {
         body(curve);
     }
 }
@@ -65,8 +65,8 @@ static inline void each_fcurve(Object *obj, const Body& body)
 template<class Body>
 inline void each_modifier(Object *obj, const Body& body)
 {
-    auto* it = (const ModifierData*)obj->modifiers.first;
-    auto* end = (const ModifierData*)obj->modifiers.last;
+    auto *it = (const ModifierData*)obj->modifiers.first;
+    auto *end = (const ModifierData*)obj->modifiers.last;
     for (; it != end; it = it->next)
         body(it);
 }
@@ -75,7 +75,7 @@ inline void each_modifier(Object *obj, const Body& body)
 template<class Body>
 static inline void each_deform_group(const Object *obj, const Body& body)
 {
-    for (auto* it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
+    for (auto *it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
         body(it);
 }
 
@@ -84,7 +84,7 @@ template<class Body>
 static inline void each_key(Mesh *obj, const Body& body)
 {
     if (obj->key == nullptr || obj->key->block.first == nullptr) { return; }
-    for (auto* it = (const KeyBlock*)obj->key->block.first; it != nullptr; it = it->next)
+    for (auto *it = (const KeyBlock*)obj->key->block.first; it != nullptr; it = it->next)
         body(it);
 }
 
