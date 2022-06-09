@@ -181,6 +181,4 @@ bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
 bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
-
-bool is_valid_pointer(void* ptr) { return ptr != nullptr && ptr != ((void*)-1); }
 }
