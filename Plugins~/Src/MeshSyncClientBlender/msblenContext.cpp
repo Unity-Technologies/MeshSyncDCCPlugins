@@ -1066,8 +1066,6 @@ void msblenContext::doExtractMeshData(msblenContextState& state, BlenderSyncSett
         dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_GEN_TANGENTS, true);
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, true);
     dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MAKE_DOUBLE_SIDED, settings.make_double_sided);
-
-   // dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_FLIP_FACES, false); // test
 }
 
 void msblenContext::doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data)
