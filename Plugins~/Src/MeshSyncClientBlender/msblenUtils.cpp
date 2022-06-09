@@ -112,7 +112,7 @@ bool visible_in_collection(LayerCollection* lc, const Object* obj) {
     return false;
 }
 
-bool visible_in_collection(const Object *obj) {
+bool visible_in_collection(const Object* obj) {
     auto viewLayer = bl::BlenderPyContext::get().view_layer();
 
     for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
@@ -126,7 +126,7 @@ bool visible_in_collection(const Object *obj) {
 
 const ModifierData* FindModifier(const Object *obj, ModifierType type)
 {
-    for (auto* it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
+    for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->type == type)
             return it;
     return nullptr;;
@@ -134,7 +134,7 @@ const ModifierData* FindModifier(const Object *obj, ModifierType type)
 
 const ModifierData* FindModifier(const Object* obj, const std::string name)
 {
-    for (auto* it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
+    for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
         if (it->name == name)
             return it;
     return nullptr;
@@ -146,8 +146,8 @@ Bone* find_bone_recursive(Bone *bone, const char *name)
         return bone;
     }
     else {
-        for (auto* child = (Bone*)bone->childbase.first; child != nullptr; child = child->next) {
-            auto* found = find_bone_recursive(child, name);
+        for (auto *child = (Bone*)bone->childbase.first; child != nullptr; child = child->next) {
+            auto *found = find_bone_recursive(child, name);
             if (found)
                 return found;
         }
@@ -158,8 +158,8 @@ Bone* find_bone_recursive(Bone *bone, const char *name)
 Bone* find_bone(Object *obj, const char *name)
 {
     if (!obj) { return nullptr; }
-    auto* arm = (bArmature*)obj->data;
-    for (auto* bone = (Bone*)arm->bonebase.first; bone != nullptr; bone = bone->next)
+    auto *arm = (bArmature*)obj->data;
+    for (auto *bone = (Bone*)arm->bonebase.first; bone != nullptr; bone = bone->next)
     {
         auto found = find_bone_recursive(bone, name);
         if (found)
@@ -171,7 +171,7 @@ Bone* find_bone(Object *obj, const char *name)
 bPoseChannel* find_pose(Object *obj, const char *name)
 {
     if (!obj || !obj->pose) { return nullptr; }
-    for (auto* it = (bPoseChannel*)obj->pose->chanbase.first; it != nullptr; it = it->next)
+    for (auto *it = (bPoseChannel*)obj->pose->chanbase.first; it != nullptr; it = it->next)
         if (std::strcmp(it->name, name) == 0)
             return it;
     return nullptr;
