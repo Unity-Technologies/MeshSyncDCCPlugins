@@ -63,7 +63,7 @@ namespace ms {
 		return m_receivedEntities;
 	}
 
-	void PropertyManager::clearReceivedProperties() {
+	void PropertyManager::clearReceivedData() {
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		m_receivedProperties.clear();

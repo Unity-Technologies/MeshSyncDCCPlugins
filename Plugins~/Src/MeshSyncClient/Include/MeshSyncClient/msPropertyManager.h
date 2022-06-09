@@ -21,7 +21,7 @@ namespace ms {
         void updateFromServer(std::vector<PropertyInfo> properties, std::vector<EntityPtr> entities);
         std::vector<PropertyInfo> getReceivedProperties();
         std::vector<EntityPtr> getReceivedEntities();
-        void clearReceivedProperties();
+        void clearReceivedData();
     private:
         struct Record
         {

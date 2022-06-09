@@ -1651,7 +1651,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
     importEntities(m_property_manager.getReceivedEntities());
 
-    m_property_manager.clearReceivedProperties();
+    m_property_manager.clearReceivedData();
 
     if (m_server_requested_sync) {
         scope = MeshSyncClient::ObjectScope::All;
