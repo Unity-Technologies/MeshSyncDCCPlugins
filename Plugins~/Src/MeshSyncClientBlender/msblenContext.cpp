@@ -785,10 +785,10 @@ void msblenContext::importCurve(ms::Curve* curve) {
     auto data = (Curve*)obj->data;
     bl::BCurve bcurve(data);
 
-    bcurve.clearSplines();
+    bcurve.clear_splines();
 
     for (auto& spline : curve->splines) {
-        auto newSpline = bcurve.newSpline();
+        auto newSpline = bcurve.new_spline();
 
         auto bSpline = bl::BNurb(newSpline);
 
@@ -890,9 +890,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
     bl::BMesh bmesh(data);
 
     bmesh.clear_geometry();
-    bmesh.addVertices(num_vertices);
-    bmesh.addPolygons(num_polygons);
-    bmesh.addLoops(num_indices);
+    bmesh.add_vertices(num_vertices);
+    bmesh.add_polygons(num_polygons);
+    bmesh.add_loops(num_indices);
 
     auto bmeshVerts = bmesh.vertices();
     auto bmeshIndices = bmesh.indices();

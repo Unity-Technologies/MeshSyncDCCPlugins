@@ -469,23 +469,23 @@ void BMesh::clear_geometry()
     call<Mesh, void>(g_context, m_ptr, BMesh_clear_geometry);
 }
 
-void BMesh::addVertices(int count) {
+void BMesh::add_vertices(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_add_vertices, count);
 }
 
-void BMesh::addPolygons(int count) {
+void BMesh::add_polygons(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_add_polygons, count);
 }
 
-void BMesh::addLoops(int count) {
+void BMesh::add_loops(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_add_loops, count);
 }
 
-void BMesh::addEdges(int count) {
+void BMesh::add_edges(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_add_edges, count);
 }
 
-void BMesh::addNormals(int count) {
+void BMesh::add_normals(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_add_normals, count);
 }
 
@@ -517,11 +517,11 @@ void BNurb::add_bezier_points(int count, Object* obj) {
     call<Nurb, void, int>(g_context, m_ptr, BNurb_splines_bezier_add, count, obj->id);
 }
 
-void BCurve::clearSplines() {
+void BCurve::clear_splines() {
     call<Curve, void>(g_context, m_ptr, BCurve_splines_clear);
 }
 
-Nurb* BCurve::newSpline() {
+Nurb* BCurve::new_spline() {
     return call<Curve, Nurb*, int>(g_context, m_ptr, BCurve_splines_new, CU_BEZIER);
 }
 

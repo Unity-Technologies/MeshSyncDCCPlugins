@@ -116,11 +116,11 @@ namespace blender
         void calc_normals_split();
         void update();
         void clear_geometry();
-        void addVertices(int count);
-        void addPolygons(int count);
-        void addLoops(int count);
-        void addEdges(int count);
-        void addNormals(int count);
+        void add_vertices(int count);
+        void add_polygons(int count);
+        void add_loops(int count);
+        void add_edges(int count);
+        void add_normals(int count);
     };
 
     uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
@@ -162,8 +162,8 @@ namespace blender
         MSBLEN_BOILERPLATE(Curve)
         MSBLEN_COMPATIBLE(BlenderPyID)
 
-        void clearSplines();
-        Nurb* newSpline();
+        void clear_splines();
+        Nurb* new_spline();
     };
 
     //----------------------------------------------------------------------------------------------------------------------
