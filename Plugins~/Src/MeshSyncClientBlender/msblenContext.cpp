@@ -1634,7 +1634,7 @@ void msblenContext::requestServerInitiatedMessage()
     m_sender.on_server_initiated_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
         m_property_manager.updateFromServer(properties, entities);
 
-        if (messageFromServer == "sync") {
+        if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
     };
