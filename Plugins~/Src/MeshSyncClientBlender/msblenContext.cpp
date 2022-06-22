@@ -1646,6 +1646,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
 
+    this->m_intermediate_paths.mappedNames.clear();
+
     blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
     importEntities(m_property_manager.getReceivedEntities());
 
