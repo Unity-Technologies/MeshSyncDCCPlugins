@@ -25,7 +25,8 @@ endfunction()
 # Set the following to cache
 # - ${BLENDER${blender_ver}_INCLUDE_DIR}: Blender include directory
 # - ${Blender${blender_ver}_FOUND} to TRUE or FALSE, depending on whether the header/libs are found
-# - ${BLENDER${blender_ver}_PYTHON_VERSION}: the version of Python used by this Blender version
+# - ${BLENDER${blender_ver}_PYTHON_VERSION}: the version of Python used by this Blender version, eg: 3.9.7
+# - ${BLENDER${blender_ver}_PYTHON_SHORT_VERSION}: the short version of Python used by this Blender version, eg 39)
 function(setup_blender blender_ver)
 
     list(APPEND BLENDER_SRC_PATHS
@@ -75,12 +76,10 @@ function(setup_blender blender_ver)
     # -	set(PYTHON_VERSION 3.5
 
     file(READ ${BLENDER${blender_ver}_CMAKE_VERSION} VERSION_CONTENTS)    
-    string(REGEX MATCH "set\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]*)" PYTHON_VERSION_SECTION ${VERSION_CONTENTS})        
-    if(NOT PYTHON_VERSION_SECTION)
-        string(REGEX MATCH "SET\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]*)" PYTHON_VERSION_SECTION ${VERSION_CONTENTS})        
-    endif()
-    set(BLENDER${blender_ver}_PYTHON_VERSION ${CMAKE_MATCH_1}${CMAKE_MATCH_2} CACHE STRING "Python version used by Blender ${blender_ver}")    
-    message("Python version: ${BLENDER${blender_ver}_PYTHON_VERSION}")
+    string(REGEX MATCH "[Ss][Ee][Tt]\\(PYTHON_VERSION ([0-9]+).([0-9]+).?([0-9]+)" PYTHON_VERSION_SECTION ${VERSION_CONTENTS})        
+    set(BLENDER${blender_ver}_PYTHON_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}" CACHE STRING "Python version used by Blender ${blender_ver}" FORCE)    
+    set(BLENDER${blender_ver}_PYTHON_SHORT_VERSION "${CMAKE_MATCH_1}${CMAKE_MATCH_2}" CACHE STRING "Python short version used by Blender ${blender_ver}" FORCE)    
+    message("Python version: ${BLENDER${blender_ver}_PYTHON_VERSION} (${BLENDER${blender_ver}_PYTHON_SHORT_VERSION})")
 
         
     include(FindPackageHandleStandardArgs)

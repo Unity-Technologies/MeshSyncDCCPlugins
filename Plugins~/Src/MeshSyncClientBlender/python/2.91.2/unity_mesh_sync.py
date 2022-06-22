@@ -109,6 +109,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
     bl_label = "Auto Sync"
     _timer = None
+    
+    def __del__(self):
+        MESHSYNC_OT_AutoSync._timer = None
 
     def execute(self, context):
         return self.invoke(context, None)

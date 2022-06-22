@@ -40,6 +40,8 @@ This allows devs to immediately see how things will look in-game while modelling
 | 3ds Max 2019       | :heavy_check_mark: | :x:                | :x:                |
 | 3ds Max 2020       | :heavy_check_mark: | :x:                | :x:                |
 | 3ds Max 2021       | :heavy_check_mark: | :x:                | :x:                |
+| 3ds Max 2022       | :heavy_check_mark: | :x:                | :x:                |
+| 3ds Max 2023       | :heavy_check_mark: | :x:                | :x:                |
 | MotionBuilder 2017 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
 | MotionBuilder 2018 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
 | MotionBuilder 2019 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
@@ -50,6 +52,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 2.92       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |

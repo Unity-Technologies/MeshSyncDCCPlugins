@@ -2,8 +2,11 @@
 #include "msmqContext.h"
 #include "msmqUtils.h"
 
-#include "MeshSync/SceneGraph/msCamera.h"
+#include "MeshUtils/muConcurrency.h" //mu::parallel_for_each()
+#include "MeshUtils/muColor.h"  //mu::Float4ToColor32()
 
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
+#include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msMesh.h"
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
@@ -90,14 +93,14 @@ bool msmqContext::startRecording(std::string& path)
     if (m_settings.recording)
         return false;
 
-    ms::OSceneCacheSettings oscs;
-    oscs.sample_rate = 60.0f;
-    oscs.encoder_settings.zstd.compression_level = m_cache_settings.zstd_compression_level;
-    oscs.strip_unchanged = false;
-    oscs.flatten_hierarchy = m_cache_settings.flatten_hierarchy;
-    oscs.strip_normals = m_cache_settings.strip_normals;
-    oscs.strip_tangents = m_cache_settings.strip_tangents;
-    if (!m_cache_writer.open(path.c_str(), oscs))
+    ms::SceneCacheOutputSettings oscs;
+    oscs.exportSettings.sampleRate = 60.0f;
+    oscs.exportSettings.encoderSettings.zstd.compressionLevel = m_cache_settings.zstd_compression_level;
+    oscs.exportSettings.stripUnchanged = false;
+    oscs.exportSettings.flattenHierarchy = m_cache_settings.flatten_hierarchy;
+    oscs.exportSettings.stripNormals = m_cache_settings.strip_normals;
+    oscs.exportSettings.stripTangents = m_cache_settings.strip_tangents;
+    if (!m_cache_writer.Open(path.c_str(), oscs))
         return false;
 
     m_cache_settings.time_start = mu::Now();
@@ -108,7 +111,7 @@ bool msmqContext::startRecording(std::string& path)
 void msmqContext::stopRecording()
 {
     if (m_settings.recording) {
-        m_cache_writer.close();
+        m_cache_writer.Close();
         m_settings.recording = false;
     }
 }
@@ -531,8 +534,8 @@ void msmqContext::WaitAndKickAsyncExport()
         if (auto sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
-        else if (auto writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
-            writer->time = mu::NS2S(m_time - m_cache_settings.time_start);
+        else if (ms::SceneCacheWriter* writer = dynamic_cast<ms::SceneCacheWriter*>(exporter)) {
+            writer->SetTime(mu::NS2S(m_time - m_cache_settings.time_start));
         }
 
         auto& t = *exporter;

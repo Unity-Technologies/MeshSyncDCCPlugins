@@ -24,7 +24,7 @@ std::string  GetName(MtlBase *n);
 std::string GetCurrentMaxFileName();
 std::tuple<int, int> GetActiveFrameRange();
 
-bool IsRenderable(INode *n);
+bool IsNodeRenderable(INode *n, TimeValue t);
 bool VisibleInRender(INode *n, TimeValue t);
 bool VisibleInViewport(INode *n);
 bool IsInWorldSpace(INode *n, TimeValue t);

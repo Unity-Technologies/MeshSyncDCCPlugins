@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (3, 0, 0),
+    "blender": (3, 1, 0),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -13,6 +13,17 @@ import bpy
 from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 from unity_mesh_sync_common import *
+
+# Events that get called during the meshsync export stages, append your functions to these lists:
+# Called every frame when checking if something needs exporting:
+mesh_sync_on_prepare = []
+
+# Called before exporting
+mesh_sync_on_pre_export = []
+
+# Called after export is finished
+mesh_sync_on_post_export = []
+
 
 class MESHSYNC_PT:
     bl_space_type = "VIEW_3D"
@@ -109,9 +120,19 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
     bl_label = "Auto Sync"
     _timer = None
+    _registered = False
+
+    def __del__(self):
+        MESHSYNC_OT_AutoSync._timer = None
 
     def execute(self, context):
         return self.invoke(context, None)
+
+    # When a file is loaded, the modal registration is reset:
+    @persistent
+    def load_handler(dummy):
+        MESHSYNC_OT_AutoSync._registered = False
+        bpy.app.handlers.load_post.remove(MESHSYNC_OT_AutoSync.load_handler)
 
     def invoke(self, context, event):
         scene = bpy.context.scene
@@ -120,8 +141,22 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
-            context.window_manager.modal_handler_add(self)
+            update_step = 0.01 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
+
+            # There is no way to unregister modal callbacks!
+            # To ensure this does not get repeatedly registered, keep track of it and only do it once:
+            if not MESHSYNC_OT_AutoSync._registered:
+                context.window_manager.modal_handler_add(self)
+                MESHSYNC_OT_AutoSync._registered = True
+                bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(update_step)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -135,12 +170,12 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
-        deps = bpy.context.evaluated_depsgraph_get()
-        msb_context.flushPendingList();
+        if not bpy.context.scene.meshsync_auto_sync:
+            return
+        msb_context.flushPendingList()
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context);
+        msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
-
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
     bl_idname = "meshsync.export_cache"
@@ -214,6 +249,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         ctx.strip_normals = self.strip_normals
         ctx.strip_tangents = self.strip_tangents
         ctx.export(self.filepath)
+        MS_MessageBox("Finished writing scene cache to " + self.filepath)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -226,7 +262,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         self.material_frame_range = str(ctx.material_frame_range);
         self.frame_end = ctx.frame_end;
         self.zstd_compression_level = ctx.zstd_compression_level;
-        self.frame_step = ctx.frame_step;
+        self.frame_step = round(ctx.frame_step);
         self.curves_as_mesh = ctx.curves_as_mesh;
         self.make_double_sided = ctx.make_double_sided;
         self.bake_modifiers = ctx.bake_modifiers;
@@ -298,8 +334,29 @@ def unregister():
 def DestroyMeshSyncContext():
     msb_context.Destroy()
 
+def meshsync_prepare():
+    for f in mesh_sync_on_prepare:
+        f()
+
+def meshsync_pre_export():
+    for f in mesh_sync_on_pre_export:
+        f()
+
+def meshsync_post_export():
+    for f in mesh_sync_on_post_export:
+        f()
+
 import atexit
 atexit.register(DestroyMeshSyncContext)
+
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
     
 # ---------------------------------------------------------------------------------------------------------------------
 

@@ -9,6 +9,7 @@ struct BaseSyncSettings {
     ms::ClientSettings client_settings;
 
     bool sync_meshes = true;
+    bool sync_curves = true;
     bool sync_normals = true;
     bool sync_uvs = true;
     bool sync_colors = true;

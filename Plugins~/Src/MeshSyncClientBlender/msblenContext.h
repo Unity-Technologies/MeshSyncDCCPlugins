@@ -8,7 +8,7 @@
 #include "MeshSync/msClient.h"
 #include "MeshSync/SceneExporter.h"
 #include "MeshSync/AsyncSceneSender.h"
-#include "MeshSync/SceneCache/SceneCacheWriter.h"
+#include "MeshSync/SceneCache/msSceneCacheWriter.h"
 #include "MeshSync/MeshSyncMacros.h"
 
 #include "MeshSyncClient/msEntityManager.h"
@@ -19,11 +19,31 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
+#include "msblenModifiers.h"
+
+#include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msPropertyManager.h"
+#include "MeshSyncClient/msTransformManager.h"
+
+#include "../MeshSyncClientBlender/msblenContextState.h"
+#include <MeshSyncClient/msEntityManager.h>
+
+#if BLENDER_VERSION >= 300
+#include <msblenGeometryNodeUtils.h>
+#endif
+
+#include <msblenContextDefaultPathProvider.h>
+#include <msblenContextIntermediatePathProvider.h>
+
 
 class msblenContext;
 
 class msblenContext {
 public:
+
+    msblenContext();
+    ~msblenContext();
+
     static msblenContext& getInstance();
     void Destroy();
 
@@ -46,7 +66,13 @@ public:
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
     void flushPendingList();
+    void flushPendingList(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings);
 
+    void onDepsgraphUpdatedPost(Depsgraph* graph);
+
+    void requestServerInitiatedMessage();
+
+    void callPythonMethod(const char* name);
 private:
     // todo
     struct NodeRecord {
@@ -67,38 +93,17 @@ private:
         void recordAnimation(msblenContext *_this) const;
     };
 
-    // note:
-    // ObjectRecord and Blender's Object is *NOT* 1 on 1 because there is 'dupli group' in Blender.
-    // dupli group is a collection of nodes that will be instanced.
-    // so, only the path is unique. Object maybe shared by multiple ObjectRecord.
-    struct ObjectRecord {
-        MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(ObjectRecord);
-        //std::vector<NodeRecord*> branches; // todo
-
-        std::string path;
-        std::string name;
-        Object *host = nullptr; // parent of dupli group
-        Object *obj = nullptr;
-        Bone *bone = nullptr;
-
-        ms::TransformPtr dst;
-
-        bool touched = false;
-        bool renamed = false;
-
-        void clearState();
-    };
-
     struct AnimationRecord  {
         MS_CLASS_DEFAULT_NOCOPY_NOASSIGN(AnimationRecord);
-        using extractor_t = void (msblenContext::*)(ms::TransformAnimation& dst, void *obj);
+        using extractor_t = void (msblenContext::*)(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
 
         void *obj = nullptr;
         ms::TransformAnimationPtr dst;
         extractor_t extractor = nullptr;
+        BlenderSyncSettings settings;
 
         void operator()(msblenContext *_this) {
-            (_this->*extractor)(*dst, obj);
+            (_this->*extractor)(settings,*dst, obj);
         }
     };
 
@@ -106,9 +111,6 @@ private:
         const Object *group_host;
         ms::TransformPtr dst;
     };
-
-    msblenContext();
-    ~msblenContext();
 
     static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
@@ -120,68 +122,79 @@ private:
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
 
-    ms::TransformPtr exportObject(const Object *obj, bool parent, bool tip = true);
-    ms::TransformPtr exportTransform(const Object *obj);
-    ms::TransformPtr exportPose(const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(const Object *obj);
-    ms::TransformPtr exportReference(Object *obj, const DupliGroupContext& ctx);
-    ms::TransformPtr exportDupliGroup(const Object *obj, const DupliGroupContext& ctx);
-    ms::CameraPtr exportCamera(const Object *obj);
-    ms::LightPtr exportLight(const Object *obj);
-    ms::MeshPtr exportMesh(const Object *obj);
+    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
+    ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
+    ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportReference(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
+    ms::TransformPtr exportDupliGroup(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
+    ms::CameraPtr exportCamera(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::LightPtr exportLight(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::MeshPtr exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::CurvePtr exportCurve(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
 
     mu::float4x4 getWorldMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Object *obj);
     mu::float4x4 getLocalMatrix(const Bone *bone);
     mu::float4x4 getLocalMatrix(const bPoseChannel *pose);
-    void extractTransformData(const Object *src,
+    void extractTransformData(BlenderSyncSettings& settings, const Object *src,
         mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
         mu::float4x4 *dst_world = nullptr, mu::float4x4 *dst_local = nullptr);
-    void extractTransformData(const Object *src, ms::Transform& dst);
-    void extractTransformData(const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
+    void extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst);
+    void extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
 
     void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
     void extractLightData(const Object *src,
         ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle);
 
-    void doExtractMeshData(ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world);
-    void doExtractBlendshapeWeights(ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtractNonEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtractEditMeshData(ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data, mu::float4x4 world);
+    void doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world);
+    void importCurve(ms::Curve* curve);
+    void importMesh(ms::Mesh* mesh);
+    void importEntities(std::vector<ms::EntityPtr> entities);
 
-    ms::TransformPtr findBone(Object *armature, Bone *bone);
-    ObjectRecord& touchRecord(const Object *obj, const std::string& base_path = "", bool children = false);
-    void eraseStaleObjects();
+    ms::TransformPtr findBone(msblenContextState& state, Object *armature, Bone *bone);
 
-    void exportAnimation(Object *obj, bool force, const std::string& base_path = "");
-    void extractTransformAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractPoseAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractCameraAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractLightAnimationData(ms::TransformAnimation& dst, void *obj);
-    void extractMeshAnimationData(ms::TransformAnimation& dst, void *obj);
-
-#if BLENDER_VERSION >= 300
-    bool extractObjectInstances();
-    void addInstanceData(const Object* src, ms::Mesh& dst);
-#endif
+    void exportAnimation(msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, bool force, const std::string& base_path = "");
+    void extractTransformAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractPoseAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractCameraAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractLightAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
+    void extractMeshAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
 
-private:
-
 #if BLENDER_VERSION >= 300
-    typedef std::vector<mu::float4x4> matrix_vector;
-    typedef std::unordered_map<std::string, matrix_vector> object_instances_t;
-    object_instances_t m_object_instances;
+    void exportInstances();
+    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse);
+    void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
+
+    ms::InstanceInfoPtr exportInstanceInfo(
+        msblenContextState& state,
+        msblenContextPathProvider& paths,
+        Object* instancedObject,
+        Object* parent,
+        SharedVector<mu::float4x4> mat);
+
 #endif
+
+private:
+    std::shared_ptr<msblenContextState> m_entities_state =
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_entity_manager));
+
+    std::shared_ptr<msblenContextState> m_instances_state =
+        std::shared_ptr<msblenContextState>(new msblenContextState(m_instances_manager));
+
+    msblenContextDefaultPathProvider m_default_paths;
+    msblenContextIntermediatePathProvider m_intermediate_paths;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
-    std::set<const Object*> m_pending;
-    std::map<Bone*, ms::TransformPtr> m_bones;
-    std::map<const void*, ObjectRecord> m_obj_records; // key can be object or bone
 
     MeshSyncClient::AsyncTasksController m_asyncTasksController;
 
@@ -194,6 +207,15 @@ private:
     ms::EntityManager m_entity_manager;
     ms::AsyncSceneSender m_sender;
     ms::SceneCacheWriter m_cache_writer;
+    ms::InstancesManager m_instances_manager;
+
+    ms::PropertyManager m_property_manager;
+
+    bool m_server_requested_sync;
+
+#if BLENDER_VERSION >= 300
+    blender::GeometryNodesUtils m_geometryNodeUtils;
+#endif
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

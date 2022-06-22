@@ -1,4 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
+
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")    
+endif()
+
 PROJECT(MeshSyncDCCPlugins)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build/cmake_modules)
@@ -53,7 +58,11 @@ include(UnityPackage)
 setup_unity_package_version()
 add_definitions(-DMESHSYNC_DCC_PLUGIN_VER="${UNITY_PACKAGE_VERSION}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+if(WIN32)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+elseif(APPLE)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+endif()
 
 # Force Unicode character set
 add_definitions(-DUNICODE -D_UNICODE)
@@ -132,6 +141,7 @@ list(APPEND BLENDER_VERSIONS
     BLENDER_2.92.0
     BLENDER_2.93.7
     BLENDER_3.0.1
+    BLENDER_3.1.0
 ) 
 
 if(BUILD_BLENDER_ALL)
@@ -150,12 +160,17 @@ endforeach(CUR_BLENDER_VER)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# 3DSMAX (Windows only)
+# 3DSMAX (Windows only) 
+# JW 2022/4: out of this list, only versions with installed SDK are getting build 
+
 list(APPEND 3DSMAX_VERSIONS
     3DSMAX_2018
     3DSMAX_2019
     3DSMAX_2020
     3DSMAX_2021
+    3DSMAX_2022
+    3DSMAX_2023
+    3DSMAX_2024
 ) 
 if(BUILD_3DSMAX_ALL)
     foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
@@ -164,12 +179,16 @@ if(BUILD_3DSMAX_ALL)
 endif()
 
 if(WIN32)
-	foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
-		option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
-		if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
-			add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
-		endif()
-	endforeach(CUR_3DSMAX_VER)   
+    foreach(CUR_3DSMAX_VER IN LISTS 3DSMAX_VERSIONS)
+        string(REPLACE "3DSMAX_" "ADSK_3DSMAX_SDK_" CUR_3DSMAX_SDK ${CUR_3DSMAX_VER})
+        if(DEFINED ENV{${CUR_3DSMAX_SDK}})
+            message(STATUS "3ds Max SDK environment found: ${CUR_3DSMAX_SDK}") 
+            option(BUILD_${CUR_3DSMAX_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_3DSMAX_VER}" OFF)
+            if (BUILD_${CUR_3DSMAX_VER}_PLUGIN)
+                add_subdirectory_link(MeshSyncClient${CUR_3DSMAX_VER} MeshSyncClient3dsMax)
+            endif()
+        endif()
+    endforeach(CUR_3DSMAX_VER)   
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -187,12 +206,12 @@ if(BUILD_MOTIONBUILDER_ALL)
 endif()
 
 if(WIN32 OR LINUX)
-	foreach(CUR_MOTIONBUILDER_VER IN LISTS MOTIONBUILDER_VERSIONS)
-		option(BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MOTIONBUILDER_VER}" OFF)
-		if (BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN)
-			add_subdirectory_link(MeshSyncClient${CUR_MOTIONBUILDER_VER} MeshSyncClientMotionBuilder)
-		endif()
-	endforeach(CUR_MOTIONBUILDER_VER)   
+    foreach(CUR_MOTIONBUILDER_VER IN LISTS MOTIONBUILDER_VERSIONS)
+        option(BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MOTIONBUILDER_VER}" OFF)
+        if (BUILD_${CUR_MOTIONBUILDER_VER}_PLUGIN)
+            add_subdirectory_link(MeshSyncClient${CUR_MOTIONBUILDER_VER} MeshSyncClientMotionBuilder)
+        endif()
+    endforeach(CUR_MOTIONBUILDER_VER)   
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -211,21 +230,21 @@ if(BUILD_METASEQUOIA_ALL)
 endif()
 
 if(WIN32)
-	foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
-		option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" OFF)
-		if (BUILD_${CUR_MQ_VER}_PLUGIN)
-			add_subdirectory_link(MeshSyncClient${CUR_MQ_VER} MeshSyncClientMQ)
-		endif()
-	endforeach(CUR_MQ_VER)   
+    foreach(CUR_MQ_VER IN LISTS MQ_VERSIONS)
+        option(BUILD_${CUR_MQ_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MQ_VER}" OFF)
+        if (BUILD_${CUR_MQ_VER}_PLUGIN)
+            add_subdirectory_link(MeshSyncClient${CUR_MQ_VER} MeshSyncClientMQ)
+        endif()
+    endforeach(CUR_MQ_VER)   
 endif()
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Modo
 list(APPEND MODO_VERSIONS
-    MODO_12
-    MODO_13    
-    MODO_14
+#    MODO_12
+#    MODO_13    
+#    MODO_14
 )
  
 if(BUILD_MODO_ALL)
@@ -235,10 +254,10 @@ if(BUILD_MODO_ALL)
 endif()
 
 foreach(CUR_MODO_VER IN LISTS MODO_VERSIONS)
-	option(BUILD_${CUR_MODO_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MODO_VER}" OFF)
-	if (BUILD_${CUR_MODO_VER}_PLUGIN)
-		add_subdirectory_link(MeshSyncClient${CUR_MODO_VER} MeshSyncClientModo)
-	endif()
+    option(BUILD_${CUR_MODO_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MODO_VER}" OFF)
+    if (BUILD_${CUR_MODO_VER}_PLUGIN)
+        add_subdirectory_link(MeshSyncClient${CUR_MODO_VER} MeshSyncClientModo)
+    endif()
 endforeach(CUR_MODO_VER)   
 
 

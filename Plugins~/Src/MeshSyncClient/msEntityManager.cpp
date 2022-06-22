@@ -97,7 +97,7 @@ bool EntityManager::eraseThreadSafe(TransformPtr v)
 
 inline void EntityManager::addTransform(TransformPtr obj)
 {
-    EntityManager::Record& rec = lockAndGet(obj->path);
+    EntityManagerRecord& rec = lockAndGet(obj->path);
     rec.updated = true;
     rec.waitTask();
 
@@ -127,7 +127,7 @@ inline void EntityManager::addTransform(TransformPtr obj)
 
 inline void EntityManager::addGeometry(TransformPtr obj)
 {
-    EntityManager::Record& rec = lockAndGet(obj->path);
+    EntityManagerRecord& rec = lockAndGet(obj->path);
     rec.updated = true;
     rec.waitTask();
 
@@ -139,7 +139,7 @@ inline void EntityManager::addGeometry(TransformPtr obj)
         rec.task = std::async(std::launch::async, [this, obj, &rec]() {
             rec.checksum_trans = obj->checksumTrans();
             rec.checksum_geom = obj->checksumGeom();
-        });
+            });
     }
     else {
         rec.entity = obj;
@@ -159,7 +159,7 @@ inline void EntityManager::addGeometry(TransformPtr obj)
                 rec.dirty_trans = true;
                 rec.checksum_trans = checksum_trans;
             }
-        });
+            });
     }
     obj->order = rec.order;
 }
@@ -179,6 +179,13 @@ void EntityManager::touch(const std::string& path)
         it->second.updated = true;
 }
 
+void EntityManager::updateChecksumGeom(Transform* obj)
+{
+    EntityManagerRecord& rec = lockAndGet(obj->path);
+    rec.waitTask();
+    rec.checksum_geom = obj->checksumGeom();
+}
+
 std::vector<TransformPtr> EntityManager::getAllEntities()
 {
     waitTasks();
@@ -195,7 +202,7 @@ std::vector<TransformPtr> EntityManager::getDirtyTransforms()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        Record& r = p.second;
+        EntityManagerRecord& r = p.second;
         if (r.dirty_trans) {
             if (r.entity->isGeometry()) {
                 std::shared_ptr<Transform> t = Transform::create();
@@ -216,7 +223,7 @@ std::vector<TransformPtr> EntityManager::getDirtyGeometries()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        Record& r = p.second;
+        EntityManagerRecord& r = p.second;
         if (r.dirty_geom) {
             ret.push_back(r.entity);
         }
@@ -232,8 +239,8 @@ std::vector<Identifier>& EntityManager::getDeleted()
 void EntityManager::makeDirtyAll()
 {
     for (auto& p : m_records) {
-        Record& r = p.second;
-        if(r.entity->isGeometry())
+        EntityManagerRecord& r = p.second;
+        if (r.entity->isGeometry())
             r.dirty_geom = true;
         else
             r.dirty_trans = true;
@@ -243,7 +250,7 @@ void EntityManager::makeDirtyAll()
 void EntityManager::clearDirtyFlags()
 {
     for (auto& p : m_records) {
-        Record& r = p.second;
+        EntityManagerRecord& r = p.second;
         r.updated = r.dirty_geom = r.dirty_trans = false;
     }
     m_deleted.clear();
@@ -255,7 +262,7 @@ std::vector<TransformPtr> EntityManager::getStaleEntities()
 
     std::vector<TransformPtr> ret;
     for (auto& p : m_records) {
-        Record& r = p.second;
+        EntityManagerRecord& r = p.second;
         if (!r.updated)
             ret.push_back(r.entity);
     }
@@ -274,29 +281,13 @@ void EntityManager::eraseStaleEntities()
     }
 }
 
-void EntityManager::setAlwaysMarkDirty(bool v)
-{
-    m_always_mark_dirty = v;
-}
-
 void EntityManager::waitTasks()
 {
     for (auto& p : m_records)
         p.second.waitTask();
 }
 
-EntityManager::Record& EntityManager::lockAndGet(const std::string &path)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    if (!m_deleted.empty()) {
-        auto it = std::find_if(m_deleted.begin(), m_deleted.end(), [&path](Identifier& v) { return v.name == path; });
-        if (it != m_deleted.end())
-            m_deleted.erase(it);
-    }
-    return m_records[path];
-}
-
-void EntityManager::Record::waitTask()
+void EntityManagerRecord::waitTask()
 {
     if (task.valid()) {
         task.wait();

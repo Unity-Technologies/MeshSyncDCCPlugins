@@ -22,6 +22,8 @@ with commands described in the following sections.
 * 3ds Max 2019: `-DBUILD_3DSMAX_2019_PLUGIN=ON`
 * 3ds Max 2020: `-DBUILD_3DSMAX_2020_PLUGIN=ON`
 * 3ds Max 2021: `-DBUILD_3DSMAX_2021_PLUGIN=ON`
+* 3ds Max 2022: `-DBUILD_3DSMAX_2022_PLUGIN=ON`
+* 3ds Max 2023: `-DBUILD_3DSMAX_2023_PLUGIN=ON`
 
 ## MotionBuilder
 
@@ -40,6 +42,7 @@ with commands described in the following sections.
 * Blender 2.92.0 : `-DBUILD_BLENDER_2.92.0_PLUGIN=ON`
 * Blender 2.93.7 : `-DBUILD_BLENDER_2.93.7_PLUGIN=ON`
 * Blender 3.0.1 : `-DBUILD_BLENDER_3.0.1_PLUGIN=ON`
+* Blender 3.1.0 : `-DBUILD_BLENDER_3.1.0_PLUGIN=ON`
 
 ## Modo
 

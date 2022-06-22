@@ -6,10 +6,33 @@ rm -rf */
 rm -Rf *.zip
 rm -f meta.txt
 
+# Parse args
+BUILD_TYPE_ARG="Release"
+for i in "$@"; do
+  case $i in
+    -d|--debug*)
+      BUILD_TYPE_ARG="Debug"
+      shift 
+      ;;
+    -r|--release*)
+      BUILD_TYPE_ARG="Release"
+      shift 
+      ;;
+    -*|--*)
+      echo "Unknown option $i"
+      exit 1
+      ;;
+  esac
+done
+
+echo "[Build]: ${BUILD_TYPE_ARG}"
+
 cd ../Build
-cmake -DBUILD_TYPE=Release -P cmake_install.cmake
+cmake -DBUILD_TYPE=${BUILD_TYPE_ARG} -P cmake_install.cmake
 
 cd ../Dist
+
+
        
 # Preprocess Blender first
 find . -maxdepth 1 -mindepth 1 -type d | grep Blender | while read dir; do

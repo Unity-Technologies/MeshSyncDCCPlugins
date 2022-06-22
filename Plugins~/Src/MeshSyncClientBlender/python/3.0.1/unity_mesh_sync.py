@@ -25,6 +25,7 @@ class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
 
     def draw(self, context):
         pass
+            
 
 
 class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
@@ -109,6 +110,9 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
     bl_label = "Auto Sync"
     _timer = None
+    
+    def __del__(self):
+        MESHSYNC_OT_AutoSync._timer = None
 
     def execute(self, context):
         return self.invoke(context, None)
@@ -120,8 +124,16 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not scene.meshsync_auto_sync:
                 # server not available
                 return {'FINISHED'}
-            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(1.0 / 3.0, window=context.window)
+            update_step = 0.0001 # 1.0/3.0
+            MESHSYNC_OT_AutoSync._timer = context.window_manager.event_timer_add(update_step, window=context.window)
             context.window_manager.modal_handler_add(self)
+
+            if bpy.app.background:
+                import time
+                while True:
+                    time.sleep(update_step)
+                    self.update()
+
             return {'RUNNING_MODAL'}
         else:
             scene.meshsync_auto_sync = False
@@ -139,6 +151,8 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
         msb_context.exportUpdatedObjects()
+    
+
 
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
@@ -297,6 +311,15 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
+
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
 
 import atexit
 atexit.register(DestroyMeshSyncContext)

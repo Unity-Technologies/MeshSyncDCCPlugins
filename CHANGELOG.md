@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.13.1-preview] - 2022-05-31
+
+### Fixed
+* blender-fix: do not handle already handled records when extracting geometry node instances
+* 3dsmax-fix: consider "Enable in Renderer" option for syncing with "Ignore Non-Renderable" set to on 
+
+## [0.13.0-preview] - 2022-04-26
+
+### Added
+* blender: Geometry nodes support
+* 3ds Max: 3ds Max 2022, 2023+ compatibility 
+
+### Changed
+* chore: ensure to build Mac plugins targeting 10.15 at minimum
+
+### Fixed
+* blender: consider collection visibility for syncing 
+
+## [0.12.1-preview] - 2022-04-06
+
+### Fixed
+* blender: could not export SceneCache in Blender 3.1
+
+## [0.12.0-preview] - 2022-03-18
+
+### Added
+* blender: add support for Blender 3.1 
+
+### Changed
+* blender: use the appropriate Python version for building different versions of Blender plugins
+* chore: update code to adhere to MeshSync@0.12.x-preview
+
+### Fixed
+* blender: fix auto sync status when file is loaded 
+
 ## [0.11.0-preview] - 2022-02-08
 
 ### Added
