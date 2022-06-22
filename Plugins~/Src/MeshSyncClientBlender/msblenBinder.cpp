@@ -18,6 +18,7 @@ bContext *g_context;
 extern PropertyRNA* BlenderPyID_is_updated;
 extern PropertyRNA* BlenderPyID_is_updated_data;
 extern FunctionRNA* BlenderPyID_evaluated_get;
+extern FunctionRNA* BlenderPyID_update_tag;
 
 StructRNA* BObject::s_type;
 static PropertyRNA* BObject_matrix_local;
@@ -29,11 +30,27 @@ static PropertyRNA* BObject_select;
 static FunctionRNA* BObject_select_get;
 static FunctionRNA* BObject_to_mesh;
 static FunctionRNA* BObject_to_mesh_clear;
+static FunctionRNA* BObject_modifiers_clear;
 
 StructRNA* BMesh::s_type;
 static FunctionRNA* BMesh_calc_normals_split;
+static FunctionRNA* BMesh_update;
+static FunctionRNA* BMesh_clear_geometry;
+static FunctionRNA* BMesh_add_vertices;
+static FunctionRNA* BMesh_add_polygons;
+static FunctionRNA* BMesh_add_loops;
+static FunctionRNA* BMesh_add_edges;
+static FunctionRNA* BMesh_add_normals;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
+
+StructRNA* BCurve::s_type;
+static PropertyRNA* BCurve_splines;
+static FunctionRNA* BCurve_splines_clear;
+static FunctionRNA* BCurve_splines_new;
+
+StructRNA* BNurb::s_type;
+static FunctionRNA* BNurb_splines_bezier_add;
 
 StructRNA* BMaterial::s_type;
 static PropertyRNA* BMaterial_use_nodes;
@@ -74,6 +91,8 @@ extern PropertyRNA* BlenderPyDepsgraphObjectInstance_object;
 
 extern PropertyRNA* BlenderPyDepsgraph_object_instances;
 
+extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
+
 bool ready()
 {
     return g_context != nullptr;
@@ -112,6 +131,7 @@ void setup(py::object bpy_context)
             }
             each_func {
                 if (match_func("evaluated_get")) BlenderPyID_evaluated_get = func;
+                if (match_func("update_tag")) BlenderPyID_update_tag = func;
             }
         }
         else if (match_type("Object")) {
@@ -130,12 +150,57 @@ void setup(py::object bpy_context)
                 if (match_func("to_mesh_clear")) BObject_to_mesh_clear = func;
             }
         }
+        else if (match_type("ObjectModifiers")) {
+            each_func{
+                if (match_func("clear")) BObject_modifiers_clear = func;
+            }
+        }        
         else if (match_type("Mesh")) {
             BMesh::s_type = type;
             each_func {
                 if (match_func("calc_normals_split")) BMesh_calc_normals_split = func;
+                if (match_func("update")) BMesh_update = func;
+                if (match_func("clear_geometry")) BMesh_clear_geometry = func;
             }
         }
+        else if (match_type("MeshVertices")) {
+            each_func{
+                if (match_func("add")) BMesh_add_vertices = func;
+            }
+        }     
+        else if (match_type("MeshPolygons")) {
+            each_func{
+                if (match_func("add")) BMesh_add_polygons = func;
+            }
+        }        
+        else if (match_type("MeshLoops")) {
+            each_func{
+                if (match_func("add")) BMesh_add_loops = func;
+            }
+        }
+        else if (match_type("MeshEdges")) {
+            each_func{
+                if (match_func("add")) BMesh_add_edges = func;
+            }
+        }        
+        else if (match_type("Curve")) {
+            BCurve::s_type = type;
+            each_prop{
+                if (match_prop("splines")) BCurve_splines = prop;
+            }
+        }
+        else if (match_type("CurveSplines")) {
+            each_func{
+                if (match_func("clear")) BCurve_splines_clear = func;
+                if (match_func("new")) BCurve_splines_new = func;            
+            }
+        }     
+        else if (match_type("SplineBezierPoints")) {
+            BNurb::s_type = type;
+            each_func{
+                if (match_func("add")) BNurb_splines_bezier_add = func;
+            }
+        }        
         else if (match_type("UVLoopLayers")) {
             each_prop{
                 if (match_prop("active")) UVLoopLayers_active = prop;
@@ -167,7 +232,7 @@ void setup(py::object bpy_context)
                 if (match_prop("use_nodes")) BMaterial_use_nodes = prop;
                 if (match_prop("active_node_material")) BMaterial_active_node_material = prop;
             }
-        }
+        }      
         else if (match_type("Scene")) {
             BlenderPyScene::s_type = type;
             each_prop{
@@ -320,6 +385,11 @@ void BObject::to_mesh_clear()
     call<Object, Mesh*>(g_context, m_ptr, BObject_to_mesh_clear);
 }
 
+void BObject::modifiers_clear() 
+{
+    call<Object, void>(g_context, m_ptr, BObject_modifiers_clear);
+}
+
 blist_range<ModifierData> BObject::modifiers()
 {
     return list_range((ModifierData*)m_ptr->modifiers.first);
@@ -389,7 +459,35 @@ void BMesh::calc_normals_split()
     call<Mesh, void>(g_context, m_ptr, BMesh_calc_normals_split);
 }
 
+void BMesh::update() 
+{
+    call<Mesh, void>(g_context, m_ptr, BMesh_update);    
+}
 
+void BMesh::clear_geometry()
+{
+    call<Mesh, void>(g_context, m_ptr, BMesh_clear_geometry);
+}
+
+void BMesh::add_vertices(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_vertices, count);
+}
+
+void BMesh::add_polygons(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_polygons, count);
+}
+
+void BMesh::add_loops(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_loops, count);
+}
+
+void BMesh::add_edges(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_edges, count);
+}
+
+void BMesh::add_normals(int count) {
+    call<Mesh, void, int>(g_context, m_ptr, BMesh_add_normals, count);
+}
 
 barray_range<BMFace*> BEditMesh::polygons()
 {
@@ -415,6 +513,17 @@ MLoopUV* BEditMesh::GetUV(const int index) const {
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
+void BNurb::add_bezier_points(int count, Object* obj) {
+    call<Nurb, void, int>(g_context, m_ptr, BNurb_splines_bezier_add, count, obj->id);
+}
+
+void BCurve::clear_splines() {
+    call<Curve, void>(g_context, m_ptr, BCurve_splines_clear);
+}
+
+Nurb* BCurve::new_spline() {
+    return call<Curve, Nurb*, int>(g_context, m_ptr, BCurve_splines_new, CU_BEZIER);
+}
 
 const char *BMaterial::name() const
 {
@@ -454,6 +563,10 @@ blist_range<Mesh> BData::meshes(){
 
 blist_range<Material> BData::materials(){
     return list_range((Material*)m_ptr->materials.first);
+}
+
+blist_range<Collection> BData::collections() {
+    return list_range((Collection*)m_ptr->collections.first);
 }
 
 bool BData::objects_is_updated() {

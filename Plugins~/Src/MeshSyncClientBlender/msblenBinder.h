@@ -14,9 +14,7 @@ namespace blender
     int CustomData_get_offset(const CustomData& data, int type);
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
-
-
-
+    
     struct ListHeader { ListHeader *next, *prev; };
 
 	template<typename T> inline T rna_sdata(py::object p) { 
@@ -95,6 +93,7 @@ namespace blender
         bool hide_render() const;
         Mesh* to_mesh() const;
         void to_mesh_clear();
+        void modifiers_clear();
     };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -115,6 +114,13 @@ namespace blender
         inline uint32_t GetNumUVs() const;
 
         void calc_normals_split();
+        void update();
+        void clear_geometry();
+        void add_vertices(int count);
+        void add_polygons(int count);
+        void add_loops(int count);
+        void add_edges(int count);
+        void add_normals(int count);
     };
 
     uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
@@ -135,6 +141,32 @@ namespace blender
 
         MLoopUV* GetUV(const int index) const;
     };
+
+    //----------------------------------------------------------------------------------------------------------------------
+    
+    class BNurb {
+    public:
+        MSBLEN_BOILERPLATE(Nurb)
+        MSBLEN_COMPATIBLE(BlenderPyID)
+
+        barray_range<MLoop> indices();
+        barray_range<MEdge> edges();
+        barray_range<MPoly> polygons();
+        barray_range<MVert> bezier_points();
+
+        void add_bezier_points(int count, Object* obj);
+    };    
+
+    class BCurve {
+    public:
+        MSBLEN_BOILERPLATE(Curve)
+        MSBLEN_COMPATIBLE(BlenderPyID)
+
+        void clear_splines();
+        Nurb* new_spline();
+    };
+
+    //----------------------------------------------------------------------------------------------------------------------
 
     class BMaterial
     {
@@ -176,9 +208,10 @@ namespace blender
     public:
         MSBLEN_BOILERPLATE2(BData, Main)
 
-        blist_range<Object>   objects();
-        blist_range<Mesh>     meshes();
-        blist_range<Material> materials();
+        blist_range<Object>     objects();
+        blist_range<Mesh>       meshes();
+        blist_range<Material>   materials();
+        blist_range<Collection> collections();
 
         bool objects_is_updated();
         void remove(Mesh *v);
