@@ -263,6 +263,15 @@ namespace blender {
 		}
 	}
 
+	void setProperties(const Object* obj, ms::PropertyInfo& receivedProp, std::string name, ListBase* listBase)
+	{
+		for (auto property : blender::list_range((IDProperty*)listBase->first)) {
+			if (property->name == name) {
+				setProperty(obj, property, receivedProp);
+			}
+		}
+	}
+
 	void applyGeoNodeProperty(const Object* obj, ms::PropertyInfo& receivedProp) {
 		auto modifier = msblenUtils::FindModifier(obj, receivedProp.modifierName);
 
@@ -273,22 +282,15 @@ namespace blender {
 
 		auto nodeModifier = (NodesModifierData*)modifier;
 
-		for (auto property : blender::list_range((IDProperty*)nodeModifier->settings.properties->data.group.first)) {
-			if (property->name == receivedProp.propertyName) {
-				setProperty(obj, property, receivedProp);
-			}
-		}
+		setProperties(obj, receivedProp, receivedProp.propertyName, &nodeModifier->settings.properties->data.group);
 	}
 
 	void applyCustomProperty(const Object* obj, ms::PropertyInfo& receivedProp) {
 		if (obj->id.properties) {
-			for (auto property : blender::list_range((IDProperty*)obj->id.properties->data.group.first)) {
-				if (property->name == receivedProp.name) {
-					setProperty(obj, property, receivedProp);
-				}
-			}
+			setProperties(obj, receivedProp, receivedProp.name, &obj->id.properties->data.group);
 		}
 	}
+
 
 	void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {
 		if (props.size() == 0) {
