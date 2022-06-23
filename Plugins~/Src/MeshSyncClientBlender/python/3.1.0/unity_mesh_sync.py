@@ -128,6 +128,12 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def execute(self, context):
         return self.invoke(context, None)
 
+    # When a file is loaded, the modal registration is reset:
+    @persistent
+    def load_handler(dummy):
+        MESHSYNC_OT_AutoSync._registered = False
+        bpy.app.handlers.load_post.remove(MESHSYNC_OT_AutoSync.load_handler)
+
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
@@ -143,6 +149,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             if not MESHSYNC_OT_AutoSync._registered:
                 context.window_manager.modal_handler_add(self)
                 MESHSYNC_OT_AutoSync._registered = True
+                bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
 
             if bpy.app.background:
                 import time
