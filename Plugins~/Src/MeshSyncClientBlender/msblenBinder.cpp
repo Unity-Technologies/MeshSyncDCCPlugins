@@ -91,8 +91,6 @@ extern PropertyRNA* BlenderPyDepsgraphObjectInstance_object;
 
 extern PropertyRNA* BlenderPyDepsgraph_object_instances;
 
-extern PropertyRNA* BlenderPyContext_depsgraph_object_instances;
-
 bool ready()
 {
     return g_context != nullptr;
