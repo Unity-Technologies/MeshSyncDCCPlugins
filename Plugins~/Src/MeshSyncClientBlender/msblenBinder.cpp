@@ -230,7 +230,7 @@ void setup(py::object bpy_context)
                 if (match_prop("use_nodes")) BMaterial_use_nodes = prop;
                 if (match_prop("active_node_material")) BMaterial_active_node_material = prop;
             }
-        }      
+        }
         else if (match_type("Scene")) {
             BlenderPyScene::s_type = type;
             each_prop{
