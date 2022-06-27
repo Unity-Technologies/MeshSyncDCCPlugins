@@ -4,6 +4,14 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h" 
 
+
+// I don't think we can just mem copy here because this is also used for multidimensional arrays:
+#define copyFloatVector(DST, SRC) \
+DST[0] = SRC[0]; \
+DST[1] = SRC[1]; \
+DST[2] = SRC[2]; \
+
+
 namespace msblenUtils {
 std::string get_name(const Material *obj);
 std::string get_name(const Object *obj);

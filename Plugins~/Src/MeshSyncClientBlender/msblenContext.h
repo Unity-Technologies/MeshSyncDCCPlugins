@@ -26,7 +26,8 @@
 #include "MeshSyncClient/msTransformManager.h"
 
 #include "../MeshSyncClientBlender/msblenContextState.h"
-#include <MeshSyncClient/msEntityManager.h>
+
+#include "msblenCurveHandler.h"
 
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodeUtils.h>
@@ -131,17 +132,6 @@ private:
     ms::CameraPtr exportCamera(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::LightPtr exportLight(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::MeshPtr exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
-    ms::CurvePtr exportCurve(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
-
-    mu::float4x4 getWorldMatrix(const Object *obj);
-    mu::float4x4 getLocalMatrix(const Object *obj);
-    mu::float4x4 getLocalMatrix(const Bone *bone);
-    mu::float4x4 getLocalMatrix(const bPoseChannel *pose);
-    void extractTransformData(BlenderSyncSettings& settings, const Object *src,
-        mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
-        mu::float4x4 *dst_world = nullptr, mu::float4x4 *dst_local = nullptr);
-    void extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst);
-    void extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
 
     void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
@@ -152,8 +142,6 @@ private:
     void doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
-    void doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world);
-    void importCurve(ms::Curve* curve);
     void importMesh(ms::Mesh* mesh);
     void importEntities(std::vector<ms::EntityPtr> entities);
 
@@ -210,6 +198,8 @@ private:
     ms::InstancesManager m_instances_manager;
 
     ms::PropertyManager m_property_manager;
+
+    msblenCurveHandler m_curves_handler;
 
     bool m_server_requested_sync;
 

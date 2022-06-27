@@ -12,6 +12,8 @@
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
 #include "MeshSync/SceneGraph/msScene.h"
 
+#include "msblenEntityHandler.h"
+
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
@@ -37,19 +39,6 @@
 namespace bl = blender;
 
 using namespace msblenUtils;
-
-static const mu::float4x4 g_arm_to_world = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0,-1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1
-};
-static const mu::float4x4 g_world_to_arm = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0,-1, 0, 0,
-    0, 0, 0, 1
-};
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -235,121 +224,6 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-
-static inline mu::float4x4 camera_correction(const mu::float4x4& v)
-{
-    return mu::float4x4{ {
-        {-v[0][0],-v[0][1],-v[0][2],-v[0][3]},
-        { v[1][0], v[1][1], v[1][2], v[1][3]},
-        {-v[2][0],-v[2][1],-v[2][2],-v[2][3]},
-        { v[3][0], v[3][1], v[3][2], v[3][3]},
-    } };
-}
-
-
-mu::float4x4 msblenContext::getWorldMatrix(const Object *obj)
-{
-    mu::float4x4 r = bl::BObject(obj).matrix_world();
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const Object *obj)
-{
-    mu::float4x4 r = bl::BObject(obj).matrix_local();
-    if (obj->parent && obj->partype == PARBONE) {
-        if (Bone* bone = find_bone(obj->parent, obj->parsubstr)) {
-            r *= mu::translate(mu::float3{ 0.0f, mu::length((mu::float3&)bone->tail - (mu::float3&)bone->head), 0.0f });
-            r *= g_world_to_arm;
-        }
-    }
-
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const Bone *bone)
-{
-    mu::float4x4 r = (mu::float4x4&)bone->arm_mat;
-    if (struct Bone* parent = bone->parent)
-        r *= mu::invert((mu::float4x4&)parent->arm_mat);
-    else
-        r *= g_arm_to_world;
-    // todo: armature to world here
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const bPoseChannel *pose)
-{
-    mu::float4x4 r = (mu::float4x4&)pose->pose_mat;
-    if (struct bPoseChannel* parent = pose->parent)
-        r *= mu::invert((mu::float4x4&)parent->pose_mat);
-    else
-        r *= g_arm_to_world;
-    // todo: armature to world here
-    return r;
-}
-
-static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& r, mu::float3& s)
-{
-    mu::extract_trs(mat, t, r, s);
-    // armature-space to world-space
-    t = mu::swap_yz(mu::flip_z(t));
-    r = mu::swap_yz(mu::flip_z(r));
-    s = mu::swap_yz(s);
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Object *obj,
-    mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
-    mu::float4x4 *dst_world, mu::float4x4 *dst_local)
-{
-    vis = { visible_in_collection(obj), visible_in_render(obj), visible_in_viewport(obj) };
-
-    const mu::float4x4 local = getLocalMatrix(obj);
-    const mu::float4x4 world = getWorldMatrix(obj);
-    if (dst_world)
-        *dst_world = world;
-    if (dst_local)
-        *dst_local = local;
-
-    if (settings.BakeTransform) {
-        if (is_camera(obj) || is_light(obj)) {
-            mu::extract_trs(world, t, r, s);
-        }
-        else {
-            t = mu::float3::zero();
-            r = mu::quatf::identity();
-            s = mu::float3::one();
-        }
-    }
-    else {
-        mu::extract_trs(local, t, r, s);
-    }
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst)
-{
-    extractTransformData(settings, src, dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *src, mu::float3& t, mu::quatf& r, mu::float3& s)
-{
-    if (settings.BakeTransform) {
-        t = mu::float3::zero();
-        r = mu::quatf::identity();
-        s = mu::float3::one();
-    }
-    else {
-        extract_bone_trs(getLocalMatrix(src), t, r, s);
-    }
-}
-
 void msblenContext::extractCameraData(const Object *src,
     bool& ortho, float& near_plane, float& far_plane, float& fov,
     float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift)
@@ -454,7 +328,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
                 rec.dst = exportMesh(state, paths, settings, obj);
             }
             else {
-                rec.dst = exportCurve(state, paths, settings, obj);
+                rec.dst = m_curves_handler.exportCurve(state, paths, settings, obj, m_asyncTasksController);
             }
         }
         else if (!tip && parent)
@@ -520,12 +394,12 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
+ms::TransformPtr msblenContext::exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     state.manager.add(ret);
 
     return ret;
@@ -537,7 +411,7 @@ ms::TransformPtr msblenContext::exportPose(msblenContextState& state, msblenCont
     ms::Transform& dst = *ret;
     
     dst.path = paths.get_path(armature, src->bone);
-    extractTransformData(settings, src, dst.position, dst.rotation, dst.scale);
+    msblenEntityHandler::extractTransformData(settings, src, dst.position, dst.rotation, dst.scale);
     state.manager.add(ret);
     return ret;
 }
@@ -547,7 +421,7 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     state.manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
@@ -569,7 +443,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
     ms::TransformPtr dst;
     auto assign_base_params = [&]() {
-        extractTransformData(settings, src, *dst);
+        msblenEntityHandler::extractTransformData(settings, src, *dst);
         dst->path = path;
         dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
@@ -665,7 +539,7 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
     state.manager.add(ret);
     return ret;
@@ -676,80 +550,10 @@ ms::LightPtr msblenContext::exportLight(msblenContextState& state, msblenContext
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
     state.manager.add(ret);
     return ret;
-}
-
-ms::CurvePtr msblenContext::exportCurve(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src)
-{
-    std::shared_ptr<ms::Curve> ret = ms::Curve::create();
-
-    bl::BObject bobj(src);
-    Curve* data = nullptr;
-    data = (Curve*)src->data;
-
-    ms::Curve& dst = *ret;
-    dst.path = paths.get_path(src);
-
-    bool is_editing = false;
-
-    // transform
-    extractTransformData(settings, src, dst);
-
-    if (settings.sync_curves) {
-        auto task = [this, ret, src, data, &state, &settings]() {
-            auto& dst = *ret;
-            doExtractCurveData(state, settings, dst, src, data, dst.world_matrix);
-            state.manager.add(ret);
-        };
-
-        if (settings.multithreaded)
-            m_asyncTasksController.AddTask(std::launch::async, task);
-        else
-            task();
-    }
-
-    return ret;
-}
-
-void msblenContext::doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world)
-{
-    if (settings.sync_curves) {
-        const bool is_editing = data->editnurb != nullptr;
-
-        ListBase nurbs;
-        if (is_editing) {
-            nurbs = data->editnurb->nurbs;
-        }
-        else {
-            nurbs = data->nurb;
-        }
-
-        dst.splines.clear();
-
-        for (auto nurb : blender::list_range((Nurb*)nurbs.first)) {
-            dst.splines.push_back(ms::CurveSpline::create());
-            auto curveSpline = dst.splines.back();
-
-            curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
-
-            curveSpline->cos.resize_discard(nurb->pntsu);
-            curveSpline->handles_left.resize_discard(nurb->pntsu);
-            curveSpline->handles_right.resize_discard(nurb->pntsu);
-
-            for (int i = 0; i < nurb->pntsu; i++) {
-                BezTriple* bezt = &nurb->bezt[i];
-
-                if (bezt) {
-                    curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
-                    curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
-                    curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
-                }
-            }
-        }
-    }
 }
 
 void msblenContext::importEntities(std::vector<ms::EntityPtr> entities) {   
@@ -757,62 +561,13 @@ void msblenContext::importEntities(std::vector<ms::EntityPtr> entities) {
         switch (entity->getType())
         {
         case ms::EntityType::Curve:
-            importCurve(dynamic_cast<ms::Curve*>(entity.get()));
+            m_curves_handler.importCurve(dynamic_cast<ms::Curve*>(entity.get()));
             break;
         case ms::EntityType::Mesh:
             importMesh(dynamic_cast<ms::Mesh*>(entity.get()));
             break;
         default:
             break;
-        }
-    }
-}
-
-// I don't think we can just mem copy here because this is also used for multidimensional arrays:
-#define copyFloatVector(DST, SRC) \
-DST[0] = SRC[0]; \
-DST[1] = SRC[1]; \
-DST[2] = SRC[2]; \
-
-void msblenContext::importCurve(ms::Curve* curve) {
-    auto obj = msblenUtils::get_object_from_path(curve->path);
-
-    // Make sure the object still exists:
-    if (!obj) {
-        return;
-    }
-
-    auto data = (Curve*)obj->data;
-    bl::BCurve bcurve(data);
-
-    bcurve.clear_splines();
-
-    for (auto& spline : curve->splines) {
-        auto newSpline = bcurve.new_spline();
-
-        auto bSpline = bl::BNurb(newSpline);
-
-        int knotCount = spline->cos.size();
-
-        // -1 because a new spline already has 1 point:
-        bSpline.add_bezier_points(knotCount - 1, obj);
-
-        for (int knotIndex = 0; knotIndex < knotCount; knotIndex++)
-        {
-            BezTriple* bezt = &newSpline->bezt[knotIndex];
-
-            auto& cos = spline->cos[knotIndex];
-            copyFloatVector(bezt->vec[1], cos);
-
-            auto& handles_left = spline->handles_left[knotIndex];
-            copyFloatVector(bezt->vec[0], handles_left);
-
-            auto& handles_right = spline->handles_right[knotIndex];
-            copyFloatVector(bezt->vec[2], handles_right);
-        }
-
-        if (spline->closed) {
-            bSpline.m_ptr->flagu |= CU_NURB_CYCLIC;
         }
     }
 }
@@ -978,7 +733,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     dst.path = paths.get_path(src);
 
     // transform
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
         const bool need_convert = 
@@ -1477,7 +1232,7 @@ void msblenContext::extractTransformAnimationData(BlenderSyncSettings& settings,
     mu::quatf rot;
     mu::float3 scale;
     ms::VisibilityFlags vis;
-    extractTransformData(settings, (Object*)obj, pos, rot, scale, vis);
+    msblenEntityHandler::extractTransformData(settings, (Object*)obj, pos, rot, scale, vis);
 
     float t = m_anim_time;
     dst.translation.push_back({ t, pos });
@@ -1493,7 +1248,7 @@ void msblenContext::extractPoseAnimationData(BlenderSyncSettings& settings, ms::
     mu::float3 t;
     mu::quatf r;
     mu::float3 s;
-    extractTransformData(settings, (bPoseChannel*)obj, t, r, s);
+    msblenEntityHandler::extractTransformData(settings, (bPoseChannel*)obj, t, r, s);
 
     const float time = m_anim_time;
     dst.translation.push_back({ time, t });

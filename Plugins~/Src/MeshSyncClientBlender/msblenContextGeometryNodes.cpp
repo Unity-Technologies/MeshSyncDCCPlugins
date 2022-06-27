@@ -53,7 +53,7 @@ void msblenContext::exportInstances() {
             return exportInstancesFromTree(instanced, parent, std::move(matrices));
         }
 
-        auto world_matrix = getWorldMatrix(instanced);
+        auto world_matrix = msblenEntityHandler::getWorldMatrix(instanced);
         auto inverse = mu::invert(world_matrix);
 
         // check if the object has been already exported as part of the scene
