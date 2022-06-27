@@ -71,8 +71,6 @@ public:
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
     void requestServerInitiatedMessage();
-
-    void callPythonMethod(const char* name);
 private:
     // todo
     struct NodeRecord {

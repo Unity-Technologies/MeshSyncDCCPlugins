@@ -14,7 +14,8 @@ namespace blender
     int CustomData_get_offset(const CustomData& data, int type);
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
-    
+    void callPythonMethod(const char* name);
+
     struct ListHeader { ListHeader *next, *prev; };
 
 	template<typename T> inline T rna_sdata(py::object p) { 

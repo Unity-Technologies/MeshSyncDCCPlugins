@@ -630,4 +630,18 @@ std::string abspath(const std::string& path)
     }
 }
 
+void blender::callPythonMethod(const char* name) {
+    py::gil_scoped_acquire acquire;
+
+    try {
+        auto module = py::module::import("unity_mesh_sync");
+        auto method = module.attr(name);
+        method();
+    }
+    catch (...) {
+    }
+
+    py::gil_scoped_release release;
+}
+
 } // namespace blender

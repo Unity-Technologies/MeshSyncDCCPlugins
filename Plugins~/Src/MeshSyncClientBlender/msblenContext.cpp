@@ -1652,7 +1652,7 @@ void msblenContext::WaitAndKickAsyncExport()
     
     // kick async send
     exporter->on_prepare = [this, exporter]() {
-        callPythonMethod("meshsync_prepare");  
+        blender::callPythonMethod("meshsync_prepare");  
 
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
@@ -1696,11 +1696,11 @@ void msblenContext::WaitAndKickAsyncExport()
         m_animations.clear();
         m_instances_manager.clearDirtyFlags();
 
-        callPythonMethod("meshsync_post_export");
+        blender::callPythonMethod("meshsync_post_export");
     };
 
     exporter->on_before_send = [this] {
-        callPythonMethod("meshsync_pre_export");
+        blender::callPythonMethod("meshsync_pre_export");
     };
 
     exporter->kick();
@@ -1718,18 +1718,4 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
     m_geometryNodeUtils.setInstancesDirty(true);
 #endif
 
-}
-
-void msblenContext::callPythonMethod(const char* name) {
-    py::gil_scoped_acquire acquire;
-
-    try {
-        auto module = py::module::import("unity_mesh_sync");
-        auto method = module.attr(name);
-        method();
-    }
-    catch (...) {
-    }
-
-    py::gil_scoped_release release;
 }
