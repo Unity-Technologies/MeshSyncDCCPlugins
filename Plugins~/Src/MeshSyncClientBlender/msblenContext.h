@@ -36,7 +36,6 @@
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
-
 class msblenContext;
 
 class msblenContext {

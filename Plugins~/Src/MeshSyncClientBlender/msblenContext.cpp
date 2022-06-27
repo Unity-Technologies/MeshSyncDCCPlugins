@@ -1419,7 +1419,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
     m_instances_state->manager.setAlwaysMarkDirty(dirty_all);
-	m_property_manager.clear();
+    m_property_manager.clear();
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
