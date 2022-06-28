@@ -60,7 +60,7 @@ add_definitions(-DMESHSYNC_DCC_PLUGIN_VER="${UNITY_PACKAGE_VERSION}")
 
 if(WIN32)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-elseif(APPLE)
+else()
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
