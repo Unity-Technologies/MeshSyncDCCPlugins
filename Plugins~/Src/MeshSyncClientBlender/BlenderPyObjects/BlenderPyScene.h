@@ -28,7 +28,7 @@ public:
     {
         for (auto *c : list_range(cc)) {
             each_objects_impl(body, (CollectionChild*)c->collection->children.first);
-            for (auto* o : list_range((CollectionObject*)c->collection->gobject.first))
+            for (auto *o : list_range((CollectionObject*)c->collection->gobject.first))
                 body(o->ob);
         }
     }
