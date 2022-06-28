@@ -361,15 +361,16 @@ void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
     Light* data = (Light*)src->data;
-    const float energy_to_intensity = 0.001f;
+    const float POWER_TO_INTENSITY = 0.001f; //Default light power in Blender: 1000, intensity in Unity: 1
 
     color = (mu::float4&)data->r;
-    intensity = data->energy * energy_to_intensity;
+    intensity = data->energy * POWER_TO_INTENSITY;
     range = data->dist;
 
     switch (data->type) {
     case LA_SUN:
         ltype = ms::Light::LightType::Directional;
+        intensity = data->energy; //direct conversion for sun type
         break;
     case LA_SPOT:
         ltype = ms::Light::LightType::Spot;
