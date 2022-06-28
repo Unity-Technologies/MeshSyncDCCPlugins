@@ -44,7 +44,7 @@ public:
     template<class Body>
     void each_selection(const Body& body)
     {
-        each_objects([&](Object* obj) {
+        each_objects([&](Object *obj) {
             BObject bo(obj);
             if (bo.is_selected())
                 body(obj);
