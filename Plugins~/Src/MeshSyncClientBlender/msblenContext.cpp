@@ -361,10 +361,10 @@ void msblenContext::extractLightData(const Object *src,
     ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle)
 {
     Light* data = (Light*)src->data;
-    const float POWER_TO_INTENSITY = 0.001f; //Default light power in Blender: 1000, intensity in Unity: 1
+    const float ENERGY_TO_INTENSITY = 0.001f; //Default light power in Blender: 1000, intensity in Unity: 1
 
     color = (mu::float4&)data->r;
-    intensity = data->energy * POWER_TO_INTENSITY;
+    intensity = data->energy * ENERGY_TO_INTENSITY;
     range = data->dist;
 
     switch (data->type) {
