@@ -3,10 +3,7 @@
 #include "msblenCurveHandler.h"
 #include "msblenUtils.h"
 
-#include "msblenBinder.h"
-
 namespace bl = blender;
-
 
 ms::CurvePtr msblenCurveHandler::exportCurve(msblenContextState& state,
 	msblenContextPathProvider& paths,
