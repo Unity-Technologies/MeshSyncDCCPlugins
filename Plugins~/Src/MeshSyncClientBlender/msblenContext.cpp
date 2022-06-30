@@ -1454,7 +1454,6 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     m_asyncTasksController.Wait();
     m_entities_state->eraseStaleObjects();
-    //m_instances_state->eraseStaleObjects();
 
     WaitAndKickAsyncExport();
     return true;
@@ -1626,7 +1625,6 @@ void msblenContext::flushPendingList(msblenContextState& state, msblenContextPat
         WaitAndKickAsyncExport();
     }
 }
-
 
 void msblenContext::WaitAndKickAsyncExport()
 {
