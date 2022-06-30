@@ -12,7 +12,7 @@ namespace blender {
 	void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {}
 #else
 
-	// Copied from blender source that we cannot include:
+// Copied from blender source that we cannot include:
 #define IDP_Int(prop) ((prop)->data.val)
 #define IDP_Array(prop) ((prop)->data.pointer)
 #define IDP_Float(prop) (*(float *)&(prop)->data.val)
