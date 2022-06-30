@@ -1431,7 +1431,6 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
             return true; // nothing to send
 
         bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
