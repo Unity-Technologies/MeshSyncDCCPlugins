@@ -1670,7 +1670,7 @@ void msblenContext::WaitAndKickAsyncExport()
         t.geometries = m_entity_manager.getDirtyGeometries();
         t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.instanceMeshes = m_instances_manager.getDirtyMeshes();
-		t.propertyInfos = m_property_manager.getAllProperties();
+    	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
