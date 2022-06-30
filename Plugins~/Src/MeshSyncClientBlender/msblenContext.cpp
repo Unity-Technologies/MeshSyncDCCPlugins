@@ -1675,7 +1675,6 @@ void msblenContext::WaitAndKickAsyncExport()
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
-
         t.deleted_instances = m_instances_manager.getDeleted();
 
         if (scale_factor != 1.0f) {
