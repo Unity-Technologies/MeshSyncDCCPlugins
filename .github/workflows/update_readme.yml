@@ -39,7 +39,7 @@ jobs:
         id: update-readme-file
         run: |
           generated_file='README.md';
-          echo ${{ steps.read-doc-index.outputs.content }}
+          echo '${{ steps.read-doc-index.outputs.content }}'
           fileContent='${{ steps.read-doc-index.outputs.content }}'; 
           printf '$fileContent' >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
