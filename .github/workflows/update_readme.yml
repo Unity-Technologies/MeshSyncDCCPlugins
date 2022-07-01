@@ -38,7 +38,7 @@ jobs:
       - name: Update README file
         id: update-readme-file
         run: |
-          generated_file='README.md';
+          generated_file='Readme.md';
           fileContent=$(
           cat <<"EOF"
           ${{ steps.read-doc-index.outputs.content }}
