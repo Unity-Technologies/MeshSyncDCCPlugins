@@ -45,21 +45,21 @@ jobs:
           ${{ steps.read-header.outputs.content }}
           EOF
           )
-          printf '$fileContent\n' >> $generated_file
+          printf "$fileContent\n" > $generated_file
 
           fileContent=$(
           cat <<"EOF"
           ${{ steps.read-doc-index.outputs.content }}
           EOF
           )
-          printf '$fileContent\n' >> $generated_file
+          printf "$fileContent\n" >> $generated_file
 
           fileContent=$(
           cat <<"EOF"
           ${{ steps.read-footer.outputs.content }}
           EOF
           )
-          printf '$fileContent\n' >> $generated_file
+          printf "$fileContent\n" >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
       - name: Append "Documentations~" to local URLs
         id: append-url
