@@ -39,8 +39,11 @@ jobs:
         id: update-readme-file
         run: |
           generated_file='README.md';
-          echo '${{ steps.read-doc-index.outputs.content }}'
-          fileContent='${{ steps.read-doc-index.outputs.content }}'; 
+          fileContent=$(
+          cat <<"EOF"
+          ${{ steps.read-doc-index.outputs.content }}
+          EOF
+          )
           printf '$fileContent' >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
       - name: Append "Documentations~" to local URLs
