@@ -66,6 +66,6 @@ Notes:
 
 ![MeshSyncPreferences](images/MeshSyncPreferences.png)
 
-[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
-provides easy installation on several DCC tools.  
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page provides easy installation 
+on several DCC tools.   
 Alternatively, [Manual Installation](en/Installation.md) is also available.
