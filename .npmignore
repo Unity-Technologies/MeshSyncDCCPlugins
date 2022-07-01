@@ -1,6 +1,7 @@
 artifacts/**
 build/**
 .build_script/**
+.github/**
 node_modules/**
 Documentation/ApiDocs/**
 Documentation~/ApiDocs/**
@@ -26,5 +27,6 @@ MeshSyncDCCPlugins~/**
 # Don't ignore DCC plugin zip files
 !Editor/Plugins~/*.zip
 
-
+# Parts to auto generate files
+AutoGenerateParts/**
 

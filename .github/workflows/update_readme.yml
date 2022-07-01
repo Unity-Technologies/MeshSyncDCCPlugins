@@ -1,0 +1,72 @@
+name: Update Readme
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'AutoGenerateParts/Readme*.md'
+      - 'Documentation~/index.md'
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  update-readme:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - name: Read header
+        id: read-header
+        uses: unity3d-jp/actions/read-file@main
+        with:
+          filepath: 'AutoGenerateParts/ReadmeHeader.md'
+      - name: Read Documentation Index
+        id: read-doc-index
+        uses: unity3d-jp/actions/read-file@main
+        with:
+          filepath: 'Documentation~/index.md'
+      - name: Read footer
+        id: read-footer
+        uses: unity3d-jp/actions/read-file@main
+        with:
+          filepath: 'AutoGenerateParts/ReadmeFooter.md'
+      - name: Update README file
+        id: update-readme-file
+        # Escape single quotes in output variables
+        run: |
+          generated_file='Readme.md';
+          cat <<"EOF" > $generated_file
+          ${{ steps.read-header.outputs.content }}
+          EOF
+
+          cat <<"EOF" >> $generated_file
+          ${{ steps.read-doc-index.outputs.content }}
+          EOF
+
+          cat <<"EOF" >> $generated_file
+          ${{ steps.read-footer.outputs.content }}
+          EOF
+
+          printf "\n\n\n" >> $generated_file
+          echo -e "*Auto-generated on $(date)*" >> $generated_file
+      - name: Append "Documentations~" to local URLs
+        id: append-url
+        uses: unity3d-jp/actions/append-md-local-url@main
+        with:
+          filepath: 'README.md'
+          prefix: 'Documentations~/'
+      - name: git setting
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Commit files
+        run: |
+          git add .
+          git commit -m "ga: update README (executed by update_readme.yml)" -m "[skip ci]" -a
+          git pull
+          git push -u 
+        
