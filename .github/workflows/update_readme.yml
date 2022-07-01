@@ -11,8 +11,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  update-readme:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -37,12 +36,26 @@ jobs:
           filepath: 'AutoGenerateParts/ReadmeFooter.md'
       - name: Update README file
         id: update-readme-file
+        # Escape single quotes in output variables
         run: |
-          generated_file='README.md';
-          printf '${{ steps.read-header.outputs.content }}\n' > $generated_file
-          printf '${{ steps.read-doc-index.outputs.content }}\n' >> $generated_file
-          printf '${{ steps.read-footer.outputs.content }}\n' >> $generated_file
-          printf "\n\n\n" >> $generated_file
+          generated_file='Readme.md';
+          fileContent=$(
+          cat <<"EOF" > $generated_file
+          ${{ steps.read-header.outputs.content }}
+          EOF
+          )
+
+          fileContent=$(
+          cat <<"EOF" >> $generated_file
+          ${{ steps.read-doc-index.outputs.content }}
+          EOF
+          )
+
+          fileContent=$(
+          cat <<"EOF" >> $generated_file
+          ${{ steps.read-footer.outputs.content }}
+          EOF
+          )
           echo -e "*Auto-generated on $(date)*" >> $generated_file
       - name: Append "Documentations~" to local URLs
         id: append-url
