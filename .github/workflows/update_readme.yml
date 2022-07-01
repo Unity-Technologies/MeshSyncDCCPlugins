@@ -39,23 +39,19 @@ jobs:
         # Escape single quotes in output variables
         run: |
           generated_file='Readme.md';
-          fileContent=$(
           cat <<"EOF" > $generated_file
           ${{ steps.read-header.outputs.content }}
           EOF
-          )
 
-          fileContent=$(
           cat <<"EOF" >> $generated_file
           ${{ steps.read-doc-index.outputs.content }}
           EOF
-          )
 
-          fileContent=$(
           cat <<"EOF" >> $generated_file
           ${{ steps.read-footer.outputs.content }}
           EOF
-          )
+
+          printf "\n\n\n" >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
       - name: Append "Documentations~" to local URLs
         id: append-url
