@@ -1,6 +1,7 @@
 artifacts/**
 build/**
 .build_script/**
+.github/**
 node_modules/**
 Documentation/ApiDocs/**
 Documentation~/ApiDocs/**
