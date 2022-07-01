@@ -40,7 +40,7 @@ jobs:
         run: |
           generated_file='README.md';
           fileContent=${{ steps.read-doc-index.outputs.content }}; 
-          printf $fileContent >> $generated_file
+          printf '$fileContent' >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
       - name: Append "Documentations~" to local URLs
         id: append-url
