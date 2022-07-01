@@ -1,4 +1,4 @@
-MeshSync DCC Plugins copyright © 2020 Unity Technologies ApS
+MeshSync DCC Plugins copyright © 2022 Unity Technologies ApS
 
 These Components are Licensed under GPL:
 * MeshSyncClientBlender
