@@ -1,6 +1,6 @@
 MeshSync DCC Plugins copyright © 2020 Unity Technologies ApS
 
-This Components are Licensed under GPL:
+These Components are Licensed under GPL:
 * MeshSyncClientBlender
 
 License Type: GPL v3
