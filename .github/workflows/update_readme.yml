@@ -41,7 +41,7 @@ jobs:
           generated_file='README.md';
           printf ${{ steps.read-header.outputs.content }} > $generated_file
           printf "\n" >> $generated_file
-          printf ${{ steps.read-doc-index.outputs.content }} >> $generated_file
+          printf ${ ${{ steps.read-doc-index.outputs.content }} /\'/\\\'}>> $generated_file
           printf "\n" >> $generated_file
           printf ${{ steps.read-footer.outputs.content }} >> $generated_file
           printf "\n\n\n" >> $generated_file
