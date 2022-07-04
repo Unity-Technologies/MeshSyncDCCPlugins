@@ -12,16 +12,12 @@ ms::CurvePtr msblenCurveHandler::exportCurve(msblenContextState& state,
 	MeshSyncClient::AsyncTasksController& asyncTasksController)
 {
 	std::shared_ptr<ms::Curve> ret = ms::Curve::create();
-
-	bl::BObject bobj(src);
-	Curve* data = nullptr;
-	data = (Curve*)src->data;
+	
+	Curve* data = (Curve*)src->data;
 
 	ms::Curve& dst = *ret;
 	dst.path = paths.get_path(src);
-
-	bool is_editing = false;
-
+	
 	// transform
 	extractTransformData(settings, src, dst);
 
