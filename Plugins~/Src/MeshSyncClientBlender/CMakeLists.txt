@@ -20,7 +20,7 @@ set(BLENDER_INCLUDE_DIRS
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesdna"
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/makesrna"
     "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/python"
-    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/../../intern/guardedalloc" #for Blender 3.2+
+    "${BLENDER${BLENDER_VERSION}_INCLUDE_DIR}/../../intern/guardedalloc" #for Blender 3.2+. Required by "BKE_customdata.h" -> "source\blender\blenlib\BLI_memory_utils.hh"
     ${PYTHON_${BLENDER_PYTHON_VERSION}_INCLUDE_DIRS}
 )
 
