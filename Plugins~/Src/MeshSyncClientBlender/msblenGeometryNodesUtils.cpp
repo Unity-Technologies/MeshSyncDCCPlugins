@@ -70,7 +70,7 @@ namespace blender {
                 if (!rec.updated)
                 {
                     rec.parent = parent;
-                     rec.object_copy = *obj;
+                    std::memcpy(&rec.object_copy, obj, sizeof(Object));
                     rec.updated = true;
     
                     records_by_name[obj->id.name] = &rec;
