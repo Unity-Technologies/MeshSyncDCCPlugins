@@ -67,6 +67,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
@@ -250,4 +251,7 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 ##  Related
 - [NormalPainter](https://github.com/unity3d-jp/NormalPainter): Tool for editing vectors in Unity
 - [BlendShapeBuilder](https://github.com/unity3d-jp/BlendShapeBuilder): Tool for building BlendShapes in Unity
-*Auto-generated on Fri Jul  1 09:16:56 UTC 2022*
+
+
+
+*Auto-generated on Tue Jul  5 02:13:50 UTC 2022*

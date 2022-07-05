@@ -31,4 +31,8 @@ template<typename T> inline void rna_data(py::object p, T& v) {
     operator Type() { return *(Type*)this; }\
     operator Type() const { return *(const Type*)this; }
 
+#if BLENDER_VERSION >= 302
+    #define OB_CURVE OB_CURVES_LEGACY
+#endif
+
 
