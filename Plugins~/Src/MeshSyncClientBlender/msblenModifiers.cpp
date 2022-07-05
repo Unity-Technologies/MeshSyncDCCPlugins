@@ -109,7 +109,6 @@ void addModifierProperties(ModifierData* modifier, const Object* obj, ms::Proper
 			break;
 		}
 		case IDP_STRING: {
-			auto uiData = (bNodeSocketValueString*)property->ui_data;
 			auto val = IDP_String(property);
 			propertyInfo->set(val, strlen(val));
 			break;
