@@ -116,6 +116,7 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
     bl_idname = "meshsync.send_animations"
     bl_label = "Export Animations"
     def execute(self, context):
+        msb_apply_scene_settings()
         msb_apply_animation_settings()
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
