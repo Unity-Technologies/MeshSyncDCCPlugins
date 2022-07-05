@@ -11,8 +11,8 @@ namespace ms {
 
 		vector<PropertyInfoPtr> ret;
 
-		for (auto& r : m_records) {
-			ret.push_back(r.propertyInfo);
+		for (const auto& [key, propertyInfo] : m_records) {
+			ret.push_back(propertyInfo);
 		}
 
 		return ret;
@@ -22,17 +22,7 @@ namespace ms {
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 
-		// Make sure the same property doesn't get added twice when objects and their parents are iterated:
-		for (size_t i = 0; i < m_records.size(); ++i) {
-			if (m_records[i].propertyInfo->matches(propertyInfo)) {
-				m_records[i].propertyInfo = propertyInfo;
-				return;
-			}
-		}
-
-		auto rec = Record();
-		rec.propertyInfo = propertyInfo;
-		m_records.push_back(rec);
+		m_records[propertyInfo->hash()] = propertyInfo;
 	}
 
 	void PropertyManager::clear()
