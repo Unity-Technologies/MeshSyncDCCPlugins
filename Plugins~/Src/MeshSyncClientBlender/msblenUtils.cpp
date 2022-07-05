@@ -73,19 +73,24 @@ bool visible_in_viewport(const Object *obj)
     return !bl::BObject(obj).hide_viewport();
 }
 
-bool visible_in_collection(LayerCollection* layerCollection, const Object* obj)
-{
+bool visible_in_collection(LayerCollection* lc, const Object* obj) {
     // Check if the object is in the layer collection, if it is, check if the layer is excluded:
-    for (auto collectionObject : blender::list_range((CollectionObject*)layerCollection->collection->gobject.first)) {
+    for (auto collectionObject : blender::list_range((CollectionObject*)lc->collection->gobject.first)) {
         if (collectionObject->ob == obj) {
-            if (!(layerCollection->flag & LAYER_COLLECTION_EXCLUDE)) {
+            if ((!(lc->flag & LAYER_COLLECTION_EXCLUDE)) &&
+#if BLENDER_VERSION >= 300
+                (!(lc->collection->flag & COLLECTION_HIDE_RENDER))
+#else
+                (!(lc->collection->flag & COLLECTION_RESTRICT_RENDER))
+#endif
+                ) {
                 return true;
             }
         }
     }
 
     // Check child layer collections:
-    for (auto childCollection : blender::list_range((LayerCollection*)layerCollection->layer_collections.first)) {
+    for (auto childCollection : blender::list_range((LayerCollection*)lc->layer_collections.first)) {
         if (visible_in_collection(childCollection, obj)) {
             return true;
         }
@@ -94,8 +99,7 @@ bool visible_in_collection(LayerCollection* layerCollection, const Object* obj)
     return false;
 }
 
-bool visible_in_collection(const Object* obj)
-{
+bool visible_in_collection(const Object* obj) {
     auto viewLayer = bl::BlenderPyContext::get().view_layer();
 
     for (auto layerCollection : blender::list_range((LayerCollection*)viewLayer->layer_collections.first)) {
