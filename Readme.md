@@ -1,7 +1,7 @@
-![demo](Documentations~/Documentation~/images/Demo.gif)
+![demo](Documentation~/images/Demo.gif)
 
 # Other Languages
-- [日本語](Documentations~/Readme_JP.md)
+- [日本語](Readme_JP.md)
 
 # MeshSync DCC Plugins
 
@@ -12,84 +12,13 @@
 
 ![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/2e9a8300-389b-47be-9806-246c5121830b)
 ![ReleaseBadge](https://badge-proxy.cds.internal.unity3d.com/6f4a7e27-d53f-4ad3-bef5-9d3961bb68fb)
-# MeshSync DCC Plugins
 
-MeshSync DCC Plugins is package that contains plugin binaries of DCC tools for using [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest), 
-which is another package for synchronizing meshes/models editing in DCC tools into Unity in real time.
-This allows devs to immediately see how things will look in-game while modelling.
-
-## Features
-
-|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
-| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
-| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
-| Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
-| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
-| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
-
-
-### Caveats
-
-* Negative Scale: partially supported on some DCC Tools.  
-  If all XYZ values have negative values, the mesh will sync properly, however if only one axis has a negative value,
-  Unity will treat the mesh as though every axis has a negative value.
-  Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
-  deformer information.
-
-
-## Supported DCC Tools
-
-|                    | Windows            | Mac                | Linux              |
-|--------------------| ------------------ | ------------------ |------------------- |
-| Maya 2018          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Maya 2019          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Maya 2020          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Maya 2022          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Maya LT 2019 +     | :heavy_check_mark: |                    | :x:                |
-| 3ds Max 2018       | :heavy_check_mark: | :x:                | :x:                |
-| 3ds Max 2019       | :heavy_check_mark: | :x:                | :x:                |
-| 3ds Max 2020       | :heavy_check_mark: | :x:                | :x:                |
-| 3ds Max 2021       | :heavy_check_mark: | :x:                | :x:                |
-| 3ds Max 2022       | :heavy_check_mark: | :x:                | :x:                |
-| 3ds Max 2023       | :heavy_check_mark: | :x:                | :x:                |
-| MotionBuilder 2017 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
-| MotionBuilder 2018 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
-| MotionBuilder 2019 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
-| MotionBuilder 2020 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
-| Blender 2.83       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 2.90       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 2.91       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 2.92       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
-
-Notes:
-* :white_check_mark: : Supported
-* :x: : Impossible to support (platform unsupported by the DCC, etc)
-* empty : May be supported in the future
-
-# DCC Plugin Installation
-
-![MeshSyncPreferences](Documentations~/images/MeshSyncPreferences.png)
-
-[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
-provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](Documentations~/en/Installation.md) is also available.
 # Building
-- [Building DCC Plugins](Documentations~/Plugins~/Docs/en/BuildDCCPlugins.md)
+- [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
 # License
-- [License](Documentations~/LICENSE.md)
-- [Third Party Notices](Documentations~/Third%20Party%20Notices.md)
+- [License](LICENSE.md)
+- [Third Party Notices](Third%20Party%20Notices.md)
 
 # Currently being reorganized
 
@@ -98,14 +27,14 @@ The previous version of the document is put below for reference.
 
 
 ## Guides
-1. [Maya](Documentations~/#maya)
-2. [Maya LT](Documentations~/#maya-lt)
-3. [3ds Max](Documentations~/#3ds-max)
-4. [MotionBuilder](Documentations~/#motionbuilder)
-5. [Blender](Documentations~/#blender)
-6. [Modo](Documentations~/#modo)
-7. [Metasequoia](Documentations~/#Metaseq)
-8. [Unity](Documentations~/#unity)
+1. [Maya](#maya)
+2. [Maya LT](#maya-lt)
+3. [3ds Max](#3ds-max)
+4. [MotionBuilder](#motionbuilder)
+5. [Blender](#blender)
+6. [Modo](#modo)
+7. [Metasequoia](#Metaseq)
+8. [Unity](#unity)
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/39971860-7f6d1330-573e-11e8-9a1e-9d95709cbd50.png" height=400>
 
@@ -134,7 +63,7 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
 
 ### Maya LT
 Currently, only Windows is supported, and the tool is confirmed to work on Maya LT 2019 + Windows. Maya LT does not natively support outside plugins, so be aware that this may lead to problems. Even small version changes to Maya LT may lead to loss of compatibility.   
-This is a separate package, but the process for installation and use is the same as [Non-LT Maya](Documentations~/#maya).
+This is a separate package, but the process for installation and use is the same as [Non-LT Maya](#maya).
 
 
 ### 3ds Max
@@ -254,4 +183,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Wed Jul  6 11:47:44 UTC 2022*
+*Auto-generated on Wed Jul  6 13:42:59 UTC 2022*
