@@ -57,7 +57,7 @@ jobs:
         id: append-url
         uses: unity3d-jp/actions/append-md-local-url@main
         with:
-          filepath: 'README.md'
+          filepath: 'Readme.md'
           prefix: 'Documentations~/'
       - name: git setting
         run: |
