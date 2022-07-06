@@ -58,6 +58,7 @@ jobs:
           EOF
           
           cat temp.md >> $generated_file
+          rm temp.md
 
           cat <<"EOF" >> $generated_file
           ${{ steps.read-footer.outputs.content }}
