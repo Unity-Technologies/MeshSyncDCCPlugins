@@ -26,7 +26,9 @@ jobs:
           filepath: 'AutoGenerateParts/ReadmeHeader.md'
       - name: Read Documentation Index
         id: read-doc-index
-        uses: unity3d-jp/actions/read-file@main          
+        uses: unity3d-jp/actions/read-file@main
+        with:
+          filepath: 'Documentation~/index.md'                
       - name: Create temporary Index file
         id: create-temp-index
         run: |
@@ -34,8 +36,8 @@ jobs:
           cat <<"EOF" >> $generated_file
           ${{ steps.read-doc-index.outputs.content }}
           EOF
-      - name: append "Documentation~" to local URLs
-        id: append-url
+      - name: append "Documentation~" to local URLs in temporary Index file
+        id: append-url-to-temp-index
         uses: unity3d-jp/actions/append-md-local-url@main
         with:
           filepath: 'Readme_index.md'
