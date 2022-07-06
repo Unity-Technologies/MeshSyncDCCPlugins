@@ -126,7 +126,7 @@ endif()
 
 foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
     string(REPLACE "MAYA_" "MAYA_SDK_" CUR_MAYA_SDK ${CUR_MAYA_VER})
-    if(DEFINED ENV{${CUR_MAYA_VER}})
+    if(DEFINED ENV{${CUR_MAYA_SDK}})
         option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
         if (BUILD_${CUR_MAYA_VER}_PLUGIN)
             message(STATUS "[PROJECT] Setup: : ${CUR_MAYA_VER}") 
