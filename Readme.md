@@ -1,7 +1,7 @@
-![demo](Documentation~/images/Demo.gif)
+![demo](Documentations~/Documentation~/images/Demo.gif)
 
 # Other Languages
-- [日本語](Readme_JP.md)
+- [日本語](Documentations~/Readme_JP.md)
 
 # MeshSync DCC Plugins
 
@@ -79,17 +79,17 @@ Notes:
 
 # DCC Plugin Installation
 
-![MeshSyncPreferences](images/MeshSyncPreferences.png)
+![MeshSyncPreferences](Documentations~/images/MeshSyncPreferences.png)
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](en/Installation.md) is also available.
+Alternatively, [Manual Installation](Documentations~/en/Installation.md) is also available.
 # Building
-- [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
+- [Building DCC Plugins](Documentations~/Plugins~/Docs/en/BuildDCCPlugins.md)
 
 # License
-- [License](LICENSE.md)
-- [Third Party Notices](Third%20Party%20Notices.md)
+- [License](Documentations~/LICENSE.md)
+- [Third Party Notices](Documentations~/Third%20Party%20Notices.md)
 
 # Currently being reorganized
 
@@ -98,14 +98,14 @@ The previous version of the document is put below for reference.
 
 
 ## Guides
-1. [Maya](#maya)
-2. [Maya LT](#maya-lt)
-3. [3ds Max](#3ds-max)
-4. [MotionBuilder](#motionbuilder)
-5. [Blender](#blender)
-6. [Modo](#modo)
-7. [Metasequoia](#Metaseq)
-8. [Unity](#unity)
+1. [Maya](Documentations~/#maya)
+2. [Maya LT](Documentations~/#maya-lt)
+3. [3ds Max](Documentations~/#3ds-max)
+4. [MotionBuilder](Documentations~/#motionbuilder)
+5. [Blender](Documentations~/#blender)
+6. [Modo](Documentations~/#modo)
+7. [Metasequoia](Documentations~/#Metaseq)
+8. [Unity](Documentations~/#unity)
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/39971860-7f6d1330-573e-11e8-9a1e-9d95709cbd50.png" height=400>
 
@@ -134,7 +134,7 @@ Confirmed functionality with Maya 2015, 2016, 2016.5, 2017, 2018, 2019 + Windows
 
 ### Maya LT
 Currently, only Windows is supported, and the tool is confirmed to work on Maya LT 2019 + Windows. Maya LT does not natively support outside plugins, so be aware that this may lead to problems. Even small version changes to Maya LT may lead to loss of compatibility.   
-This is a separate package, but the process for installation and use is the same as [Non-LT Maya](#maya).
+This is a separate package, but the process for installation and use is the same as [Non-LT Maya](Documentations~/#maya).
 
 
 ### 3ds Max
@@ -254,4 +254,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Jul  5 02:13:50 UTC 2022*
+*Auto-generated on Wed Jul  6 11:47:44 UTC 2022*
