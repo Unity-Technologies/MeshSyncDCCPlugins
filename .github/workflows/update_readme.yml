@@ -24,11 +24,13 @@ jobs:
         uses: unity3d-jp/actions/read-file@main
         with:
           filepath: 'AutoGenerateParts/ReadmeHeader.md'
-      - name: Read Documentation Index
-        id: read-doc-index
-        uses: unity3d-jp/actions/read-file@main
+      - name: Read Index and append "Documentation~" to local URLs
+        id: read-index-append-url
+        uses: unity3d-jp/actions/append-md-local-url@main
         with:
           filepath: 'Documentation~/index.md'
+          prefix: 'Documentation~/'
+          
       - name: Read footer
         id: read-footer
         uses: unity3d-jp/actions/read-file@main
@@ -36,7 +38,6 @@ jobs:
           filepath: 'AutoGenerateParts/ReadmeFooter.md'
       - name: Update README file
         id: update-readme-file
-        # Escape single quotes in output variables
         run: |
           generated_file='Readme.md';
           cat <<"EOF" > $generated_file
@@ -53,12 +54,6 @@ jobs:
 
           printf "\n\n\n" >> $generated_file
           echo -e "*Auto-generated on $(date)*" >> $generated_file
-      - name: Append "Documentations~" to local URLs
-        id: append-url
-        uses: unity3d-jp/actions/append-md-local-url@main
-        with:
-          filepath: 'Readme.md'
-          prefix: 'Documentations~/'
       - name: git setting
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
