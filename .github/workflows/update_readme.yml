@@ -29,10 +29,10 @@ jobs:
         uses: unity3d-jp/actions/read-file@main
         with:
           filepath: 'Documentation~/index.md'                
-      - name: Create temporary Index file
-        id: create-temp-index
+      - name: Overwrite Readme with Index
+        id: overwrite-readme-with-index
         run: |
-          generated_file='Readme_index.md';
+          generated_file='Readme.md';
           cat <<"EOF" >> $generated_file
           ${{ steps.read-doc-index.outputs.content }}
           EOF
@@ -40,7 +40,7 @@ jobs:
         id: append-url-to-temp-index
         uses: unity3d-jp/actions/append-md-local-url@main
         with:
-          filepath: 'Readme_index.md'
+          filepath: 'Readme.md'
           prefix: 'Documentation~/'          
       - name: Read footer
         id: read-footer
@@ -50,12 +50,14 @@ jobs:
       - name: Update README file
         id: update-readme-file
         run: |
-          generated_file='Readme.md';
+          mv Readme.md temp.md
+          
+          generated_file='Readme.md';          
           cat <<"EOF" > $generated_file
           ${{ steps.read-header.outputs.content }}
           EOF
-
-          cat Readme_index.md >> $generated_file
+          
+          cat temp.md >> $generated_file
 
           cat <<"EOF" >> $generated_file
           ${{ steps.read-footer.outputs.content }}
@@ -67,9 +69,6 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-      - name: Remove temporary files
-        run: |          
-          rm Readme_index.md
       - name: Commit files
         run: |          
           git add .
