@@ -32,8 +32,7 @@ jobs:
       - name: Overwrite Readme with Index
         id: overwrite-readme-with-index
         run: |
-          generated_file='Readme.md';
-          cat <<"EOF" >> $generated_file
+          cat <<"EOF" > Readme.md
           ${{ steps.read-doc-index.outputs.content }}
           EOF
       - name: append "Documentation~" to local URLs in temporary Index file
