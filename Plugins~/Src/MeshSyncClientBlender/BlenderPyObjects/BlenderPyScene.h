@@ -51,33 +51,16 @@ public:
         });
     }
 
-    Object* find_object_in_collection(std::string objName, Collection* col) {
-        for (auto* o : list_range((CollectionObject*)col->gobject.first)) {
-            auto obj = o->ob;
-            auto name = msblenUtils::get_name(obj);
-
-            if (name == objName) {
-                return obj;
-            }
-        }
-
-        return nullptr;
-    }
-
     Object* get_object_by_name(std::string objName) {
-        auto result = find_object_in_collection(objName, m_ptr->master_collection);
-        if (result) {
-            return result;
-        }
+        Object* result = nullptr;
+        each_objects([&](Object* obj) {
+            auto name = msblenUtils::get_name(obj);
+            if (name == objName)
+            {
+                result = obj;
+            }});
 
-        for (auto* c : list_range((CollectionChild*)m_ptr->master_collection->children.first)) {
-            result = find_object_in_collection(objName, c->collection);
-            if (result) {
-                return result;
-            }
-        }
-
-        return nullptr;
+        return result;
     }
 };
 
