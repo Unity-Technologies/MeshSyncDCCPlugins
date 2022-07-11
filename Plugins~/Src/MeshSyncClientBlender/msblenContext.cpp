@@ -905,9 +905,8 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
         if (!normals.empty()) {
             dst.normals.resize_discard(num_indices);
-            const float roundingFactor = 100.0f;
             for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.normals[ii] = ceil(normals[ii] * roundingFactor) / roundingFactor;
+                dst.normals[ii] = ms::roundToDecimals(normals[ii]);
         }
     }
 
