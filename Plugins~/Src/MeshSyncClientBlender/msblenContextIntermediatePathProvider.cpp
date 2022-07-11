@@ -14,18 +14,9 @@ std::string msblenContextIntermediatePathProvider::append_id(std::string path, c
         mappedNames.insert(std::make_pair(data->name, data->session_uuid));
     }
     else {
-        bool found = false;
-        for (; it != mappedNames.end(); it++)
+        if (it->second != data->session_uuid)
         {
-            if (it->second == data->session_uuid) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
             path += "_" + std::to_string(data->session_uuid);
-            mappedNames.insert(std::make_pair(data->name, data->session_uuid));
         }
     }
 
