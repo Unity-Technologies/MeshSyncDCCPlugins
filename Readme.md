@@ -79,11 +79,11 @@ Notes:
 
 # DCC Plugin Installation
 
-![MeshSyncPreferences](images/MeshSyncPreferences.png)
+![MeshSyncPreferences](Documentation~/images/MeshSyncPreferences.png)
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](en/Installation.md) is also available.
+Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -254,4 +254,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Jul  5 02:13:50 UTC 2022*
+*Auto-generated on Wed Jul  6 14:06:52 UTC 2022*
