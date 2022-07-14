@@ -115,7 +115,6 @@ list(APPEND MAYA_VERSIONS
     MAYA_2020
     MAYA_2022
     MAYA_2023
-    MAYA_2024
 ) 
 
 if(BUILD_MAYA_ALL)
@@ -125,16 +124,13 @@ if(BUILD_MAYA_ALL)
 endif()
 
 foreach(CUR_MAYA_VER IN LISTS MAYA_VERSIONS)
-    string(REPLACE "MAYA_" "MAYA_SDK_" CUR_MAYA_SDK ${CUR_MAYA_VER})
-    if(DEFINED ENV{${CUR_MAYA_VER}})
-        option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
-        if (BUILD_${CUR_MAYA_VER}_PLUGIN)
-            message(STATUS "[PROJECT] Setup: : ${CUR_MAYA_VER}") 
-            add_subdirectory_link(MeshSyncClient${CUR_MAYA_VER} MeshSyncClientMaya)
-        endif()
+    option(BUILD_${CUR_MAYA_VER}_PLUGIN "Build MeshSync Plugin for ${CUR_MAYA_VER}" OFF)
+    if (BUILD_${CUR_MAYA_VER}_PLUGIN)
+        message(STATUS "[PROJECT] Setup: : ${CUR_MAYA_VER}") 
+        add_subdirectory_link(MeshSyncClient${CUR_MAYA_VER} MeshSyncClientMaya)
     endif()
-    
 endforeach(CUR_MAYA_VER)   
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
