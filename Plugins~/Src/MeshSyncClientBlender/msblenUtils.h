@@ -73,8 +73,18 @@ inline void each_modifier(Object *obj, const Body& body)
 template<class Body>
 static inline void each_deform_group(const Object *obj, const Body& body)
 {
+    
+// defbase was deprecated after v2.94
+#if BLENDER_VERSION >= 300
+    auto mesh = (Mesh*)obj->data;
+    auto names = mesh->vertex_group_names;
+    for (auto* it = (const bDeformGroup*)names.first; it != nullptr; it = it->next) {
+        body(it);
+    }
+#else
     for (auto *it = (const bDeformGroup*)obj->defbase.first; it != nullptr; it = it->next)
         body(it);
+#endif
 }
 
 // Body: [](const KeyBlock*) -> void
