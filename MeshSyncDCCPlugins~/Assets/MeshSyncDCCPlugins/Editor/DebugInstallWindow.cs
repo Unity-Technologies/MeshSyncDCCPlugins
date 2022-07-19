@@ -89,12 +89,9 @@ public class DebugInstallWindow : EditorWindow {
 
         Button chooseFolderButton = new Button();
         chooseFolderButton.text = "Choose Folder";
-        chooseFolderButton.clicked += () => {
-            string folder = EditorUtility.OpenFolderPanel("Add DCC Tool", manualTextField.value, "");
-            if (string.IsNullOrEmpty(folder)) {
-                return;
-            }
-            m_lastManualDir = manualTextField.value = folder;
+        chooseFolderButton.clicked += () =>
+        {
+            manualTextField.value = m_platformUtility.OpenDCCPathPanel();
         };
         labelParent.Add(chooseFolderButton);
                     
@@ -112,9 +109,8 @@ public class DebugInstallWindow : EditorWindow {
         container.Query<Button>("RemoveDCCToolButton").First().visible = false;
         top.Add(container);
     }
-    
-//----------------------------------------------------------------------------------------------------------------------        
 
+    //----------------------------------------------------------------------------------------------------------------------        
 
     void OnLaunchDCCToolButtonClicked(EventBase evt) {
         DCCToolInfo dccToolInfo = GetEventButtonUserDataAs<DCCToolInfo>(evt.target);           
@@ -273,6 +269,5 @@ public class DebugInstallWindow : EditorWindow {
     private VisualElement m_root = null;
     
     [SerializeField] private string m_lastManualDir = null;
-
-
+    private readonly PlatformUtility m_platformUtility = new PlatformUtility();
 }
