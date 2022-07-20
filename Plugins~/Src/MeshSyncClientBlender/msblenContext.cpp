@@ -1381,7 +1381,7 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-void msblenContext::requestServerInitiatedMessage()
+void msblenContext::requestLiveEditMessage()
 {
     if (m_settings.ExportSceneCache) {
         return;
@@ -1394,7 +1394,15 @@ void msblenContext::requestServerInitiatedMessage()
             m_server_requested_sync = true;
         }
     };
-    m_sender.requestServerInitiatedMessage();
+    m_sender.requestLiveEditMessage();
+}
+
+bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
+{
+    bool result = sendObjects(scope, dirty_all);
+    requestLiveEditMessage();
+
+    return result;
 }
 
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
