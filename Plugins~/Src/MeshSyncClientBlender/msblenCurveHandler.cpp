@@ -40,36 +40,37 @@ ms::CurvePtr msblenCurveHandler::exportCurve(msblenContextState& state,
 void msblenCurveHandler::doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world)
 {
 	if (settings.sync_curves) {
-		const bool is_editing = data->editnurb != nullptr;
+		return;
+	}
+	const bool is_editing = data->editnurb != nullptr;
 
-		ListBase nurbs;
-		if (is_editing) {
-			nurbs = data->editnurb->nurbs;
-		}
-		else {
-			nurbs = data->nurb;
-		}
+	ListBase nurbs;
+	if (is_editing) {
+		nurbs = data->editnurb->nurbs;
+	}
+	else {
+		nurbs = data->nurb;
+	}
 
-		dst.splines.clear();
+	dst.splines.clear();
 
-		for (auto nurb : blender::list_range((Nurb*)nurbs.first)) {
-			dst.splines.push_back(ms::CurveSpline::create());
-			auto curveSpline = dst.splines.back();
+	for (auto nurb : blender::list_range((Nurb*)nurbs.first)) {
+		dst.splines.push_back(ms::CurveSpline::create());
+		auto curveSpline = dst.splines.back();
 
-			curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
+		curveSpline->closed = (nurb->flagu & CU_NURB_CYCLIC) != 0;
 
-			curveSpline->cos.resize_discard(nurb->pntsu);
-			curveSpline->handles_left.resize_discard(nurb->pntsu);
-			curveSpline->handles_right.resize_discard(nurb->pntsu);
+		curveSpline->cos.resize_discard(nurb->pntsu);
+		curveSpline->handles_left.resize_discard(nurb->pntsu);
+		curveSpline->handles_right.resize_discard(nurb->pntsu);
 
-			for (int i = 0; i < nurb->pntsu; i++) {
-				BezTriple* bezt = &nurb->bezt[i];
+		for (int i = 0; i < nurb->pntsu; i++) {
+			BezTriple* bezt = &nurb->bezt[i];
 
-				if (bezt) {
-					curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
-					curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
-					curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
-				}
+			if (bezt) {
+				curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
+				curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
+				curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
 			}
 		}
 	}
