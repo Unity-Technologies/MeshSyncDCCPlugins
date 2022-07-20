@@ -67,11 +67,13 @@ void msblenCurveHandler::doExtractCurveData(msblenContextState& state, BlenderSy
 		for (int i = 0; i < nurb->pntsu; i++) {
 			BezTriple* bezt = &nurb->bezt[i];
 
-			if (bezt) {
-				curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
-				curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
-				curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
+			if (!bezt) {
+				continue;
 			}
+
+			curveSpline->cos[i] = (mu::float3&)bezt->vec[1];
+			curveSpline->handles_left[i] = (mu::float3&)bezt->vec[0];
+			curveSpline->handles_right[i] = (mu::float3&)bezt->vec[2];
 		}
 	}
 }
