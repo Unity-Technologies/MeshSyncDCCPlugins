@@ -1387,7 +1387,7 @@ void msblenContext::requestLiveEditMessage()
         return;
     }
 
-    m_sender.on_server_initiated_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
+    m_sender.on_live_edit_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
         m_property_manager.updateFromServer(properties, entities);
 
         if (messageFromServer == ms::REQUEST_SYNC) {
