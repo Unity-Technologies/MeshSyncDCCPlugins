@@ -62,6 +62,7 @@ public:
 
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
+    bool sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
@@ -70,7 +71,7 @@ public:
 
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
-    void requestServerInitiatedMessage();
+    void requestLiveEditMessage();
 private:
     // todo
     struct NodeRecord {

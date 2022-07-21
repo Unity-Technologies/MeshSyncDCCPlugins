@@ -49,6 +49,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Maya 2019          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya 2020          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya 2022          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya 2023          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya LT 2019 +     | :heavy_check_mark: |                    | :x:                |
 | 3ds Max 2018       | :heavy_check_mark: | :x:                | :x:                |
 | 3ds Max 2019       | :heavy_check_mark: | :x:                | :x:                |
@@ -79,11 +80,11 @@ Notes:
 
 # DCC Plugin Installation
 
-![MeshSyncPreferences](images/MeshSyncPreferences.png)
+![MeshSyncPreferences](Documentation~/images/MeshSyncPreferences.png)
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](en/Installation.md) is also available.
+Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -254,4 +255,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Jul  5 02:13:50 UTC 2022*
+*Auto-generated on Tue Jul 19 03:13:01 UTC 2022*

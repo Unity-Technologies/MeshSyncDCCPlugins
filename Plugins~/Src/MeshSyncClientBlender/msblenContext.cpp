@@ -705,11 +705,6 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
-    // ignore particles
-    if (//FindModifier(src, eModifierType_ParticleSystem) ||
-        FindModifier(src, eModifierType_ParticleInstance) )
-        return nullptr;
-
     bl::BObject bobj(src);
     Mesh *data = nullptr;
     if (is_mesh(src))
@@ -1381,20 +1376,28 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
-void msblenContext::requestServerInitiatedMessage()
+void msblenContext::requestLiveEditMessage()
 {
     if (m_settings.ExportSceneCache) {
         return;
     }
 
-    m_sender.on_server_initiated_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
+    m_sender.on_live_edit_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
         m_property_manager.updateFromServer(properties, entities);
 
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
     };
-    m_sender.requestServerInitiatedMessage();
+    m_sender.requestLiveEditMessage();
+}
+
+bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
+{
+    bool result = sendObjects(scope, dirty_all);
+    requestLiveEditMessage();
+
+    return result;
 }
 
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
