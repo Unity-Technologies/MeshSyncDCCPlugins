@@ -113,8 +113,17 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
     def draw(self, context):
         scene = bpy.context.scene
         layout = self.layout
-        layout.label(text = msb_context.PLUGIN_VERSION)
 
+class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
+    bl_label = "Unity Projects"
+    bl_parent_id = "MESHSYNC_PT_Main"
+
+    def draw(self, context):
+        scene = bpy.context.scene
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        layout.operator("meshsync.connect_unity", text="Install to Project..")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -308,6 +317,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 classes = (
     MESHSYNC_PT_Main,
+    MESHSYNC_PT_Connect,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
     MESHSYNC_PT_Animation,
@@ -317,6 +327,8 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
+    MESHSYNC_OT_ConnectUnity,
+    MESHSYNC_OT_ConfirmInstall,
 )
 
 def register():

@@ -4,6 +4,8 @@ import bpy
 from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 
+import json
+
 msb_context = ms.Context()
 msb_cache = ms.Cache()
 
@@ -121,3 +123,63 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
         return{'FINISHED'}
+
+class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
+    bl_idname = "meshsync.connect_unity"
+    bl_label = "Select"
+
+    directory: bpy.props.StringProperty(name = "Unity Project location", description = "Where is the unity folder?")
+
+    def execute(self, context):
+        MS_MessageBox("Connecting to.. " + self.directory)
+        path = self.directory + "/Packages/manifest.json";
+        #look for manifest of Unity project
+        file = open(path, "r+");
+        data = json.load(file);
+
+        # check if MeshSync is installed on selected project
+        # if not installed, install it
+        found = False
+
+        for package in data['dependencies']:
+            if (package == 'com.unity.meshsync'):
+                found = True
+
+
+        if(found == False):
+            #install for user
+            dependencies = data["dependencies"];
+            dependencies["com.unity.meshsync"] = "0.13.2-preview"
+            file.seek(0)
+            file.truncate(0)
+            json.dump(data, file)
+
+        file.close()
+
+        # if project is not open, open project
+        # remotely add a server to the scene
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = bpy.context.window_manager
+        wm.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+class MESHSYNC_OT_ConfirmInstall(bpy.types.Operator):
+    bl_idname = "meshsync.confirm_install"
+    bl_label = "Simple Modal Operator"
+
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+
+    my_float: bpy.props.FloatProperty(name="Float")
+    my_bool: bpy.props.BoolProperty(name="Toggle Option")
+    my_string: bpy.props.StringProperty(name="String Value")
+
+    def execute(self, context):
+        MS_MessageBox("Execute.. ")
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        MS_MessageBox("Invoke! ")
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
