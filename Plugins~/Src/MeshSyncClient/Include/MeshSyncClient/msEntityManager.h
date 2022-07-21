@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshSync/MeshSync.h" //msDeclClassPtr
 #include "msTransformManager.h"
+#include "MeshSync/SceneGraph/msEntity.h"
 
 msDeclStructPtr(Identifier)
 msDeclClassPtr(Transform)
@@ -56,6 +57,8 @@ public:
 
     std::vector<TransformPtr> getStaleEntities();
     void eraseStaleEntities() override;
+
+    void updateChecksumGeom(Transform* obj);
 
 private:
 

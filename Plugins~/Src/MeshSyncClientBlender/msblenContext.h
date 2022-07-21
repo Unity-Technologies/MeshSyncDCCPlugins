@@ -19,18 +19,20 @@
 #include "BlenderCacheSettings.h"
 #include "BlenderSyncSettings.h"
 #include "MeshSyncClient/AsyncTasksController.h"
-#include "msblenGeometryNodeUtils.h"
+#include "msblenModifiers.h"
 
 #include "MeshSyncClient/msInstancesManager.h"
+#include "MeshSyncClient/msPropertyManager.h"
 #include "MeshSyncClient/msTransformManager.h"
 
+#include "../MeshSyncClientBlender/msblenContextState.h"
+
+#include "msblenCurveHandler.h"
 
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodeUtils.h>
 #endif
 
-#include "../MeshSyncClientBlender/msblenContextState.h"
-#include <MeshSyncClient/msEntityManager.h>
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
@@ -38,6 +40,10 @@ class msblenContext;
 
 class msblenContext {
 public:
+
+    msblenContext();
+    ~msblenContext();
+
     static msblenContext& getInstance();
     void Destroy();
 
@@ -56,6 +62,7 @@ public:
 
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
+    bool sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all);
     bool sendAnimations(MeshSyncClient::ObjectScope scope);
     bool ExportCache(const std::string& path, const BlenderCacheSettings& cache_settings);
 
@@ -64,6 +71,7 @@ public:
 
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
+    void requestLiveEditMessage();
 private:
     // todo
     struct NodeRecord {
@@ -103,9 +111,6 @@ private:
         ms::TransformPtr dst;
     };
 
-    msblenContext();
-    ~msblenContext();
-
     static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
     int exportTexture(const std::string & path, ms::TextureType type);
@@ -126,16 +131,6 @@ private:
     ms::LightPtr exportLight(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::MeshPtr exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
 
-    mu::float4x4 getWorldMatrix(const Object *obj);
-    mu::float4x4 getLocalMatrix(const Object *obj);
-    mu::float4x4 getLocalMatrix(const Bone *bone);
-    mu::float4x4 getLocalMatrix(const bPoseChannel *pose);
-    void extractTransformData(BlenderSyncSettings& settings, const Object *src,
-        mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
-        mu::float4x4 *dst_world = nullptr, mu::float4x4 *dst_local = nullptr);
-    void extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst);
-    void extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *pose, mu::float3& t, mu::quatf& r, mu::float3& s);
-
     void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
     void extractLightData(const Object *src,
@@ -145,6 +140,8 @@ private:
     void doExtractBlendshapeWeights(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractNonEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
     void doExtractEditMeshData(msblenContextState& state, BlenderSyncSettings& settings, ms::Mesh& dst, const Object *obj, Mesh *data);
+    void importMesh(ms::Mesh* mesh);
+    void importEntities(std::vector<ms::EntityPtr> entities);
 
     ms::TransformPtr findBone(msblenContextState& state, Object *armature, Bone *bone);
 
@@ -154,7 +151,6 @@ private:
     void extractCameraAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractLightAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractMeshAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
-
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
@@ -198,6 +194,12 @@ private:
     ms::AsyncSceneSender m_sender;
     ms::SceneCacheWriter m_cache_writer;
     ms::InstancesManager m_instances_manager;
+
+    ms::PropertyManager m_property_manager;
+
+    msblenCurveHandler m_curves_handler;
+
+    bool m_server_requested_sync;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;

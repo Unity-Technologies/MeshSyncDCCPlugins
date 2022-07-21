@@ -4,6 +4,14 @@
 
 #include "BlenderPyObjects/BlenderPyContext.h" 
 
+
+// I don't think we can just mem copy here because this is also used for multidimensional arrays:
+#define copyFloatVector(DST, SRC) \
+DST[0] = SRC[0]; \
+DST[1] = SRC[1]; \
+DST[2] = SRC[2]; \
+
+
 namespace msblenUtils {
 std::string get_name(const Material *obj);
 std::string get_name(const Object *obj);
@@ -15,9 +23,11 @@ bool visible_in_viewport(const Object *obj);
 bool visible_in_collection(LayerCollection* layerCollection, const Object* obj);
 bool visible_in_collection(const Object* obj);
 const ModifierData* FindModifier(const Object *obj, ModifierType type);
+const ModifierData* FindModifier(const Object *obj, const std::string name);
 Bone* find_bone_recursive(Bone *bone, const char *name);
 Bone* find_bone(Object *obj, const char *name);
 bPoseChannel* find_pose(Object *obj, const char *name);
+Object* get_object_from_path(std::string path);
 
 bool is_mesh(const Object *obj);
 bool is_camera(const Object *obj);
