@@ -23,12 +23,7 @@ namespace ms {
         std::vector<EntityPtr> getReceivedEntities();
         void clearReceivedData();
     private:
-        struct Record
-        {
-            PropertyInfoPtr propertyInfo;
-        };
-
-        std::vector<Record> m_records;
+        std::map<uint64_t, PropertyInfoPtr> m_records;
         std::vector<PropertyInfo> m_receivedProperties;
         std::vector<EntityPtr> m_receivedEntities;
         std::mutex m_mutex;

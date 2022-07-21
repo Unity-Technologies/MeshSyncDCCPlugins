@@ -14,6 +14,7 @@ with commands described in the following sections.
 * Maya 2019: `-DBUILD_MAYA_2019_PLUGIN=ON`
 * Maya 2020: `-DBUILD_MAYA_2020_PLUGIN=ON`
 * Maya 2022: `-DBUILD_MAYA_2022_PLUGIN=ON`
+* Maya 2023: `-DBUILD_MAYA_2023_PLUGIN=ON`
 
 ## 3ds Max
 
@@ -43,6 +44,7 @@ with commands described in the following sections.
 * Blender 2.93.7 : `-DBUILD_BLENDER_2.93.7_PLUGIN=ON`
 * Blender 3.0.1 : `-DBUILD_BLENDER_3.0.1_PLUGIN=ON`
 * Blender 3.1.0 : `-DBUILD_BLENDER_3.1.0_PLUGIN=ON`
+* Blender 3.2.0 : `-DBUILD_BLENDER_3.2.0_PLUGIN=ON`
 
 ## Modo
 

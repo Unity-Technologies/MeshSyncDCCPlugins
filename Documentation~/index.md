@@ -35,6 +35,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Maya 2019          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya 2020          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya 2022          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Maya 2023          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Maya LT 2019 +     | :heavy_check_mark: |                    | :x:                |
 | 3ds Max 2018       | :heavy_check_mark: | :x:                | :x:                |
 | 3ds Max 2019       | :heavy_check_mark: | :x:                | :x:                |
@@ -53,6 +54,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 2.93       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
