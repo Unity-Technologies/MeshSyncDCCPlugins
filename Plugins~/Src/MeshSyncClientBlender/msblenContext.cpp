@@ -647,11 +647,6 @@ ms::LightPtr msblenContext::exportLight(msblenContextState& state, msblenContext
 
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
-    // ignore particles
-    if (//FindModifier(src, eModifierType_ParticleSystem) ||
-        FindModifier(src, eModifierType_ParticleInstance) )
-        return nullptr;
-
     bl::BObject bobj(src);
     Mesh *data = nullptr;
     if (is_mesh(src))
