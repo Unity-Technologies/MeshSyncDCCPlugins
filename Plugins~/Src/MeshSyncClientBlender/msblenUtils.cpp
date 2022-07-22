@@ -3,6 +3,8 @@
 #include "msblenBinder.h"
 #include "msblenUtils.h"
 
+#include "BlenderPyObjects/BlenderPyScene.h"
+
 namespace bl = blender;
 namespace msblenUtils {
 std::string get_name(const Material *obj)
@@ -34,7 +36,6 @@ std::string get_name(const Bone *obj)
     }
     return ret;
 }
-
 std::string get_path(const Object *obj)
 {
     std::string ret;
@@ -62,6 +63,18 @@ std::string get_path(const Object *arm, const Bone *obj)
     ret += '/';
     ret += get_name(obj);
     return ret;
+}
+
+Object* get_object_from_path(std::string path) {
+    auto lastIndexOfDivider = path.find_last_of('/');
+    if (lastIndexOfDivider < 0) {
+        return nullptr;
+    }
+
+    auto objName = path.substr(lastIndexOfDivider + 1);
+
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    return scene.get_object_by_name(objName);
 }
 
 bool visible_in_render(const Object *obj)
@@ -117,6 +130,14 @@ const ModifierData* FindModifier(const Object *obj, ModifierType type)
         if (it->type == type)
             return it;
     return nullptr;;
+}
+
+const ModifierData* FindModifier(const Object* obj, const std::string name)
+{
+    for (auto *it = (ModifierData*)obj->modifiers.first; it != nullptr; it = it->next)
+        if (it->name == name)
+            return it;
+    return nullptr;
 }
 
 Bone* find_bone_recursive(Bone *bone, const char *name)

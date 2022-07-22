@@ -179,6 +179,13 @@ void EntityManager::touch(const std::string& path)
         it->second.updated = true;
 }
 
+void EntityManager::updateChecksumGeom(Transform* obj)
+{
+    EntityManagerRecord& rec = lockAndGet(obj->path);
+    rec.waitTask();
+    rec.checksum_geom = obj->checksumGeom();
+}
+
 std::vector<TransformPtr> EntityManager::getAllEntities()
 {
     waitTasks();

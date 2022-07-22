@@ -8,16 +8,24 @@
 #include "MeshSync/SceneGraph/msCamera.h"
 #include "MeshSync/SceneGraph/msSceneSettings.h"
 #include "MeshSync/SceneGraph/msMesh.h"
+#include "MeshSync/SceneGraph/msCurve.h"
 #include "MeshSync/SceneGraph/msEntityConverter.h" //ScaleConverter
+#include "MeshSync/SceneGraph/msScene.h"
+
+#include "msblenEntityHandler.h"
 
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
+#include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
-
+#include "DNA_node_types.h"
+#include <sstream>
+#include "msblenBinder.h"
+#include "MeshUtils/muLog.h"
 
 
 #ifdef mscDebug
@@ -31,19 +39,6 @@
 namespace bl = blender;
 
 using namespace msblenUtils;
-
-static const mu::float4x4 g_arm_to_world = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0,-1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1
-};
-static const mu::float4x4 g_world_to_arm = mu::float4x4{
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0,-1, 0, 0,
-    0, 0, 0, 1
-};
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -59,17 +54,29 @@ void msblenContext::NodeRecord::recordAnimation(msblenContext *_this) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+static msblenContext* s_instance = nullptr;
+
 msblenContext& msblenContext::getInstance() {
-    static msblenContext s_instance;
-    return s_instance;
+    if (s_instance == nullptr) {
+        s_instance = new msblenContext();
+    }
+
+    return *s_instance;
 }
 
 void msblenContext::Destroy() {
+    if (!s_instance) {
+        return;
+    }
+
     m_texture_manager.clear();
     m_material_manager.clear();
 
     m_entities_state->clear();
     m_instances_state->clear();
+
+    delete s_instance;
+    s_instance = nullptr;
 }
 
 
@@ -217,121 +224,6 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-
-static inline mu::float4x4 camera_correction(const mu::float4x4& v)
-{
-    return mu::float4x4{ {
-        {-v[0][0],-v[0][1],-v[0][2],-v[0][3]},
-        { v[1][0], v[1][1], v[1][2], v[1][3]},
-        {-v[2][0],-v[2][1],-v[2][2],-v[2][3]},
-        { v[3][0], v[3][1], v[3][2], v[3][3]},
-    } };
-}
-
-
-mu::float4x4 msblenContext::getWorldMatrix(const Object *obj)
-{
-    mu::float4x4 r = bl::BObject(obj).matrix_world();
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const Object *obj)
-{
-    mu::float4x4 r = bl::BObject(obj).matrix_local();
-    if (obj->parent && obj->partype == PARBONE) {
-        if (Bone* bone = find_bone(obj->parent, obj->parsubstr)) {
-            r *= mu::translate(mu::float3{ 0.0f, mu::length((mu::float3&)bone->tail - (mu::float3&)bone->head), 0.0f });
-            r *= g_world_to_arm;
-        }
-    }
-
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const Bone *bone)
-{
-    mu::float4x4 r = (mu::float4x4&)bone->arm_mat;
-    if (struct Bone* parent = bone->parent)
-        r *= mu::invert((mu::float4x4&)parent->arm_mat);
-    else
-        r *= g_arm_to_world;
-    // todo: armature to world here
-    return r;
-}
-
-mu::float4x4 msblenContext::getLocalMatrix(const bPoseChannel *pose)
-{
-    mu::float4x4 r = (mu::float4x4&)pose->pose_mat;
-    if (struct bPoseChannel* parent = pose->parent)
-        r *= mu::invert((mu::float4x4&)parent->pose_mat);
-    else
-        r *= g_arm_to_world;
-    // todo: armature to world here
-    return r;
-}
-
-static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& r, mu::float3& s)
-{
-    mu::extract_trs(mat, t, r, s);
-    // armature-space to world-space
-    t = mu::swap_yz(mu::flip_z(t));
-    r = mu::swap_yz(mu::flip_z(r));
-    s = mu::swap_yz(s);
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Object *obj,
-    mu::float3& t, mu::quatf& r, mu::float3& s, ms::VisibilityFlags& vis,
-    mu::float4x4 *dst_world, mu::float4x4 *dst_local)
-{
-    vis = { visible_in_collection(obj), visible_in_render(obj), visible_in_viewport(obj) };
-
-    const mu::float4x4 local = getLocalMatrix(obj);
-    const mu::float4x4 world = getWorldMatrix(obj);
-    if (dst_world)
-        *dst_world = world;
-    if (dst_local)
-        *dst_local = local;
-
-    if (settings.BakeTransform) {
-        if (is_camera(obj) || is_light(obj)) {
-            mu::extract_trs(world, t, r, s);
-        }
-        else {
-            t = mu::float3::zero();
-            r = mu::quatf::identity();
-            s = mu::float3::one();
-        }
-    }
-    else {
-        mu::extract_trs(local, t, r, s);
-    }
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const Object *src, ms::Transform& dst)
-{
-    extractTransformData(settings, src, dst.position, dst.rotation, dst.scale, dst.visibility, &dst.world_matrix, &dst.local_matrix);
-}
-
-void msblenContext::extractTransformData(BlenderSyncSettings& settings, const bPoseChannel *src, mu::float3& t, mu::quatf& r, mu::float3& s)
-{
-    if (settings.BakeTransform) {
-        t = mu::float3::zero();
-        r = mu::quatf::identity();
-        s = mu::float3::one();
-    }
-    else {
-        extract_bone_trs(getLocalMatrix(src), t, r, s);
-    }
-}
-
 void msblenContext::extractCameraData(const Object *src,
     bool& ortho, float& near_plane, float& far_plane, float& fov,
     float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift)
@@ -386,8 +278,7 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
-
-ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip)
+ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
 {
     if (!obj)
         return nullptr;
@@ -419,7 +310,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     case OB_MESH:
     {
         if (!settings.BakeModifiers && settings.sync_bones) {
-            if (auto *arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
+            if (auto* arm_mod = (const ArmatureModifierData*)FindModifier(obj, eModifierType_Armature))
                 exportObject(state, paths, settings, arm_mod->object, parent);
         }
         if (settings.sync_meshes || (!settings.BakeModifiers && settings.sync_blendshapes)) {
@@ -430,8 +321,22 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
             handle_transform();
         break;
     }
+    case OB_CURVE: {
+        if (settings.sync_meshes) {
+            handle_parent();
+
+            if (settings.curves_as_mesh) {
+                rec.dst = exportMesh(state, paths, settings, obj);
+            }
+            else {
+                rec.dst = m_curves_handler.exportCurve(state, paths, settings, obj, m_asyncTasksController);
+            }
+        }
+        else if (!tip && parent)
+            handle_transform();
+        break;
+    }
     case OB_FONT:  //
-    case OB_CURVE: //
     case OB_SURF:  //
     case OB_MBALL: // these can be converted to mesh
     {
@@ -482,16 +387,22 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
             exportDupliGroup(state, paths, settings, obj, ctx);
         }
     }
+
+#if BLENDER_VERSION >= 300
+        blender::msblenModifiers::exportProperties(obj, &m_property_manager);
+#endif
+
     return rec.dst;
 }
 
-ms::TransformPtr msblenContext::exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
+ms::TransformPtr msblenContext::exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src)
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     state.manager.add(ret);
+
     return ret;
 }
 
@@ -499,8 +410,9 @@ ms::TransformPtr msblenContext::exportPose(msblenContextState& state, msblenCont
 {
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
+    
     dst.path = paths.get_path(armature, src->bone);
-    extractTransformData(settings, src, dst.position, dst.rotation, dst.scale);
+    msblenEntityHandler::extractTransformData(settings, src, dst.position, dst.rotation, dst.scale);
     state.manager.add(ret);
     return ret;
 }
@@ -510,7 +422,7 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     state.manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
@@ -532,7 +444,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
     ms::TransformPtr dst;
     auto assign_base_params = [&]() {
-        extractTransformData(settings, src, *dst);
+        msblenEntityHandler::extractTransformData(settings, src, *dst);
         dst->path = path;
         dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
@@ -628,7 +540,7 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     std::shared_ptr<ms::Camera> ret = ms::Camera::create();
     ms::Camera& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
     state.manager.add(ret);
     return ret;
@@ -639,19 +551,160 @@ ms::LightPtr msblenContext::exportLight(msblenContextState& state, msblenContext
     std::shared_ptr<ms::Light> ret = ms::Light::create();
     ms::Light& dst = *ret;
     dst.path = paths.get_path(src);
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
     extractLightData(src, dst.light_type, dst.shadow_type, dst.color, dst.intensity, dst.range, dst.spot_angle);
     state.manager.add(ret);
     return ret;
 }
 
+void msblenContext::importEntities(std::vector<ms::EntityPtr> entities) {   
+    for (auto& entity : entities) {
+        switch (entity->getType())
+        {
+        case ms::EntityType::Curve:
+            m_curves_handler.importCurve(dynamic_cast<ms::Curve*>(entity.get()));
+            break;
+        case ms::EntityType::Mesh:
+            importMesh(dynamic_cast<ms::Mesh*>(entity.get()));
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void set_object_mode() {
+    try {
+        py::eval<py::eval_mode::eval_statements>(
+            "import bpy\n"
+            "bpy.ops.object.mode_set()");
+    }
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
+    }
+}
+
+void msblenContext::importMesh(ms::Mesh* mesh) {
+    auto obj = msblenUtils::get_object_from_path(mesh->path);
+
+    // Make sure the object still exists:
+    if (!obj) {
+        return;
+    }
+
+    // Ensure we're in object mode, settiing data on the edit mesh is not supported:
+    set_object_mode();
+
+    // If we're baking modifiers, the mesh would contain the baked version so remove the modifiers now when the mesh is updated:
+    if (getSettings().BakeModifiers) {
+        blender::BObject bObj(obj);
+        bObj.modifiers_clear();
+    }
+
+    auto data = (Mesh*)obj->data;
+
+    auto blenMesh = (Mesh*)obj->data;
+    std::vector<int> mid_table(blenMesh->totcol);
+    for (int mi = 0; mi < blenMesh->totcol; ++mi)
+        mid_table[mi] = getMaterialID(blenMesh->mat[mi]);
+    
+    // Make reverse lookup list:
+    std::vector<int> rev_mid_table(mid_table.size());
+    for (int i = 0; i < mid_table.size(); i++)
+    {
+        rev_mid_table[mid_table[i]] = i;
+    }
+
+    int num_indices = mesh->indices.size();
+    int num_polygons = num_indices / 3;
+
+    // The mesh for unity had split vertices, we need to undo that for blender so the faces are connected:
+    // Merge verts in the same location:
+    for (int i = 0; i < mesh->points.size(); i++)
+    {
+        for (int j = mesh->points.size() - 1; j > i; j--)
+        {
+            if (mesh->points[i] == mesh->points[j]) {
+                // Remove vert
+                mesh->points.erase(mesh->points.begin() + j);
+
+                // Adjust indices to match:
+                for (int ii = 0; ii < num_indices; ii++) {
+                    if (mesh->indices[ii] == j) {
+                        mesh->indices[ii] = i;
+                    }
+                    else if (mesh->indices[ii] > j) {
+                        mesh->indices[ii]--;
+                    }
+                }
+            }
+        }
+    }
+
+    int num_vertices = mesh->points.size();
+
+    bl::BMesh bmesh(data);
+
+    bmesh.clear_geometry();
+    bmesh.add_vertices(num_vertices);
+    bmesh.add_polygons(num_polygons);
+    bmesh.add_loops(num_indices);
+
+    auto bmeshVerts = bmesh.vertices();
+    auto bmeshIndices = bmesh.indices();
+    auto bmeshPolygons = bmesh.polygons();
+  
+    // vertices
+    for (size_t vi = 0; vi < num_vertices; ++vi) {
+        copyFloatVector(bmeshVerts[vi].co, mesh->points[vi])
+    }
+
+    // faces
+    int ii = 0;
+    for (size_t pi = 0; pi < num_polygons; ++pi) {
+        // int count = mesh->counts[pi];
+        // always 3 for triangles from unity:
+        const int count = 3;
+        bmeshPolygons[pi].loopstart = ii;
+        bmeshPolygons[pi].totloop = count;
+
+        const int material_index = mesh->material_ids[pi];
+        if (material_index != ms::InvalidID) {
+            if (material_index < rev_mid_table.size()) {
+                bmeshPolygons[pi].mat_nr = rev_mid_table[material_index];
+            }
+            else {
+                bmeshPolygons[pi].mat_nr = 0;
+            }
+        }
+
+        // Reverse triangle back because it was reversed in unity during refine step:
+        bmeshIndices[bmeshPolygons[pi].loopstart + 0].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi].loopstart + 2].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi].loopstart + 1].v = mesh->indices[ii++];
+    }
+
+    // Calculate edges, normals, loops, etc:
+    bmesh.update();
+    bmesh.calc_normals_split();
+
+    Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
+    blender::BObject bObj(obj);
+    bObj = (Object*)bl::BlenderPyID(bObj).evaluated_get(depsgraph);
+
+    // Update the geometry hash so this is not sent back to unity, we just got it from there!
+    mesh->indices.clear();
+    mesh->points.clear();
+    mesh->counts.clear();
+    mesh->setupDataFlags();
+    doExtractMeshData(*m_entities_state, m_settings, *mesh, obj, data, mesh->world_matrix);
+
+    // Update the cached geometry checksum so this does not get sent back to unity:
+    m_entity_manager.updateChecksumGeom(mesh);
+}
+
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
-    // ignore particles
-    if (//FindModifier(src, eModifierType_ParticleSystem) ||
-        FindModifier(src, eModifierType_ParticleInstance) )
-        return nullptr;
-
     bl::BObject bobj(src);
     Mesh *data = nullptr;
     if (is_mesh(src))
@@ -676,7 +729,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     dst.path = paths.get_path(src);
 
     // transform
-    extractTransformData(settings, src, dst);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
         const bool need_convert = 
@@ -1175,7 +1228,7 @@ void msblenContext::extractTransformAnimationData(BlenderSyncSettings& settings,
     mu::quatf rot;
     mu::float3 scale;
     ms::VisibilityFlags vis;
-    extractTransformData(settings, (Object*)obj, pos, rot, scale, vis);
+    msblenEntityHandler::extractTransformData(settings, (Object*)obj, pos, rot, scale, vis);
 
     float t = m_anim_time;
     dst.translation.push_back({ t, pos });
@@ -1191,7 +1244,7 @@ void msblenContext::extractPoseAnimationData(BlenderSyncSettings& settings, ms::
     mu::float3 t;
     mu::quatf r;
     mu::float3 s;
-    extractTransformData(settings, (bPoseChannel*)obj, t, r, s);
+    msblenEntityHandler::extractTransformData(settings, (bPoseChannel*)obj, t, r, s);
 
     const float time = m_anim_time;
     dst.translation.push_back({ time, t });
@@ -1288,6 +1341,8 @@ const std::string& msblenContext::getErrorMessage()
 
 void msblenContext::wait()
 {
+    py::gil_scoped_release release;
+
     m_sender.wait();
 }
 
@@ -1321,16 +1376,54 @@ bool msblenContext::sendMaterials(bool dirty_all)
     return true;
 }
 
+void msblenContext::requestLiveEditMessage()
+{
+    if (m_settings.ExportSceneCache) {
+        return;
+    }
+
+    m_sender.on_live_edit_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
+        m_property_manager.updateFromServer(properties, entities);
+
+        if (messageFromServer == ms::REQUEST_SYNC) {
+            m_server_requested_sync = true;
+        }
+    };
+    m_sender.requestLiveEditMessage();
+}
+
+bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
+{
+    bool result = sendObjects(scope, dirty_all);
+    requestLiveEditMessage();
+
+    return result;
+}
+
 bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     if (!prepare() || m_sender.isExporting() || m_ignore_events)
         return false;
+
+    this->m_intermediate_paths.mappedNames.clear();
+
+    blender::msblenModifiers::importProperties(m_property_manager.getReceivedProperties());
+    importEntities(m_property_manager.getReceivedEntities());
+
+    m_property_manager.clearReceivedData();
+
+    if (m_server_requested_sync) {
+        scope = MeshSyncClient::ObjectScope::All;
+        dirty_all = true;
+        m_server_requested_sync = false;
+    }
 
     m_settings.Validate();
     m_entity_manager.setAlwaysMarkDirty(dirty_all);
     m_material_manager.setAlwaysMarkDirty(dirty_all);
     m_texture_manager.setAlwaysMarkDirty(false); // false because too heavy
     m_instances_state->manager.setAlwaysMarkDirty(dirty_all);
+    m_property_manager.clear();
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
@@ -1557,9 +1650,11 @@ void msblenContext::WaitAndKickAsyncExport()
 
     using Exporter = ms::SceneExporter;
     Exporter *exporter = m_settings.ExportSceneCache ? (Exporter*)&m_cache_writer : (Exporter*)&m_sender;
-
+    
     // kick async send
     exporter->on_prepare = [this, exporter]() {
+        blender::callPythonMethod("meshsync_prepare");  
+
         if (ms::AsyncSceneSender* sender = dynamic_cast<ms::AsyncSceneSender*>(exporter)) {
             sender->client_settings = m_settings.client_settings;
         }
@@ -1578,6 +1673,7 @@ void msblenContext::WaitAndKickAsyncExport()
         t.geometries = m_entity_manager.getDirtyGeometries();
         t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.instanceMeshes = m_instances_manager.getDirtyMeshes();
+    	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
@@ -1599,7 +1695,14 @@ void msblenContext::WaitAndKickAsyncExport()
         m_entity_manager.clearDirtyFlags();
         m_animations.clear();
         m_instances_manager.clearDirtyFlags();
+
+        blender::callPythonMethod("meshsync_post_export");
     };
+
+    exporter->on_before_send = [this] {
+        blender::callPythonMethod("meshsync_pre_export");
+    };
+
     exporter->kick();
 }
 

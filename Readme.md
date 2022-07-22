@@ -61,7 +61,6 @@ This allows devs to immediately see how things will look in-game while modelling
 | MotionBuilder 2018 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
 | MotionBuilder 2019 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
 | MotionBuilder 2020 | :heavy_check_mark: | :x:                | :heavy_check_mark: |
-| Blender 2.83       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 2.90       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 2.91       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 2.92       | :white_check_mark: | :white_check_mark: | :white_check_mark: |
@@ -255,4 +254,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Jul 19 03:13:01 UTC 2022*
+*Auto-generated on Fri Jul 22 02:43:28 UTC 2022*
