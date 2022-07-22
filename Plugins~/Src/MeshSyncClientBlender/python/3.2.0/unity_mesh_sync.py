@@ -11,8 +11,8 @@ bl_info = {
 
 import bpy
 from bpy.app.handlers import persistent
-import MeshSyncClientBlender as ms
-from unity_mesh_sync_common import *
+from . import MeshSyncClientBlender as ms
+from .unity_mesh_sync_common import *
 
 # Events that get called during the meshsync export stages, append your functions to these lists:
 # Called every frame when checking if something needs exporting:
