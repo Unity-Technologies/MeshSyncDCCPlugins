@@ -131,7 +131,6 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
     directory: bpy.props.StringProperty(name = "Unity Project location", description = "Where is the unity folder?")
 
     def execute(self, context):
-        MS_MessageBox("Connecting to.. " + self.directory)
         path = self.directory + "/Packages/manifest.json";
         #look for manifest of Unity project
         file = open(path, "r+");
@@ -153,33 +152,17 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
             file.seek(0)
             file.truncate(0)
             json.dump(data, file)
+            MS_MessageBox("Success! Installed for " + self.directory)
+        else:
+            MS_MessageBox("Already installed for " + self.directory)
+
+        #launch the editor
 
         file.close()
 
-        # if project is not open, open project
-        # remotely add a server to the scene
         return {'FINISHED'}
 
     def invoke(self, context, event):
         wm = bpy.context.window_manager
         wm.fileselect_add(self)
         return {'RUNNING_MODAL'}
-
-class MESHSYNC_OT_ConfirmInstall(bpy.types.Operator):
-    bl_idname = "meshsync.confirm_install"
-    bl_label = "Simple Modal Operator"
-
-    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
-
-    my_float: bpy.props.FloatProperty(name="Float")
-    my_bool: bpy.props.BoolProperty(name="Toggle Option")
-    my_string: bpy.props.StringProperty(name="String Value")
-
-    def execute(self, context):
-        MS_MessageBox("Execute.. ")
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        MS_MessageBox("Invoke! ")
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)

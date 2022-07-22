@@ -328,7 +328,6 @@ classes = (
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
     MESHSYNC_OT_ConnectUnity,
-    MESHSYNC_OT_ConfirmInstall,
 )
 
 def register():
