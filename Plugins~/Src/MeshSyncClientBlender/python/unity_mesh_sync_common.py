@@ -130,9 +130,8 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
 
     directory: bpy.props.StringProperty(name = "Unity Project location", description = "Where is the unity folder?")
 
-    def execute(self, context):
-        path = self.directory + "/Packages/manifest.json";
-        #look for manifest of Unity project
+
+    def edit_manifest(self, path, entry):
         file = open(path, "r+");
         data = json.load(file);
 
@@ -144,21 +143,36 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
             if (package == 'com.unity.meshsync'):
                 found = True
 
-
         if(found == False):
             #install for user
             dependencies = data["dependencies"];
-            dependencies["com.unity.meshsync"] = "0.13.2-preview"
+            dependencies["com.unity.meshsync"] = entry
+            if (entry == ""):
+                del dependencies["com.unity.meshsync"]
             file.seek(0)
             file.truncate(0)
             json.dump(data, file)
-            MS_MessageBox("Success! Installed for " + self.directory)
+            file.close()
+            return {'INSTALLED'}
         else:
-            MS_MessageBox("Already installed for " + self.directory)
+            file.close()
+            return {'ALREADY_INSTALLED'}
 
-        #launch the editor
 
-        file.close()
+    def execute(self, context):
+        manifest_path = self.directory + "/Packages/manifest.json";
+
+        # This is for local testing. It should be the version of the package, i.e.
+        #manifest entry = 0.14.0-preview
+        manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
+
+        statusManifest =  self.edit_manifest(manifest_path, manifest_entry)
+
+        if (statusManifest == 'ALREADY_INSTALLED'):
+            MS_MessageBox("Already installed for " + self.directory)            
+        else:
+            MS_MessageBox("Success! Installed for " + self.directory)
+
 
         return {'FINISHED'}
 
