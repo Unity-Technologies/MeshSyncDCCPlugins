@@ -2,7 +2,7 @@ import os
 import re
 import bpy
 from bpy.app.handlers import persistent
-import MeshSyncClientBlender as ms
+from . import MeshSyncClientBlender as ms
 
 msb_context = ms.Context()
 msb_cache = ms.Cache()
