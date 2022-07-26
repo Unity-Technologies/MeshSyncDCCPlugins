@@ -630,7 +630,7 @@ std::string abspath(const std::string& path)
     }
 }
 
-void blender::callPythonMethod(const char* name) {
+void callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
 
     try {
