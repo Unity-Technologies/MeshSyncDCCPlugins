@@ -3,6 +3,9 @@
 # Other Languages
 - [日本語](Readme_JP.md)
 
+# Latest official docs
+- [English](https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@latest)
+
 # MeshSync DCC Plugins
 
 [![](https://badge-proxy.cds.internal.unity3d.com/b681f940-bd27-45c9-832f-e87e6282aa9f)](https://badges.cds.internal.unity3d.com/packages/com.unity.meshsync.dcc-plugins/build-info?branch=dev&testWorkflow=package-isolation)
