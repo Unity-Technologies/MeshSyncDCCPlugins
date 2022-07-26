@@ -19,6 +19,7 @@
 * blender-fix: Fix for accessing deform groups in Blender 3.0 and above
 * blender-fix: Blender settings apply differently depending on the order of using Manual Sync vs Animation Sync 
 * blender-fix: fix for calllback getting registered multiple times. Ignore updates when not active
+* blender-fix: ceil floats to avoid hashing issues 
 
 ### Removed
 * blender-change: drop support for Blender 2.83
