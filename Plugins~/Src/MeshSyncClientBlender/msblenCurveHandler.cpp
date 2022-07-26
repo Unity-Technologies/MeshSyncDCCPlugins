@@ -39,9 +39,10 @@ ms::CurvePtr msblenCurveHandler::exportCurve(msblenContextState& state,
 
 void msblenCurveHandler::doExtractCurveData(msblenContextState& state, BlenderSyncSettings& settings, ms::Curve& dst, const Object* obj, Curve* data, mu::float4x4 world)
 {
-	if (settings.sync_curves) {
+	if (!settings.sync_curves) {
 		return;
 	}
+
 	const bool is_editing = data->editnurb != nullptr;
 
 	ListBase nurbs;
