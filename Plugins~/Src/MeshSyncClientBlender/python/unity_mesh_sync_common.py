@@ -4,6 +4,9 @@ import bpy
 from bpy.app.handlers import persistent
 import MeshSyncClientBlender as ms
 
+import addon_utils
+import shutil
+
 import json
 
 msb_context = ms.Context()
@@ -160,6 +163,26 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
 
 
     def execute(self, context):
+
+        #Modify setting files
+        mesh_sync_settings_path = self.directory + "Assets/MeshSyncAssets/"
+        if (not os.path.exists(mesh_sync_settings_path)):
+            os.makedirs(mesh_sync_settings_path)
+        mesh_sync_settings_path = mesh_sync_settings_path + "AutoServerCreationSettings.txt"
+
+        #Find the settings file
+        add_ons_path = ""
+        for mod in addon_utils.modules():
+            if mod.bl_info['name'] == "Unity Mesh Sync":
+                add_ons_path = os.path.dirname(mod.__file__)
+            else:
+                pass
+
+        settings_file_path = add_ons_path+"/MeshSyncClientBlender/resources/AutoServerCreationSettings.txt"
+        shutil.copyfile(settings_file_path, mesh_sync_settings_path)
+
+
+        #Modify manifest file
         manifest_path = self.directory + "/Packages/manifest.json";
 
         # This is for local testing. It should be the version of the package, i.e.
@@ -169,7 +192,7 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
         statusManifest =  self.edit_manifest(manifest_path, manifest_entry)
 
         if (statusManifest == 'ALREADY_INSTALLED'):
-            MS_MessageBox("Already installed for " + self.directory)            
+            MS_MessageBox("Already installed for " + self.directory)          
         else:
             MS_MessageBox("Success! Installed for " + self.directory)
 
