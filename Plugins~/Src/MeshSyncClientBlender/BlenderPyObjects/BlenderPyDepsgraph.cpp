@@ -1,4 +1,4 @@
-#include <BlenderPyObjects/BlenderPyDepsgraph.h>"
+#include <BlenderPyObjects/BlenderPyDepsgraph.h>
 #include <BLI_listbase.h>
 
 namespace blender {
