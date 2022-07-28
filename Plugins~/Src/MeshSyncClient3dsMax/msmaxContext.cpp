@@ -1376,12 +1376,13 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (m_settings.sync_colors) {
             const int numColorVertices = mesh->numCVerts;
             const TVFace* srcFaces = mesh->vcFace;
-            const VertColor* srcVertices = mesh->vertCol;
-            if (numColorVertices && srcFaces && srcVertices) {
+            const VertColor* srcVertexColor = mesh->vertCol;
+            if (numColorVertices && srcFaces && srcVertexColor) {
                 dst.colors.resize_discard(num_indices);
                 for (int fi = 0; fi < num_faces; ++fi) {
                     for (int i = 0; i < 3; ++i) {
-                        dst.colors[fi * 3 + i] = to_color(srcVertices[srcFaces[fi].t[i]]);
+                        const DWORD srcVertexIndex = srcFaces[fi].t[i];
+                        dst.colors[fi * 3 + i] = to_color(srcVertexColor[srcVertexIndex]);
                     }
                 }
             }
