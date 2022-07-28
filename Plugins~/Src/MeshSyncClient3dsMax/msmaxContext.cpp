@@ -1267,9 +1267,11 @@ ms::TransformPtr msmaxContext::exportMesh(TreeNode& n)
     return ret;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
 void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 {
-    auto t = GetTime();
+    const TimeValue t = GetTime();
     if (mesh) {
         if (m_settings.BakeTransform) {
             // in this case transform is applied to vertices (dst.position/rotation/scale is identity)
@@ -1293,8 +1295,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         // faces
-        int numFaces = mesh->numFaces;
-        int numIndices = numFaces * 3; // all faces in Mesh are triangle
+        const int numFaces = mesh->numFaces;
+        const int numIndices = numFaces * 3; // all faces in Mesh are triangle
         {
             dst.counts.clear();
             dst.counts.resize(numFaces, 3);
