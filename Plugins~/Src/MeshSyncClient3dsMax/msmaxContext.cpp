@@ -1304,12 +1304,12 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
             const auto& mrec = m_material_records[n->GetMtl()];
             if (!mrec.submaterial_ids.empty())
-                for (int mid : mrec.submaterial_ids)
+                for (const int mid : mrec.submaterial_ids)
                     m_material_manager.markDirty(mid);
             else
                 m_material_manager.markDirty(mrec.material_id);
 
-            auto *faces = mesh->faces;
+            const Face* faces = mesh->faces;
             dst.indices.resize_discard(numIndices);
             for (int fi = 0; fi < numFaces; ++fi) {
                 auto& face = faces[fi];
@@ -1317,7 +1317,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 int mid = 0;
 
                 if (!mrec.submaterial_ids.empty()) { // multi-materials
-                    int midx = std::min(gid, (int)mrec.submaterial_ids.size() - 1);
+                    const int midx = std::min(gid, (int)mrec.submaterial_ids.size() - 1);
                     mid = mrec.submaterial_ids[midx];
                 }
                 else // single material
@@ -1355,15 +1355,15 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             for (int k=1;k<numUVS ;++k) {
                 MeshMap* meshMap = &mesh->maps[k];
 
-                TVFace* mapFaces = meshMap->tf;
-                UVVert* uvVertices = meshMap->tv;
-                const int numFaces = meshMap->getNumFaces();
+                const TVFace* mapFaces = meshMap->tf;
+                const UVVert* uvVertices = meshMap->tv;
+                const int numFacesInMap = meshMap->getNumFaces();
 
                 const int unityUVIndex = k - 1;
-                const int NUM_VERTICES_PER_FACE = 3;
-                const int numUVIndices = numFaces * NUM_VERTICES_PER_FACE;
+                constexpr int NUM_VERTICES_PER_FACE = 3;
+                const int numUVIndices = numFacesInMap * NUM_VERTICES_PER_FACE;
                 dst.m_uv[unityUVIndex].resize_discard(numUVIndices);
-                for (int fi = 0; fi < numFaces; ++fi) {
+                for (int fi = 0; fi < numFacesInMap; ++fi) {
                     const uint32_t offset = fi * NUM_VERTICES_PER_FACE;
                     for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
                         dst.m_uv[unityUVIndex][ offset + i] = to_float2(uvVertices[mapFaces[fi].t[i]]);
