@@ -1440,19 +1440,19 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         auto *mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
             int num_faces = (int)dst.counts.size();
-            int num_points = (int)dst.points.size();
+            const int num_points = (int)dst.points.size();
             int num_normals = (int)dst.normals.size();
 
             MaxMorphModifier morph(mod);
-            int num_channels = morph.NumMorphChannels();
-            for (int ci = 0; ci < num_channels; ++ci) {
-                auto channel = morph.GetMorphChannel(ci);
-                auto num_targets = channel.NumProgressiveMorphTargets();
-                if (!channel.IsActive() || !channel.IsValid() || num_targets == 0 || channel.NumMorphPoints() != num_points)
+            const int numChannels = morph.NumMorphChannels();
+            for (int ci = 0; ci < numChannels; ++ci) {
+                MaxMorphChannel channel = morph.GetMorphChannel(ci);
+                const int numTargets = channel.NumProgressiveMorphTargets();
+                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != num_points)
                     continue;
 
                 auto dbs = ms::BlendShapeData::create();
-                for (int ti = 0; ti < num_targets; ++ti) {
+                for (int ti = 0; ti < numTargets; ++ti) {
                     if (!channel.IsValidProgressiveMorphTargetIndex(ti))
                         continue;
 
@@ -1495,6 +1495,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
     }
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 
 bool msmaxContext::exportAnimations(INode *n, bool force)
 {
