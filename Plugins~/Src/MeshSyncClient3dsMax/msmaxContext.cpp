@@ -1293,12 +1293,12 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         // faces
-        int num_faces = mesh->numFaces;
-        int num_indices = num_faces * 3; // all faces in Mesh are triangle
+        int numFaces = mesh->numFaces;
+        int numIndices = numFaces * 3; // all faces in Mesh are triangle
         {
             dst.counts.clear();
-            dst.counts.resize(num_faces, 3);
-            dst.material_ids.resize_discard(num_faces);
+            dst.counts.resize(numFaces, 3);
+            dst.material_ids.resize_discard(numFaces);
 
             const auto& mrec = m_material_records[n->GetMtl()];
             if (!mrec.submaterial_ids.empty())
@@ -1308,8 +1308,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 m_material_manager.markDirty(mrec.material_id);
 
             auto *faces = mesh->faces;
-            dst.indices.resize_discard(num_indices);
-            for (int fi = 0; fi < num_faces; ++fi) {
+            dst.indices.resize_discard(numIndices);
+            for (int fi = 0; fi < numFaces; ++fi) {
                 auto& face = faces[fi];
                 int gid = mesh->getFaceMtlIndex(fi);
                 int mid = 0;
@@ -1378,8 +1378,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             const TVFace* srcFaces = mesh->vcFace;
             const VertColor* srcVertexColor = mesh->vertCol;
             if (numColorVertices && srcFaces && srcVertexColor) {
-                dst.colors.resize_discard(num_indices);
-                for (int fi = 0; fi < num_faces; ++fi) {
+                dst.colors.resize_discard(numIndices);
+                for (int fi = 0; fi < numFaces; ++fi) {
                     for (int i = 0; i < 3; ++i) {
                         const DWORD srcVertexIndex = srcFaces[fi].t[i];
                         dst.colors[fi * 3 + i] = to_color(srcVertexColor[srcVertexIndex]);
