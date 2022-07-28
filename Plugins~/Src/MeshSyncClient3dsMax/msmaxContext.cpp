@@ -1449,7 +1449,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != num_points)
                     continue;
 
-                auto dbs = ms::BlendShapeData::create();
+                std::shared_ptr<ms::BlendShapeData> dbs = ms::BlendShapeData::create();
                 for (int ti = 0; ti < numTargets; ++ti) {
                     if (!channel.IsValidProgressiveMorphTargetIndex(ti))
                         continue;
