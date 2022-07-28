@@ -1439,11 +1439,9 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         // handle blendshape
         auto *mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
-            int num_faces = (int)dst.counts.size();
             const int num_points = (int)dst.points.size();
-            int num_normals = (int)dst.normals.size();
 
-            MaxMorphModifier morph(mod);
+            const MaxMorphModifier morph(mod);
             const int numChannels = morph.NumMorphChannels();
             for (int ci = 0; ci < numChannels; ++ci) {
                 MaxMorphChannel channel = morph.GetMorphChannel(ci);
