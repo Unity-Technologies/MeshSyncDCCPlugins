@@ -1302,26 +1302,26 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             dst.counts.resize(numFaces, 3);
             dst.material_ids.resize_discard(numFaces);
 
-            const auto& mrec = m_material_records[n->GetMtl()];
-            if (!mrec.submaterial_ids.empty())
-                for (const int mid : mrec.submaterial_ids)
+            const MaterialRecord& materialRecord = m_material_records[n->GetMtl()];
+            if (!materialRecord.submaterial_ids.empty())
+                for (const int mid : materialRecord.submaterial_ids)
                     m_material_manager.markDirty(mid);
             else
-                m_material_manager.markDirty(mrec.material_id);
+                m_material_manager.markDirty(materialRecord.material_id);
 
             const Face* faces = mesh->faces;
             dst.indices.resize_discard(numIndices);
             for (int fi = 0; fi < numFaces; ++fi) {
-                auto& face = faces[fi];
+                const Face& face = faces[fi];
                 int gid = mesh->getFaceMtlIndex(fi);
                 int mid = 0;
 
-                if (!mrec.submaterial_ids.empty()) { // multi-materials
-                    const int midx = std::min(gid, (int)mrec.submaterial_ids.size() - 1);
-                    mid = mrec.submaterial_ids[midx];
+                if (!materialRecord.submaterial_ids.empty()) { // multi-materials
+                    const int midx = std::min(gid, (int)materialRecord.submaterial_ids.size() - 1);
+                    mid = materialRecord.submaterial_ids[midx];
                 }
                 else // single material
-                    mid = mrec.material_id;
+                    mid = materialRecord.material_id;
                 // use upper 16 bit as face group id
                 dst.material_ids[fi] = mid | (gid << 16);
 
@@ -1395,9 +1395,9 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             if (mod && mod->IsEnabled()) {
                 ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
                 ISkinContextData* ctx = skin->GetContextInterface(n);
-                int num_bones = skin->GetNumBones();
-                int num_vertices = ctx->GetNumPoints();
-                if (num_vertices != dst.points.size()) {
+                const int numBones = skin->GetNumBones();
+                const int numSkinVertices = ctx->GetNumPoints();
+                if (numSkinVertices != dst.points.size()) {
                     // topology is changed by modifiers. this case is not supported.
                 }
                 else {
@@ -1405,7 +1405,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     // note: in max, bindpose is [skin_matrix * inv_bone_matrix]
                     Matrix3 skin_matrix;
                     skin->GetSkinInitTM(n, skin_matrix);
-                    for (int bi = 0; bi < num_bones; ++bi) {
+                    for (int bi = 0; bi < numBones; ++bi) {
                         INode* bone = skin->GetBone(bi);
                         Matrix3 bone_matrix;
                         skin->GetBoneInitTM(bone, bone_matrix);
@@ -1422,12 +1422,12 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     }
 
                     // get weights
-                    for (int vi = 0; vi < num_vertices; ++vi) {
-                        int num_affected_bones = ctx->GetNumAssignedBones(vi);
-                        for (int bi = 0; bi < num_affected_bones; ++bi) {
-                            int bone_index = ctx->GetAssignedBone(vi, bi);
-                            float bone_weight = ctx->GetBoneWeight(vi, bi);
-                            dst.bones[bone_index]->weights[vi] = bone_weight;
+                    for (int vi = 0; vi < numSkinVertices; ++vi) {
+                        const int numAffectedBones = ctx->GetNumAssignedBones(vi);
+                        for (int bi = 0; bi < numAffectedBones; ++bi) {
+                            const int boneIndex = ctx->GetAssignedBone(vi, bi);
+                            const float boneWeight = ctx->GetBoneWeight(vi, bi);
+                            dst.bones[boneIndex]->weights[vi] = boneWeight;
                         }
                     }
                 }
@@ -1437,7 +1437,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
     if (!m_settings.BakeModifiers && m_settings.sync_blendshapes) {
         // handle blendshape
-        auto *mod = FindMorph(n);
+        Modifier* mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
             const int num_points = (int)dst.points.size();
 
