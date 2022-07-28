@@ -199,7 +199,8 @@ private:
 
     msblenCurveHandler m_curves_handler;
 
-    bool m_server_requested_sync;
+    bool m_server_requested_sync = false;
+    bool m_server_requested_python_callback = false;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;

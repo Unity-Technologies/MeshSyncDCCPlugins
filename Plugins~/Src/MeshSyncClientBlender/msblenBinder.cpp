@@ -634,7 +634,7 @@ void callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
 
     try {
-        auto module = py::module::import("unity_mesh_sync");
+        auto module = py::module::import("MeshSyncClientBlender");
         auto method = module.attr(name);
         method();
     }
