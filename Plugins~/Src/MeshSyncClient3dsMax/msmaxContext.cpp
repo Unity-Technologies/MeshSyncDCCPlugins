@@ -1390,7 +1390,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
-            auto *mod = FindSkin(n);
+            Modifier* mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
                 ISkin* skin = reinterpret_cast<ISkin*>(mod->GetInterface(I_SKIN));
                 ISkinContextData* ctx = skin->GetContextInterface(n);
