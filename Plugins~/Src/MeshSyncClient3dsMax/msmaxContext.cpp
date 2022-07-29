@@ -1453,7 +1453,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         continue;
 
                     dbs->frames.push_back(ms::BlendShapeFrameData::create());
-                    auto& frame = *dbs->frames.back();
+                    ms::BlendShapeFrameData& frame = *dbs->frames.back();
                     frame.weight = channel.GetProgressiveMorphWeight(ti);
 
                     // workaround.
