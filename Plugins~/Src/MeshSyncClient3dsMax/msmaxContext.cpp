@@ -1272,6 +1272,8 @@ ms::TransformPtr msmaxContext::exportMesh(TreeNode& n)
 void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 {
     const TimeValue t = GetTime();
+    constexpr int NUM_VERTICES_PER_FACE = 3;
+
     if (mesh) {
         if (m_settings.BakeTransform) {
             // in this case transform is applied to vertices (dst.position/rotation/scale is identity)
@@ -1296,10 +1298,10 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
         // faces
         const int numFaces = mesh->numFaces;
-        const int numIndices = numFaces * 3; // all faces in Mesh are triangle
+        const int numIndices = numFaces * NUM_VERTICES_PER_FACE; // all faces in Mesh are triangle
         {
             dst.counts.clear();
-            dst.counts.resize(numFaces, 3);
+            dst.counts.resize(numFaces, NUM_VERTICES_PER_FACE);
             dst.material_ids.resize_discard(numFaces);
 
             const MaterialRecord& materialRecord = m_material_records[n->GetMtl()];
@@ -1325,8 +1327,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 // use upper 16 bit as face group id
                 dst.material_ids[fi] = mid | (gid << 16);
 
-                for (int i = 0; i < 3; ++i)
-                    dst.indices[fi * 3 + i] = face.v[i];
+                for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i)
+                    dst.indices[fi * NUM_VERTICES_PER_FACE + i] = face.v[i];
             }
         }
 
@@ -1360,7 +1362,6 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 const int numFacesInMap = meshMap->getNumFaces();
 
                 const int unityUVIndex = k - 1;
-                constexpr int NUM_VERTICES_PER_FACE = 3;
                 const int numUVIndices = numFacesInMap * NUM_VERTICES_PER_FACE;
                 dst.m_uv[unityUVIndex].resize_discard(numUVIndices);
                 for (int fi = 0; fi < numFacesInMap; ++fi) {
@@ -1382,9 +1383,9 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             if (numColorVertices && srcFaces && srcVertexColor) {
                 dst.colors.resize_discard(numIndices);
                 for (int fi = 0; fi < numFaces; ++fi) {
-                    for (int i = 0; i < 3; ++i) {
+                    for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
                         const DWORD srcVertexIndex = srcFaces[fi].t[i];
-                        dst.colors[fi * 3 + i] = to_color(srcVertexColor[srcVertexIndex]);
+                        dst.colors[fi * NUM_VERTICES_PER_FACE + i] = to_color(srcVertexColor[srcVertexIndex]);
                     }
                 }
             }
