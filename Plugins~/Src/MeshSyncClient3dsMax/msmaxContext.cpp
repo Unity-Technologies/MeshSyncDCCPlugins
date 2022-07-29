@@ -1396,10 +1396,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 ISkinContextData* ctx = skin->GetContextInterface(n);
                 const int numBones = skin->GetNumBones();
                 const int numSkinVertices = ctx->GetNumPoints();
-                if (numSkinVertices != static_cast<int>(dst.points.size())) {
-                    // topology is changed by modifiers. this case is not supported.
-                }
-                else {
+                if (numSkinVertices == static_cast<int>(dst.points.size())) {
                     // allocate bones and extract bindposes.
                     // note: in max, bindpose is [skin_matrix * inv_bone_matrix]
                     Matrix3 skin_matrix;
@@ -1429,6 +1426,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                             dst.bones[boneIndex]->weights[vi] = boneWeight;
                         }
                     }
+                } else {
+                    // Not supported ! topology was changed by modifiers.
                 }
             }
         }
