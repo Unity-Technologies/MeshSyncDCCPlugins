@@ -1386,6 +1386,18 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         dst.colors[fi * NUM_VERTICES_PER_FACE + i] = to_color(srcVertexColor[srcVertexIndex]);
                     }
                 }
+                //alpha
+                const TVFace* srcAlphaFaces = mesh->mapFaces(MAP_ALPHA);
+                const UVVert* srcAlphaVertices = mesh->mapVerts(MAP_ALPHA);
+                if (srcAlphaFaces && srcAlphaVertices){
+                    for (int fi = 0; fi < numFaces; ++fi) {
+                        for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
+                            const DWORD vertAlphaIndex = srcAlphaFaces[fi].t[i];
+                            const Point3 alpha = srcAlphaVertices[vertAlphaIndex];
+                            dst.colors[fi * NUM_VERTICES_PER_FACE + i].w = alpha.x;
+                        }
+                    }
+                }
             }
         }
 
