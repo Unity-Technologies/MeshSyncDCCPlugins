@@ -1421,6 +1421,10 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         m_ignore_events = true;
         blender::callPythonMethod("meshsync_server_requested_callback");
         m_ignore_events = false;
+        // Set this to true to force a sync after a python update.
+        // This ensures the server gets refreshed even if the python callback
+        // did not change the scene:
+        m_server_requested_sync = true;
         return false;
     }
 
