@@ -1319,7 +1319,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 int mid = 0;
 
                 if (!materialRecord.submaterial_ids.empty()) { // multi-materials
-                    const int subMatId = std::min(gid, (int)materialRecord.submaterial_ids.size() - 1);
+                    const int subMatId = std::min(gid, static_cast<int>(materialRecord.submaterial_ids.size()) - 1);
                     mid = materialRecord.submaterial_ids[subMatId];
                 }
                 else // single material
@@ -1335,7 +1335,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         // points
         const int num_vertices = mesh->numVerts;
         dst.points.resize_discard(num_vertices);
-        dst.points.assign((mu::float3*)mesh->verts, (mu::float3*)mesh->verts + num_vertices);
+        dst.points.assign(reinterpret_cast<mu::float3*>(mesh->verts), reinterpret_cast<mu::float3*>(mesh->verts) + num_vertices);
 
         // normals
         if (m_settings.sync_normals) {
@@ -1371,8 +1371,6 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     }
                 }
             }
-
-
         }
 
         // colors
@@ -1392,16 +1390,13 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
-            auto *mod = FindSkin(n);
+            Modifier* mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
-                ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
+                ISkin* skin = reinterpret_cast<ISkin*>(mod->GetInterface(I_SKIN));
                 ISkinContextData* ctx = skin->GetContextInterface(n);
                 const int numBones = skin->GetNumBones();
                 const int numSkinVertices = ctx->GetNumPoints();
-                if (numSkinVertices != dst.points.size()) {
-                    // topology is changed by modifiers. this case is not supported.
-                }
-                else {
+                if (numSkinVertices == static_cast<int>(dst.points.size())) {
                     // allocate bones and extract bindposes.
                     // note: in max, bindpose is [skin_matrix * inv_bone_matrix]
                     Matrix3 skin_matrix;
@@ -1431,6 +1426,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                             dst.bones[boneIndex]->weights[vi] = boneWeight;
                         }
                     }
+                } else {
+                    // Not supported ! topology was changed by modifiers.
                 }
             }
         }
@@ -1440,14 +1437,14 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         // handle blendshape
         Modifier* mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
-            const int num_points = (int)dst.points.size();
+            const int numPoints = static_cast<int>(dst.points.size());
 
             const MaxMorphModifier morph(mod);
             const int numChannels = morph.NumMorphChannels();
             for (int ci = 0; ci < numChannels; ++ci) {
                 MaxMorphChannel channel = morph.GetMorphChannel(ci);
                 const int numTargets = channel.NumProgressiveMorphTargets();
-                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != num_points)
+                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != numPoints)
                     continue;
 
                 std::shared_ptr<ms::BlendShapeData> dbs = ms::BlendShapeData::create();
@@ -1456,7 +1453,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         continue;
 
                     dbs->frames.push_back(ms::BlendShapeFrameData::create());
-                    auto& frame = *dbs->frames.back();
+                    ms::BlendShapeFrameData& frame = *dbs->frames.back();
                     frame.weight = channel.GetProgressiveMorphWeight(ti);
 
                     // workaround.
@@ -1464,8 +1461,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         frame.weight = 100.0f;
 
                     // gen delta
-                    frame.points.resize_discard(num_points);
-                    for (int vi = 0; vi < num_points; ++vi)
+                    frame.points.resize_discard(numPoints);
+                    for (int vi = 0; vi < numPoints; ++vi)
                         frame.points[vi] = to_float3(channel.GetProgressiveMorphPoint(ti, vi)) - dst.points[vi];
                 }
                 if (!dbs->frames.empty()) {
