@@ -1335,7 +1335,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         // points
         const int num_vertices = mesh->numVerts;
         dst.points.resize_discard(num_vertices);
-        dst.points.assign((mu::float3*)mesh->verts, (mu::float3*)mesh->verts + num_vertices);
+        dst.points.assign(reinterpret_cast<mu::float3*>(mesh->verts), reinterpret_cast<mu::float3*>(mesh->verts) + num_vertices);
 
         // normals
         if (m_settings.sync_normals) {
@@ -1392,11 +1392,11 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
             auto *mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
-                ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
+                ISkin* skin = reinterpret_cast<ISkin*>(mod->GetInterface(I_SKIN));
                 ISkinContextData* ctx = skin->GetContextInterface(n);
                 const int numBones = skin->GetNumBones();
                 const int numSkinVertices = ctx->GetNumPoints();
-                if (numSkinVertices != dst.points.size()) {
+                if (numSkinVertices != static_cast<int>(dst.points.size())) {
                     // topology is changed by modifiers. this case is not supported.
                 }
                 else {
