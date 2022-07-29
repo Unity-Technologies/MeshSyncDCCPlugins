@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1-preview] - 2022-07-29
+
+### Fixed
+* maya-fix: load plugin for Maya 2023 properly 
+* 3dsmax-fix: export vertex alpha 
+* blender-fix: fix to export curves 
+
 ## [0.14.0-preview] - 2022-07-26
 
 ### Added
@@ -12,7 +19,6 @@
 * change: set minimum Unity requirement to 2020.3
 * blender-change: convert sun light energy to Unity light intensity directly
 * licensed several components under GPL v3
-
 
 ### Fixed
 * blender-fix: ensure layers that are hidden for render in blender, are also hidden in unity
