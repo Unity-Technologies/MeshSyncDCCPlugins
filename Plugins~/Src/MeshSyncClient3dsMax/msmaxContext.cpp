@@ -1371,8 +1371,6 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     }
                 }
             }
-
-
         }
 
         // colors
