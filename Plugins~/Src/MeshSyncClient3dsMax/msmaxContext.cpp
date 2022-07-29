@@ -1319,7 +1319,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                 int mid = 0;
 
                 if (!materialRecord.submaterial_ids.empty()) { // multi-materials
-                    const int subMatId = std::min(gid, (int)materialRecord.submaterial_ids.size() - 1);
+                    const int subMatId = std::min(gid, static_cast<int>(materialRecord.submaterial_ids.size()) - 1);
                     mid = materialRecord.submaterial_ids[subMatId];
                 }
                 else // single material
