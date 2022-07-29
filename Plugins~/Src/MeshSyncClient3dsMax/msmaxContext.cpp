@@ -1437,14 +1437,14 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         // handle blendshape
         Modifier* mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
-            const int num_points = (int)dst.points.size();
+            const int numPoints = static_cast<int>(dst.points.size());
 
             const MaxMorphModifier morph(mod);
             const int numChannels = morph.NumMorphChannels();
             for (int ci = 0; ci < numChannels; ++ci) {
                 MaxMorphChannel channel = morph.GetMorphChannel(ci);
                 const int numTargets = channel.NumProgressiveMorphTargets();
-                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != num_points)
+                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != numPoints)
                     continue;
 
                 std::shared_ptr<ms::BlendShapeData> dbs = ms::BlendShapeData::create();
@@ -1461,8 +1461,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         frame.weight = 100.0f;
 
                     // gen delta
-                    frame.points.resize_discard(num_points);
-                    for (int vi = 0; vi < num_points; ++vi)
+                    frame.points.resize_discard(numPoints);
+                    for (int vi = 0; vi < numPoints; ++vi)
                         frame.points[vi] = to_float3(channel.GetProgressiveMorphPoint(ti, vi)) - dst.points[vi];
                 }
                 if (!dbs->frames.empty()) {
