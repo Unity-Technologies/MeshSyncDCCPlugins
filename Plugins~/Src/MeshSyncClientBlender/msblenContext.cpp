@@ -1686,7 +1686,20 @@ void msblenContext::WaitAndKickAsyncExport()
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.instanceMeshes) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
-            for (std::vector<std::shared_ptr<ms::InstanceInfo>>::value_type& obj : t.instanceInfos) { cv.convertInstanceInfos(*obj); }
+
+            if (scale_factor != 0) {
+                for (std::vector<std::shared_ptr<ms::InstanceInfo>>::value_type& obj : t.instanceInfos)
+                {
+                    // Requires meshsync update, do here for now:
+	                //cv.convertInstanceInfos(*obj);
+
+                    for (size_t i = 0; i < obj->transforms.size(); ++i)
+                    {
+                        // We can divide the w component instead of applying the multiplier on xyz:
+                        obj->transforms[i][3][3] /= scale_factor;
+                    }
+                }
+            }
         }
     };
     exporter->on_success = [this]() {
