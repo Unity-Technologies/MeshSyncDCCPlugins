@@ -80,4 +80,6 @@ MeshSyncDCCPlugins~/UserSettings/**
 
 # Rider
 **/.idea/**
+**/ProjectSettings/RiderScriptEditorPersistedState.asset
+
 
