@@ -131,7 +131,7 @@ private:
     ms::LightPtr exportLight(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::MeshPtr exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
 
-    void extractCameraData(const Object *src, bool& ortho, float& near_plane, float& far_plane, float& fov,
+    void extractCameraData(const Object *src, bool& ortho, float& ortho_size, float& near_plane, float& far_plane, float& fov,
         float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift);
     void extractLightData(const Object *src,
         ms::Light::LightType& ltype, ms::Light::ShadowType& stype, mu::float4& color, float& intensity, float& range, float& spot_angle);

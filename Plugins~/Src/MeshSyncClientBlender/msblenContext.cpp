@@ -225,13 +225,14 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 //----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::extractCameraData(const Object *src,
-    bool& ortho, float& near_plane, float& far_plane, float& fov,
+    bool& ortho, float& ortho_size, float& near_plane, float& far_plane, float& fov,
     float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift)
 {
     bl::BCamera cam(src->data);
 
     // note: fbx exporter seems always export as perspective
     ortho = ((Camera*)src->data)->type == CAM_ORTHO;
+    ortho_size = ((Camera*)src->data)->ortho_scale;
 
     near_plane = cam.clip_start();
     far_plane = cam.clip_end();
@@ -541,7 +542,7 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     ms::Camera& dst = *ret;
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
-    extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+    extractCameraData(src, dst.is_ortho, dst.ortho_size, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
     state.manager.add(ret);
     return ret;
 }
@@ -1259,9 +1260,9 @@ void msblenContext::extractCameraAnimationData(BlenderSyncSettings& settings, ms
     ms::CameraAnimation& dst = (ms::CameraAnimation&)dst_;
 
     bool ortho;
-    float near_plane, far_plane, fov, focal_length;
+    float near_plane, far_plane, fov, focal_length, ortho_size;
     mu::float2 sensor_size, lens_shift;
-    extractCameraData((Object*)obj, ortho, near_plane, far_plane, fov, focal_length, sensor_size, lens_shift);
+    extractCameraData((Object*)obj, ortho, ortho_size, near_plane, far_plane, fov, focal_length, sensor_size, lens_shift);
 
     float t = m_anim_time;
     dst.near_plane.push_back({ t , near_plane });
