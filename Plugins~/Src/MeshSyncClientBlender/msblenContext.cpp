@@ -542,6 +542,22 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+
+    // We don't use frame_set(), so the scene camera is not updated.
+    // Look at the markers to figure out what the active camera should be:
+    auto scene = bl::BlenderPyContext::get().scene();
+
+    const Object* currentCamera = src;
+    for (TimeMarker* marker : bl::list_range((TimeMarker*)scene->markers.first)) {
+        if (marker->frame <= scene->r.cfra) {
+            currentCamera = marker->camera;
+        }
+    }
+
+    if (strcmp(currentCamera->id.name, src->id.name) != 0) {
+        dst.visibility.visible_in_render = false;
+    }
+
     state.manager.add(ret);
     return ret;
 }
