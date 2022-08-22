@@ -72,6 +72,9 @@ public:
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
     void requestLiveEditMessage();
+    
+    bool sendEditorCommand();
+
 private:
     // todo
     struct NodeRecord {

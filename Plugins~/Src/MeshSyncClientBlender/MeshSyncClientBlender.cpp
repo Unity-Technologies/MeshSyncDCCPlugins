@@ -176,7 +176,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, py::object depsgraph) {
                     auto graph = DepsgraphFromPyObject(depsgraph);
                     self->onDepsgraphUpdatedPost(graph);
-                });
+                })
+
+            BindMethod(sendEditorCommand, [](self_t& self) {self->sendEditorCommand(); });
     }
     {
         using self_t = CacheProxy;

@@ -27,6 +27,8 @@
 #include "msblenBinder.h"
 #include "MeshUtils/muLog.h"
 
+#include "MeshSync/msProtocol.h"
+
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -1390,6 +1392,20 @@ void msblenContext::requestLiveEditMessage()
         }
     };
     m_sender.requestLiveEditMessage();
+}
+
+bool msblenContext::sendEditorCommand()
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.port = 8081;
+    ms::Client client(settings);
+
+    ms::EditorCommandMessage message;
+    message.command_type = ms::EditorCommandMessage::CommandType::AddServerToScene;
+
+    auto success = client.send(message);
+    return success;
+    
 }
 
 bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)

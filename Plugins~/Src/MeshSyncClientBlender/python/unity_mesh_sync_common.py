@@ -71,6 +71,11 @@ def msb_on_animation_settings_updated(self = None, context = None):
     # nothing to do for now
     return None
 
+def msb_on_unity_project_path_updated(self = None, context = None):
+    #TODO invoke callback for installing meshsync
+    return None
+
+
 def msb_initialize_properties():
     # sync settings
     bpy.types.Scene.meshsync_server_address = bpy.props.StringProperty(name = "Address", default = "127.0.0.1", update = msb_on_scene_settings_updated)
@@ -88,6 +93,7 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_sync_lights = bpy.props.BoolProperty(name = "Sync Lights", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_auto_sync = bpy.props.BoolProperty(name = "Auto Sync", default = False, update = msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
+    bpy.types.Scene.meshsync_unity_project_path = bpy.props.StringProperty(name = "Unity Project Path", default= "C:/", subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
 
 
 @persistent
@@ -112,7 +118,8 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_label = "Export Objects"
     def execute(self, context):
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context);
+        msb_context.setup(bpy.context)
+        msb_context.sendEditorCommand()
         msb_context.export(msb_context.TARGET_OBJECTS)
         return{'FINISHED'}
 
@@ -163,14 +170,14 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
 
 
     def execute(self, context):
-
-        #Modify setting files
-        mesh_sync_settings_path = self.directory + "Assets/MeshSyncAssets/"
+        directory = context.bpy.scene.meshsync_unity_project_path
+        #Create the Unity MeshSync settings file path
+        mesh_sync_settings_path = directory + "Assets/MeshSyncAssets/"
         if (not os.path.exists(mesh_sync_settings_path)):
             os.makedirs(mesh_sync_settings_path)
         mesh_sync_settings_path = mesh_sync_settings_path + "AutoServerCreationSettings.txt"
 
-        #Find the settings file
+        #Find the Blender MeshSync settings file
         add_ons_path = ""
         for mod in addon_utils.modules():
             if mod.bl_info['name'] == "Unity Mesh Sync":
@@ -179,14 +186,17 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
                 pass
 
         settings_file_path = add_ons_path+"/MeshSyncClientBlender/resources/AutoServerCreationSettings.txt"
+
+        #Copy the Blender MeshSync settings file to the Unity MeshSync settings file path
         shutil.copyfile(settings_file_path, mesh_sync_settings_path)
 
 
-        #Modify manifest file
+        #Modify the Unity Package manifest to add the MeshSync package from disk.
         manifest_path = self.directory + "/Packages/manifest.json";
 
         # This is for local testing. It should be the version of the package, i.e.
         #manifest entry = 0.14.0-preview
+        # or some path to the plugin resources folder
         manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
 
         statusManifest =  self.edit_manifest(manifest_path, manifest_entry)
@@ -200,6 +210,6 @@ class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        wm = bpy.context.window_manager
-        wm.fileselect_add(self)
+        #wm = bpy.context.window_manager
+        #wm.fileselect_add(self)
         return {'RUNNING_MODAL'}
