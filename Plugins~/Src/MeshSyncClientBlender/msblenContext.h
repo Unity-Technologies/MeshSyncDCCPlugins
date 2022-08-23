@@ -54,6 +54,7 @@ public:
 
     void logInfo(const char *format, ...);
     bool isServerAvailable();
+    bool isEditorServerAvailable();
     const std::string& getErrorMessage();
 
     void wait();
@@ -73,7 +74,7 @@ public:
 
     void requestLiveEditMessage();
     
-    bool sendEditorCommand();
+    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type);
 
 private:
     // todo

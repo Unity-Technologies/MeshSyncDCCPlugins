@@ -1,16 +1,24 @@
 import os
+import os.path
+from os import path
+import platform
+import subprocess
 import re
 import bpy
 from bpy.app.handlers import persistent
+
+from bpy_extras.io_utils import ImportHelper
 import MeshSyncClientBlender as ms
 
 import addon_utils
 import shutil
 
 import json
+import time
 
 msb_context = ms.Context()
 msb_cache = ms.Cache()
+
 
 def msb_apply_scene_settings(self = None, context = None):
     ctx = msb_context
@@ -95,6 +103,104 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
     bpy.types.Scene.meshsync_unity_project_path = bpy.props.StringProperty(name = "Unity Project Path", default= "C:/", subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
 
+def add_meshsync_to_unity_manifest(path, entry):
+    file = open(path, "r+");
+    data = json.load(file);
+
+    # check if MeshSync is installed on selected project
+    # if not installed, install it
+    found = False
+
+    for package in data['dependencies']:
+        if (package == 'com.unity.meshsync'):
+            found = True
+
+    if(found == False):
+        #install for user
+        dependencies = data["dependencies"];
+        dependencies["com.unity.meshsync"] = entry
+        if (entry == ""):
+            del dependencies["com.unity.meshsync"]
+        file.seek(0)
+        file.truncate(0)
+        json.dump(data, file)
+        file.close()
+        return "INSTALLED"
+    else:
+        file.close()
+        return "ALREADY_INSTALLED"
+
+def install_meshsync_to_unity_project(directory):
+
+    #Modify the Unity Package manifest to add the MeshSync package from disk.
+    manifest_path = directory + "/Packages/manifest.json";
+
+    # This is for local testing. It should be the version of the package, i.e.
+    #manifest entry = 0.14.0-preview
+    # or some path to the plugin resources folder
+    manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
+
+    status = add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
+    return status
+
+def get_editor_version(directory):
+    project_version_path = directory + "/ProjectSettings/ProjectVersion.txt"
+    with open(project_version_path, "r+") as file:
+        first_line = file.readline()
+        version = first_line[len("m_EditorVersion: "):]
+        version = version[:-1]
+        return version
+
+def get_editor_path(editor_version):
+    os = platform.system()
+    if os == 'Windows':
+        path = "C:\\Program Files\\Unity\\Hub\\Editor\\"+editor_version+"\\Editor\\Unity.exe"
+    elif os == 'Darwin':
+        path = "/Applications/Unity/Hub/Editor/"+editor_version+"/Unity.app/Contents/MacOS/Unity"
+    elif os == 'Linux':
+        path = "/Applications/Unity/Hub/Editor/"+editor_version+"/Unity.app/Contents/Linux/Unity"
+    return path;
+
+def launch_project(editor_path, project_path):
+    os = platform.system()
+    if os == 'Windows':
+        path = editor_path + " -projectPath \"" + project_path + "\""
+    elif os == 'Darwin':
+        path = editor_path + " -projectPath " + project_path
+    elif os == 'Linux':
+        path = editor_path + " -projectPath " + project_path
+
+    return subprocess.Popen(path)
+
+unity_process = None
+
+def start_unity_project (directory):
+    
+    global unity_process
+
+    if unity_process is not None and unity_process.poll() is None:
+        return 'ALREADY_STARTED'
+
+    #Get the project version
+    editor_version = get_editor_version(directory)
+
+    #Get the editor path
+    editor_path = get_editor_path(editor_version)
+
+    #Launch the editor with the project
+    unity_process = launch_project(editor_path, directory)
+
+    return 'STARTED'
+
+def validate_project_path(directory):
+    project_version_path = directory +"/ProjectSettings/ProjectVersion.txt"
+    if path.exists(project_version_path):
+        return True
+    return False
+
+def prompt_user_unity_project():
+    bpy.ops.meshsync.browse_files('INVOKE_DEFAULT')
+
 
 @persistent
 def on_scene_load(context):
@@ -117,11 +223,50 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
     def execute(self, context):
+
+        directory = context.scene.meshsync_unity_project_path
+        #Validate that the path is a project or prompt user to enter a valid path
+        if validate_project_path(directory) == False:
+            # Prompt user to enter a valid path
+            prompt_user_unity_project()
+            
+            directory = context.scene.meshsync_unity_project_path
+            print('Selected dir is now:'+directory)
+            if validate_project_path(directory) == False:
+                return {'FINISHED'}
+
+        #Try to install meshsync if not already installed
+        install_meshsync_to_unity_project(directory)
+        
+        #Try starting unity if not already started
+        start_status = start_unity_project(directory)
+
+        #If the project was launched now, wait until the Editor server is available
+        if start_status == 'STARTED':
+            while(msb_context.is_editor_server_available is False):
+                time.sleep(0.1)
+
+        #If there is no server in the scene, add one
+        msb_context.sendEditorCommand(1)
+
+        # Export data
         msb_apply_scene_settings()
         msb_context.setup(bpy.context)
-        msb_context.sendEditorCommand()
         msb_context.export(msb_context.TARGET_OBJECTS)
+
         return{'FINISHED'}
+
+class MESHSYNC_OT_BrowseFiles(bpy.types.Operator, ImportHelper):
+    bl_idname = "meshsync.browse_files"
+    bl_label = "Brownse Files"
+
+    def execute(self, context):
+        bpy.context.scene.meshsync_unity_project_path = self.filepath 
+        
+        if validate_project_path(self.filepath) == True:
+            bpy.ops.meshsync.send_objects('INVOKE_DEFAULT')
+        
+        return {'FINISHED'}
 
 
 class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
@@ -133,83 +278,3 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
         return{'FINISHED'}
-
-class MESHSYNC_OT_ConnectUnity(bpy.types.Operator):
-    bl_idname = "meshsync.connect_unity"
-    bl_label = "Select"
-
-    directory: bpy.props.StringProperty(name = "Unity Project location", description = "Where is the unity folder?")
-
-
-    def edit_manifest(self, path, entry):
-        file = open(path, "r+");
-        data = json.load(file);
-
-        # check if MeshSync is installed on selected project
-        # if not installed, install it
-        found = False
-
-        for package in data['dependencies']:
-            if (package == 'com.unity.meshsync'):
-                found = True
-
-        if(found == False):
-            #install for user
-            dependencies = data["dependencies"];
-            dependencies["com.unity.meshsync"] = entry
-            if (entry == ""):
-                del dependencies["com.unity.meshsync"]
-            file.seek(0)
-            file.truncate(0)
-            json.dump(data, file)
-            file.close()
-            return {'INSTALLED'}
-        else:
-            file.close()
-            return {'ALREADY_INSTALLED'}
-
-
-    def execute(self, context):
-        directory = context.bpy.scene.meshsync_unity_project_path
-        #Create the Unity MeshSync settings file path
-        mesh_sync_settings_path = directory + "Assets/MeshSyncAssets/"
-        if (not os.path.exists(mesh_sync_settings_path)):
-            os.makedirs(mesh_sync_settings_path)
-        mesh_sync_settings_path = mesh_sync_settings_path + "AutoServerCreationSettings.txt"
-
-        #Find the Blender MeshSync settings file
-        add_ons_path = ""
-        for mod in addon_utils.modules():
-            if mod.bl_info['name'] == "Unity Mesh Sync":
-                add_ons_path = os.path.dirname(mod.__file__)
-            else:
-                pass
-
-        settings_file_path = add_ons_path+"/MeshSyncClientBlender/resources/AutoServerCreationSettings.txt"
-
-        #Copy the Blender MeshSync settings file to the Unity MeshSync settings file path
-        shutil.copyfile(settings_file_path, mesh_sync_settings_path)
-
-
-        #Modify the Unity Package manifest to add the MeshSync package from disk.
-        manifest_path = self.directory + "/Packages/manifest.json";
-
-        # This is for local testing. It should be the version of the package, i.e.
-        #manifest entry = 0.14.0-preview
-        # or some path to the plugin resources folder
-        manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
-
-        statusManifest =  self.edit_manifest(manifest_path, manifest_entry)
-
-        if (statusManifest == 'ALREADY_INSTALLED'):
-            MS_MessageBox("Already installed for " + self.directory)          
-        else:
-            MS_MessageBox("Success! Installed for " + self.directory)
-
-
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        #wm = bpy.context.window_manager
-        #wm.fileselect_add(self)
-        return {'RUNNING_MODAL'}
