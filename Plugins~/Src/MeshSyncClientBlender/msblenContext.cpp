@@ -1428,12 +1428,13 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
 
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1448,7 +1449,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
 #if BLENDER_VERSION >= 300
-    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
+    // The dependency graph update event does not fire when the scene changes while the timeline is playing.
+    // To ensure geometry nodes get exported correctly while playing, check the frame number:
+    static int lastExportedFrame = scene.GetCurrentFrame();
+    int currentFrame = scene.GetCurrentFrame();
+
+    if (m_geometryNodeUtils.getInstancesDirty() ||
+        dirty_all || 
+        currentFrame != lastExportedFrame) {
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
