@@ -1460,6 +1460,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
+
+        lastExportedFrame = currentFrame;
     }
 #endif
 
