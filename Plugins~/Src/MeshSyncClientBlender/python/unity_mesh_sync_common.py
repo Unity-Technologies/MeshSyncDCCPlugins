@@ -178,8 +178,16 @@ def start_unity_project (directory):
     
     global unity_process
 
+    #Check if we have launched the project as a subprocess
     if unity_process is not None and unity_process.poll() is None:
         return 'ALREADY_STARTED'
+
+    #Check if there is an editor server listening from the target project
+    if msb_context.is_editor_server_available:
+        msb_context.sendEditorCommand(2)
+        path = msb_context.editor_command_reply;
+        if path == directory:
+            return 'ALREADY_STARTED'
 
     #Get the project version
     editor_version = get_editor_version(directory)
@@ -201,6 +209,14 @@ def validate_project_path(directory):
 def prompt_user_unity_project():
     bpy.ops.meshsync.browse_files('INVOKE_DEFAULT')
 
+def update_project_path_from_server(context):
+    if not msb_context.is_editor_server_available:
+        return
+
+    #Get the project path
+    msb_context.sendEditorCommand(2)
+    context.scene.meshsync_unity_project_path = msb_context.editor_command_reply;
+    print('Path of active server is ' + context.scene.meshsync_unity_project_path)
 
 @persistent
 def on_scene_load(context):
@@ -223,17 +239,22 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
     def execute(self, context):
-
         directory = context.scene.meshsync_unity_project_path
-        #Validate that the path is a project or prompt user to enter a valid path
+
+        #Validate that the path is a project
         if validate_project_path(directory) == False:
-            # Prompt user to enter a valid path
-            prompt_user_unity_project()
-            
+
+            #Try to fill a valid path from an already running project
+            update_project_path_from_server(context)
             directory = context.scene.meshsync_unity_project_path
-            print('Selected dir is now:'+directory)
+            
             if validate_project_path(directory) == False:
-                return {'FINISHED'}
+                # Prompt user to enter a valid path
+                prompt_user_unity_project()
+            
+                directory = context.scene.meshsync_unity_project_path
+                if validate_project_path(directory) == False:
+                    return {'FINISHED'}
 
         #Try to install meshsync if not already installed
         install_meshsync_to_unity_project(directory)

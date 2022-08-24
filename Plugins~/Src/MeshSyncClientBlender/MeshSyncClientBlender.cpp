@@ -108,6 +108,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindConst(is_server_available, self->isServerAvailable())
             BindConst(error_message, self->getErrorMessage())
             BindConst(is_editor_server_available, self->isEditorServerAvailable())
+            BindConst(editor_command_reply, self->getEditorCommandReply())
 
             BindProperty(server_address,
                 [](const self_t& self) { return self->getSettings().client_settings.server; },

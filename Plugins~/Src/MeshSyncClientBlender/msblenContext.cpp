@@ -1344,7 +1344,10 @@ bool msblenContext::isEditorServerAvailable()
 
     auto success = client.isServerAvailable();
     return success;
-    
+}
+
+string& msblenContext::getEditorCommandReply() {
+    return m_editor_command_reply;
 }
 
 const std::string& msblenContext::getErrorMessage()
@@ -1414,7 +1417,8 @@ bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type
     ms::EditorCommandMessage message;
     message.command_type = type;
 
-    auto success = client.send(message);
+    auto success = client.send(message, m_editor_command_reply);
+
     return success;
     
 }

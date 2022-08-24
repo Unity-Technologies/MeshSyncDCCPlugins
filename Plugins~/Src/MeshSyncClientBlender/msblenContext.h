@@ -75,6 +75,7 @@ public:
     void requestLiveEditMessage();
     
     bool sendEditorCommand(ms::EditorCommandMessage::CommandType type);
+    string& getEditorCommandReply();
 
 private:
     // todo
@@ -204,6 +205,8 @@ private:
     msblenCurveHandler m_curves_handler;
 
     bool m_server_requested_sync;
+
+    string m_editor_command_reply;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
