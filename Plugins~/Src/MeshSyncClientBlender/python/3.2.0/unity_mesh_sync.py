@@ -124,6 +124,7 @@ class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_unity_project_path")
+        layout.prop(scene, "meshsync_selected_unity_version")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -327,7 +328,8 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_OT_BrowseFiles
+    MESHSYNC_OT_BrowseFiles,
+    MESHSYNC_OT_SelectUnityVersion,
 )
 
 def register():
