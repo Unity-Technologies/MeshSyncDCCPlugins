@@ -83,6 +83,39 @@ def msb_on_unity_project_path_updated(self = None, context = None):
     #TODO invoke callback for installing meshsync
     return None
 
+def msb_get_editor_path_prefix():
+    os = platform.system()
+    if os == 'Windows':
+        path = "C:\\Program Files\\Unity\\Hub\\Editor\\"
+    elif os == 'Darwin':
+        path = "/Applications/Unity/Hub/Editor/"
+    elif os == 'Linux':
+        path = "/Applications/Unity/Hub/Editor/"
+    return path;
+
+def msb_get_editor_versions():
+    base_path = msb_get_editor_path_prefix()
+    sub_dirs = [entry for entry in os.listdir(base_path)]
+    return sub_dirs
+
+def msb_get_editor_path_suffix():
+    os = platform.system()
+    if os == 'Windows':
+        path = "\\Editor\\Unity.exe"
+    elif os == 'Darwin':
+        path = "/Unity.app/Contents/MacOS/Unity"
+    elif os == 'Linux':
+        path = "/Unity.app/Contents/Linux/Unity"
+    return path
+
+def msb_get_editor_path(editor_version):
+    return msb_get_editor_path_prefix() + editor_version + msb_get_editor_path_suffix()
+
+def msb_validate_project_path(directory):
+    project_version_path = directory +"/ProjectSettings/ProjectVersion.txt"
+    if path.exists(project_version_path):
+        return True
+    return False
 
 def msb_initialize_properties():
     # sync settings
@@ -109,177 +142,8 @@ def msb_initialize_properties():
 
     bpy.types.Scene.meshsync_selected_unity_version = bpy.props.StringProperty(name = "Unity Version", default = "")
 
-def add_meshsync_to_unity_manifest(path, entry):
-    file = open(path, "r+");
-    data = json.load(file);
-
-    # check if MeshSync is installed on selected project
-    # if not installed, install it
-    found = False
-
-    for package in data['dependencies']:
-        if (package == 'com.unity.meshsync'):
-            found = True
-
-    if(found == False):
-        #install for user
-        dependencies = data["dependencies"];
-        dependencies["com.unity.meshsync"] = entry
-        if (entry == ""):
-            del dependencies["com.unity.meshsync"]
-        file.seek(0)
-        file.truncate(0)
-        json.dump(data, file)
-        file.close()
-        return "INSTALLED"
-    else:
-        file.close()
-        return "ALREADY_INSTALLED"
-
-def install_meshsync_to_unity_project(directory):
-
-    #Modify the Unity Package manifest to add the MeshSync package from disk.
-    if directory[-1] == '/' or directory[-1] == '\\':
-        manifest_path = directory + "Packages/manifest.json"
-    else:
-        manifest_path = directory + "/Packages/manifest.json"
-
-    # This is for local testing. It should be the version of the package, i.e.
-    #manifest entry = 0.14.0-preview
-    # or some path to the plugin resources folder
-    manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
-
-    status = add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
-    return status
-
-def get_editor_version(directory):
-    project_version_path = directory + "/ProjectSettings/ProjectVersion.txt"
-    with open(project_version_path, "r+") as file:
-        first_line = file.readline()
-        version = first_line[len("m_EditorVersion: "):]
-        version = version[:-1]
-        return version
-
-def get_editor_path_suffix():
-    os = platform.system()
-    if os == 'Windows':
-        path = "\\Editor\\Unity.exe"
-    elif os == 'Darwin':
-        path = "/Unity.app/Contents/MacOS/Unity"
-    elif os == 'Linux':
-        path = "/Unity.app/Contents/Linux/Unity"
-    return path;
-
-def get_editor_path_prefix():
-    os = platform.system()
-    if os == 'Windows':
-        path = "C:\\Program Files\\Unity\\Hub\\Editor\\"
-    elif os == 'Darwin':
-        path = "/Applications/Unity/Hub/Editor/"
-    elif os == 'Linux':
-        path = "/Applications/Unity/Hub/Editor/"
-    return path;
-
-def get_editor_versions():
-    base_path = get_editor_path_prefix()
-    sub_dirs = [entry for entry in os.listdir(base_path)]
-    return sub_dirs
-
-
-def get_editor_path(editor_version):
-    return get_editor_path_prefix() + editor_version + get_editor_path_suffix()
-
-def launch_project(editor_path, project_path):
-    os = platform.system()
-    if os == 'Windows':
-        path = editor_path + " -projectPath \"" + project_path + "\""
-    elif os == 'Darwin':
-        path = editor_path + " -projectPath " + project_path
-    elif os == 'Linux':
-        path = editor_path + " -projectPath " + project_path
-
-    return subprocess.Popen(path)
-
 unity_process = None
-
-def unity_process_is_alive():
-    global unity_process
-
-    if unity_process is None or unity_process.poll() is not None:
-        return False
-
-    return True
-
-def start_unity_project (directory):
-    
-    global unity_process
-
-    #Check if we have launched the project as a subprocess
-    if unity_process is not None and unity_process.poll() is None:
-        return 'ALREADY_STARTED'
-
-    #Check if there is an editor server listening from the target project
-    if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(2)
-        path = msb_context.editor_command_reply;
-        if path == directory:
-            return 'ALREADY_STARTED'
-
-    if not path.exists(meshsync_unity_version):
-        return 'BAD_UNITY_VERSION'
-
-    #Launch the editor with the project
-    unity_process = launch_project(editor_path, directory)
-
-    return 'STARTED'
-
-def validate_project_path(directory):
-    project_version_path = directory +"/ProjectSettings/ProjectVersion.txt"
-    if path.exists(project_version_path):
-        return True
-    return False
-
-def package_manifest_exists(directory):
-    project_manifest_path = directory + "/Packages/manifest.json"
-    if path.exists(project_manifest_path):
-        return True
-    return False
-
-
-def prompt_user_unity_project():
-    bpy.ops.meshsync.browse_files('INVOKE_DEFAULT')
-
-def update_project_path_from_server(context):
-    if not msb_context.is_editor_server_available:
-        return
-
-    #Get the project path
-    msb_context.sendEditorCommand(2)
-    context.scene.meshsync_unity_project_path = msb_context.editor_command_reply;
-
-def create_unity_project(directory):
-    global unity_process  
-
-    versions = get_editor_versions()
-    if len(versions) > 1:
-        bpy.ops.meshsync.select_unity_version('INVOKE_DEFAULT')
-        return
-
-    #use the latest version
-    version = versions[-1]
-    editor_path = get_editor_path(version)
-
-    path = editor_path + " -quit"
-    os = platform.system()
-    if os == 'Windows':
-        path = path +" -createProject \"" + directory + "\""
-    elif os == 'Darwin':
-        path = path + " -createProject " + directory
-    elif os == 'Linux':
-        path = path + " -createProject " + directory
-
-
-    unity_process = subprocess.Popen(path)
+click_source = None
 
 
 @persistent
@@ -299,45 +163,275 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
-class MESHSYNC_OT_SendObjects(bpy.types.Operator):
-    bl_idname = "meshsync.send_objects"
-    bl_label = "Export Objects"
-    def execute(self, context):
 
+class MESHSYNC_OT_CheckProjectPath_Auto(bpy.types.Operator):
+    bl_idname = "meshsync.check_project_path_auto"
+    bl_label = "Ensure Unity project path is pointing to a Unity project"
+    
+    def execute(self, context):
+        global click_source
+        click_source = 'Auto'
+        bpy.ops.meshsync.check_project_path('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+class MESHSYNC_OT_CheckProjectPath_Manual(bpy.types.Operator):
+    bl_idname = "meshsync.check_project_path_manual"
+    bl_label = "Ensure Unity project path is pointing to a Unity project"
+    
+    def execute(self, context):
+        global click_source
+        click_source = 'Manual'
+        bpy.ops.meshsync.check_project_path('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+
+class MESHSYNC_OT_CheckProjectPath(bpy.types.Operator):
+    bl_idname = "meshsync.check_project_path"
+    bl_label = "Ensure Unity project path is pointing to a Unity project"
+
+    def execute(self, context):
+        directory = context.scene.meshsync_unity_project_path
+        #Validate that the path is a project
+        if msb_validate_project_path(directory) == False:
+            #Try to fill a valid path from an already running project
+            bpy.ops.meshsync.path_from_server('INVOKE_DEFAULT')
+        else:
+            bpy.ops.meshsync.install_meshsync('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+class MESHSYNC_OT_TryGetPathFromServer(bpy.types.Operator):
+    bl_idname = "meshsync.path_from_server"
+    bl_label = "Try to get the unity path from a running server"
+
+    def execute(self, context):
+        if not msb_context.is_editor_server_available:
+            bpy.ops.meshsync.prompt_project_path('INVOKE_DEFAULT')
+            return {'FINISHED'}
+
+        #Get the project path
+        msb_context.sendEditorCommand(2)
+        context.scene.meshsync_unity_project_path = msb_context.editor_command_reply
         directory = context.scene.meshsync_unity_project_path
 
-        #Validate that the path is a project
-        if validate_project_path(directory) == False:
-
-            #Try to fill a valid path from an already running project
-            update_project_path_from_server(context)
-            directory = context.scene.meshsync_unity_project_path
+        if msb_validate_project_path(directory) == False:
+            # Prompt user to enter a valid path
+            bpy.ops.meshsync.prompt_project_path('INVOKE_DEFAULT')
+        else:
+            bpy.ops.meshsync.create_server('INVOKE_DEFAULT')
             
-            if validate_project_path(directory) == False:
-                # Prompt user to enter a valid path
-                prompt_user_unity_project()
-            
-                directory = context.scene.meshsync_unity_project_path
-                if validate_project_path(directory) == False:
-                    return {'FINISHED'}
+        return {'FINISHED'}
 
-        #Try to install meshsync if not already installed
-        install_meshsync_to_unity_project(directory)
+class MESHSYNC_OT_PromptProjectPath(bpy.types.Operator, ImportHelper):
+    bl_idname = "meshsync.prompt_project_path"
+    bl_label = "Select Unity Project Folder"
+
+    filepath : bpy.props.StringProperty(name = "filepath")
+
+    def execute(self, context):
+
+        context.scene.meshsync_unity_project_path = self.filepath
+
+        if msb_validate_project_path(self.filepath) == False:
+            bpy.ops.meshsync.create_project('INVOKE_DEFAULT')
+        else:
+            bpy.ops.meshsync.install_meshsync('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+class MESHSYNC_OT_CreateProject(bpy.types.Operator):
+    bl_idname = "meshsync.create_project"
+    bl_label = "Create Unity Project"
+
+
+    def package_manifest_exists(self, directory):
+        project_manifest_path = directory + "/Packages/manifest.json"
+        if path.exists(project_manifest_path):
+            return True
+        return False
+
+    def unity_process_is_alive(self):
+        global unity_process
+
+        if unity_process is None or unity_process.poll() is not None:
+            return False
+
+        return True
+
+    def wait_finish_creating_project(self, directory):
+        while self.unity_process_is_alive() or not self.package_manifest_exists(directory):
+            time.sleep(0.1)
+
+    def create_unity_project(self, directory):
+        global unity_process  
+
+        versions = msb_get_editor_versions()
+
+        #use the latest version
+        version = versions[-1]
+        editor_path = msb_get_editor_path(version)
+
+        path = editor_path + " -quit"
+        os = platform.system()
+        if os == 'Windows':
+            path = path +" -createProject \"" + directory + "\""
+        elif os == 'Darwin':
+            path = path + " -createProject " + directory
+        elif os == 'Linux':
+            path = path + " -createProject " + directory
+
+
+        unity_process = subprocess.Popen(path)
+
+    def execute(self, context):
+        directory = context.scene.meshsync_unity_project_path
+        self.create_unity_project(directory)
+        self.wait_finish_creating_project(directory)
+
+        bpy.ops.meshsync.install_meshsync('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
+
+    bl_idname = "meshsync.install_meshsync"
+    bl_label = "Try to get the unity path from a running server"
+
+    def add_meshsync_to_unity_manifest(self, path, entry):
+        file = open(path, "r+");
+        data = json.load(file);
+
+        # check if MeshSync is installed on selected project
+        # if not installed, install it
+        found = False
+
+        for package in data['dependencies']:
+            if (package == 'com.unity.meshsync'):
+                found = True
+
+        if(found == False):
+            #install for user
+            dependencies = data["dependencies"];
+            dependencies["com.unity.meshsync"] = entry
+            if (entry == ""):
+                del dependencies["com.unity.meshsync"]
+            file.seek(0)
+            file.truncate(0)
+            json.dump(data, file)
         
-        #Try starting unity if not already started
-        start_status = start_unity_project(directory)
+        file.close()
 
-        if start_status == 'BAD_UNITY_VERSION':
-            #TODO handle properly
-            return {'FINISHED'}
+    def install_meshsync_to_unity_project(self, directory):
+
+        #Modify the Unity Package manifest to add the MeshSync package from disk.
+        if directory[-1] == '/' or directory[-1] == '\\':
+            manifest_path = directory + "Packages/manifest.json"
+        else:
+            manifest_path = directory + "/Packages/manifest.json"
+
+        # This is for local testing. It should be the version of the package, i.e.
+        #manifest entry = 0.14.0-preview
+        # or some path to the plugin resources folder
+        manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
+
+        self.add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
+
+    def execute(self, context):
+        directory = context.scene.meshsync_unity_project_path
+        self.install_meshsync_to_unity_project(directory)
+        bpy.ops.meshsync.start_unity('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+class MESHSYNC_OT_StartUnity(bpy.types.Operator):
+    bl_idname = "meshsync.start_unity"
+    bl_label = "Export Objects"
+
+    def get_editor_version(self, directory):
+        project_version_path = directory + "/ProjectSettings/ProjectVersion.txt"
+        with open(project_version_path, "r+") as file:
+            first_line = file.readline()
+            version = first_line[len("m_EditorVersion: "):]
+            version = version[:-1]
+            return version
+
+    def launch_project(self, editor_path, project_path):
+        os = platform.system()
+        if os == 'Windows':
+            path = editor_path + " -projectPath \"" + project_path + "\""
+        elif os == 'Darwin':
+            path = editor_path + " -projectPath " + project_path
+        elif os == 'Linux':
+            path = editor_path + " -projectPath " + project_path
+
+        return subprocess.Popen(path)
+
+    def start_unity_project (self, directory):
+        
+        global unity_process
+
+        #Check if we have launched the project as a subprocess
+        if unity_process is not None and unity_process.poll() is None:
+            return 'ALREADY_STARTED'
+
+        #Check if there is an editor server listening from the target project
+        if msb_context.is_editor_server_available:
+            msb_context.sendEditorCommand(2)
+            path = msb_context.editor_command_reply;
+            if path == directory:
+                return 'ALREADY_STARTED'
+
+
+        editor_version = self.get_editor_version(directory)
+        editor_path = msb_get_editor_path(editor_version)
+
+        #Launch the editor with the project
+        unity_process = self.launch_project(editor_path, directory)
+
+        return 'STARTED'
+
+
+    def execute(self, context):
+        #Try starting unity if not already started
+        directory = context.scene.meshsync_unity_project_path
+        start_status = self.start_unity_project(directory)
 
         #If the project was launched now, wait until the Editor server is available
         if start_status == 'STARTED':
             while(msb_context.is_editor_server_available is False):
                 time.sleep(0.1)
 
-        #If there is no server in the scene, add one
+        bpy.ops.meshsync.create_server('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+class MESHSYNC_OT_CreateServer(bpy.types.Operator):
+    bl_idname = "meshsync.create_server"
+    bl_label = "Create a Scene Server if there is none"
+
+    def execute(self, context):
+       #If there is no server in the scene, add one
         msb_context.sendEditorCommand(1)
+        bpy.ops.meshsync.finish_checks('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+class MESHSYNC_OT_FinishChecks(bpy.types.Operator):
+    bl_idname ="meshsync.finish_checks"
+    bl_label = "Finish Checks"
+
+    def execute(self, context):
+        global click_source
+        print(click_source)
+        if click_source == 'Manual':
+            bpy.ops.meshsync.send_objects('INVOKE_DEFAULT')
+        elif click_source == 'Auto':
+            bpy.ops.meshsync.auto_sync('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+
+class MESHSYNC_OT_SendObjects(bpy.types.Operator):
+    bl_idname = "meshsync.send_objects"
+    bl_label = "Export Objects"
+
+    def execute(self, context):
 
         # Export data
         msb_apply_scene_settings()
@@ -346,42 +440,18 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
 
         return{'FINISHED'}
 
-class MESHSYNC_OT_BrowseFiles(bpy.types.Operator, ImportHelper):
-    bl_idname = "meshsync.browse_files"
-    bl_label = "Brownse Files"
-
-    def execute(self, context):
-        bpy.context.scene.meshsync_unity_project_path = self.filepath 
-        
-        if validate_project_path(self.filepath) == True:
-            bpy.ops.meshsync.send_objects('INVOKE_DEFAULT')
-        else:
-            #TODO Prompt user to validate if they want to create a unity project in path
-            #Create unity project in location
-            create_unity_project(self.filepath)
-            while unity_process_is_alive() or not package_manifest_exists(self.filepath):
-                time.sleep(0.1)
-
-            #install the package
-            install_meshsync_to_unity_project(self.filepath)
-            bpy.ops.meshsync.send_objects('INVOKE_DEFAULT')
-
-
-        
-        return {'FINISHED'}
-
 class UnityVersion(bpy.types.PropertyGroup):
     version : bpy.props.StringProperty(name = "Version")
-
-
 
 
 class MESHSYNC_OT_SelectUnityVersion(bpy.types.Operator):
     bl_idname = "meshsync.select_unity_version"
     bl_label = "Select Unity Version"
 
+    onExecute = None
+
     def invoke(self, context, event):
-        versions = get_editor_versions()
+        versions = msb_get_editor_versions()
         prop = bpy.context.scene.meshsync_unity_version
         prop.clear()
         print(versions)
@@ -398,14 +468,16 @@ class MESHSYNC_OT_SelectUnityVersion(bpy.types.Operator):
         selected = context.scene.meshsync_unity_version[index].version
         context.scene.meshsync_selected_unity_version = selected
 
+        if self.onExecute is not None:
+            self.onExecute()
+            self.onExecute = None
+
         return {'FINISHED'}
     def draw(self, context):
         scn = context.scene
         col = self.layout.column()
         col.template_list("UI_UL_list", "example_dialog", context.scene, "meshsync_unity_version", context.scene, "meshsync_unity_version_index",
             item_dyntip_propname = "version",rows=4)
-
-
 
 
 class MESHSYNC_OT_SendAnimations(bpy.types.Operator):

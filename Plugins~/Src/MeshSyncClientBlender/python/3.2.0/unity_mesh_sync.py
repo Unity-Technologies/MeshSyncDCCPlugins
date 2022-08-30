@@ -77,8 +77,8 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
         else:
-            layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
-        layout.operator("meshsync.send_objects", text="Manual Sync")
+            layout.operator("meshsync.check_project_path_auto", text="Auto Sync", icon="PLAY")
+        layout.operator("meshsync.check_project_path_manual", text="Manual Sync")
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -328,8 +328,17 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_OT_BrowseFiles,
     MESHSYNC_OT_SelectUnityVersion,
+    MESHSYNC_OT_CheckProjectPath,
+    MESHSYNC_OT_TryGetPathFromServer,
+    MESHSYNC_OT_PromptProjectPath,
+    MESHSYNC_OT_InstallMeshSync,
+    MESHSYNC_OT_StartUnity,
+    MESHSYNC_OT_CreateServer,
+    MESHSYNC_OT_CreateProject,
+    MESHSYNC_OT_CheckProjectPath_Auto,
+    MESHSYNC_OT_CheckProjectPath_Manual,
+    MESHSYNC_OT_FinishChecks
 )
 
 def register():
