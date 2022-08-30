@@ -152,7 +152,9 @@ namespace blender {
 
             auto object = instance.object();
 
-            if (object->type != OB_MESH) {
+            // We support only Mesh and Light instances
+            if (object->type != OB_MESH && 
+                object->type != OB_LAMP) {
                 continue;
             }
 
