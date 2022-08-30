@@ -83,18 +83,38 @@ def msb_on_unity_project_path_updated(self = None, context = None):
     #TODO invoke callback for installing meshsync
     return None
 
-def msb_get_editor_path_prefix():
+def msb_get_editor_path_prefix(hub_path = None):
+    prefix = hub_path
+    if prefix is None:
+        prefix = bpy.context.scene.meshsync_unity_hub_path
     os = platform.system()
     if os == 'Windows':
-        path = "C:\\Program Files\\Unity\\Hub\\Editor\\"
+        path = prefix+"\\Editor"
     elif os == 'Darwin':
-        path = "/Applications/Unity/Hub/Editor/"
+        path = prefix + "/Editor"
     elif os == 'Linux':
-        path = "/Applications/Unity/Hub/Editor/"
+        path = prefix + "/Editor"
+    return path;
+    
+
+
+def msb_get_editor_path_prefix_default():
+    os = platform.system()
+    if os == 'Windows':
+        path = "C:\\Program Files\\Unity\\Hub"
+    elif os == 'Darwin':
+        path = "/Applications/Unity/Hub/"
+    elif os == 'Linux':
+        path = "/Applications/Unity/Hub/"
     return path;
 
-def msb_get_editor_versions():
-    base_path = msb_get_editor_path_prefix()
+def msb_get_editor_versions(hub_path = None):
+    base_path = hub_path
+    if base_path == None:
+        base_path = msb_get_editor_path_prefix()
+    else:
+        base_path  = msb_get_editor_path_prefix(hub_path)
+        
     sub_dirs = [entry for entry in os.listdir(base_path)]
     return sub_dirs
 
@@ -134,13 +154,22 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_sync_lights = bpy.props.BoolProperty(name = "Sync Lights", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_auto_sync = bpy.props.BoolProperty(name = "Auto Sync", default = False, update = msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
-    bpy.types.Scene.meshsync_unity_project_path = bpy.props.StringProperty(name = "Unity Project Path", default= "C:/", subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
+    bpy.types.Scene.meshsync_unity_project_path = bpy.props.StringProperty(name = "Path", default= "C:/", subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
     
-    bpy.utils.register_class(UnityVersion)
-    bpy.types.Scene.meshsync_unity_version = bpy.props.CollectionProperty(type=UnityVersion)
+    default_hub_path = msb_get_editor_path_prefix_default()
+    bpy.types.Scene.meshsync_unity_hub_path = bpy.props.StringProperty(name = "Hub", default= default_hub_path, subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
+    
     bpy.types.Scene.meshsync_unity_version_index = bpy.props.IntProperty(default = -1)
+    bpy.utils.register_class(UnityVersion)
 
-    bpy.types.Scene.meshsync_selected_unity_version = bpy.props.StringProperty(name = "Unity Version", default = "")
+    bpy.types.Scene.meshsync_unity_version = bpy.props.CollectionProperty(type=UnityVersion)
+
+    versions = msb_get_editor_versions(default_hub_path)
+    default_version = ""
+    if len(versions) > 0:
+        default_version = versions[-1]
+
+    bpy.types.Scene.meshsync_selected_unity_version = bpy.props.StringProperty(name = "Editor Version", default = default_version)
 
 unity_process = None
 click_source = None
@@ -239,6 +268,22 @@ class MESHSYNC_OT_PromptProjectPath(bpy.types.Operator, ImportHelper):
 
         return {'FINISHED'}
 
+class MESHSYNC_OT_SelectUnityHubPath(bpy.types.Operator, ImportHelper):
+
+    onExecute = None
+
+    bl_idname = "meshsync.select_hub"
+    bl_label = "Select"
+
+    filepath : bpy.props.StringProperty(name = "filepath")
+
+    def execute(self, context):
+        context.scene.meshsync_unity_hub_path = self.filepath
+        if self.onExecute is not None:
+            self.onExecute()
+            self.onExecute = None
+
+
 class MESHSYNC_OT_CreateProject(bpy.types.Operator):
     bl_idname = "meshsync.create_project"
     bl_label = "Create Unity Project"
@@ -265,10 +310,8 @@ class MESHSYNC_OT_CreateProject(bpy.types.Operator):
     def create_unity_project(self, directory):
         global unity_process  
 
-        versions = msb_get_editor_versions()
+        version = context.scene.meshsync_selected_unity_version
 
-        #use the latest version
-        version = versions[-1]
         editor_path = msb_get_editor_path(version)
 
         path = editor_path + " -quit"
@@ -448,13 +491,10 @@ class MESHSYNC_OT_SelectUnityVersion(bpy.types.Operator):
     bl_idname = "meshsync.select_unity_version"
     bl_label = "Select Unity Version"
 
-    onExecute = None
-
     def invoke(self, context, event):
         versions = msb_get_editor_versions()
         prop = bpy.context.scene.meshsync_unity_version
         prop.clear()
-        print(versions)
         for version in versions:
             item = prop.add()
             item.version = version

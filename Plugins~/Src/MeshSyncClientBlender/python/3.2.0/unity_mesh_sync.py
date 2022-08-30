@@ -115,8 +115,10 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
 
 class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
-    bl_label = "Unity Projects"
+    bl_label = "Unity Project"
     bl_parent_id = "MESHSYNC_PT_Main"
+
+    initialized = False
 
     def draw(self, context):
         scene = bpy.context.scene
@@ -125,6 +127,7 @@ class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_unity_project_path")
         layout.prop(scene, "meshsync_selected_unity_version")
+        layout.prop(scene, "meshsync_unity_hub_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
