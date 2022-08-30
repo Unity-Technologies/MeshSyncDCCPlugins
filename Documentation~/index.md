@@ -16,7 +16,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
-
+| Bidirectional Sync  |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 
 ### Caveats
 
@@ -25,6 +25,9 @@ This allows devs to immediately see how things will look in-game while modelling
   Unity will treat the mesh as though every axis has a negative value.
   Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
   deformer information.
+  
+* To correctly do birectional sync for geometry nodes or meshes that have modifiers in Blender, we need to enable the **Bake Modifiers** option.  
+  ![](images/MeshSyncClientBlender_BakeMods.png)
 
 
 ## Supported DCC Tools
