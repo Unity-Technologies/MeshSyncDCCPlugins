@@ -242,6 +242,7 @@ class MESHSYNC_OT_PromptProjectPath(bpy.types.Operator, ImportHelper):
         if msb_validate_project_path(self.filepath) == False:
             message = self.filepath + " is not a Unity project"
             MS_MessageBox(message = message)
+            print(message)
             return {'FINISHED'}
         else:
             bpy.ops.meshsync.install_meshsync('INVOKE_DEFAULT')
@@ -363,6 +364,7 @@ class MESHSYNC_OT_StartUnity(bpy.types.Operator):
             editor_path = msb_get_editor_path(editor_version)
             message = "Editor path " + editor_path + " does not exist." 
             MS_MessageBox(message = message)
+            print(message)
             return {'FINISHED'}
 
         bpy.ops.meshsync.create_server('INVOKE_DEFAULT')
