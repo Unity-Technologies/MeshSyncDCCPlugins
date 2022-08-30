@@ -1451,7 +1451,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 #if BLENDER_VERSION >= 300
     // The dependency graph update event does not fire when the scene changes while the timeline is playing.
     // To ensure geometry nodes get exported correctly while playing, check the frame number:
-    static int lastExportedFrame = scene.GetCurrentFrame();
+    static int lastExportedFrame = -1;
     int currentFrame = scene.GetCurrentFrame();
 
     if (m_geometryNodeUtils.getInstancesDirty() ||
