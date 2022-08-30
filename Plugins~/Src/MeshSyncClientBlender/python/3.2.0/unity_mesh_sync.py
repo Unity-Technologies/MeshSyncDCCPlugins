@@ -126,7 +126,6 @@ class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_unity_project_path")
-        layout.prop(scene, "meshsync_selected_unity_version")
         layout.prop(scene, "meshsync_unity_hub_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
@@ -331,14 +330,12 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_OT_SelectUnityVersion,
     MESHSYNC_OT_CheckProjectPath,
     MESHSYNC_OT_TryGetPathFromServer,
     MESHSYNC_OT_PromptProjectPath,
     MESHSYNC_OT_InstallMeshSync,
     MESHSYNC_OT_StartUnity,
     MESHSYNC_OT_CreateServer,
-    MESHSYNC_OT_CreateProject,
     MESHSYNC_OT_CheckProjectPath_Auto,
     MESHSYNC_OT_CheckProjectPath_Manual,
     MESHSYNC_OT_FinishChecks
