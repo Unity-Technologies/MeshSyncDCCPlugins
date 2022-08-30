@@ -105,7 +105,7 @@ def msb_initialize_properties():
     
     bpy.utils.register_class(UnityVersion)
     bpy.types.Scene.meshsync_unity_version = bpy.props.CollectionProperty(type=UnityVersion)
-    bpy.types.Scene.meshsync_unity_version_index = bpy.props.IntProperty()
+    bpy.types.Scene.meshsync_unity_version_index = bpy.props.IntProperty(default = -1)
 
     bpy.types.Scene.meshsync_selected_unity_version = bpy.props.StringProperty(name = "Unity Version", default = "")
 
@@ -258,13 +258,12 @@ def update_project_path_from_server(context):
     context.scene.meshsync_unity_project_path = msb_context.editor_command_reply;
 
 def create_unity_project(directory):
-    global unity_process
-    #TODO handle multiple versions of unity editor installed with user prompt
-    # For now assume only one version installed
-
-    editor_path = get_editor_path(editor_version)    
+    global unity_process  
 
     versions = get_editor_versions()
+    if len(versions) > 1:
+        bpy.ops.meshsync.select_unity_version('INVOKE_DEFAULT')
+        return
 
     #use the latest version
     version = versions[-1]
@@ -304,8 +303,6 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
     def execute(self, context):
-        bpy.ops.meshsync.select_unity_version('INVOKE_DEFAULT')
-        return {'FINISHED'}
 
         directory = context.scene.meshsync_unity_project_path
 
@@ -331,8 +328,8 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
         start_status = start_unity_project(directory)
 
         if start_status == 'BAD_UNITY_VERSION':
-            versions = get_editor_versions()
-            bpy.ops.meshsync.select_unity_version('INVOKE_DEFAULT')
+            #TODO handle properly
+            return {'FINISHED'}
 
         #If the project was launched now, wait until the Editor server is available
         if start_status == 'STARTED':
