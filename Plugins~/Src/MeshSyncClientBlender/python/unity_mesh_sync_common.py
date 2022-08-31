@@ -254,6 +254,17 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
     bl_idname = "meshsync.install_meshsync"
     bl_label = "Try to get the unity path from a running server"
 
+    def get_meshsync_path(self):
+        script_file = os.path.realpath(__file__)
+        directory = os.path.dirname(script_file)
+        system = platform.system()
+        if system == 'Windows':
+            return directory+"\\MeshSyncClientBlender\\resources\\com.unity.meshsync"
+        elif system == 'Darwin':
+            return directory+"/MeshSyncClientBlender/resources/com.unity.meshsync"
+        elif system == 'Linux':
+            return directory+"/MeshSyncClientBlender/resources/com.unity.meshsync"
+
     def add_meshsync_to_unity_manifest(self, path, entry):
         file = open(path, "r+");
         data = json.load(file);
@@ -286,10 +297,7 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
         else:
             manifest_path = directory + "/Packages/manifest.json"
 
-        # This is for local testing. It should be the version of the package, i.e.
-        #manifest entry = 0.14.0-preview
-        # or some path to the plugin resources folder
-        manifest_entry =  "file:C:/Users/Sean Dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
+        manifest_entry ="file:"+self.get_meshsync_path()
 
         self.add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
 

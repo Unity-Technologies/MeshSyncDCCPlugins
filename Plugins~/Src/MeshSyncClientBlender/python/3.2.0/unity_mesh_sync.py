@@ -114,7 +114,7 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
         scene = bpy.context.scene
         layout = self.layout
 
-class MESHSYNC_PT_Connect(MESHSYNC_PT, bpy.types.Panel):
+class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Unity Project"
     bl_parent_id = "MESHSYNC_PT_Main"
 
@@ -320,9 +320,9 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 classes = (
     MESHSYNC_PT_Main,
-    MESHSYNC_PT_Connect,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
