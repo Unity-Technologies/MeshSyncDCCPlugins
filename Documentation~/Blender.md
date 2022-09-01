@@ -42,7 +42,7 @@ requires Blender 3.0 or higher.
 
 MeshSync synchronizes custom properties on objects and geometry node inputs from Blender 
 with the MeshSyncServer **GameObject** in Unity.
-If needed, a MeshSyncServerLiveEditProperties component is created to store, display and edit these properties.
+If needed, a MeshSyncServerLiveEditProperties component is automatically created to store, display and edit these properties.
 
 The supported property types are:
 * Integer
