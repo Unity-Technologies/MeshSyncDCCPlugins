@@ -1,5 +1,5 @@
 * [MeshSync DCC Plugins](index.md)
-* [Installation](en/Installation.md)
+* [Installation](Installation.md)
 * Usage in DCC Tools
     * [Maya](Maya.md)
     * [3ds Max](3dsMax.md)
