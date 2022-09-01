@@ -1,13 +1,26 @@
 # Installation
 
-## PackageManager
+## Automatic Installation
 
-First, get **MeshSync DCC Plugins** package.
+![](images/MeshSyncPreferences.png)
+
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
+provides easy installation on several DCC tools.    
+Alternatively, we can also [install the plugins manually](#manual-installation).
+
+## Manual Installation
+
+
+### PackageManager
+
+![](images/PackageManager.png)
+
+First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
 2. Click the **+** button, and choose **Add package from git URL**.
 3. Type in `com.unity.meshsync.dcc-plugins`.
 
-## DCC Tools Setup
+### DCC Tools Setup
 
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
