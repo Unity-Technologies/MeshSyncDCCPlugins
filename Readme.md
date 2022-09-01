@@ -90,6 +90,15 @@ Notes:
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
 Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
+
+## Usage in DCC Tools
+
+1. [Maya](Documentation~/Maya.md)
+2. [3ds Max](Documentation~/3dsMax.md)
+3. [MotionBuilder](Documentation~/MotionBuilder.md)
+4. [Blender](Documentation~/Blender.md)
+5. [Modo](Documentation~/Modo.md)
+6. [Metasequoia](Documentation~/Metasequoia.md)
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -260,4 +269,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Aug 30 03:00:08 UTC 2022*
+*Auto-generated on Thu Sep  1 02:32:33 UTC 2022*
