@@ -15,6 +15,7 @@ as can be seen above, where most of the options are self-explanatory.
 | **Auto Sync**             | A toggle that will automatically reflect mesh changes to Unity.|
 | **Manual Sync**           | Use the **Manual Sync** button to reflect mesh changes when **Auto Sync** is inactive.|
 | Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
+| **Export Cache** | Export file into an *.sc* file. Please refer to the SceneCache feature in [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest).|
 
 The following properties are supported:
 1. The polygon mesh's skinning/bone (Armature) 
