@@ -41,7 +41,7 @@ requires Blender 3.0 or higher.
 ![](images/MeshSyncServerLiveEditProperties.png)
 
 MeshSync synchronizes custom properties on objects and geometry node inputs from Blender 
-with the MeshSyncServer **GameObject** in Unity.
+with the MeshSyncServer **GameObject** in Unity.  
 If needed, a MeshSyncServerLiveEditProperties component is automatically created to store, display and edit these properties.
 
 The supported property types are:
@@ -55,7 +55,7 @@ The supported property types are:
 
 We can also edit and send meshes back to Blender if we enable the **Use Pro Builder** option 
 in the MeshSyncServer **GameObject** in Unity, which will allow us to change geometry node mesh inputs 
-from Unity easily.
+from Unity easily.  
 This option will only appear if we install [ProBuilder](https://docs.unity3d.com/Packages/com.unity.probuilder@5.0/manual/index.html) package in the Unity project.
 
 ![](images/MeshSyncClientBlender_ProBuilder.png)
