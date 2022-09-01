@@ -1,13 +1,26 @@
 # Installation
 
-## PackageManager
+## Automatic Installation
 
-First, get **MeshSync DCC Plugins** package.
+![](images/MeshSyncPreferences.png)
+
+[MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
+provides easy installation on several DCC tools.    
+Alternatively, we can also [install the plugins manually](#manual-installation).
+
+## Manual Installation
+
+
+### PackageManager
+
+![](images/PackageManager.png)
+
+First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
 2. Click the **+** button, and choose **Add package from git URL**.
 3. Type in `com.unity.meshsync.dcc-plugins`.
 
-## DCC Tools Setup
+### DCC Tools Setup
 
 1. [Maya](#maya)
 1. [3ds Max](#3ds-max)
@@ -35,7 +48,9 @@ First, get **MeshSync DCC Plugins** package.
 1. Notice that *UnityMeshSync* should now be available on the shelf UI.  
   Click on the gear icon to open the settings menu and start playing around with MeshSync.
   
-![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
+![MeshSyncClientMaya](images/MeshSyncClientMaya.png)
+
+---
 
 ### 3ds Max
 
@@ -54,7 +69,9 @@ First, get **MeshSync DCC Plugins** package.
    > If we change the menu bar, "UnityMeshSync" will be added under Action, which 
    > still allows us to access MeshSync features.
 
-![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
+![MeshSyncClient3dsMax](images/MeshSyncClient3dsMax.png)
+
+---
 
 ### MotionBuilder
 
@@ -70,30 +87,24 @@ First, get **MeshSync DCC Plugins** package.
 1. Start playing around with various MeshSync settings and features by 
    selecting Devices -> UnityMeshSync in the Navigator.
 
-![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
+![MeshSyncClientMotionBuilder](images/MeshSyncClientMotionBuilder.png)
+
+---
 
 ### Blender
   
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Blender.
 1. Start Blender
-1. Depending on the Blender version, the installation is a bit different.
-   - Blender 2.79:
-     * Go to File -> User Preferences -> Add-ons
-     * Click "Install Add-on from file" at the bottom of the window, and select **blender-2.79.zip** file.
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the menu.
-   - Blender 2.80 or after:
-     * Go to Edit -> User Preferences
-     * Click "Install" at the top right of the window, and select the appropriate **blender-2.xx.zip** file.
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
-     
-     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
+1. Go to Edit -> User Preferences
+1. Click "Install" at the top right of the window, and select the appropriate **blender-x.xx.zip** file.
+1. Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.     
+   ![MeshSyncClientBlender_Installation](images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
   
-![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
-
+![MeshSyncClientBlender](images/MeshSyncClientBlender.png)
 
 #### Caveat
 
@@ -107,6 +118,7 @@ Steps to uninstall:
     ``` 
     ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ``` 
+---
 
 ### Metasequoia
   
@@ -119,8 +131,9 @@ Steps to uninstall:
 1. Go to Panel -> Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
-![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](images/MeshSyncClientMQ.png)
 
+---
 
 ### Modo
 
@@ -132,7 +145,7 @@ Steps to uninstall:
 4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
 1. Confirm that UnityMeshSync view is added in the tabs UI.
 
-![MeshSyncClientModo](../images/MeshSyncClientModo.png)
+![MeshSyncClientModo](images/MeshSyncClientModo.png)
 
 #### Caveat
 
