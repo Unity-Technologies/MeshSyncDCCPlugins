@@ -1721,8 +1721,9 @@ void msblenContext::WaitAndKickAsyncExport()
 
                     for (size_t i = 0; i < obj->transforms.size(); ++i)
                     {
-                        // We can divide the w component instead of applying the multiplier on xyz:
-                        obj->transforms[i][3][3] /= scale_factor;
+                        obj->transforms[i][3][0] *= scale_factor;
+                        obj->transforms[i][3][1] *= scale_factor;
+                        obj->transforms[i][3][2] *= scale_factor;
                     }
                 }
             }
