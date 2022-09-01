@@ -76,10 +76,10 @@ Alternatively, [Manual Installation](en/Installation.md) is also available.
 
 ## Usage in DCC Tools
 
-1. [3ds Max](3dsMax.md)
-2. [Blender](Blender.md)
-3. [Maya](Maya.md)
-4. [MotionBuilder](MotionBuilder.md)
+1. [Maya](Maya.md)
+2. [3ds Max](3dsMax.md)
+3. [MotionBuilder](MotionBuilder.md)
+4. [Blender](Blender.md)
 5. [Modo](Modo.md)
 6. [Metasequoia](Metasequoia.md)
 
