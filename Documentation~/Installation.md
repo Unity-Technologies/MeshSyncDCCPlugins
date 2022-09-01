@@ -48,7 +48,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Notice that *UnityMeshSync* should now be available on the shelf UI.  
   Click on the gear icon to open the settings menu and start playing around with MeshSync.
   
-![MeshSyncClientMaya](../images/MeshSyncClientMaya.png)
+![MeshSyncClientMaya](images/MeshSyncClientMaya.png)
 
 ### 3ds Max
 
@@ -67,7 +67,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
    > If we change the menu bar, "UnityMeshSync" will be added under Action, which 
    > still allows us to access MeshSync features.
 
-![MeshSyncClient3dsMax](../images/MeshSyncClient3dsMax.png)
+![MeshSyncClient3dsMax](images/MeshSyncClient3dsMax.png)
 
 ### MotionBuilder
 
@@ -83,7 +83,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Start playing around with various MeshSync settings and features by 
    selecting Devices -> UnityMeshSync in the Navigator.
 
-![MeshSyncClientMotionBuilder](../images/MeshSyncClientMotionBuilder.png)
+![MeshSyncClientMotionBuilder](images/MeshSyncClientMotionBuilder.png)
 
 ### Blender
   
@@ -100,12 +100,12 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
      * Click "Install" at the top right of the window, and select the appropriate **blender-2.xx.zip** file.
      * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
      
-     ![MeshSyncClientBlender_Installation](../images/MeshSyncClientBlender_Installation.png)
+     ![MeshSyncClientBlender_Installation](images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
   
-![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
+![MeshSyncClientBlender](images/MeshSyncClientBlender.png)
 
 
 #### Caveat
@@ -132,7 +132,7 @@ Steps to uninstall:
 1. Go to Panel -> Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
-![MeshSyncClientMQ](../images/MeshSyncClientMQ.png)
+![MeshSyncClientMQ](images/MeshSyncClientMQ.png)
 
 
 ### Modo
@@ -145,7 +145,7 @@ Steps to uninstall:
 4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
 1. Confirm that UnityMeshSync view is added in the tabs UI.
 
-![MeshSyncClientModo](../images/MeshSyncClientModo.png)
+![MeshSyncClientModo](images/MeshSyncClientModo.png)
 
 #### Caveat
 
