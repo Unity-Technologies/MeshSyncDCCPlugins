@@ -24,6 +24,6 @@ The plugin will send the following properties directly to Unity:
 2. Blend shapes
 3. Mirror deformers 
 
-Other properties will require **Bake Modifiers** enabled to get consistent look between Blender and Unity.
-However, this will also cause the loss of mesh properties in Unity as result of the baking.
+> Other properties will require **Bake Modifiers** enabled to get consistent look between Blender and Unity.
+> However, this will also cause the loss of mesh properties in Unity as result of the baking.
 
