@@ -89,7 +89,7 @@ Notes:
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
+Alternatively, [Manual Installation](Documentation~/Installation.md) is also available.
 
 ## Usage in DCC Tools
 
@@ -269,4 +269,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Thu Sep  1 02:32:33 UTC 2022*
+*Auto-generated on Thu Sep  1 02:59:34 UTC 2022*
