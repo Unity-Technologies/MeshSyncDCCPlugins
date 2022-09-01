@@ -40,9 +40,9 @@ requires Blender 3.0 or higher.
 
 ![](images/MeshSyncServerLiveEditProperties.png)
 
-We can set up custom properties in Blender, from which the plugin will synchronize these properties with 
-the MeshSyncServer **GameObject** in Unity, by adding a MeshSyncServerLiveEditProperties component 
-and putting the properties in it.
+MeshSync synchronizes custom properties on objects and geometry node inputs from Blender 
+with the MeshSyncServer **GameObject** in Unity.
+If needed, a MeshSyncServerLiveEditProperties component is created to store, display and edit these properties.
 
 The supported property types are:
 * Integer
@@ -53,10 +53,10 @@ The supported property types are:
 
 ### Editing and Synchronizing Meshes from Unity to DCC Tool
 
-We can also edit and send meshes back to Blender if we enable **Use Pro Builder** option in the MeshSyncServer **GameObject** in Unity,
-which will allow us to change geometry node mesh inputs from Unity easily.  
-This option will only appear if we install [ProBuilder](https://docs.unity3d.com/Packages/com.unity.probuilder@5.0/manual/index.html) package in the Unity project, 
-
+We can also edit and send meshes back to Blender if we enable the **Use Pro Builder** option 
+in the MeshSyncServer **GameObject** in Unity, which will allow us to change geometry node mesh inputs 
+from Unity easily.
+This option will only appear if we install [ProBuilder](https://docs.unity3d.com/Packages/com.unity.probuilder@5.0/manual/index.html) package in the Unity project.
 
 ![](images/MeshSyncClientBlender_ProBuilder.png)
 
