@@ -5,7 +5,7 @@
 After [installing the plugin](Installation.md), sync controls will be displayed in the MeshSync panel
 as can be seen above, where most of the options are self-explanatory.
 
-|**Sync Options** |**Description** |
+|**Options** |**Description** |
 |:---       |:---|
 | **Bake Modifiers**        | An option to sync the results after applying all modifiers. This will make the content mostly consistent between Blender and Unity, but will also result in the loss of mesh properties, such as skinning and blend shapes.|
 
