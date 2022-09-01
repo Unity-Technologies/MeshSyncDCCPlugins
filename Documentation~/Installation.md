@@ -50,6 +50,8 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
   
 ![MeshSyncClientMaya](images/MeshSyncClientMaya.png)
 
+---
+
 ### 3ds Max
 
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
@@ -69,6 +71,8 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ![MeshSyncClient3dsMax](images/MeshSyncClient3dsMax.png)
 
+---
+
 ### MotionBuilder
 
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
@@ -85,6 +89,8 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ![MeshSyncClientMotionBuilder](images/MeshSyncClientMotionBuilder.png)
 
+---
+
 ### Blender
   
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
@@ -100,7 +106,6 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
   
 ![MeshSyncClientBlender](images/MeshSyncClientBlender.png)
 
-
 #### Caveat
 
 When installing a Blender plugin, the older version has to be uninstalled first if it exists.   
@@ -113,6 +118,7 @@ Steps to uninstall:
     ``` 
     ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
     ``` 
+---
 
 ### Metasequoia
   
@@ -127,6 +133,7 @@ Steps to uninstall:
 
 ![MeshSyncClientMQ](images/MeshSyncClientMQ.png)
 
+---
 
 ### Modo
 
