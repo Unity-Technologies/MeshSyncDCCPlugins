@@ -90,17 +90,10 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
    and uncompress the appropriate zip file for Blender.
 1. Start Blender
-1. Depending on the Blender version, the installation is a bit different.
-   - Blender 2.79:
-     * Go to File -> User Preferences -> Add-ons
-     * Click "Install Add-on from file" at the bottom of the window, and select **blender-2.79.zip** file.
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the menu.
-   - Blender 2.80 or after:
-     * Go to Edit -> User Preferences
-     * Click "Install" at the top right of the window, and select the appropriate **blender-2.xx.zip** file.
-     * Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.
-     
-     ![MeshSyncClientBlender_Installation](images/MeshSyncClientBlender_Installation.png)
+1. Go to Edit -> User Preferences
+1. Click "Install" at the top right of the window, and select the appropriate **blender-x.xx.zip** file.
+1. Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.     
+   ![MeshSyncClientBlender_Installation](images/MeshSyncClientBlender_Installation.png)
 
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
