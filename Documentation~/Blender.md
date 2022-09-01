@@ -3,12 +3,22 @@
 ![](images/MeshSyncClientBlender.png)
 
 After [installing the plugin](Installation.md), sync controls will be displayed in the MeshSync panel
-as can be seen above
+as can be seen above, where most of the options are self-explanatory.
 
-- When "Auto Sync" is selected, changes to the Mesh will automatically be reflected in Unity. If Auto Sync is disabled, use the "Manual Sync" button to sync changes.
-- Pressing the Animations Sync button will cause the timer to advance from the first frame to the final frame while baking the animation, then send it to Unity.
+|**Sync Options** |**Description** |
+|:---       |:---|
+| **Bake Modifiers**        | An option to sync the results after applying all modifiers. This will make the content mostly consistent between Blender and Unity, but will also result in the loss of mesh properties, such as skinning and blend shapes.|
 
-&nbsp;
 
-- The polygon mesh's skinning/bone (Armature) and Blendshape will be sent to Unity unchanged. Mirror deformers are also supported. Other deformers will be ignored.
-   - Check "Bake Modifiers" to sync the results of applying all modifiers. This will make the Mesh content mostly consistent between  Blender and Unity, but will also result in the loss of Skinning and Blendshape information.
+|**Buttons** |**Description** |
+|:---       |:---|
+| **Auto Sync**             | A toggle that will automatically reflect mesh changes to Unity.|
+| **Manual Sync**           | Use the **Manual Sync** button to reflect mesh changes when **Auto Sync** is inactive.|
+| Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
+
+The following properties are supported:
+1. The polygon mesh's skinning/bone (Armature) 
+2. Blend shapes
+3. Mirror deformers 
+
+
