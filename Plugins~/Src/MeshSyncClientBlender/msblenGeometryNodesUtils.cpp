@@ -8,6 +8,8 @@
 #include <msblenUtils.h>
 #include <BLI_listbase.h>
 
+#include "msblenEntityHandler.h"
+
 
 using namespace std;
 using namespace mu;
@@ -40,12 +42,22 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const float4x4& blenderMatrix) {            
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) {
 
-        return 
+        float4x4 m =  
             m_blender_to_unity_world *
             blenderMatrix *
             m_blender_to_unity_local;
+
+     /*   float4x4 input = m_blender_to_unity_world * blenderMatrix;
+
+    	msblenEntityHandler::applyCorrectionIfNeeded(obj, input);
+
+        float4x4 m =
+            input *
+            m_blender_to_unity_local;*/
+        
+        return m;
     }
 
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
@@ -76,6 +88,7 @@ namespace blender {
                     records_by_name[obj->id.name] = &rec;
                 }
 
+                //msblenEntityHandler::applyCorrectionIfNeeded(obj, matrix);
                 rec.matrices.push_back(matrix);
             });
 
@@ -152,9 +165,8 @@ namespace blender {
 
             auto object = instance.object();
 
-            // We support only Mesh and Light instances
-            if (object->type != OB_MESH && 
-                object->type != OB_LAMP) {
+            // Don't instance empties, they have no data we can use to get a session id:
+            if (object->type == OB_EMPTY) {
                 continue;
             }
 

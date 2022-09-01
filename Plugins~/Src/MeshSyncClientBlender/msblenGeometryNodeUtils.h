@@ -42,7 +42,7 @@ public:
     /// <summary>
     /// /// Converts the world matrix from blender to Unity coordinate system
     /// /// </summary>
-    mu::float4x4 blenderToUnityWorldMatrix(const mu::float4x4& blenderMatrix);
+    mu::float4x4 blenderToUnityWorldMatrix(const Object* obj, const mu::float4x4& blenderMatrix);
 
     void setInstancesDirty(bool dirty);
     bool getInstancesDirty();

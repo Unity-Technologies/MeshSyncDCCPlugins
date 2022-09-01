@@ -35,5 +35,7 @@ public:
 	static void extractTransformData(BlenderSyncSettings& settings, const bPoseChannel* pose, mu::float3& t, mu::quatf& r, mu::float3& s);
 
 	static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& r, mu::float3& s);
+
+	static void applyCorrectionIfNeeded(const Object* obj, mu::float4x4& matrix);
 };
 
