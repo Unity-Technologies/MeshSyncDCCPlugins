@@ -12,4 +12,3 @@ as can be seen above
 
 - The polygon mesh's skinning/bone (Armature) and Blendshape will be sent to Unity unchanged. Mirror deformers are also supported. Other deformers will be ignored.
    - Check "Bake Modifiers" to sync the results of applying all modifiers. This will make the Mesh content mostly consistent between  Blender and Unity, but will also result in the loss of Skinning and Blendshape information.
-- Use "Convert To Mesh" to convert objects such as Nurbs into polygons, if they are able to, then sync.
