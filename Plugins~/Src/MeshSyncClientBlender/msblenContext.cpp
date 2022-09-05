@@ -544,6 +544,22 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+
+    // We don't use frame_set(), so the scene camera is not updated.
+    // Look at the markers to figure out what the active camera should be:
+    auto scene = bl::BlenderPyContext::get().scene();
+
+    const Object* currentCamera = src;
+    for (TimeMarker* marker : bl::list_range((TimeMarker*)scene->markers.first)) {
+        if (marker->frame <= scene->r.cfra) {
+            currentCamera = marker->camera;
+        }
+    }
+
+    if (strcmp(currentCamera->id.name, src->id.name) != 0) {
+        dst.visibility.visible_in_render = false;
+    }
+
     state.manager.add(ret);
     return ret;
 }
@@ -903,7 +919,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         if (!normals.empty()) {
             dst.normals.resize_discard(num_indices);
             for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.normals[ii] = normals[ii];
+                dst.normals[ii] = ms::ceilToDecimals(normals[ii]);
         }
     }
 
@@ -1459,12 +1475,13 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
 
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1479,10 +1496,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
 #if BLENDER_VERSION >= 300
-    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
+    // The dependency graph update event does not fire when the scene changes while the timeline is playing.
+    // To ensure geometry nodes get exported correctly while playing, check the frame number:
+    static int lastExportedFrame = -1;
+    int currentFrame = scene.GetCurrentFrame();
+
+    if (m_geometryNodeUtils.getInstancesDirty() ||
+        dirty_all || 
+        currentFrame != lastExportedFrame) {
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
+
+        lastExportedFrame = currentFrame;
     }
 #endif
 
@@ -1717,6 +1743,21 @@ void msblenContext::WaitAndKickAsyncExport()
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.instanceMeshes) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
+
+            if (scale_factor != 0) {
+                for (std::vector<std::shared_ptr<ms::InstanceInfo>>::value_type& obj : t.instanceInfos)
+                {
+                    // Requires meshsync update, do here for now:
+	                //cv.convertInstanceInfos(*obj);
+
+                    for (size_t i = 0; i < obj->transforms.size(); ++i)
+                    {
+                        obj->transforms[i][3][0] *= scale_factor;
+                        obj->transforms[i][3][1] *= scale_factor;
+                        obj->transforms[i][3][2] *= scale_factor;
+                    }
+                }
+            }
         }
     };
     exporter->on_success = [this]() {

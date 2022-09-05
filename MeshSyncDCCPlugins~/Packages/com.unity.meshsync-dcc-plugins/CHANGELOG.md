@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.14.1-preview] - 2022-07-29
+
+### Fixed
+* maya-fix: load plugin for Maya 2023 properly 
+* 3dsmax-fix: export vertex alpha 
+* blender-fix: fix to export curves 
+
+## [0.14.0-preview] - 2022-07-26
+
+### Added
+* blender-feat: support for Blender 3.2.0 
+* blender-feat: send particle instance meshes
+* blender-feat: Unity->Blender communication
+* maya-feat: support for Maya 2023
+
+### Changed
+* change: set minimum Unity requirement to 2020.3
+* blender-change: convert sun light energy to Unity light intensity directly
+* licensed several components under GPL v3
+
+### Fixed
+* blender-fix: ensure layers that are hidden for render in blender, are also hidden in unity
+* blender-fix: Fix for accessing deform groups in Blender 3.0 and above
+* blender-fix: Blender settings apply differently depending on the order of using Manual Sync vs Animation Sync 
+* blender-fix: fix for calllback getting registered multiple times. Ignore updates when not active
+* blender-fix: ceil floats to avoid hashing issues 
+
+### Removed
+* blender-change: drop support for Blender 2.83
+
+
 ## [0.13.1-preview] - 2022-05-31
 
 ### Fixed

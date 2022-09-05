@@ -76,7 +76,10 @@ MeshSyncDCCPlugins~/Logs/**
 MeshSyncDCCPlugins~/Temp/**
 MeshSyncDCCPlugins~/obj/**
 MeshSyncDCCPlugins~/.vs
+MeshSyncDCCPlugins~/UserSettings/**
 
 # Rider
 **/.idea/**
+**/ProjectSettings/RiderScriptEditorPersistedState.asset
+
 

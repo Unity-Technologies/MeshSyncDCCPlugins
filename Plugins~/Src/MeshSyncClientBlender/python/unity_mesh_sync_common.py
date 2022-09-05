@@ -8,7 +8,7 @@ import bpy
 from bpy.app.handlers import persistent
 
 from bpy_extras.io_utils import ImportHelper
-import MeshSyncClientBlender as ms
+from . import MeshSyncClientBlender as ms
 
 import addon_utils
 import shutil

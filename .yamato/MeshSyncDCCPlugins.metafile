@@ -16,14 +16,14 @@ platforms:
   - platform_type: &platform_linux
       name: linux
       type: Unity::VM::GPU
-      image: package-ci/ubuntu:v2.0.0
+      image: package-ci/ubuntu:v3.6.0
       flavor: b1.medium
       cmd_prefix: DISPLAY=:0.0
 
 pack_platform: &pack_platform_linux
   name: linux
   type: Unity::VM
-  image: package-ci/ubuntu:v2.0.0
+  image: package-ci/ubuntu:v3.6.0
   flavor: b1.medium
 
 publish_platform: *platform_win
@@ -51,14 +51,6 @@ upm_ci_test_types:
           arguments: --enable-code-coverage --code-coverage-options 'generateAdditionalMetrics;generateHtmlReport;assemblyFilters:+Unity.MeshSyncDCCPlugins,+Unity.MeshSyncDCCPlugins.Editor,-Unity.MeshSyncDCCPlugins.Tests,-Unity.MeshSyncDCCPlugins.EditorTests'
 
 test_configs:
-  - editor_version: 2019.4
-    test_platforms:
-      - platform_type: *platform_win
-        test_type: *upm_ci_playedit
-      - platform_type: *platform_mac
-        test_type: *upm_ci_playedit
-      - platform_type: *platform_linux
-        test_type: *upm_ci_playedit
   - editor_version: 2020.3
     test_platforms:
       - platform_type: *platform_win

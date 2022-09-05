@@ -1267,9 +1267,13 @@ ms::TransformPtr msmaxContext::exportMesh(TreeNode& n)
     return ret;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
 void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 {
-    auto t = GetTime();
+    const TimeValue t = GetTime();
+    constexpr int NUM_VERTICES_PER_FACE = 3;
+
     if (mesh) {
         if (m_settings.BakeTransform) {
             // in this case transform is applied to vertices (dst.position/rotation/scale is identity)
@@ -1293,45 +1297,45 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
         }
 
         // faces
-        int num_faces = mesh->numFaces;
-        int num_indices = num_faces * 3; // all faces in Mesh are triangle
+        const int numFaces = mesh->numFaces;
+        const int numIndices = numFaces * NUM_VERTICES_PER_FACE; // all faces in Mesh are triangle
         {
             dst.counts.clear();
-            dst.counts.resize(num_faces, 3);
-            dst.material_ids.resize_discard(num_faces);
+            dst.counts.resize(numFaces, NUM_VERTICES_PER_FACE);
+            dst.material_ids.resize_discard(numFaces);
 
-            const auto& mrec = m_material_records[n->GetMtl()];
-            if (!mrec.submaterial_ids.empty())
-                for (int mid : mrec.submaterial_ids)
+            const MaterialRecord& materialRecord = m_material_records[n->GetMtl()];
+            if (!materialRecord.submaterial_ids.empty())
+                for (const int mid : materialRecord.submaterial_ids)
                     m_material_manager.markDirty(mid);
             else
-                m_material_manager.markDirty(mrec.material_id);
+                m_material_manager.markDirty(materialRecord.material_id);
 
-            auto *faces = mesh->faces;
-            dst.indices.resize_discard(num_indices);
-            for (int fi = 0; fi < num_faces; ++fi) {
-                auto& face = faces[fi];
+            const Face* faces = mesh->faces;
+            dst.indices.resize_discard(numIndices);
+            for (int fi = 0; fi < numFaces; ++fi) {
+                const Face& face = faces[fi];
                 int gid = mesh->getFaceMtlIndex(fi);
                 int mid = 0;
 
-                if (!mrec.submaterial_ids.empty()) { // multi-materials
-                    int midx = std::min(gid, (int)mrec.submaterial_ids.size() - 1);
-                    mid = mrec.submaterial_ids[midx];
+                if (!materialRecord.submaterial_ids.empty()) { // multi-materials
+                    const int subMatId = std::min(gid, static_cast<int>(materialRecord.submaterial_ids.size()) - 1);
+                    mid = materialRecord.submaterial_ids[subMatId];
                 }
                 else // single material
-                    mid = mrec.material_id;
+                    mid = materialRecord.material_id;
                 // use upper 16 bit as face group id
                 dst.material_ids[fi] = mid | (gid << 16);
 
-                for (int i = 0; i < 3; ++i)
-                    dst.indices[fi * 3 + i] = face.v[i];
+                for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i)
+                    dst.indices[fi * NUM_VERTICES_PER_FACE + i] = face.v[i];
             }
         }
 
         // points
         const int num_vertices = mesh->numVerts;
         dst.points.resize_discard(num_vertices);
-        dst.points.assign((mu::float3*)mesh->verts, (mu::float3*)mesh->verts + num_vertices);
+        dst.points.assign(reinterpret_cast<mu::float3*>(mesh->verts), reinterpret_cast<mu::float3*>(mesh->verts) + num_vertices);
 
         // normals
         if (m_settings.sync_normals) {
@@ -1353,56 +1357,63 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
             for (int k=1;k<numUVS ;++k) {
                 MeshMap* meshMap = &mesh->maps[k];
 
-                TVFace* mapFaces = meshMap->tf;
-                UVVert* uvVertices = meshMap->tv;
-                const int numFaces = meshMap->getNumFaces();
+                const TVFace* mapFaces = meshMap->tf;
+                const UVVert* uvVertices = meshMap->tv;
+                const int numFacesInMap = meshMap->getNumFaces();
 
                 const int unityUVIndex = k - 1;
-                const int NUM_VERTICES_PER_FACE = 3;
-                const int numUVIndices = numFaces * NUM_VERTICES_PER_FACE;
+                const int numUVIndices = numFacesInMap * NUM_VERTICES_PER_FACE;
                 dst.m_uv[unityUVIndex].resize_discard(numUVIndices);
-                for (int fi = 0; fi < numFaces; ++fi) {
+                for (int fi = 0; fi < numFacesInMap; ++fi) {
                     const uint32_t offset = fi * NUM_VERTICES_PER_FACE;
                     for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
                         dst.m_uv[unityUVIndex][ offset + i] = to_float2(uvVertices[mapFaces[fi].t[i]]);
                     }
                 }
             }
-
-
         }
 
         // colors
         if (m_settings.sync_colors) {
-            int num_colors = mesh->numCVerts;
-            auto *vc_faces = mesh->vcFace;
-            auto *vc_vertices = mesh->vertCol;
-            if (num_colors && vc_faces && vc_vertices) {
-                dst.colors.resize_discard(num_indices);
-                for (int fi = 0; fi < num_faces; ++fi) {
-                    for (int i = 0; i < 3; ++i) {
-                        dst.colors[fi * 3 + i] = to_color(vc_vertices[vc_faces[fi].t[i]]);
+            const int numColorVertices = mesh->numCVerts;
+            const TVFace* srcFaces = mesh->vcFace;
+            const VertColor* srcVertexColor = mesh->vertCol;
+            if (numColorVertices && srcFaces && srcVertexColor) {
+                dst.colors.resize_discard(numIndices);
+                for (int fi = 0; fi < numFaces; ++fi) {
+                    for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
+                        const DWORD srcVertexIndex = srcFaces[fi].t[i];
+                        dst.colors[fi * NUM_VERTICES_PER_FACE + i] = to_color(srcVertexColor[srcVertexIndex]);
+                    }
+                }
+                //alpha
+                const TVFace* srcAlphaFaces = mesh->mapFaces(MAP_ALPHA);
+                const UVVert* srcAlphaVertices = mesh->mapVerts(MAP_ALPHA);
+                if (srcAlphaFaces && srcAlphaVertices){
+                    for (int fi = 0; fi < numFaces; ++fi) {
+                        for (int i = 0; i < NUM_VERTICES_PER_FACE; ++i) {
+                            const DWORD vertAlphaIndex = srcAlphaFaces[fi].t[i];
+                            const Point3 alpha = srcAlphaVertices[vertAlphaIndex];
+                            dst.colors[fi * NUM_VERTICES_PER_FACE + i].w = alpha.x;
+                        }
                     }
                 }
             }
         }
 
         if (!m_settings.BakeModifiers && m_settings.sync_bones) {
-            auto *mod = FindSkin(n);
+            Modifier* mod = FindSkin(n);
             if (mod && mod->IsEnabled()) {
-                ISkin* skin = (ISkin*)mod->GetInterface(I_SKIN);
+                ISkin* skin = reinterpret_cast<ISkin*>(mod->GetInterface(I_SKIN));
                 ISkinContextData* ctx = skin->GetContextInterface(n);
-                int num_bones = skin->GetNumBones();
-                int num_vertices = ctx->GetNumPoints();
-                if (num_vertices != dst.points.size()) {
-                    // topology is changed by modifiers. this case is not supported.
-                }
-                else {
+                const int numBones = skin->GetNumBones();
+                const int numSkinVertices = ctx->GetNumPoints();
+                if (numSkinVertices == static_cast<int>(dst.points.size())) {
                     // allocate bones and extract bindposes.
                     // note: in max, bindpose is [skin_matrix * inv_bone_matrix]
                     Matrix3 skin_matrix;
                     skin->GetSkinInitTM(n, skin_matrix);
-                    for (int bi = 0; bi < num_bones; ++bi) {
+                    for (int bi = 0; bi < numBones; ++bi) {
                         INode* bone = skin->GetBone(bi);
                         Matrix3 bone_matrix;
                         skin->GetBoneInitTM(bone, bone_matrix);
@@ -1419,14 +1430,16 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                     }
 
                     // get weights
-                    for (int vi = 0; vi < num_vertices; ++vi) {
-                        int num_affected_bones = ctx->GetNumAssignedBones(vi);
-                        for (int bi = 0; bi < num_affected_bones; ++bi) {
-                            int bone_index = ctx->GetAssignedBone(vi, bi);
-                            float bone_weight = ctx->GetBoneWeight(vi, bi);
-                            dst.bones[bone_index]->weights[vi] = bone_weight;
+                    for (int vi = 0; vi < numSkinVertices; ++vi) {
+                        const int numAffectedBones = ctx->GetNumAssignedBones(vi);
+                        for (int bi = 0; bi < numAffectedBones; ++bi) {
+                            const int boneIndex = ctx->GetAssignedBone(vi, bi);
+                            const float boneWeight = ctx->GetBoneWeight(vi, bi);
+                            dst.bones[boneIndex]->weights[vi] = boneWeight;
                         }
                     }
+                } else {
+                    // Not supported ! topology was changed by modifiers.
                 }
             }
         }
@@ -1434,27 +1447,25 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
 
     if (!m_settings.BakeModifiers && m_settings.sync_blendshapes) {
         // handle blendshape
-        auto *mod = FindMorph(n);
+        Modifier* mod = FindMorph(n);
         if (mod && mod->IsEnabled()) {
-            int num_faces = (int)dst.counts.size();
-            int num_points = (int)dst.points.size();
-            int num_normals = (int)dst.normals.size();
+            const int numPoints = static_cast<int>(dst.points.size());
 
-            MaxMorphModifier morph(mod);
-            int num_channels = morph.NumMorphChannels();
-            for (int ci = 0; ci < num_channels; ++ci) {
-                auto channel = morph.GetMorphChannel(ci);
-                auto num_targets = channel.NumProgressiveMorphTargets();
-                if (!channel.IsActive() || !channel.IsValid() || num_targets == 0 || channel.NumMorphPoints() != num_points)
+            const MaxMorphModifier morph(mod);
+            const int numChannels = morph.NumMorphChannels();
+            for (int ci = 0; ci < numChannels; ++ci) {
+                MaxMorphChannel channel = morph.GetMorphChannel(ci);
+                const int numTargets = channel.NumProgressiveMorphTargets();
+                if (!channel.IsActive() || !channel.IsValid() || numTargets == 0 || channel.NumMorphPoints() != numPoints)
                     continue;
 
-                auto dbs = ms::BlendShapeData::create();
-                for (int ti = 0; ti < num_targets; ++ti) {
+                std::shared_ptr<ms::BlendShapeData> dbs = ms::BlendShapeData::create();
+                for (int ti = 0; ti < numTargets; ++ti) {
                     if (!channel.IsValidProgressiveMorphTargetIndex(ti))
                         continue;
 
                     dbs->frames.push_back(ms::BlendShapeFrameData::create());
-                    auto& frame = *dbs->frames.back();
+                    ms::BlendShapeFrameData& frame = *dbs->frames.back();
                     frame.weight = channel.GetProgressiveMorphWeight(ti);
 
                     // workaround.
@@ -1462,8 +1473,8 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
                         frame.weight = 100.0f;
 
                     // gen delta
-                    frame.points.resize_discard(num_points);
-                    for (int vi = 0; vi < num_points; ++vi)
+                    frame.points.resize_discard(numPoints);
+                    for (int vi = 0; vi < numPoints; ++vi)
                         frame.points[vi] = to_float3(channel.GetProgressiveMorphPoint(ti, vi)) - dst.points[vi];
                 }
                 if (!dbs->frames.empty()) {
@@ -1492,6 +1503,7 @@ void msmaxContext::doExtractMeshData(ms::Mesh &dst, INode *n, Mesh *mesh)
     }
 }
 
+//----------------------------------------------------------------------------------------------------------------------
 
 bool msmaxContext::exportAnimations(INode *n, bool force)
 {
