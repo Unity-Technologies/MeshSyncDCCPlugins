@@ -90,8 +90,7 @@ namespace blender {
     
                     records_by_name[obj->id.name] = &rec;
                 }
-
-                //msblenEntityHandler::applyCorrectionIfNeeded(obj, matrix);
+                
                 rec.matrices.push_back(matrix);
             });
 

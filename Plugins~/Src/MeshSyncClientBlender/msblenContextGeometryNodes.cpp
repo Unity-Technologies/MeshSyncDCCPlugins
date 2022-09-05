@@ -72,7 +72,7 @@ void msblenContext::exportInstances() {
 }
 void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse)
 {
-    mu::parallel_for(0, mat.size(), 1000, [this, &instancedObject, &mat, &inverse](int i)
+    mu::parallel_for(0, mat.size(), 10, [this, &instancedObject, &mat, &inverse](int i)
         {
             mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i]);
         });
