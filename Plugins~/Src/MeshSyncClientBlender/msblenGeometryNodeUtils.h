@@ -40,10 +40,10 @@ public:
     void each_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>, bool)> handler);
 
     /// <summary>
-    /// /// Converts the world matrix from blender to Unity coordinate system
-    /// /// </summary>
+    /// Converts the world matrix from blender to Unity coordinate system
+    /// </summary>
     mu::float4x4 blenderToUnityWorldMatrix(const Object* obj, const mu::float4x4& blenderMatrix);
-
+    
     void setInstancesDirty(bool dirty);
     bool getInstancesDirty();
 
@@ -52,6 +52,7 @@ private:
 
     mu::float4x4 m_blender_to_unity_local;
     mu::float4x4 m_blender_to_unity_world;
+    mu::float4x4 m_camera_light_correction;
         
     struct Record {
         Object object_copy;

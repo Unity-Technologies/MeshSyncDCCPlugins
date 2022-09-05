@@ -53,13 +53,10 @@ void msblenContext::exportInstances() {
             return exportInstancesFromTree(instanced, parent, std::move(matrices));
         }
 
-
     	auto world_matrix = msblenEntityHandler::getWorldMatrix(instanced);
-
-        //msblenEntityHandler::applyCorrectionIfNeeded(instanced, world_matrix);
-
+        
         auto inverse = mu::invert(world_matrix);
-
+        
         // check if the object has been already exported as part of the scene
         auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
@@ -67,7 +64,6 @@ void msblenContext::exportInstances() {
         }
 
         return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
-
         });
 
     m_geometryNodeUtils.setInstancesDirty(false);
@@ -76,11 +72,9 @@ void msblenContext::exportInstances() {
 }
 void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse)
 {
-    mu::parallel_for(0, mat.size(), 10, [this, &instancedObject, &mat, &inverse](int i)
+    mu::parallel_for(0, mat.size(), 1000, [this, &instancedObject, &mat, &inverse](int i)
         {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i] * inverse);
-
-            //msblenEntityHandler::applyCorrectionIfNeeded(instancedObject, mat[i]);
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i]);
         });
 
     exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));

@@ -35,6 +35,8 @@ namespace blender {
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
             scale44(scale_z);
+        
+        m_camera_light_correction = to_mat4x4(rotate_x(90 * DegToRad));
     }
 
     /// <summary>
@@ -43,23 +45,24 @@ namespace blender {
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
     float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) {
-
-        float4x4 m =  
-            m_blender_to_unity_world *
-            blenderMatrix *
-            m_blender_to_unity_local;
-
-     /*   float4x4 input = m_blender_to_unity_world * blenderMatrix;
-
-    	msblenEntityHandler::applyCorrectionIfNeeded(obj, input);
-
-        float4x4 m =
-            input *
-            m_blender_to_unity_local;*/
         
-        return m;
-    }
+        float4x4 result = blenderMatrix;
 
+        if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
+             msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
+        }
+
+        result = m_blender_to_unity_world *
+            result *
+            m_blender_to_unity_local;
+        
+        if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
+            result = m_camera_light_correction * result;
+        }
+
+        return result;
+    }
+        
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
         m_instances_dirty = dirty;
