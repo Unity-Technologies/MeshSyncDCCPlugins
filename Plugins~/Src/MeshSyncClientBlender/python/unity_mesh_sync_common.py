@@ -297,7 +297,8 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
         else:
             manifest_path = directory + "/Packages/manifest.json"
 
-        manifest_entry ="file:"+self.get_meshsync_path()
+        #TODO replace with release that has the Editor Commands changes
+        manifest_entry = "0.14.5-preview"
 
         self.add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
 
