@@ -66,8 +66,8 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
         else:
-            layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
-        layout.operator("meshsync.send_objects", text="Manual Sync")
+            layout.operator("meshsync.check_project_path_auto", text="Auto Sync", icon="PLAY")
+        layout.operator("meshsync.check_project_path_manual", text="Manual Sync")
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -104,6 +104,19 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.label(text = msb_context.PLUGIN_VERSION)
 
+class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
+    bl_label = "Unity Project"
+    bl_parent_id = "MESHSYNC_PT_Main"
+
+    initialized = False
+
+    def draw(self, context):
+        scene = bpy.context.scene
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        layout.prop(scene, "meshsync_unity_project_path")
+        layout.prop(scene, "meshsync_unity_hub_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -161,7 +174,6 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
         msb_context.exportUpdatedObjects()
-
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
     bl_idname = "meshsync.export_cache"
@@ -298,6 +310,7 @@ classes = (
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
@@ -305,6 +318,15 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
+    MESHSYNC_OT_CheckProjectPath,
+    MESHSYNC_OT_TryGetPathFromServer,
+    MESHSYNC_OT_PromptProjectPath,
+    MESHSYNC_OT_InstallMeshSync,
+    MESHSYNC_OT_StartUnity,
+    MESHSYNC_OT_CreateServer,
+    MESHSYNC_OT_CheckProjectPath_Auto,
+    MESHSYNC_OT_CheckProjectPath_Manual,
+    MESHSYNC_OT_FinishChecks
 )
 
 def register():
