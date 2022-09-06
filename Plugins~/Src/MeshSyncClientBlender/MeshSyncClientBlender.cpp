@@ -107,8 +107,6 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
 
             BindConst(is_server_available, self->isServerAvailable())
             BindConst(error_message, self->getErrorMessage())
-            BindConst(is_editor_server_available, self->isEditorServerAvailable())
-            BindConst(editor_command_reply, self->getEditorCommandReply())
 
             BindProperty(server_address,
                 [](const self_t& self) { return self->getSettings().client_settings.server; },
@@ -178,10 +176,6 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, py::object depsgraph) {
                     auto graph = DepsgraphFromPyObject(depsgraph);
                     self->onDepsgraphUpdatedPost(graph);
-                })
-
-            BindMethod(sendEditorCommand, [](self_t& self, int command) {
-                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command); 
                 });
     }
     {

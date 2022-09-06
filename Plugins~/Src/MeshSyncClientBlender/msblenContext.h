@@ -54,7 +54,6 @@ public:
 
     void logInfo(const char *format, ...);
     bool isServerAvailable();
-    bool isEditorServerAvailable();
     const std::string& getErrorMessage();
 
     void wait();
@@ -73,10 +72,6 @@ public:
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
     void requestLiveEditMessage();
-    
-    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type);
-    string& getEditorCommandReply();
-
 private:
     // todo
     struct NodeRecord {
@@ -205,8 +200,6 @@ private:
     msblenCurveHandler m_curves_handler;
 
     bool m_server_requested_sync;
-
-    string m_editor_command_reply;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
