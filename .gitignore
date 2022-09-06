@@ -75,7 +75,7 @@ MeshSyncDCCPlugins~/.vs
 MeshSyncDCCPlugins~/UserSettings/**
 
 # Manually extracted files from the zip files in the package
-#!Editor/Plugins/*/*
+Editor/Plugins/*/*
 
 # Rider
 **/.idea/**
