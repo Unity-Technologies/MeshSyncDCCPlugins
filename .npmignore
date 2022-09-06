@@ -25,7 +25,7 @@ Plugins~/**
 MeshSyncDCCPlugins~/**
 
 # Don't ignore DCC plugin zip files
-!Editor/Plugins~/*.zip
+!Editor/Plugins/*.zip
 
 # Parts to auto generate files
 AutoGenerateParts/**
