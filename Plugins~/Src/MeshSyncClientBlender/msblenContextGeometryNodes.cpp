@@ -52,9 +52,9 @@ void msblenContext::exportInstances() {
             transform->reset();
             return exportInstancesFromTree(instanced, parent, std::move(matrices));
         }
-
-    	auto world_matrix = msblenEntityHandler::getWorldMatrix(instanced);
         
+    	auto world_matrix = msblenEntityHandler::getWorldMatrix(parent);
+
         auto inverse = mu::invert(world_matrix);
         
         // check if the object has been already exported as part of the scene
@@ -74,7 +74,7 @@ void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* par
 {
     mu::parallel_for(0, mat.size(), 10, [this, &instancedObject, &mat, &inverse](int i)
         {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i]);
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i], inverse);
         });
 
     exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
@@ -84,7 +84,7 @@ void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* par
 {
     mu::parallel_for(0, mat.size(), 10, [this, &instancedObject, &mat](int i)
         {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i]);
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i], float4x4::identity());
         });
 
     exportInstanceInfo(*m_instances_state, m_intermediate_paths, instancedObject, parent, std::move(mat));

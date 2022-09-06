@@ -44,9 +44,11 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) {
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix, const mu::float4x4& parentInverse) {
         
         float4x4 result = blenderMatrix;
+
+        result *= parentInverse;
 
         if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
              msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
