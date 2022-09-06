@@ -74,6 +74,10 @@ MeshSyncDCCPlugins~/obj/**
 MeshSyncDCCPlugins~/.vs
 MeshSyncDCCPlugins~/UserSettings/**
 
+# Manually extracted files from the zip files in the package
+#!Editor/Plugins/*/*
+
 # Rider
 **/.idea/**
 **/ProjectSettings/RiderScriptEditorPersistedState.asset
+
