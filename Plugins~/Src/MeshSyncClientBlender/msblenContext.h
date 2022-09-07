@@ -157,8 +157,7 @@ private:
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
-    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse);
-    void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstancesWithPathProvider(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse, msblenContextPathProvider& pathProvider);
 
     ms::InstanceInfoPtr exportInstanceInfo(
         msblenContextState& state,
