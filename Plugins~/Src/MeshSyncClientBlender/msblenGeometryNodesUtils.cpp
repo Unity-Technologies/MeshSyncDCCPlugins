@@ -54,6 +54,9 @@ namespace blender {
             result *
             m_blender_to_unity_local;
 
+        // Apply inverse of the correction because the original of the instanced light/camera
+        // would have the correction applied and without this its inverse would not match
+        // the inverse we use on blender's side:
         if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
             result = m_camera_light_correction * result;
         }
