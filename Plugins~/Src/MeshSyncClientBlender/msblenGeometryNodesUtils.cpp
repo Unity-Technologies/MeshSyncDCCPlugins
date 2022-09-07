@@ -47,9 +47,7 @@ namespace blender {
     float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) const
     {        
         float4x4 result = blenderMatrix;
-
-        //result *= parentInverse;
-
+        
         if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
              msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
         }
