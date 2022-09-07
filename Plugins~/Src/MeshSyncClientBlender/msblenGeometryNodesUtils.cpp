@@ -45,21 +45,19 @@ namespace blender {
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
     float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) const
-    {        
+    {
         float4x4 result = blenderMatrix;
-        
-        if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
-             msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
-        }
+
+        msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
 
         result = m_blender_to_unity_world *
             result *
             m_blender_to_unity_local;
-        
+
         if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
             result = m_camera_light_correction * result;
         }
-
+        
         return result;
     }
         
