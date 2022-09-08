@@ -53,7 +53,7 @@ void msblenContext::exportInstances() {
             settings.BakeModifiers = false;
             auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instanced, false);
             transform->reset();
-            return exportInstancesWithPathProvider(instanced, parent, std::move(matrices), inverse, m_intermediate_paths);
+            return exportInstances(instanced, parent, std::move(matrices), inverse, m_intermediate_paths);
         }
         
         // check if the object has been already exported as part of the scene
@@ -62,7 +62,7 @@ void msblenContext::exportInstances() {
             exportObject(*m_instances_state, m_default_paths, settings, instanced, false);
         }
 
-        return exportInstancesWithPathProvider(instanced, parent, std::move(matrices), inverse, m_default_paths);
+        return exportInstances(instanced, parent, std::move(matrices), inverse, m_default_paths);
         });
 
     m_geometryNodeUtils.setInstancesDirty(false);
@@ -70,7 +70,7 @@ void msblenContext::exportInstances() {
     scene_objects.clear();
 }
 
-void msblenContext::exportInstancesWithPathProvider(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse, msblenContextPathProvider& pathProvider)
+void msblenContext::exportInstances(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse, msblenContextPathProvider& pathProvider)
 {
     mu::parallel_for(0, mat.size(), 10, [&](int i)
         {
