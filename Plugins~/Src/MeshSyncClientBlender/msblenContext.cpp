@@ -1355,7 +1355,9 @@ bool msblenContext::isServerAvailable()
 bool msblenContext::isEditorServerAvailable()
 {
     ms::ClientSettings settings = ms::ClientSettings();
-    settings.port = 8081;
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+
     ms::Client client(settings);
 
     auto success = client.isServerAvailable();
@@ -1427,7 +1429,8 @@ void msblenContext::requestLiveEditMessage()
 bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type)
 {
     ms::ClientSettings settings = ms::ClientSettings();
-    settings.port = 8081;
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
     ms::Client client(settings);
 
     ms::EditorCommandMessage message;
