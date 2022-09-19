@@ -90,9 +90,7 @@ def msb_get_editor_path_prefix_default():
     os = platform.system()
     if os == 'Windows':
         path = "C:\\Program Files\\Unity\\Hub\\Editor"
-    elif os == 'Darwin':
-        path = "/Applications/Unity/Hub/Editor"
-    elif os == 'Linux':
+    elif os == 'Darwin' or os == 'Linux':
         path = "/Applications/Unity/Hub/Editor"
     return path;
 
@@ -245,17 +243,6 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
     bl_idname = "meshsync.install_meshsync"
     bl_label = "Try to get the unity path from a running server"
 
-    def get_meshsync_path(self):
-        script_file = os.path.realpath(__file__)
-        directory = os.path.dirname(script_file)
-        system = platform.system()
-        if system == 'Windows':
-            return directory+"\\MeshSyncClientBlender\\resources\\com.unity.meshsync"
-        elif system == 'Darwin':
-            return directory+"/MeshSyncClientBlender/resources/com.unity.meshsync"
-        elif system == 'Linux':
-            return directory+"/MeshSyncClientBlender/resources/com.unity.meshsync"
-
     def add_meshsync_to_unity_manifest(self, path, entry):
         file = open(path, "r+");
         data = json.load(file);
@@ -315,9 +302,7 @@ class MESHSYNC_OT_StartUnity(bpy.types.Operator):
         os = platform.system()
         if os == 'Windows':
             path = editor_path + " -projectPath \"" + project_path + "\""
-        elif os == 'Darwin':
-            path = editor_path + " -projectPath " + project_path
-        elif os == 'Linux':
+        elif os == 'Darwin' or os == 'Linux':
             path = editor_path + " -projectPath " + project_path
 
         return subprocess.Popen(path)
