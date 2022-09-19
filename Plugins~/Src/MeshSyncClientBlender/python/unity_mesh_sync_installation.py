@@ -115,25 +115,27 @@ def msb_try_setup_scene_server(context):
     if path == 'INVALID_PATH':
         return 'INVALID_PATH'
 
+    # Write back the valid path, in case it comes from a listening server
+    context.scene.meshsync_unity_project_path = path
+
     # Try install to unity project
     msb_try_install_meshsync_to_unity_project(path)
 
-    #Try starting unity if not already started
+    # Try starting unity if not already started
     start_status = msb_try_start_unity_project(path)
 
     #If the project was launched now, wait until the Editor server is available
-    print(start_status)
     if start_status == 'STARTED':
         while(msb_context.is_editor_server_available is False):
             time.sleep(0.1)
     elif start_status == 'EDITOR_NOT_EXISTS':
         return 'EDITOR_NOT_EXISTS'
 
-    #Send a command to add a scene server (if it doesn't exist already)
+    # Send a command to add a scene server (if it doesn't exist already)
     msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER)
     reply = msb_context.editor_command_reply
-    print("reply is "+reply)
-    if not reply == 'Ok':
+
+    if not reply == 'ok':
         return 'SERVER_NOT_ADDED'
 
     return 'SUCCESS'

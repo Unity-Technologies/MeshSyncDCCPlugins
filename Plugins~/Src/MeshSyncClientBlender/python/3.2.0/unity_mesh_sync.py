@@ -150,7 +150,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
 
-            setup = msb_try_setup_scene_server()
+            setup = msb_try_setup_scene_server(context)
 
             if (setup != 'SUCCESS'):
                 return {'FINISHED'}

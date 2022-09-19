@@ -1430,7 +1430,6 @@ bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type
     ms::ClientSettings settings = ms::ClientSettings();
     settings.server = m_settings.client_settings.server;
     settings.port = m_settings.editor_server_port;
-
     ms::Client client(settings);
 
     ms::EditorCommandMessage message;
