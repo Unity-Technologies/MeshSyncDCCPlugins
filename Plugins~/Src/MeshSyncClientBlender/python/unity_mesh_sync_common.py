@@ -19,6 +19,8 @@ import time
 msb_context = ms.Context()
 msb_cache = ms.Cache()
 
+EDITOR_COMMAND_ADD_SERVER = 1
+EDITOR_COMMAND_GET_PROJECT_PATH = 2
 
 def msb_apply_scene_settings(self = None, context = None):
     ctx = msb_context
@@ -203,7 +205,7 @@ class MESHSYNC_OT_TryGetPathFromServer(bpy.types.Operator):
             return {'FINISHED'}
 
         #Get the project path
-        msb_context.sendEditorCommand(2)
+        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
         server_reply = msb_context.editor_command_reply
         directory = context.scene.meshsync_unity_project_path
 
@@ -317,7 +319,7 @@ class MESHSYNC_OT_StartUnity(bpy.types.Operator):
 
         #Check if there is an editor server listening from the target project
         if msb_context.is_editor_server_available:
-            msb_context.sendEditorCommand(2)
+            msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
             reply_path = msb_context.editor_command_reply;
             if reply_path == directory:
                 return 'ALREADY_STARTED'
@@ -361,7 +363,7 @@ class MESHSYNC_OT_CreateServer(bpy.types.Operator):
 
     def execute(self, context):
        #If there is no server in the scene, add one
-        msb_context.sendEditorCommand(1)
+        msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER)
         bpy.ops.meshsync.finish_checks('INVOKE_DEFAULT')
         return {'FINISHED'}
 
