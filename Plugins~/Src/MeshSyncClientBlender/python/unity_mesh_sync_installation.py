@@ -87,27 +87,25 @@ def msb_try_get_path_from_server():
     return server_reply
 
 def msb_add_meshsync_to_unity_manifest(path, entry):
-    file = open(path, "r+");
-    data = json.load(file);
+    with open(path, "r+") as file:
+        data = json.load(file);
     
-    # check if MeshSync is installed on selected project
-    # if not installed, install it
-    found = False
+        # check if MeshSync is installed on selected project
+        # if not installed, install it
+        found = False
 
-    for package in data['dependencies']:
-        if package == 'com.unity.meshsync' and data['dependencies']['com.unity.meshsync'] == entry:
-            found = True
-            break
+        for package in data['dependencies']:
+            if package == 'com.unity.meshsync' and data['dependencies']['com.unity.meshsync'] == entry:
+                found = True
+                break
 
-    if found == False:
-        #install for user
-        dependencies = data["dependencies"];
-        dependencies["com.unity.meshsync"] = entry
-        file.seek(0)
-        file.truncate(0)
-        json.dump(data, file)
-        
-        file.close()
+        if found == False:
+            #install for user
+            dependencies = data["dependencies"];
+            dependencies["com.unity.meshsync"] = entry
+            file.seek(0)
+            file.truncate(0)
+            json.dump(data, file)
 
 def msb_try_install_meshsync_to_unity_project(directory):
 
