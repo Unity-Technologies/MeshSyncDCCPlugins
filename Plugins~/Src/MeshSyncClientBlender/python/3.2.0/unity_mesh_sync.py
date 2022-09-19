@@ -149,6 +149,12 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
+
+            setup = msb_try_setup_scene_server()
+
+            if (setup != 'SUCCESS'):
+                return {'FINISHED'}
+
             scene.meshsync_auto_sync = True
             if not scene.meshsync_auto_sync:
                 # server not available
@@ -323,6 +329,7 @@ classes = (
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
