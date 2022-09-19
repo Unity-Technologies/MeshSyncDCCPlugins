@@ -26,9 +26,6 @@ This allows devs to immediately see how things will look in-game while modelling
   Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
   deformer information.
   
-* To correctly do birectional sync for geometry nodes or meshes that have modifiers in Blender, we need to enable the **Bake Modifiers** option.  
-  ![](images/MeshSyncClientBlender_BakeMods.png)
-
 
 ## Supported DCC Tools
 
