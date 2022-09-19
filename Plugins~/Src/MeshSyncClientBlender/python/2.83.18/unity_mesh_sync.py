@@ -38,6 +38,7 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_server_address")
         layout.prop(scene, "meshsync_server_port")
+        layout.prop(scene, "meshsync_editor_server_port")
 
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
@@ -66,8 +67,8 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
         else:
-            layout.operator("meshsync.check_project_path_auto", text="Auto Sync", icon="PLAY")
-        layout.operator("meshsync.check_project_path_manual", text="Manual Sync")
+            layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
+        layout.operator("meshsync.send_objects", text="Manual Sync")
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -138,6 +139,11 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
+
+            setup = msb_try_setup_scene_server(context)
+            if msb_error_messages_for_status(setup, context) == False:
+                return {'FINISHED'}
+
             scene.meshsync_auto_sync = True
             if not scene.meshsync_auto_sync:
                 # server not available
@@ -319,15 +325,6 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_OT_CheckProjectPath,
-    MESHSYNC_OT_TryGetPathFromServer,
-    MESHSYNC_OT_PromptProjectPath,
-    MESHSYNC_OT_InstallMeshSync,
-    MESHSYNC_OT_StartUnity,
-    MESHSYNC_OT_CreateServer,
-    MESHSYNC_OT_CheckProjectPath_Auto,
-    MESHSYNC_OT_CheckProjectPath_Manual,
-    MESHSYNC_OT_FinishChecks
 )
 
 def register():
