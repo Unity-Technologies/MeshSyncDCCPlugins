@@ -27,3 +27,42 @@ The plugin will send the following properties directly to Unity:
 > Other properties will require **Bake Modifiers** enabled to get consistent look between Blender and Unity.
 > However, this will also cause the loss of mesh properties in Unity as result of the baking.
 
+---
+
+## Bidirectional Sync
+
+Turn on **Auto-Sync** in the plugin panel to apply property changes in Unity back to Blender.  
+This feature is intended for changing Blender's procedural generation parameters from inside Unity, and 
+requires Blender 3.0 or higher.
+
+
+### Editable Properties in Unity
+
+![](images/MeshSyncServerLiveEditProperties.png)
+
+MeshSync synchronizes custom properties on objects and geometry node inputs from Blender 
+with the MeshSyncServer **GameObject** in Unity.  
+If needed, a MeshSyncServerLiveEditProperties component is automatically created to store, display and edit these properties.
+
+The supported property types are:
+* Integer
+* Float
+* Integer Array
+* Float Array
+* String (read-only)
+
+### Editing and Synchronizing Meshes from Unity to DCC Tool
+
+We can also edit and send meshes back to Blender if we enable the **Use Pro Builder** option 
+in the MeshSyncServer **GameObject** in Unity, which will allow us to change geometry node mesh inputs 
+from Unity easily.  
+This option will only appear if we install [ProBuilder](https://docs.unity3d.com/Packages/com.unity.probuilder@5.0/manual/index.html) package in the Unity project.
+
+![](images/MeshSyncClientBlender_ProBuilder.png)
+
+
+> Due to the way Unity represents a mesh, a mesh will be triangulated when it's sent back to Blender 
+> and some mesh data like vertex groups and shape keys, etc. may get lost. 
+> If **Bake Modifiers** option is enabled in the plugin, 
+> a mesh that is sent from Unity back into Blender will have modifiers applied beforehand and have them removed after.
+

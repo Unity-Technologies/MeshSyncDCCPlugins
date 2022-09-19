@@ -627,11 +627,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         mid_table[mi] = getMaterialID(blenMesh->mat[mi]);
     
     // Make reverse lookup list:
-    std::vector<int> rev_mid_table(mid_table.size());
+    std::map<int, int> rev_mid_table;
     for (int i = 0; i < mid_table.size(); i++)
-    {
-        rev_mid_table[mid_table[i]] = i;
-    }
+        rev_mid_table.insert(make_pair(mid_table[i], i));
 
     int num_indices = mesh->indices.size();
     int num_polygons = num_indices / 3;
@@ -688,8 +686,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
         const int material_index = mesh->material_ids[pi];
         if (material_index != ms::InvalidID) {
-            if (material_index < rev_mid_table.size()) {
-                bmeshPolygons[pi].mat_nr = rev_mid_table[material_index];
+            auto it = rev_mid_table.find(material_index);
+            if (it != rev_mid_table.end()) {
+                bmeshPolygons[pi].mat_nr = it->second;
             }
             else {
                 bmeshPolygons[pi].mat_nr = 0;
@@ -1436,6 +1435,8 @@ bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type
 
     ms::EditorCommandMessage message;
     message.command_type = type;
+    message.session_id = id_utility.GetSessionId();
+    message.message_id = id_utility.GetNextMessageId();
 
     auto success = client.send(message, m_editor_command_reply);
 
