@@ -1,20 +1,8 @@
 import os
-import os.path
-from os import path
-import platform
-import subprocess
 import re
 import bpy
 from bpy.app.handlers import persistent
-
-from bpy_extras.io_utils import ImportHelper
 from . import MeshSyncClientBlender as ms
-
-import addon_utils
-import shutil
-
-import json
-import time
 
 msb_context = ms.Context()
 msb_cache = ms.Cache()
@@ -157,7 +145,6 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
 
 class MESHSYNC_OT_CheckProjectPath_Auto(bpy.types.Operator):
     bl_idname = "meshsync.check_project_path_auto"
@@ -379,19 +366,15 @@ class MESHSYNC_OT_FinishChecks(bpy.types.Operator):
             bpy.ops.meshsync.auto_sync('INVOKE_DEFAULT')
         return {'FINISHED'}
 
-
 class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
-
     def execute(self, context):
-
-        # Export data
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context)
+        msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_OBJECTS)
-
         return{'FINISHED'}
+
 
 class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
     bl_idname = "meshsync.send_animations"

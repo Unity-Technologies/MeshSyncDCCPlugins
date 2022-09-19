@@ -114,6 +114,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(server_port,
                 [](const self_t& self) { return self->getSettings().client_settings.port; },
                 [](self_t& self, uint16_t v) { self->getSettings().client_settings.port = v; })
+            BindProperty(editor_server_port, 
+                [](const self_t& self) {return self->getSettings().editor_server_port; },
+                [](self_t& self, uint16_t v) {self->getSettings().editor_server_port = v; })
             BindProperty(scale_factor,
                 [](const self_t& self) { return self->getSettings().scene_settings.scale_factor; },
                 [](self_t& self, float v) { self->getSettings().scene_settings.scale_factor = v; })

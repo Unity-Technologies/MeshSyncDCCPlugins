@@ -1350,6 +1350,22 @@ bool msblenContext::isServerAvailable()
     return m_sender.isServerAvaileble();
 }
 
+bool msblenContext::isEditorServerAvailable()
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+
+    ms::Client client(settings);
+
+    auto success = client.isServerAvailable();
+    return success;
+}
+
+string& msblenContext::getEditorCommandReply() {
+    return m_editor_command_reply;
+}
+
 const std::string& msblenContext::getErrorMessage()
 {
     return m_sender.getErrorMessage();
@@ -1406,6 +1422,22 @@ void msblenContext::requestLiveEditMessage()
         }
     };
     m_sender.requestLiveEditMessage();
+}
+
+bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type)
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+    ms::Client client(settings);
+
+    ms::EditorCommandMessage message;
+    message.command_type = type;
+
+    auto success = client.send(message, m_editor_command_reply);
+
+    return success;
+    
 }
 
 bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
