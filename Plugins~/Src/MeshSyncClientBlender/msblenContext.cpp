@@ -1435,6 +1435,8 @@ bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type
 
     ms::EditorCommandMessage message;
     message.command_type = type;
+    message.session_id = id_utility.GetSessionId();
+    message.message_id = id_utility.GetNextMessageId();
 
     auto success = client.send(message, m_editor_command_reply);
 

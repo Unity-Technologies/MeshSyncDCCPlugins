@@ -36,6 +36,8 @@
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
+#include <MeshSync/Utility/msIdUtility.h>
+
 class msblenContext;
 
 class msblenContext {
@@ -207,6 +209,8 @@ private:
     bool m_server_requested_sync;
 
     string m_editor_command_reply;
+
+    ms::IdUtility id_utility;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
