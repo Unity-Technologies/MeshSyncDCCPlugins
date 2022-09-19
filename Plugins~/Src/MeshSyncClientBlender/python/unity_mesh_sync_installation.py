@@ -86,8 +86,9 @@ def msb_try_get_path_from_server():
     server_reply = msb_context.editor_command_reply
     return server_reply
 
-def msb_add_meshsync_to_unity_manifest(path, entry):
-    with open(path, "r+") as file:
+def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
+
+    with open(lock_path, "r+") as file:
         data = json.load(file);
     
         # check if MeshSync is installed on selected project
@@ -95,11 +96,15 @@ def msb_add_meshsync_to_unity_manifest(path, entry):
         found = False
 
         for package in data['dependencies']:
-            if package == 'com.unity.meshsync' and data['dependencies']['com.unity.meshsync'] == entry:
+            if package == 'com.unity.meshsync' and data['dependencies']['com.unity.meshsync']['version'] == entry:
                 found = True
                 break
+            elif package == 'com.unity.meshsync':
+                print(data['dependencies']['com.unity.meshsync'])
 
-        if found == False:
+    if found == False:
+        with open(manifest_path, "r+") as file:
+            data = json.load(file);
             #install for user
             dependencies = data["dependencies"];
             dependencies["com.unity.meshsync"] = entry
@@ -110,8 +115,10 @@ def msb_add_meshsync_to_unity_manifest(path, entry):
 def msb_try_install_meshsync_to_unity_project(directory):
 
         if directory[-1] == '/' or directory[-1] == '\\':
+            lock_path = directory + "Packages/packages-lock.json"
             manifest_path = directory + "Packages/manifest.json"
         else:
+            lock_path = directory + "/Packages/packages-lock.json"
             manifest_path = directory + "/Packages/manifest.json"
 
         #TODO replace with release that has the Editor Commands changes
@@ -119,7 +126,7 @@ def msb_try_install_meshsync_to_unity_project(directory):
         if DEBUG == 1:
             manifest_entry = "file:C:\\Users\\Sean Dillon\\MeshSync\\MeshSync~\\Packages\\com.unity.meshsync"
 
-        msb_add_meshsync_to_unity_manifest(manifest_path, manifest_entry)
+        msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
 def msb_try_setup_scene_server(context):
 
