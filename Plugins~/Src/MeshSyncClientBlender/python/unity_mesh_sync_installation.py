@@ -103,8 +103,6 @@ def msb_add_meshsync_to_unity_manifest(path, entry):
         #install for user
         dependencies = data["dependencies"];
         dependencies["com.unity.meshsync"] = entry
-        if (entry == ""):
-            del dependencies["com.unity.meshsync"]
         file.seek(0)
         file.truncate(0)
         json.dump(data, file)
