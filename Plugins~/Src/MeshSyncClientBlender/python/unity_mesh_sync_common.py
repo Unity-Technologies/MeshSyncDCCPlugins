@@ -106,9 +106,6 @@ def msb_initialize_properties():
     default_hub_path = msb_get_editor_path_prefix_default()
     bpy.types.Scene.meshsync_unity_editors_path = bpy.props.StringProperty(name = "Unity Editors", default= default_hub_path, subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
 
-unity_process = None
-click_source = None
-
 
 @persistent
 def on_scene_load(context):
