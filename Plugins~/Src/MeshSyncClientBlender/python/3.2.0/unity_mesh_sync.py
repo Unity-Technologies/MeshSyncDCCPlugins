@@ -49,6 +49,7 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_server_address")
         layout.prop(scene, "meshsync_server_port")
+        layout.prop(scene, "meshsync_editor_server_port")
 
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
@@ -151,8 +152,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         if not MESHSYNC_OT_AutoSync._timer:
 
             setup = msb_try_setup_scene_server(context)
-
-            if (setup != 'SUCCESS'):
+            if msb_error_messages_for_status(setup, context) == False:
                 return {'FINISHED'}
 
             scene.meshsync_auto_sync = True

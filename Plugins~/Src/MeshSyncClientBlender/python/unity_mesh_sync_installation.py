@@ -15,6 +15,23 @@ msb_context = ms.Context()
 
 unity_process = None
 
+def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
+    def draw(self, context):
+        self.layout.label(text=message)
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
+def msb_error_messages_for_status(status, context):
+    if status == 'SUCCESS':
+        return True
+    if status == 'INVALID_PATH':
+        MS_MessageBox("Path "+context.scene.meshsync_unity_project_path+" is not a Unity Project")
+    elif status == 'EDITOR_NOT_EXISTS':
+        MS_MessageBox("Could not find Unity Editors in path "+ context.scene.meshsync_unity_editors_path)
+    elif status == 'SERVER_NOT_ADDED':
+        MS_MessageBox("Could not add server to scene")
+
+    return False
+
 def msb_get_editor_path_prefix():
     path = bpy.context.scene.meshsync_unity_editors_path
     

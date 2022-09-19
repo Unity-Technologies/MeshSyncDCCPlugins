@@ -16,6 +16,7 @@ def msb_apply_scene_settings(self = None, context = None):
     scene = bpy.context.scene
     ctx.server_address = scene.meshsync_server_address
     ctx.server_port = scene.meshsync_server_port
+    ctx.editor_server_port = scene.meshsync_editor_server_port
     ctx.scale_factor = scene.meshsync_scale_factor
     ctx.sync_meshes = scene.meshsync_sync_meshes
     ctx.curves_as_mesh = scene.meshsync_curves_as_mesh
@@ -86,6 +87,7 @@ def msb_initialize_properties():
     # sync settings
     bpy.types.Scene.meshsync_server_address = bpy.props.StringProperty(name = "Address", default = "127.0.0.1", update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_server_port = bpy.props.IntProperty(name = "Port", default = 8080, min = 0, max = 65535, update = msb_on_scene_settings_updated)
+    bpy.types.Scene.meshsync_editor_server_port = bpy.props.IntProperty(name = "Unity Editor Port", default = 8081, min = 0, max = 65535, update= msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_scale_factor = bpy.props.FloatProperty(name = "Scale Factor", default = 1.0, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_sync_meshes = bpy.props.BoolProperty(name = "Sync Meshes", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_curves_as_mesh = bpy.props.BoolProperty(name = "Curves as Mesh", default = True, update = msb_on_scene_settings_updated)
@@ -120,11 +122,6 @@ def on_scene_update(context):
         msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
-def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
-    def draw(self, context):
-        self.layout.label(text=message)
-    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
 class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
@@ -132,11 +129,8 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
         
         #Try to ensure there is a scene server running
         status = msb_try_setup_scene_server(context)
-
-        if status =='INVALID_PATH':
-            message = "Path "+context.scene.meshsync_unity_project_path+" is not a Unity Project."
-            MS_MessageBox(message)
-            return{'FINISHED'}
+        if msb_error_messages_for_status(status, context) == False:
+            return {'FINISHED'}
 
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
@@ -148,6 +142,12 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
     bl_idname = "meshsync.send_animations"
     bl_label = "Export Animations"
     def execute(self, context):
+
+        #Try to ensure there is a scene server running
+        status = msb_try_setup_scene_server(context)
+        if msb_error_messages_for_status(status, context) == False:
+            return {'FINISHED'}
+
         msb_apply_scene_settings()
         msb_apply_animation_settings()
         msb_context.setup(bpy.context);
