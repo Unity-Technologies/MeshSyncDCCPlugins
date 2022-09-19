@@ -206,13 +206,16 @@ class MESHSYNC_OT_TryGetPathFromServer(bpy.types.Operator):
 
         #Get the project path
         msb_context.sendEditorCommand(2)
-        context.scene.meshsync_unity_project_path = msb_context.editor_command_reply
+        server_reply = msb_context.editor_command_reply
         directory = context.scene.meshsync_unity_project_path
 
-        if msb_validate_project_path(directory) == False:
+        if msb_validate_project_path(server_reply) == False:
             # Prompt user to enter a valid path
-            bpy.ops.meshsync.prompt_project_path('INVOKE_DEFAULT')
+            message = directory + " is not a Unity project"
+            MS_MessageBox(message = message)
+            print(message)
         else:
+            context.scene.meshsync_unity_project_path = server_reply
             bpy.ops.meshsync.create_server('INVOKE_DEFAULT')
             
         return {'FINISHED'}

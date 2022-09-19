@@ -127,7 +127,7 @@ class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_unity_project_path")
-        layout.prop(scene, "meshsync_unity_hub_path")
+        layout.prop(scene, "meshsync_unity_editors_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
