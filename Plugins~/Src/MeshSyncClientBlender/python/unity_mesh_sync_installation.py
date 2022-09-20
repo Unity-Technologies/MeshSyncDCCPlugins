@@ -197,7 +197,7 @@ def msb_try_start_unity_project (context, directory):
     if msb_context.is_editor_server_available:
         msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
         reply_path = msb_context.editor_command_reply;
-        if reply_path == directory:
+        if path.normpath(reply_path) == path.normpath(directory):
             return 'ALREADY_STARTED'
 
     editor_version = msb_get_editor_version(directory)
