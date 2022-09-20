@@ -47,7 +47,7 @@ def msb_get_editor_path(context, editor_version):
     return path.join(context.scene.meshsync_unity_editors_path,editor_version,msb_get_editor_path_suffix())
 
 def msb_validate_project_path(directory):
-    project_version_path = directory +"/ProjectSettings/ProjectVersion.txt"
+    project_version_path = path.join(directory,"ProjectSettings","ProjectVersion.txt")
     if path.exists(project_version_path):
         return True
     return False
@@ -100,13 +100,8 @@ def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
             json.dump(data, file)
 
 def msb_try_install_meshsync_to_unity_project(directory):
-
-        if directory[-1] == '/' or directory[-1] == '\\':
-            lock_path = directory + "Packages/packages-lock.json"
-            manifest_path = directory + "Packages/manifest.json"
-        else:
-            lock_path = directory + "/Packages/packages-lock.json"
-            manifest_path = directory + "/Packages/manifest.json"
+        lock_path = path.join(directory,"Packages","packages-lock.json")
+        manifest_path = path.join(directory,"Packages","manifest.json")
 
         #TODO replace with release that has the Editor Commands changes
         manifest_entry = "0.14.5-preview"
@@ -174,7 +169,7 @@ def msb_try_setup_scene_server(context):
     return 'SUCCESS'
 
 def msb_get_editor_version(directory):
-    project_version_path = directory + "/ProjectSettings/ProjectVersion.txt"
+    project_version_path = path.join(directory,"ProjectSettings","ProjectVersion.txt")
     with open(project_version_path, "r+") as file:
         first_line = file.readline()
         version = first_line[len("m_EditorVersion: "):]
