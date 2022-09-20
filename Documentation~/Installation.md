@@ -1,7 +1,7 @@
 # Installation
 
 ## Automatic Installation via DCC tools
-We can install everything through DCC tools. Currently, this is available only for Blender. For other DCC tools, see [Automatic Installation via Unity Editor](./Installation.md#Installation##Automatic-Installation-via-Unity-Editor).
+We can install everything through DCC tools. Currently, this is available only for Blender. For other DCC tools, see [Automatic Installation via Unity Editor](./Installation.md#automatic-installation-via-unity-editor).
 ### Blender
 1. Download the Blender add-on from [here](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/tree/installation/blender-docs/Editor/Plugins~).
 1. Install the add-on as described [here](./Installation.md#blender-1) (Steps 2-5)
