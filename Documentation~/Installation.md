@@ -1,6 +1,18 @@
 # Installation
 
-## Automatic Installation
+## Automatic Installation via DCC tools
+We can install everything through DCC tools. Currently, this is available only for Blender. For other DCC tools, see [Automatic Installation via Unity Editor](./Installation.md#Installation##Automatic-Installation-via-Unity-Editor).
+### Blender
+1. Download the Blender add-on from [here](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/tree/installation/blender-docs/Editor/Plugins~).
+1. Install the add-on as described [here](#manual-installation##blender) (Steps 2-5)
+1. Select the location of the Unity Project and the location of the Unity Editors Folder.
+![](images/BlenderUnityProjectSection.png)
+1. Click on Auto Sync or Manual Sync.
+![](images/BlenderSyncButtons.png)
+
+The Unity project will be launched with the Blender scene synchronised.
+
+## Automatic Installation via Unity Editor
 
 ![](images/MeshSyncPreferences.png)
 
@@ -17,17 +29,17 @@ Alternatively, we can also [install the plugins manually](#manual-installation).
 
 First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
-2. Click the **+** button, and choose **Add package from git URL**.
-3. Type in `com.unity.meshsync.dcc-plugins`.
+1. Click the **+** button, and choose **Add package from git URL**.
+1. Type in `com.unity.meshsync.dcc-plugins`.
 
 ### DCC Tools Setup
 
 1. [Maya](#maya)
-1. [3ds Max](#3ds-max)
-1. [MotionBuilder](#motionbuilder)
-1. [Blender](#blender)
-1. [Metasequoia](#metasequoia)
-1. [Modo](#modo)
+2. [3ds Max](#3ds-max)
+3. [MotionBuilder](#motionbuilder)
+4. [Blender](#blender)
+5. [Metasequoia](#metasequoia)
+6. [Modo](#modo)
 
 ### Maya
 
