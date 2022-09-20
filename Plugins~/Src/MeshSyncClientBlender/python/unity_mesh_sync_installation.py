@@ -4,6 +4,7 @@ import json
 import subprocess
 import time
 import bpy
+import os
 
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
@@ -32,32 +33,18 @@ def msb_error_messages_for_status(status, context):
 
     return False
 
-def msb_get_editor_path_prefix():
-    path = bpy.context.scene.meshsync_unity_editors_path
-    
-    if path[-1] == '/' or path[-1] == '\'':
-        return path
-
-    os = platform.system()
-    if os == 'Windows':
-        path = path + '\\'
-    elif os == 'Darwin' or os == 'Linux':
-        path = path + '/'
-
-    return path
-
 def msb_get_editor_path_suffix():
     os = platform.system()
     if os == 'Windows':
-        path = "\\Editor\\Unity.exe"
+        return path.join("Editor","Unity.exe")
     elif os == 'Darwin':
-        path = "/Unity.app/Contents/MacOS/Unity"
+        return path.join("Unity.app","Contents","MacOS","Unity")
     elif os == 'Linux':
-        path = "/Unity.app/Contents/Linux/Unity"
-    return path
+        return path.join("Unity.app","Contents","Linux","Unity")
+    return None
 
-def msb_get_editor_path(editor_version):
-    return msb_get_editor_path_prefix() + editor_version + msb_get_editor_path_suffix()
+def msb_get_editor_path(context, editor_version):
+    return path.join(context.scene.meshsync_unity_editors_path,editor_version,msb_get_editor_path_suffix())
 
 def msb_validate_project_path(directory):
     project_version_path = directory +"/ProjectSettings/ProjectVersion.txt"
@@ -128,6 +115,29 @@ def msb_try_install_meshsync_to_unity_project(directory):
 
         msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
+def msb_try_install_server_config(context, directory):
+    #Get Unity project path
+    settingsPath = path.join(directory, "Assets", "ProjectSettings")
+
+    #Get template file path
+    script_file = os.path.realpath(__file__)
+    templatePath = os.path.dirname(script_file)
+    templatePath =path.join(templatePath,"resources","EditorServerSettings.yml")
+
+    #Open template file and replace the port entry
+    with open(templatePath, "r+") as source:
+        port = context.scene.meshsync_editor_server_port
+        newFile = source.read().replace('m_port: 8081', 'm_port: '+str(port))
+    
+    #Create settings path if not exists
+    if not path.exists(settingsPath):
+        os.mkdir(settingsPath)
+
+    #Write newFile to settings path
+    settingsPath = path.join(settingsPath, "EditorServerSettings.yml")
+    with open(settingsPath, "w") as target:
+        target.write(newFile)
+
 def msb_try_setup_scene_server(context):
 
     # Try get valid path
@@ -138,11 +148,14 @@ def msb_try_setup_scene_server(context):
     # Write back the valid path, in case it comes from a listening server
     context.scene.meshsync_unity_project_path = path
 
+    #Try to inject server config
+    msb_try_install_server_config(context, path)
+
     # Try install to unity project
     msb_try_install_meshsync_to_unity_project(path)
 
     # Try starting unity if not already started
-    start_status = msb_try_start_unity_project(path)
+    start_status = msb_try_start_unity_project(context, path)
 
     #If the project was launched now, wait until the Editor server is available
     if start_status == 'STARTED':
@@ -177,7 +190,7 @@ def msb_launch_project(editor_path, project_path):
 
     return subprocess.Popen(path)
 
-def msb_try_start_unity_project (directory):
+def msb_try_start_unity_project (context, directory):
         
     global unity_process
 
@@ -193,7 +206,7 @@ def msb_try_start_unity_project (directory):
             return 'ALREADY_STARTED'
 
     editor_version = msb_get_editor_version(directory)
-    editor_path = msb_get_editor_path(editor_version)
+    editor_path = msb_get_editor_path(context, editor_version)
 
     if not path.exists(editor_path):
         return 'EDITOR_NOT_EXISTS'
