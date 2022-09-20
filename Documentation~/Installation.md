@@ -29,17 +29,17 @@ Alternatively, we can also [install the plugins manually](#manual-installation).
 
 First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
-1. Click the **+** button, and choose **Add package from git URL**.
-1. Type in `com.unity.meshsync.dcc-plugins`.
+2. Click the **+** button, and choose **Add package from git URL**.
+3. Type in `com.unity.meshsync.dcc-plugins`.
 
 ### DCC Tools Setup
 
 1. [Maya](#maya)
-2. [3ds Max](#3ds-max)
-3. [MotionBuilder](#motionbuilder)
-4. [Blender](#blender-1)
-5. [Metasequoia](#metasequoia)
-6. [Modo](#modo)
+1. [3ds Max](#3ds-max)
+1. [MotionBuilder](#motionbuilder)
+1. [Blender](#blender-1)
+1. [Metasequoia](#metasequoia)
+1. [Modo](#modo)
 
 ### Maya
 
