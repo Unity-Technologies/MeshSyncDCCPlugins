@@ -85,6 +85,7 @@ def msb_get_editor_path_prefix_default():
 
 def msb_initialize_properties():
     # sync settings
+    bpy.types.Scene.meshsync_auto_config_server = bpy.props.BoolProperty(name = "Auto Config (Local server)", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_server_address = bpy.props.StringProperty(name = "Address", default = "127.0.0.1", update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_server_port = bpy.props.IntProperty(name = "Port", default = 8080, min = 0, max = 65535, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_editor_server_port = bpy.props.IntProperty(name = "Unity Editor Port", default = 8081, min = 0, max = 65535, update= msb_on_scene_settings_updated)

@@ -141,6 +141,9 @@ def msb_try_setup_scene_server(context):
         return 'SUCCESS'
 
 
+    # Try to auto config the server settings
+    msb_try_auto_config_server_settings(context)
+
     # Try get valid path
     path = msb_try_get_valid_project_path(context)
     if path == 'INVALID_PATH':
@@ -216,3 +219,12 @@ def msb_try_start_unity_project (context, directory):
     unity_process = msb_launch_project(editor_path, directory)
 
     return 'STARTED'
+
+def msb_try_auto_config_server_settings(context):
+    if not context.scene.meshsync_auto_config_server:
+        return
+
+    print("Auto configuring")
+    context.scene.meshsync_server_address = "127.0.0.1"
+    context.scene.meshsync_server_port = 2547
+    context.scene.meshsync_editor_server_port = 7878
