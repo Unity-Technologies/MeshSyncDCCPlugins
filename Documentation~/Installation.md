@@ -1,9 +1,9 @@
 # Installation
 
 ## Unity Project Setup via DCC tools
-We can install MeshSync to a Unity project through DCC tools. This method is designed for users who are not familiar with the Unity Editor or the Unity Package Manager. 
+We can install MeshSync on a Unity project through DCC tools. This install method is designed for users who are not familiar with the Unity Editor or the Unity Package Manager.
 
-Currently, this is available only for Blender. For other DCC tools, see [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s installation page.
+Currently, this install method is available only for Blender. For other DCC tools, see [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s installation page.
 ### Blender
 Install the Blender add-on:
 1. Download the latest MeshSyncDCCPlugins release from [here](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).
