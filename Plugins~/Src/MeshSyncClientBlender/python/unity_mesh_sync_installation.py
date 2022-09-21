@@ -229,9 +229,11 @@ def msb_try_auto_config_server_settings(context):
     context.scene.meshsync_server_address = "127.0.0.1"
 
     # Bind a temporary socket to port 0 to get the next available port
-    with closing(socket.socket()) as editorSocket:
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as editorSocket:
         editorSocket.bind(('', 0))
+        editorSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         context.scene.meshsync_editor_server_port = editorSocket.getsockname()[1]
-        with closing(socket.socket()) as sceneSocket:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sceneSocket:
             sceneSocket.bind(('', 0))
+            sceneSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             context.scene.meshsync_server_port = sceneSocket.getsockname()[1]
