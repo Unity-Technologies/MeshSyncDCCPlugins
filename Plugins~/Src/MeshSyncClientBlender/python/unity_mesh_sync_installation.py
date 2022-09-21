@@ -111,6 +111,7 @@ def msb_try_install_meshsync_to_unity_project(directory):
         msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
 def msb_try_install_server_config(context, directory):
+
     #Get Unity project path
     settingsPath = path.join(directory, "Assets", "ProjectSettings")
 
@@ -134,6 +135,11 @@ def msb_try_install_server_config(context, directory):
         target.write(newFile)
 
 def msb_try_setup_scene_server(context):
+
+    #Check if scene server is listening
+    if msb_context.is_server_available:
+        return 'SUCCESS'
+
 
     # Try get valid path
     path = msb_try_get_valid_project_path(context)
