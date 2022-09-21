@@ -5,6 +5,8 @@ import subprocess
 import time
 import bpy
 import os
+import socket
+from contextlib import closing
 
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
@@ -169,7 +171,7 @@ def msb_try_setup_scene_server(context):
         return 'EDITOR_NOT_EXISTS'
 
     # Send a command to add a scene server (if it doesn't exist already)
-    msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER)
+    msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER, str(context.scene.meshsync_server_port))
     reply = msb_context.editor_command_reply
 
     if not reply == 'ok':
@@ -204,7 +206,7 @@ def msb_try_start_unity_project (context, directory):
 
     #Check if there is an editor server listening from the target project
     if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
+        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
         reply_path = msb_context.editor_command_reply;
         if path.normpath(reply_path) == path.normpath(directory):
             return 'ALREADY_STARTED'
@@ -224,7 +226,12 @@ def msb_try_auto_config_server_settings(context):
     if not context.scene.meshsync_auto_config_server:
         return
 
-    print("Auto configuring")
     context.scene.meshsync_server_address = "127.0.0.1"
-    context.scene.meshsync_server_port = 2547
-    context.scene.meshsync_editor_server_port = 7878
+
+    # Bind a temporary socket to port 0 to get the next available port
+    with closing(socket.socket()) as editorSocket:
+        editorSocket.bind(('', 0))
+        context.scene.meshsync_editor_server_port = editorSocket.getsockname()[1]
+        with closing(socket.socket()) as sceneSocket:
+            sceneSocket.bind(('', 0))
+            context.scene.meshsync_server_port = sceneSocket.getsockname()[1]

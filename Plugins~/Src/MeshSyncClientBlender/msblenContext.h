@@ -76,7 +76,7 @@ public:
 
     void requestLiveEditMessage();
     
-    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type);
+    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input = nullptr);
     string& getEditorCommandReply();
 
 private:

@@ -1425,7 +1425,7 @@ void msblenContext::requestLiveEditMessage()
     m_sender.requestLiveEditMessage();
 }
 
-bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type)
+bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input)
 {
     ms::ClientSettings settings = ms::ClientSettings();
     settings.server = m_settings.client_settings.server;
@@ -1436,6 +1436,7 @@ bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type
     message.command_type = type;
     message.session_id = id_utility.GetSessionId();
     message.message_id = id_utility.GetNextMessageId();
+    message.SetBuffer(input);
 
     auto success = client.send(message, m_editor_command_reply);
 
