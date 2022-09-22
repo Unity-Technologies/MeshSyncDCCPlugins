@@ -37,11 +37,13 @@ def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
         return True
     if status == 'INVALID_PATH':
-        MS_MessageBox("Path "+context.scene.meshsync_unity_project_path+" is not a Unity Project")
+        MS_MessageBox("Path "+context.scene.meshsync_unity_project_path+" is not a Unity Project.")
     elif status == 'EDITOR_NOT_EXISTS':
-        MS_MessageBox("Could not find Unity Editors in path "+ context.scene.meshsync_unity_editors_path)
+        MS_MessageBox("Could not find Unity Editors in path "+ context.scene.meshsync_unity_editors_path+" .")
     elif status == 'SERVER_NOT_ADDED':
-        MS_MessageBox("Could not add server to scene")
+        MS_MessageBox("Could not add server to scene.")
+    elif status == 'LAUNCH FAILED':
+        MS_MessageBox("Could not launch project in path "+context.scene.meshsync_unity_project_path+" .")
 
     return False
 
@@ -173,6 +175,8 @@ def msb_try_setup_scene_server(context):
             time.sleep(0.1)
     elif start_status == 'EDITOR_NOT_EXISTS':
         return 'EDITOR_NOT_EXISTS'
+    elif start_status == 'FAILED' or start_status == 'UNKNOWN':
+        return 'LAUNCH FAILED'
 
     # Send a command to add a scene server (if it doesn't exist already)
     msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER)
@@ -196,7 +200,10 @@ def msb_get_editor_version(directory):
         return version
 
 def msb_launch_project(editor_path, project_path):
-    return subprocess.Popen([editor_path, "-projectPath", project_path])
+    try:      
+        return 'SUCCESS', subprocess.Popen([editor_path, "-projectPath", project_path])
+    except:
+        return 'FAILED', None
 
 def msb_try_start_unity_project (context, directory):
         
@@ -220,6 +227,10 @@ def msb_try_start_unity_project (context, directory):
         return 'EDITOR_NOT_EXISTS'
 
     #Launch the editor with the project
-    unity_process = msb_launch_project(editor_path, directory)
+    status, unity_process = msb_launch_project(editor_path, directory)
+    if status == 'FAILED':
+        return 'FAILED'
+    elif status == 'SUCCESS':
+        return 'STARTED'
 
-    return 'STARTED'
+    return 'UNKNOWN'
