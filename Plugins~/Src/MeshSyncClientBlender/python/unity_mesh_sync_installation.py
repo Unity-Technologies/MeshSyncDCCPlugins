@@ -21,6 +21,18 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+def msb_get_meshsync_entry():
+    if not DEBUG:
+        return "0.14.5-preview"
+
+    os = platform.system()
+    if os == 'Windows':
+        return "file:C:\\Users\\Sean Dillon\\MeshSync\\MeshSync~\\Packages\\com.unity.meshsync"
+    elif os == 'Darwin' or os == 'Linux':
+        return "file:/Users/sean.dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
+
+    return None
+
 def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
         return True
@@ -103,10 +115,7 @@ def msb_try_install_meshsync_to_unity_project(directory):
         lock_path = path.join(directory,"Packages","packages-lock.json")
         manifest_path = path.join(directory,"Packages","manifest.json")
 
-        #TODO replace with release that has the Editor Commands changes
-        manifest_entry = "0.14.5-preview"
-        if DEBUG == 1:
-            manifest_entry = "file:C:\\Users\\Sean Dillon\\MeshSync\\MeshSync~\\Packages\\com.unity.meshsync"
+        manifest_entry = msb_get_meshsync_entry()
 
         msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
@@ -172,6 +181,10 @@ def msb_try_setup_scene_server(context):
     if not reply == 'ok':
         return 'SERVER_NOT_ADDED'
 
+    # Wait until the scene server is available
+    while msb_context.is_server_available is False:
+        time.sleep(0.1)
+
     return 'SUCCESS'
 
 def msb_get_editor_version(directory):
@@ -183,13 +196,7 @@ def msb_get_editor_version(directory):
         return version
 
 def msb_launch_project(editor_path, project_path):
-    os = platform.system()
-    if os == 'Windows':
-        path = editor_path + " -projectPath \"" + project_path + "\""
-    elif os == 'Darwin' or os == 'Linux':
-        path = editor_path + " -projectPath " + project_path
-
-    return subprocess.Popen(path)
+    return subprocess.Popen([editor_path, "-projectPath", project_path])
 
 def msb_try_start_unity_project (context, directory):
         
