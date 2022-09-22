@@ -54,7 +54,7 @@ def msb_get_editor_path_suffix():
     elif os == 'Darwin':
         return path.join("Unity.app","Contents","MacOS","Unity")
     elif os == 'Linux':
-        return path.join("Unity.app","Contents","Linux","Unity")
+        return path.join("Editor","Unity")
     return None
 
 def msb_get_editor_path(context, editor_version):
