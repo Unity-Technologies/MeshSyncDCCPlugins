@@ -138,6 +138,7 @@ $ xcodebuild -alltargets -configuration Release build
    export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
    export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
    ``` 
+   Note: If you are compiling for Blender 3.2+, ensure that you are using gcc-8 or above and g++8 or above.
 
 1. Install [cmake](https://cmake.org/)  version 3.18 or later.  
    Example:
