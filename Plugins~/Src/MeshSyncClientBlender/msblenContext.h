@@ -29,6 +29,8 @@
 
 #include "msblenCurveHandler.h"
 
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodeUtils.h>
 #endif
@@ -40,7 +42,6 @@ class msblenContext;
 
 class msblenContext {
 public:
-
     msblenContext();
     ~msblenContext();
 
@@ -119,7 +120,11 @@ private:
     void RegisterSceneMaterials();
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
-
+    void SetValueFromSocket(bNodeSocket* socket,
+        ms::TextureType textureType,
+        std::function<void(mu::float4& colorValue)> setColorHandler,
+        std::function<void(int textureId)> setTextureHandler);
+    void ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat);
 
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);

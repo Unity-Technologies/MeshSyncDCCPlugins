@@ -14,8 +14,6 @@
 
 #include "msblenEntityHandler.h"
 
-#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
-
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
@@ -26,7 +24,6 @@
 #include <sstream>
 #include "msblenBinder.h"
 #include "MeshUtils/muLog.h"
-
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -192,6 +189,124 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
     m_material_manager.eraseStaleMaterials();
 }
 
+// Blender uses hardcoded string identifiers to figure out what the sockets do:
+const auto baseColorIdentifier = "Base Color";
+const auto colorIdentifier = "Color";
+const auto roughnessIdentifier = "Roughness";
+const auto metallicIdentifier = "Metallic";
+const auto surfaceIdentifier = "Surface";
+
+bNode* getBSDF(Material* mat) {
+    // Find BSDF connected to an output node:
+    auto tree = mat->nodetree;
+    for (auto link : blender::list_range((bNodeLink*)tree->links.first)) {
+        if (link->tonode &&
+            link->tonode->type == SH_NODE_OUTPUT_MATERIAL &&
+            STREQ(link->tosock->identifier, surfaceIdentifier)) {
+            return link->fromnode;
+        }
+    }
+
+    return nullptr;
+}
+
+void msblenContext::SetValueFromSocket(bNodeSocket* socket,
+    ms::TextureType textureType,
+    std::function<void(mu::float4& colorValue)> setColorHandler,
+    std::function<void(int textureId)> setTextureHandler)
+{
+    // If there is an image linked to the socket, send that as a texture:
+    if (socket->link) {
+        auto sourceNode = socket->link->fromnode;
+        if (sourceNode->type == SH_NODE_TEX_IMAGE) {
+            if (sourceNode->id && m_settings.sync_textures) {
+                auto img = (Image*)sourceNode->id;
+
+                if (setTextureHandler) {
+                    setTextureHandler(exportTexture(bl::abspath(img->filepath), textureType));
+                }
+
+                // Ensure the colour is white if there is a texture otherwise Unity will multiply that image with the colour that was set before.
+                // Blender does not do that so they would not look the same:
+                if (setColorHandler) {
+                    setColorHandler(mu::float4{ 1,1,1,1 });
+                }
+            }
+        }
+    }
+    else {
+        // Clear any texture that was set:
+        if (setTextureHandler) {
+            setTextureHandler(-1);
+        }
+
+        if (setColorHandler) {
+            mu::float4 colorValue;
+
+            switch (socket->type)
+            {
+            case SOCK_RGBA: {
+                auto defaultValue = (bNodeSocketValueRGBA*)socket->default_value;
+                auto val = defaultValue->value;
+                colorValue = mu::float4{ val[0],val[1],val[2], val[3] };
+                break;
+            }
+
+            case SOCK_FLOAT: {
+                auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
+                auto val = defaultValue->value;
+                colorValue = mu::float4{ val,val,val, val };
+                break;
+            }
+            }
+            setColorHandler(colorValue);
+        }
+    }
+}
+
+void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat)
+{
+    bNode* bsdfNode = getBSDF(mat);
+
+    if (!bsdfNode) {
+        return;
+    }
+
+    for (auto inputSocket : blender::list_range((bNodeSocket*)bsdfNode->inputs.first)) {
+        if (STREQ(inputSocket->identifier, baseColorIdentifier) ||
+            STREQ(inputSocket->identifier, colorIdentifier)) {
+            SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                [&](mu::float4& colorValue)
+                {
+                    stdmat.setColor(colorValue);
+                },
+                [&](int textureId)
+                {
+                    stdmat.setColorMap(textureId);
+                });
+        }
+        else if (STREQ(inputSocket->identifier, roughnessIdentifier))
+        {
+            SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                [&](mu::float4& colorValue)
+                {
+                    stdmat.setSmoothness(1 - colorValue[0]);
+                }, nullptr);
+        }
+        else if (STREQ(inputSocket->identifier, metallicIdentifier))
+        {
+            SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                [&](mu::float4& colorValue)
+                {
+                    stdmat.setMetallic(colorValue[0]);
+                },
+                [&](int textureId) {
+                    stdmat.setMetallicMap(textureId);
+                });
+        }
+    }
+}
+
 void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     std::shared_ptr<ms::Material> ret = ms::Material::create();
     ret->name = get_name(mat);
@@ -200,8 +315,18 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 
     ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
     bl::BMaterial bm(mat);
-    struct Material* color_src = mat;
-    stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
+    
+    if (mat->use_nodes) {
+        ExportMaterialFromNodeTree(mat, stdmat);
+    }
+    else {
+        stdmat.setColor(mu::float4{ mat->r, mat->g, mat->b, 1.0f });
+        stdmat.setColorMap(nullptr);
+
+        stdmat.setMetallic(mat->metallic);
+        stdmat.setSmoothness(1 - mat->roughness);
+        stdmat.setSpecular(mu::float3{ mat->spec, mat->spec, mat->spec });
+    }
 
     // todo: handle texture
 #if 0
