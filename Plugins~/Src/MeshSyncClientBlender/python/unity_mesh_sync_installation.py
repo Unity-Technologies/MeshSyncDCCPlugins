@@ -46,6 +46,8 @@ def msb_error_messages_for_status(status, context):
         MS_MessageBox("Could not add server to scene.")
     elif status == 'LAUNCH FAILED':
         MS_MessageBox("Could not launch project in path "+context.scene.meshsync_unity_project_path+" .")
+    elif status == 'SERVER_UNAVAILABLE':
+        MS_MessageBox("Could not connect with scene server.")
 
     return False
 
@@ -193,11 +195,15 @@ def msb_try_setup_scene_server(context):
     if not reply == 'ok':
         return 'SERVER_NOT_ADDED'
 
-    # Wait until the scene server is available
-    while msb_context.is_server_available is False:
+    # Wait until the scene server is available with a 1s timeout
+    for i in range(10):
+        if msb_context.is_server_available:
+            return 'SUCCESS'
+
+        #sleep for 0.1 seconds
         time.sleep(0.1)
 
-    return 'SUCCESS'
+    return 'SERVER_UNAVAILABLE'
 
 def msb_get_editor_version(directory):
     project_version_path = path.join(directory,"ProjectSettings","ProjectVersion.txt")
