@@ -171,8 +171,11 @@ def msb_try_setup_scene_server(context):
 
     #If the project was launched now, wait until the Editor server is available
     if start_status == 'STARTED':
-        while(msb_context.is_editor_server_available is False):
+        while msb_context.is_editor_server_available is False:
             time.sleep(0.1)
+            # If the process is killed for any reason, stop waiting
+            if not msb_is_unity_process_alive():
+                return 'LAUNCH FAILED'
     elif start_status == 'EDITOR_NOT_EXISTS':
         return 'EDITOR_NOT_EXISTS'
     elif start_status == 'FAILED' or start_status == 'UNKNOWN':
@@ -205,12 +208,18 @@ def msb_launch_project(editor_path, project_path):
     except:
         return 'FAILED', None
 
+def msb_is_unity_process_alive():
+    global unity_process
+    if unity_process is not None and unity_process.poll() is None:
+        return True
+    return False
+
 def msb_try_start_unity_project (context, directory):
         
     global unity_process
 
     #Check if we have launched the project as a subprocess
-    if unity_process is not None and unity_process.poll() is None:
+    if msb_is_unity_process_alive():
         return 'ALREADY_STARTED'
 
     #Check if there is an editor server listening from the target project
