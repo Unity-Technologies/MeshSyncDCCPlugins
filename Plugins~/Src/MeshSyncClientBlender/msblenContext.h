@@ -122,6 +122,7 @@ private:
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
     void SetValueFromSocket(bNodeSocket* socket,
         ms::TextureType textureType,
+        bool resetIfInputIsTexture,
         std::function<void(mu::float4& colorValue)> setColorHandler,
         std::function<void(int textureId)> setTextureHandler);
     void ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat);

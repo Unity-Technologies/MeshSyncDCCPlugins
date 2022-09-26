@@ -194,6 +194,8 @@ const auto baseColorIdentifier = "Base Color";
 const auto colorIdentifier = "Color";
 const auto roughnessIdentifier = "Roughness";
 const auto metallicIdentifier = "Metallic";
+const auto normalIdentifier = "Normal";
+const auto normalStrengthIdentifier = "Strength";
 const auto surfaceIdentifier = "Surface";
 
 bNode* getBSDF(Material* mat) {
@@ -210,34 +212,85 @@ bNode* getBSDF(Material* mat) {
     return nullptr;
 }
 
+bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
+    for (auto inputSocket : blender::list_range((bNodeSocket*)node->inputs.first)) {
+        if (STREQ(inputSocket->name, socketName)) {
+            return inputSocket;
+        }
+    }
+
+    return nullptr;
+}
+
 void msblenContext::SetValueFromSocket(bNodeSocket* socket,
     ms::TextureType textureType,
+    bool resetIfInputIsTexture,
     std::function<void(mu::float4& colorValue)> setColorHandler,
     std::function<void(int textureId)> setTextureHandler)
 {
     // If there is an image linked to the socket, send that as a texture:
     if (socket->link) {
-        auto sourceNode = socket->link->fromnode;
-        if (sourceNode->type == SH_NODE_TEX_IMAGE) {
-            if (sourceNode->id && m_settings.sync_textures) {
-                auto img = (Image*)sourceNode->id;
+        if (m_settings.sync_textures) {
+            auto sourceNode = socket->link->fromnode;
 
+            switch (sourceNode->type) {
+            case SH_NODE_TEX_IMAGE:
+            {
+                if (sourceNode->id) {
+                    if (setTextureHandler) {
+                        setTextureHandler(exportTexture(bl::abspath(((Image*)sourceNode->id)->filepath), textureType));
+                    }
+
+                    // Ensure the colour is white if there is a texture otherwise Unity will multiply that image with the colour that was set before.
+                    // Blender does not do that so they would not look the same:
+                    if (resetIfInputIsTexture && setColorHandler) {
+                        setColorHandler(mu::float4{ 1, 1, 1, 1 });
+                    }
+                }
+                else {
+                    if (setTextureHandler) {
+                        setTextureHandler(ms::InvalidID);
+                    }
+
+                    if (setColorHandler) {
+                        // Blender uses black if there is no image set on an image node:
+                        setColorHandler(mu::float4{ 0, 0, 0, 1 });
+                    }
+                }
+                break;
+            }
+            case SH_NODE_NORMAL_MAP:
+            {
                 if (setTextureHandler) {
-                    setTextureHandler(exportTexture(bl::abspath(img->filepath), textureType));
+                    auto imageInput = getInputSocket(sourceNode, colorIdentifier);
+                    if (imageInput)
+                    {
+                        SetValueFromSocket(imageInput, textureType,
+                            resetIfInputIsTexture,
+                            nullptr,
+                            setTextureHandler);
+                    }
                 }
 
-                // Ensure the colour is white if there is a texture otherwise Unity will multiply that image with the colour that was set before.
-                // Blender does not do that so they would not look the same:
-                if (setColorHandler) {
-                    setColorHandler(mu::float4{ 1,1,1,1 });
+                auto strengthInput = getInputSocket(sourceNode, normalStrengthIdentifier);
+                if (strengthInput)
+                {
+                    if (setColorHandler) {
+                        auto defaultValue = (bNodeSocketValueFloat*)strengthInput->default_value;
+                        auto val = defaultValue->value;
+                        setColorHandler(mu::float4{ val,val,val, val });
+                    }
                 }
+                break;
+            }
             }
         }
     }
     else {
+        // The socket is using a direct value, not the output of another node.
         // Clear any texture that was set:
         if (setTextureHandler) {
-            setTextureHandler(-1);
+            setTextureHandler(ms::InvalidID);
         }
 
         if (setColorHandler) {
@@ -248,14 +301,13 @@ void msblenContext::SetValueFromSocket(bNodeSocket* socket,
             case SOCK_RGBA: {
                 auto defaultValue = (bNodeSocketValueRGBA*)socket->default_value;
                 auto val = defaultValue->value;
-                colorValue = mu::float4{ val[0],val[1],val[2], val[3] };
+                colorValue = mu::float4{ val[0], val[1], val[2], val[3] };
                 break;
             }
-
             case SOCK_FLOAT: {
                 auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
                 auto val = defaultValue->value;
-                colorValue = mu::float4{ val,val,val, val };
+                colorValue = mu::float4{ val, val, val, val };
                 break;
             }
             }
@@ -276,6 +328,7 @@ void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMateri
         if (STREQ(inputSocket->identifier, baseColorIdentifier) ||
             STREQ(inputSocket->identifier, colorIdentifier)) {
             SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                true,
                 [&](mu::float4& colorValue)
                 {
                     stdmat.setColor(colorValue);
@@ -288,20 +341,35 @@ void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMateri
         else if (STREQ(inputSocket->identifier, roughnessIdentifier))
         {
             SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                false,
                 [&](mu::float4& colorValue)
                 {
                     stdmat.setSmoothness(1 - colorValue[0]);
-                }, nullptr);
+                },
+                [&](int textureId) {
+                    stdmat.setSmoothnessMap(textureId);
+                });
         }
         else if (STREQ(inputSocket->identifier, metallicIdentifier))
         {
             SetValueFromSocket(inputSocket, ms::TextureType::Default,
-                [&](mu::float4& colorValue)
-                {
+                true,
+                [&](mu::float4& colorValue) {
                     stdmat.setMetallic(colorValue[0]);
                 },
                 [&](int textureId) {
                     stdmat.setMetallicMap(textureId);
+                });
+        }
+        else if (STREQ(inputSocket->identifier, normalIdentifier))
+        {
+            SetValueFromSocket(inputSocket, ms::TextureType::NormalMap,
+                true,
+                [&](mu::float4& colorValue) {
+                    stdmat.setBumpScale(colorValue[0]);
+                },
+                [&](int textureId) {
+                    stdmat.setBumpMap(textureId);
                 });
         }
     }
