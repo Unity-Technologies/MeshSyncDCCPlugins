@@ -123,30 +123,6 @@ def msb_try_install_meshsync_to_unity_project(directory):
 
         msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
-def msb_try_install_server_config(context, directory):
-
-    #Get Unity project path
-    settingsPath = path.join(directory, "Assets", "ProjectSettings")
-
-    #Get template file path
-    script_file = os.path.realpath(__file__)
-    templatePath = os.path.dirname(script_file)
-    templatePath =path.join(templatePath,"resources","EditorServerSettings.yml")
-
-    #Open template file and replace the port entry
-    with open(templatePath, "r+") as source:
-        port = context.scene.meshsync_editor_server_port
-        newFile = source.read().replace('m_port: 8081', 'm_port: '+str(port))
-    
-    #Create settings path if not exists
-    if not path.exists(settingsPath):
-        os.mkdir(settingsPath)
-
-    #Write newFile to settings path
-    settingsPath = path.join(settingsPath, "EditorServerSettings.yml")
-    with open(settingsPath, "w") as target:
-        target.write(newFile)
-
 def msb_try_setup_scene_server(context):
 
     #Check if scene server is listening
@@ -163,7 +139,7 @@ def msb_try_setup_scene_server(context):
     context.scene.meshsync_unity_project_path = path
 
     #Try to inject server config
-    msb_try_install_server_config(context, path)
+    #msb_try_install_server_config(context, path)
 
     # Try install to unity project
     msb_try_install_meshsync_to_unity_project(path)
@@ -208,9 +184,10 @@ def msb_get_editor_version(directory):
         version = version[:-1]
         return version
 
-def msb_launch_project(editor_path, project_path):
+def msb_launch_project(context, editor_path, project_path):
+    port = context.scene.meshsync_editor_server_port
     try:      
-        return 'SUCCESS', subprocess.Popen([editor_path, "-projectPath", project_path])
+        return 'SUCCESS', subprocess.Popen([editor_path, "-projectPath", project_path,"SERVER_ACTIVE", "True", "PORT", str(port)])
     except:
         return 'FAILED', None
 
@@ -242,7 +219,7 @@ def msb_try_start_unity_project (context, directory):
         return 'EDITOR_NOT_EXISTS'
 
     #Launch the editor with the project
-    status, unity_process = msb_launch_project(editor_path, directory)
+    status, unity_process = msb_launch_project(context, editor_path, directory)
     if status == 'FAILED':
         return 'FAILED'
     elif status == 'SUCCESS':
