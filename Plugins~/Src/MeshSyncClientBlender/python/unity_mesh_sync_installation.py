@@ -9,8 +9,6 @@ import os
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
 
-DEBUG = 1
-
 from . import MeshSyncClientBlender as ms
 msb_context = ms.Context()
 
@@ -22,16 +20,7 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 def msb_get_meshsync_entry():
-    if not DEBUG:
-        return "0.14.5-preview"
-
-    os = platform.system()
-    if os == 'Windows':
-        return "file:C:\\Users\\Sean Dillon\\MeshSync\\MeshSync~\\Packages\\com.unity.meshsync"
-    elif os == 'Darwin' or os == 'Linux':
-        return "file:/Users/sean.dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
-
-    return None
+    return "0.15.0-preview"
 
 def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
