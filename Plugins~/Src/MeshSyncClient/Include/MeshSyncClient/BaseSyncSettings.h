@@ -7,6 +7,7 @@ namespace MeshSyncClient {
 struct BaseSyncSettings {
 
     ms::ClientSettings client_settings;
+    uint16_t editor_server_port = 8081;
 
     bool sync_meshes = true;
     bool sync_curves = true;

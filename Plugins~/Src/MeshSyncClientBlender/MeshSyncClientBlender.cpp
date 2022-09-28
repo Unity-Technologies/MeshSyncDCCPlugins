@@ -107,6 +107,8 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
 
             BindConst(is_server_available, self->isServerAvailable())
             BindConst(error_message, self->getErrorMessage())
+            BindConst(is_editor_server_available, self->isEditorServerAvailable())
+            BindConst(editor_command_reply, self->getEditorCommandReply())
 
             BindProperty(server_address,
                 [](const self_t& self) { return self->getSettings().client_settings.server; },
@@ -114,6 +116,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(server_port,
                 [](const self_t& self) { return self->getSettings().client_settings.port; },
                 [](self_t& self, uint16_t v) { self->getSettings().client_settings.port = v; })
+            BindProperty(editor_server_port, 
+                [](const self_t& self) {return self->getSettings().editor_server_port; },
+                [](self_t& self, uint16_t v) {self->getSettings().editor_server_port = v; })
             BindProperty(scale_factor,
                 [](const self_t& self) { return self->getSettings().scene_settings.scale_factor; },
                 [](self_t& self, float v) { self->getSettings().scene_settings.scale_factor = v; })
@@ -176,6 +181,10 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, py::object depsgraph) {
                     auto graph = DepsgraphFromPyObject(depsgraph);
                     self->onDepsgraphUpdatedPost(graph);
+                })
+
+            BindMethod(sendEditorCommand, [](self_t& self, int command) {
+                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command); 
                 });
     }
     {
