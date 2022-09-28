@@ -87,7 +87,7 @@ def msb_try_get_path_from_server():
         return 'NO SERVER'
 
         #Get the project path
-    msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
+    msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
     server_reply = msb_context.editor_command_reply
     return server_reply
 
