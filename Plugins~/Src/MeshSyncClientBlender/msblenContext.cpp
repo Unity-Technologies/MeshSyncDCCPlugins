@@ -1425,6 +1425,7 @@ void msblenContext::requestLiveEditMessage()
     m_sender.requestLiveEditMessage();
 }
 
+
 bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input)
 {
     ms::ClientSettings settings = ms::ClientSettings();

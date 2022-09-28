@@ -11,8 +11,6 @@ from contextlib import closing
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
 
-DEBUG = 1
-
 from . import MeshSyncClientBlender as ms
 msb_context = ms.Context()
 
@@ -24,16 +22,7 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 def msb_get_meshsync_entry():
-    if not DEBUG:
-        return "0.14.5-preview"
-
-    os = platform.system()
-    if os == 'Windows':
-        return "file:C:\\Users\\Sean Dillon\\MeshSync\\MeshSync~\\Packages\\com.unity.meshsync"
-    elif os == 'Darwin' or os == 'Linux':
-        return "file:/Users/sean.dillon/MeshSync/MeshSync~/Packages/com.unity.meshsync"
-
-    return None
+    return "0.15.0-preview"
 
 def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
@@ -131,7 +120,6 @@ def msb_try_setup_scene_server(context):
     if msb_context.is_server_available:
         return 'SUCCESS'
 
-
     # Try to auto config the server settings
     msb_try_auto_config_server_settings(context)
 
@@ -171,13 +159,9 @@ def msb_try_setup_scene_server(context):
     if not reply == 'ok':
         return 'SERVER_NOT_ADDED'
 
-    # Wait until the scene server is available with a 1s timeout
-    for i in range(10):
-        if msb_context.is_server_available:
-            return 'SUCCESS'
-
-        #sleep for 0.1 seconds
-        time.sleep(0.1)
+    #The is_server_available request has a 1s timeout
+    if msb_context.is_server_available:
+        return 'SUCCESS'
 
     return 'SERVER_UNAVAILABLE'
 

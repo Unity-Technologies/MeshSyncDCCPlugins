@@ -36,6 +36,7 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
+
         layout.prop(scene, "meshsync_auto_config_server")
 
         row = layout.row()
