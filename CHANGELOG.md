@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.15.0-preview] - 2022-09-29
+
+### Added
+* blender-feat: support Blender 3.3.0
+* blender-feat: Editor commands in Blender clients 
+* blender-feat: install MeshSync from Blender
+* blender-feat: auto-config of ports for AutoSetup via Blender
+* blender-doc: add doc for installing MeshSync via Blender
+
+
+### Changed
+* change: change plugins folder to Plugins to reveal it in the Unity Editor
+* doc: organize usage in DCC tools into separate pages
+* doc: reorganize and update installation documentation
+* blender-doc: update the section about BakeModifiers 
+* blender-doc: add Bidirectional Sync section in the Blender documentation 
+
+### Fixed
+* blender-fix: Scale instance transforms with meshsync scale factor to ensure correct positioning. 
+* blender-fix: fix instance scaling
+* blender-fix: set camera visibility based on the active scene camera
+* blender-fix: export geometry node instances when frame changes
+* blender-fix: fix for material index bug 
+
+
 ## [0.14.1-preview] - 2022-07-29
 
 ### Fixed
