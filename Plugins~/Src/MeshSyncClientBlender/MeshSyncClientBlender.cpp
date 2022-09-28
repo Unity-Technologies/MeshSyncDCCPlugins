@@ -183,8 +183,8 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                     self->onDepsgraphUpdatedPost(graph);
                 })
 
-            BindMethod(sendEditorCommand, [](self_t& self, int command) {
-                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command); 
+            BindMethod(sendEditorCommand, [](self_t& self, int command, const char* input = nullptr) {
+                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command, input); 
                 });
     }
     {

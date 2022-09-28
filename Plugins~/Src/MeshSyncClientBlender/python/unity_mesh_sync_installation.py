@@ -5,6 +5,8 @@ import subprocess
 import time
 import bpy
 import os
+import socket
+from contextlib import closing
 
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
@@ -74,7 +76,7 @@ def msb_try_get_path_from_server():
         return 'NO SERVER'
 
         #Get the project path
-    msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
+    msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
     server_reply = msb_context.editor_command_reply
     return server_reply
 
@@ -118,6 +120,8 @@ def msb_try_setup_scene_server(context):
     if msb_context.is_server_available:
         return 'SUCCESS'
 
+    # Try to auto config the server settings
+    msb_try_auto_config_server_settings(context)
 
     # Try get valid path
     path = msb_try_get_valid_project_path(context)
@@ -149,19 +153,15 @@ def msb_try_setup_scene_server(context):
         return 'LAUNCH FAILED'
 
     # Send a command to add a scene server (if it doesn't exist already)
-    msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER)
+    msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER, str(context.scene.meshsync_server_port))
     reply = msb_context.editor_command_reply
 
     if not reply == 'ok':
         return 'SERVER_NOT_ADDED'
 
-    # Wait until the scene server is available with a 1s timeout
-    for i in range(10):
-        if msb_context.is_server_available:
-            return 'SUCCESS'
-
-        #sleep for 0.1 seconds
-        time.sleep(0.1)
+    #The is_server_available request has a 1s timeout
+    if msb_context.is_server_available:
+        return 'SUCCESS'
 
     return 'SERVER_UNAVAILABLE'
 
@@ -196,7 +196,7 @@ def msb_try_start_unity_project (context, directory):
 
     #Check if there is an editor server listening from the target project
     if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH)
+        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
         reply_path = msb_context.editor_command_reply;
         if path.normpath(reply_path) == path.normpath(directory):
             return 'ALREADY_STARTED'
@@ -215,3 +215,19 @@ def msb_try_start_unity_project (context, directory):
         return 'STARTED'
 
     return 'UNKNOWN'
+
+def msb_try_auto_config_server_settings(context):
+    if not context.scene.meshsync_auto_config_server:
+        return
+
+    context.scene.meshsync_server_address = "127.0.0.1"
+
+    # Bind a temporary socket to port 0 to get the next available port
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as editorSocket:
+        editorSocket.bind(('', 0))
+        editorSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        context.scene.meshsync_editor_server_port = editorSocket.getsockname()[1]
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sceneSocket:
+            sceneSocket.bind(('', 0))
+            sceneSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            context.scene.meshsync_server_port = sceneSocket.getsockname()[1]

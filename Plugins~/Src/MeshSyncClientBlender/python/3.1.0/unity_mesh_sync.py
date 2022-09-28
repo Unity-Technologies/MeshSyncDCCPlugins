@@ -47,10 +47,20 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-        layout.prop(scene, "meshsync_server_address")
-        layout.prop(scene, "meshsync_server_port")
-        layout.prop(scene, "meshsync_editor_server_port")
 
+        layout.prop(scene, "meshsync_auto_config_server")
+
+        row = layout.row()
+        row.prop(scene, "meshsync_server_address")
+        row.enabled = not context.scene.meshsync_auto_config_server
+        
+        row = layout.row()
+        row.prop(scene, "meshsync_server_port")
+        row.enabled = not context.scene.meshsync_auto_config_server
+
+        row = layout.row()
+        row.prop(scene, "meshsync_editor_server_port")
+        row.enabled = not context.scene.meshsync_auto_config_server
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Scene"
