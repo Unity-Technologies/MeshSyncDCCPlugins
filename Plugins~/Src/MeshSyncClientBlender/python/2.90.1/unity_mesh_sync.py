@@ -38,6 +38,7 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
         layout.prop(scene, "meshsync_server_address")
         layout.prop(scene, "meshsync_server_port")
+        layout.prop(scene, "meshsync_editor_server_port")
 
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
@@ -104,6 +105,19 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.label(text = msb_context.PLUGIN_VERSION)
 
+class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
+    bl_label = "Unity Project"
+    bl_parent_id = "MESHSYNC_PT_Main"
+
+    initialized = False
+
+    def draw(self, context):
+        scene = bpy.context.scene
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        layout.prop(scene, "meshsync_unity_project_path")
+        layout.prop(scene, "meshsync_unity_editors_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -125,6 +139,11 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
+
+            setup = msb_try_setup_scene_server(context)
+            if msb_error_messages_for_status(setup, context) == False:
+                return {'FINISHED'}
+
             scene.meshsync_auto_sync = True
             if not scene.meshsync_auto_sync:
                 # server not available
@@ -297,6 +316,7 @@ classes = (
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,

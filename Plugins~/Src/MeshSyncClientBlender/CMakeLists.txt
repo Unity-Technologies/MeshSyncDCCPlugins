@@ -73,6 +73,7 @@ install(FILES
     DESTINATION ${PYD_DIR})
 install(FILES
     python/unity_mesh_sync_common.py
+    python/unity_mesh_sync_installation.py
     DESTINATION ${PYD_DIR})
 install(TARGETS ${MESHSYNC_CLIENT_BLENDER} DESTINATION ${PYD_DIR})
 
