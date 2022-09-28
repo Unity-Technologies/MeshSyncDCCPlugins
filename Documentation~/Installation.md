@@ -48,7 +48,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ### Maya
 
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Maya.
 1. Copy the uncompressed files:
    - Windows:   
@@ -71,7 +71,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ### 3ds Max
 
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for 3ds Max.
 1. Start 3ds Max
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
@@ -92,7 +92,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ### MotionBuilder
 
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for MotionBuilder.
 1. Start MotionBuilder.
 1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
@@ -110,7 +110,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 
 ### Blender
   
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Blender.
 1. Start Blender
 1. Go to Edit -> User Preferences
@@ -139,7 +139,7 @@ Steps to uninstall:
 
 ### Metasequoia
   
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins~` folder using a file explorer 
+1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Metasequoia.
 1. Start Metasequoia.
 1. Go to Help -> About Plug-ins, and click "Install" at the lower left of the Plug-win window.
