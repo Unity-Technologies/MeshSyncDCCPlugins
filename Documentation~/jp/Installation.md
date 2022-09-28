@@ -18,7 +18,7 @@
 
 ### Maya
 
-1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins` フォルダーを開き、
    該当の Maya 用の zip ファイルを解凍する。
 1. プラグインをコピーする
    - Windows:   
@@ -39,7 +39,7 @@
 
 ### 3ds Max
 
-1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins` フォルダーを開き、
    該当の 3ds Max 用の zip ファイルを解凍する。
 1. 3ds Max を起動する。
 1. 下記のどちらかのフォルダーに、使用されている 3ds Max のバージョンに該当する *MeshSyncClient3dsMax.dlu* をコピーする。
@@ -59,7 +59,7 @@
 ### MotionBuilder
 
 
-1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins` フォルダーを開き、
    該当の MotionBuilder 用の zip ファイルを解凍する。
 1. MotionBuilder を起動する。
 1. Settings -> Preferences -> SDK メニューをクリックし、プラグイン用のパスを追加する 
@@ -73,7 +73,7 @@
 
 ### Blender
    
-1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins` フォルダーを開き、
    該当の Blender 用の zip ファイルを解凍する。
 1. Blender を起動する。
 1. Blender のバージョンによって、インストールする方法が少々違います
@@ -108,7 +108,7 @@ Blender のプラグインをインストールする時、古いバージョン
     ```   
   
 ### Metasequoia
-1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins~` フォルダーを開き、
+1. ファイルエクスプローラーで `Packages/MeshSync DCC Plugins/Editor/Plugins` フォルダーを開き、
    該当の Metasequoia 用の zip ファイルを解凍する。
 1. Metasequoia を起動する。
 1. Help -> About Plug-ins を開き、ウィンドウの左下の "Install" をクリックする。
