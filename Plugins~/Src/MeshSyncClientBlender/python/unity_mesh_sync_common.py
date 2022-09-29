@@ -75,14 +75,6 @@ def msb_on_unity_project_path_updated(self = None, context = None):
     #TODO invoke callback for installing meshsync
     return None
 
-def msb_get_editor_path_prefix_default():
-    os = platform.system()
-    if os == 'Windows':
-        path = "C:\\Program Files\\Unity\\Hub\\Editor"
-    elif os == 'Darwin' or os == 'Linux':
-        path = "/Applications/Unity/Hub/Editor"
-    return path;
-
 def msb_initialize_properties():
     # sync settings
     bpy.types.Scene.meshsync_auto_config_server = bpy.props.BoolProperty(name = "Auto Config (Local server)", default = True, update = msb_on_scene_settings_updated)
@@ -102,11 +94,6 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_sync_lights = bpy.props.BoolProperty(name = "Sync Lights", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_auto_sync = bpy.props.BoolProperty(name = "Auto Sync", default = False, update = msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
-    bpy.types.Scene.meshsync_unity_project_path = bpy.props.StringProperty(name = "Path", default= "C:/", subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
-    
-    default_hub_path = msb_get_editor_path_prefix_default()
-    bpy.types.Scene.meshsync_unity_editors_path = bpy.props.StringProperty(name = "Unity Editors", default= default_hub_path, subtype = 'DIR_PATH', update = msb_on_scene_settings_updated)
-
 
 @persistent
 def on_scene_load(context):
