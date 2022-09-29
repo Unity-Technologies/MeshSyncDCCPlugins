@@ -11,6 +11,7 @@ from contextlib import closing
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
 
+
 from . import MeshSyncClientBlender as ms
 msb_context = ms.Context()
 
@@ -213,6 +214,26 @@ def msb_try_start_unity_project (context, directory):
 
     return 'UNKNOWN'
 
+def msb_is_port_available(port):
+    try:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('', port))
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return True
+    except:
+        return False
+
+def msb_bind_next_available_socket(port):
+    if not msb_is_port_available(port):
+        port = 0
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('', port))
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    return s
+
 def msb_try_auto_config_server_settings(context):
     if not context.scene.meshsync_auto_config_server:
         return
@@ -221,19 +242,11 @@ def msb_try_auto_config_server_settings(context):
 
     # If the editor server is available, only change the port for the scene server 
     if msb_context.is_editor_server_available:
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sceneSocket:
-            sceneSocket.bind(('', 0))
-            sceneSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        with closing(msb_bind_next_available_socket(context.scene.meshsync_server_port)) as sceneSocket:
             context.scene.meshsync_server_port = sceneSocket.getsockname()[1]
         return
-
-
-    # Bind a temporary socket to port 0 to get the next available port
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as editorSocket:
-        editorSocket.bind(('', 0))
-        editorSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
+    with closing(msb_bind_next_available_socket(context.scene.meshsync_editor_server_port)) as editorSocket:
         context.scene.meshsync_editor_server_port = editorSocket.getsockname()[1]
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sceneSocket:
-            sceneSocket.bind(('', 0))
-            sceneSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        with closing(msb_bind_next_available_socket(context.scene.meshsync_server_port)) as sceneSocket:
             context.scene.meshsync_server_port = sceneSocket.getsockname()[1]
