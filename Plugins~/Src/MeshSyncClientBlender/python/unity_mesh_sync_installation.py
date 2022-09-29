@@ -131,9 +131,6 @@ def msb_try_setup_scene_server(context):
     # Write back the valid path, in case it comes from a listening server
     context.scene.meshsync_unity_project_path = path
 
-    #Try to inject server config
-    #msb_try_install_server_config(context, path)
-
     # Try install to unity project
     msb_try_install_meshsync_to_unity_project(path)
 
@@ -221,6 +218,15 @@ def msb_try_auto_config_server_settings(context):
         return
 
     context.scene.meshsync_server_address = "127.0.0.1"
+
+    # If the editor server is available, only change the port for the scene server 
+    if msb_context.is_editor_server_available:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sceneSocket:
+            sceneSocket.bind(('', 0))
+            sceneSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            context.scene.meshsync_server_port = sceneSocket.getsockname()[1]
+        return
+
 
     # Bind a temporary socket to port 0 to get the next available port
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as editorSocket:
