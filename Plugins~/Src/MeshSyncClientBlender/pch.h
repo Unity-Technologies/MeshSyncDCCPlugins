@@ -62,6 +62,7 @@ namespace py = pybind11;
 #include "DNA_pointcloud_types.h" //PointCloud
 #include "DNA_scene_types.h"
 #include "DNA_volume_types.h" //Volume
+#include "DNA_packedFile_types.h" // PackedFile
 
 #include "BLI_utildefines.h"
 #include "BLI_math_base.h"

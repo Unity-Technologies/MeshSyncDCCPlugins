@@ -24,6 +24,8 @@ public:
     int addFile(const std::string& path, TextureType type);
     // thread safe
     int add(TexturePtr tex);
+    // thread safe
+    int addInMemoryImage(const std::string& name, const void* data, size_t size, TextureType type);
 
     std::vector<TexturePtr> getAllTextures();
     std::vector<TexturePtr> getDirtyTextures();

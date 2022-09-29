@@ -70,6 +70,32 @@ int TextureManager::addImage(const std::string& name, int width, int height, con
     return id;
 }
 
+int TextureManager::addInMemoryImage(const std::string& name, const void* data, size_t size, TextureType type)
+{
+    auto& rec = lockAndGet(name);
+    int id = rec.texture ?
+        rec.texture->id :
+        (data && size ? genID() : -1);
+
+    // not worth to make tasks
+    const uint64_t checksum = mu::SumInt32(data, size);
+    if (!rec.texture || rec.checksum != checksum) {
+        rec.checksum = checksum;
+        rec.texture = Texture::create();
+        auto& tex = rec.texture;
+        tex->id = id;
+        tex->name = name;
+        tex->format = TextureFormat::InMemoryFile;
+        tex->width = 0;
+        tex->height = 0;
+        tex->data.assign((const char*)data, (const char*)data + size);
+        rec.dirty = true;
+    }
+    if (m_always_mark_dirty)
+        rec.dirty = true;
+    return id;
+}
+
 int TextureManager::addFile(const std::string& path, TextureType type)
 {
     if (path.empty())

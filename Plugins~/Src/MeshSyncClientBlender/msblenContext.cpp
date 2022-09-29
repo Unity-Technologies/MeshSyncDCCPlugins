@@ -23,6 +23,9 @@
 #include "DNA_node_types.h"
 #include <sstream>
 #include "msblenBinder.h"
+#include "BlenderPyObjects/BlenderPyID.h"
+#include "BlenderPyObjects/BlenderPyID.h"
+#include "BlenderPyObjects/BlenderPyID.h"
 #include "MeshUtils/muLog.h"
 
 #ifdef mscDebug
@@ -197,19 +200,26 @@ const auto metallicIdentifier = "Metallic";
 const auto normalIdentifier = "Normal";
 const auto normalStrengthIdentifier = "Strength";
 const auto surfaceIdentifier = "Surface";
+const auto emissionIdentifier = "Emission";
 
-bNode* getBSDF(Material* mat) {
+const auto displacementIdentifier = "Displacement";
+const auto heightIdentifier = "Height";
+const auto scaleIdentifier = "Scale";
+
+bool getBSDFAndOutput(Material* mat, bNode*& bsdf, bNode*& output) {
     // Find BSDF connected to an output node:
     auto tree = mat->nodetree;
     for (auto link : blender::list_range((bNodeLink*)tree->links.first)) {
         if (link->tonode &&
             link->tonode->type == SH_NODE_OUTPUT_MATERIAL &&
             STREQ(link->tosock->identifier, surfaceIdentifier)) {
-            return link->fromnode;
+            bsdf = link->fromnode;
+            output = link->tonode;
+            return true;
         }
     }
 
-    return nullptr;
+    return false;
 }
 
 bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
@@ -238,10 +248,28 @@ void msblenContext::SetValueFromSocket(bNodeSocket* socket,
             {
                 if (sourceNode->id) {
                     if (setTextureHandler) {
-                        setTextureHandler(exportTexture(bl::abspath(((Image*)sourceNode->id)->filepath), textureType));
+                        auto img = (Image*)sourceNode->id;
+
+                        // Use non-color if the image node is not in sRGB space:
+                        if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
+                            textureType = ms::TextureType::NonColor;
+                        }
+
+                        // Unpack if needed:
+                        if (img->packedfiles.first)
+                        {
+                            for (auto imagePackedFile : blender::list_range((ImagePackedFile*)img->packedfiles.first)) {
+                                int exported = m_texture_manager.addInMemoryImage(
+                                    img->filepath, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::InMemoryFile);
+                                setTextureHandler(exported);
+                            }
+                        }
+                        else {
+                            setTextureHandler(exportTexture(bl::abspath(img->filepath), textureType));
+                        }
                     }
 
-                    // Ensure the colour is white if there is a texture otherwise Unity will multiply that image with the colour that was set before.
+                    // Ensure the color is white if there is a texture otherwise Unity will multiply that image with the color that was set before.
                     // Blender does not do that so they would not look the same:
                     if (resetIfInputIsTexture && setColorHandler) {
                         setColorHandler(mu::float4{ 1, 1, 1, 1 });
@@ -273,14 +301,33 @@ void msblenContext::SetValueFromSocket(bNodeSocket* socket,
                 }
 
                 auto strengthInput = getInputSocket(sourceNode, normalStrengthIdentifier);
-                if (strengthInput)
-                {
-                    if (setColorHandler) {
-                        auto defaultValue = (bNodeSocketValueFloat*)strengthInput->default_value;
-                        auto val = defaultValue->value;
-                        setColorHandler(mu::float4{ val,val,val, val });
-                    }
+                if (strengthInput && setColorHandler) {
+                    auto defaultValue = (bNodeSocketValueFloat*)strengthInput->default_value;
+                    auto val = defaultValue->value;
+                    setColorHandler(mu::float4{ val,val,val, val });
                 }
+
+                break;
+            }
+            case SH_NODE_DISPLACEMENT:
+            {
+                auto heightInput = getInputSocket(sourceNode, heightIdentifier);
+                if (heightInput && setTextureHandler)
+                {
+                    SetValueFromSocket(heightInput, textureType,
+                        resetIfInputIsTexture,
+                        setColorHandler,
+                        setTextureHandler);
+                }
+
+                auto scaleInput = getInputSocket(sourceNode, scaleIdentifier);
+                if(scaleInput && setColorHandler)
+                {
+                    auto defaultValue = (bNodeSocketValueFloat*)scaleInput->default_value;
+                    auto val = defaultValue->value;
+                    setColorHandler(mu::float4{ val,val,val, val });
+                }
+
                 break;
             }
             }
@@ -318,12 +365,14 @@ void msblenContext::SetValueFromSocket(bNodeSocket* socket,
 
 void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat)
 {
-    bNode* bsdfNode = getBSDF(mat);
+    bNode* bsdfNode;
+    bNode* outputNode;
 
-    if (!bsdfNode) {
+    if (!getBSDFAndOutput(mat, bsdfNode, outputNode)) {
         return;
     }
 
+    // Handle BSDF node:
     for (auto inputSocket : blender::list_range((bNodeSocket*)bsdfNode->inputs.first)) {
         if (STREQ(inputSocket->identifier, baseColorIdentifier) ||
             STREQ(inputSocket->identifier, colorIdentifier)) {
@@ -372,6 +421,32 @@ void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMateri
                     stdmat.setBumpMap(textureId);
                 });
         }
+        else if (STREQ(inputSocket->identifier, emissionIdentifier))
+        {
+            SetValueFromSocket(inputSocket, ms::TextureType::Default,
+                true,
+                [&](mu::float4& colorValue) {
+                    stdmat.setEmissionColor(colorValue);
+                },
+                [&](int textureId) {
+                    stdmat.setEmissionMap(textureId);
+                });
+        }
+    }
+
+    // Handle output node:
+    auto displacementSocket = getInputSocket(outputNode, displacementIdentifier);
+    if (displacementSocket)
+    {
+        SetValueFromSocket(displacementSocket, ms::TextureType::Default,
+            false,
+            [&](mu::float4& colorValue) {
+                stdmat.setHeightScale(colorValue[0]);
+            },
+            [&](int textureId)
+            {
+                stdmat.setHeightMap(textureId);
+            });
     }
 }
 
