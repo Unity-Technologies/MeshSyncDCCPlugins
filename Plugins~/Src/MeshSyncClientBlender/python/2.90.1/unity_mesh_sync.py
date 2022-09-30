@@ -13,6 +13,7 @@ import bpy
 from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
+from .unity_mesh_sync_preferences import *
 
 class MESHSYNC_PT:
     bl_space_type = "VIEW_3D"
@@ -126,8 +127,11 @@ class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-        layout.prop(scene, "meshsync_unity_project_path")
-        layout.prop(scene, "meshsync_unity_editors_path")
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+
+        layout.prop(addon_prefs, "project_path")
+        layout.prop(addon_prefs, "editors_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -334,6 +338,7 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
+    MESHSYNC_Preferences,
 )
 
 def register():
