@@ -1,6 +1,6 @@
 # MeshSyncDCCPlugins Usage in Blender
 
-![](images/MeshSyncClientBlender.png)
+<img src="images/MeshSyncClientBlender.png" alt="drawing" width="500"/>
 
 After [installing the plugin](Installation.md), sync controls will be displayed in the MeshSync panel
 as can be seen above, where most of the options are self-explanatory.
