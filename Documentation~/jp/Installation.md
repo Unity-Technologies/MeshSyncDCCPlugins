@@ -91,7 +91,7 @@
 1. "Import-Export: Unity Mesh Sync" をチェックし、有効化する。 
 1. MeshSync パネルが追加されたのを確認する。
   
-![MeshSyncClientBlender](../images/MeshSyncClientBlender.png)
+<img src="images/MeshSyncClientBlender.png" alt="drawing" width="500"/>
    
   
 #### 注意
