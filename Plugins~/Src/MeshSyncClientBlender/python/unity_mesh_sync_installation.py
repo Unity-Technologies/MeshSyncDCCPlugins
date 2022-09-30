@@ -11,6 +11,7 @@ from contextlib import closing
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
 
+
 from . import MeshSyncClientBlender as ms
 msb_context = ms.Context()
 
@@ -23,6 +24,25 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
 
 def msb_get_meshsync_entry():
     return "0.15.0-preview"
+
+def msb_get_min_supported_meshsync_version():
+    return "0.15.0-preview"
+
+def msb_get_most_recent_version(v1, v2):
+    tokens1 = v1.replace("-preview","").split('.')
+    tokens2 = v2.replace("-preview","").split('.')
+
+    if len(tokens1) != len(tokens2):
+        return 'VERSION_MISMATCH'
+
+    for i in range(len(tokens1)):
+        if tokens1[i] == tokens2[i]:
+            continue
+        
+        if int(tokens1[i]) > int(tokens2[i]):
+            return v1
+
+        return v2
 
 def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
@@ -37,6 +57,8 @@ def msb_error_messages_for_status(status, context):
         MS_MessageBox("Could not launch project in path "+context.scene.meshsync_unity_project_path+" .")
     elif status == 'SERVER_UNAVAILABLE':
         MS_MessageBox("Could not connect with scene server.")
+    elif status == 'VERSION_MISMATCH':
+        MS_MessageBox("Project at "+context.scene.meshsync_unity_project_path+ " has an incompatible version of MeshSync installed.")
 
     return False
 
@@ -90,7 +112,13 @@ def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
         found = False
 
         for package in data['dependencies']:
-            if package == 'com.unity.meshsync' and data['dependencies']['com.unity.meshsync']['version'] == entry:
+            if package == 'com.unity.meshsync':
+                version = data['dependencies']['com.unity.meshsync']['version']
+                if version != entry:
+                    min_version = msb_get_min_supported_meshsync_version()
+                    most_recent = msb_get_most_recent_version(min_version, version)
+                    if most_recent == min_version or most_recent == 'VERSION_MISMATCH':
+                        return 'VERSION_MISMATCH'
                 found = True
                 break
             elif package == 'com.unity.meshsync':
@@ -106,13 +134,15 @@ def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
             file.truncate(0)
             json.dump(data, file)
 
+    return 'SUCCESS'
+
 def msb_try_install_meshsync_to_unity_project(directory):
         lock_path = path.join(directory,"Packages","packages-lock.json")
         manifest_path = path.join(directory,"Packages","manifest.json")
 
         manifest_entry = msb_get_meshsync_entry()
 
-        msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
+        return msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
 def msb_try_setup_scene_server(context):
 
@@ -132,7 +162,9 @@ def msb_try_setup_scene_server(context):
     context.scene.meshsync_unity_project_path = path
 
     # Try install to unity project
-    msb_try_install_meshsync_to_unity_project(path)
+    install_status = msb_try_install_meshsync_to_unity_project(path)
+    if install_status != 'SUCCESS':
+        return install_status
 
     # Try starting unity if not already started
     start_status = msb_try_start_unity_project(context, path)
