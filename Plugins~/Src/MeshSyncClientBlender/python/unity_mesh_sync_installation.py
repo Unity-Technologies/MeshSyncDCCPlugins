@@ -217,7 +217,6 @@ def msb_try_start_unity_project (context, directory):
 def msb_is_port_available(port):
     try:
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind(('', port))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return True
