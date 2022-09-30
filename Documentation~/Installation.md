@@ -121,7 +121,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Check "Import-Export: Unity Mesh Sync" to enable it.
 1. Confirm that MeshSync panel is added.
   
-![MeshSyncClientBlender](images/MeshSyncClientBlender.png)
+<img src="images/MeshSyncClientBlender.png" alt="drawing" width="500"/>
 
 #### Caveat
 
