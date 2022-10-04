@@ -10,7 +10,7 @@ Install the Blender add-on:
 1. Install the add-on manually, as described in the [manual installation for Blender](./Installation.md#blender-1).
 
 Setup MeshSync for a Unity Project:
-1. Select the location of an existing Unity Project and the location of the Unity Editors Folder.
+1. Select the location of an existing Unity Project and the location of the Unity Editors.
 ![](images/BlenderUnityProjectSection.png)
 1. Click on **Auto Sync** or **Manual Sync**.
 ![](images/BlenderSyncButtons.png)
