@@ -165,6 +165,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(multithreaded,
                 [](const self_t& self) { return self->getSettings().multithreaded; },
                 [](self_t& self, int v) { self->getSettings().multithreaded = v; })
+            BindProperty(material_sync_mode,
+                [](const self_t& self) { return self->getSettings().material_sync_mode; },
+                [](self_t& self, int v) { self->getSettings().material_sync_mode = (BlenderSyncSettings::MaterialSyncMode)v; })
 
             BindMethod(flushPendingList, [](self_t& self) { self->flushPendingList(); })
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
@@ -176,7 +179,8 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](self_t& self, py::object depsgraph) {
                     auto graph = DepsgraphFromPyObject(depsgraph);
                     self->onDepsgraphUpdatedPost(graph);
-                });
+                })
+            BindMethod(resetMaterials, [](self_t& self) { self->resetMaterials(); });
     }
     {
         using self_t = CacheProxy;

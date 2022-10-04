@@ -70,7 +70,7 @@ int TextureManager::addImage(const std::string& name, int width, int height, con
     return id;
 }
 
-int TextureManager::addInMemoryImage(const std::string& name, const void* data, size_t size, TextureType type)
+int TextureManager::addPackedImage(const std::string& name, const void* data, size_t size, TextureType type)
 {
     auto& rec = lockAndGet(name);
     int id = rec.texture ?
@@ -85,7 +85,9 @@ int TextureManager::addInMemoryImage(const std::string& name, const void* data, 
         auto& tex = rec.texture;
         tex->id = id;
         tex->name = name;
-        tex->format = TextureFormat::InMemoryFile;
+        tex->format = TextureFormat::RawFile;
+        tex->type = type;
+        // We don't know the width and heigghgt but they don't matter here. The image will just be saved anyway:
         tex->width = 0;
         tex->height = 0;
         tex->data.assign((const char*)data, (const char*)data + size);

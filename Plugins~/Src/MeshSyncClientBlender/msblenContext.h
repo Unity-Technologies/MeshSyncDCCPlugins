@@ -35,6 +35,8 @@
 #include <msblenGeometryNodeUtils.h>
 #endif
 
+#include "msblenMaterialsExportHelper.h"
+
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
@@ -60,6 +62,8 @@ public:
     void wait();
     void clear();
     bool prepare();
+
+    void resetMaterials();
 
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
@@ -114,18 +118,11 @@ private:
 
     static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
-    int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
     ms::MaterialPtr CreateDefaultMaterial(const uint32_t matIndex);
     void RegisterSceneMaterials();
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
-    void SetValueFromSocket(bNodeSocket* socket,
-        ms::TextureType textureType,
-        bool resetIfInputIsTexture,
-        std::function<void(mu::float4& colorValue)> setColorHandler,
-        std::function<void(int textureId)> setTextureHandler);
-    void ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat);
 
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -210,6 +207,8 @@ private:
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
 #endif
+
+    blender::msblenMaterialsExportHelper m_materialsHelper;
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "msblenBinder.h"
 #include "msblenContext.h"
+
+#include <BLI_listbase.h>
+
 #include "msblenUtils.h"
 
 #include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
@@ -27,6 +30,7 @@
 #include "BlenderPyObjects/BlenderPyID.h"
 #include "BlenderPyObjects/BlenderPyID.h"
 #include "MeshUtils/muLog.h"
+
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -123,11 +127,6 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
     return ret;
 }
 
-int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
-{
-    return m_texture_manager.addFile(path, type);
-}
-
 int msblenContext::getMaterialID(Material *m)
 {
     if (m && m->id.orig_id)
@@ -192,301 +191,17 @@ void msblenContext::RegisterObjectMaterials(const std::vector<Object*> objects) 
     m_material_manager.eraseStaleMaterials();
 }
 
-// Blender uses hardcoded string identifiers to figure out what the sockets do:
-const auto baseColorIdentifier = "Base Color";
-const auto colorIdentifier = "Color";
-const auto roughnessIdentifier = "Roughness";
-const auto metallicIdentifier = "Metallic";
-const auto normalIdentifier = "Normal";
-const auto normalStrengthIdentifier = "Strength";
-const auto surfaceIdentifier = "Surface";
-const auto emissionIdentifier = "Emission";
-
-const auto displacementIdentifier = "Displacement";
-const auto heightIdentifier = "Height";
-const auto scaleIdentifier = "Scale";
-
-bool getBSDFAndOutput(Material* mat, bNode*& bsdf, bNode*& output) {
-    // Find BSDF connected to an output node:
-    auto tree = mat->nodetree;
-    for (auto link : blender::list_range((bNodeLink*)tree->links.first)) {
-        if (link->tonode &&
-            link->tonode->type == SH_NODE_OUTPUT_MATERIAL &&
-            STREQ(link->tosock->identifier, surfaceIdentifier)) {
-            bsdf = link->fromnode;
-            output = link->tonode;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
-    for (auto inputSocket : blender::list_range((bNodeSocket*)node->inputs.first)) {
-        if (STREQ(inputSocket->name, socketName)) {
-            return inputSocket;
-        }
-    }
-
-    return nullptr;
-}
-
-void msblenContext::SetValueFromSocket(bNodeSocket* socket,
-    ms::TextureType textureType,
-    bool resetIfInputIsTexture,
-    std::function<void(mu::float4& colorValue)> setColorHandler,
-    std::function<void(int textureId)> setTextureHandler)
-{
-    // If there is an image linked to the socket, send that as a texture:
-    if (socket->link) {
-        if (m_settings.sync_textures) {
-            auto sourceNode = socket->link->fromnode;
-
-            switch (sourceNode->type) {
-            case SH_NODE_TEX_IMAGE:
-            {
-                if (sourceNode->id) {
-                    if (setTextureHandler) {
-                        auto img = (Image*)sourceNode->id;
-
-                        // Use non-color if the image node is not in sRGB space:
-                        if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
-                            textureType = ms::TextureType::NonColor;
-                        }
-
-                        // Unpack if needed:
-                        if (img->packedfiles.first)
-                        {
-                            for (auto imagePackedFile : blender::list_range((ImagePackedFile*)img->packedfiles.first)) {
-                                int exported = m_texture_manager.addInMemoryImage(
-                                    img->filepath, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::InMemoryFile);
-                                setTextureHandler(exported);
-                            }
-                        }
-                        else {
-                            setTextureHandler(exportTexture(bl::abspath(img->filepath), textureType));
-                        }
-                    }
-
-                    // Ensure the color is white if there is a texture otherwise Unity will multiply that image with the color that was set before.
-                    // Blender does not do that so they would not look the same:
-                    if (resetIfInputIsTexture && setColorHandler) {
-                        setColorHandler(mu::float4{ 1, 1, 1, 1 });
-                    }
-                }
-                else {
-                    if (setTextureHandler) {
-                        setTextureHandler(ms::InvalidID);
-                    }
-
-                    if (setColorHandler) {
-                        // Blender uses black if there is no image set on an image node:
-                        setColorHandler(mu::float4{ 0, 0, 0, 1 });
-                    }
-                }
-                break;
-            }
-            case SH_NODE_NORMAL_MAP:
-            {
-                if (setTextureHandler) {
-                    auto imageInput = getInputSocket(sourceNode, colorIdentifier);
-                    if (imageInput)
-                    {
-                        SetValueFromSocket(imageInput, textureType,
-                            resetIfInputIsTexture,
-                            nullptr,
-                            setTextureHandler);
-                    }
-                }
-
-                auto strengthInput = getInputSocket(sourceNode, normalStrengthIdentifier);
-                if (strengthInput && setColorHandler) {
-                    auto defaultValue = (bNodeSocketValueFloat*)strengthInput->default_value;
-                    auto val = defaultValue->value;
-                    setColorHandler(mu::float4{ val,val,val, val });
-                }
-
-                break;
-            }
-            case SH_NODE_DISPLACEMENT:
-            {
-                auto heightInput = getInputSocket(sourceNode, heightIdentifier);
-                if (heightInput && setTextureHandler)
-                {
-                    SetValueFromSocket(heightInput, textureType,
-                        resetIfInputIsTexture,
-                        setColorHandler,
-                        setTextureHandler);
-                }
-
-                auto scaleInput = getInputSocket(sourceNode, scaleIdentifier);
-                if(scaleInput && setColorHandler)
-                {
-                    auto defaultValue = (bNodeSocketValueFloat*)scaleInput->default_value;
-                    auto val = defaultValue->value;
-                    setColorHandler(mu::float4{ val,val,val, val });
-                }
-
-                break;
-            }
-            }
-        }
-    }
-    else {
-        // The socket is using a direct value, not the output of another node.
-        // Clear any texture that was set:
-        if (setTextureHandler) {
-            setTextureHandler(ms::InvalidID);
-        }
-
-        if (setColorHandler) {
-            mu::float4 colorValue;
-
-            switch (socket->type)
-            {
-            case SOCK_RGBA: {
-                auto defaultValue = (bNodeSocketValueRGBA*)socket->default_value;
-                auto val = defaultValue->value;
-                colorValue = mu::float4{ val[0], val[1], val[2], val[3] };
-                break;
-            }
-            case SOCK_FLOAT: {
-                auto defaultValue = (bNodeSocketValueFloat*)socket->default_value;
-                auto val = defaultValue->value;
-                colorValue = mu::float4{ val, val, val, val };
-                break;
-            }
-            }
-            setColorHandler(colorValue);
-        }
-    }
-}
-
-void msblenContext::ExportMaterialFromNodeTree(Material* mat, ms::StandardMaterial& stdmat)
-{
-    bNode* bsdfNode;
-    bNode* outputNode;
-
-    if (!getBSDFAndOutput(mat, bsdfNode, outputNode)) {
-        return;
-    }
-
-    // Handle BSDF node:
-    for (auto inputSocket : blender::list_range((bNodeSocket*)bsdfNode->inputs.first)) {
-        if (STREQ(inputSocket->identifier, baseColorIdentifier) ||
-            STREQ(inputSocket->identifier, colorIdentifier)) {
-            SetValueFromSocket(inputSocket, ms::TextureType::Default,
-                true,
-                [&](mu::float4& colorValue)
-                {
-                    stdmat.setColor(colorValue);
-                },
-                [&](int textureId)
-                {
-                    stdmat.setColorMap(textureId);
-                });
-        }
-        else if (STREQ(inputSocket->identifier, roughnessIdentifier))
-        {
-            SetValueFromSocket(inputSocket, ms::TextureType::Default,
-                false,
-                [&](mu::float4& colorValue)
-                {
-                    stdmat.setSmoothness(1 - colorValue[0]);
-                },
-                [&](int textureId) {
-                    stdmat.setSmoothnessMap(textureId);
-                });
-        }
-        else if (STREQ(inputSocket->identifier, metallicIdentifier))
-        {
-            SetValueFromSocket(inputSocket, ms::TextureType::Default,
-                true,
-                [&](mu::float4& colorValue) {
-                    stdmat.setMetallic(colorValue[0]);
-                },
-                [&](int textureId) {
-                    stdmat.setMetallicMap(textureId);
-                });
-        }
-        else if (STREQ(inputSocket->identifier, normalIdentifier))
-        {
-            SetValueFromSocket(inputSocket, ms::TextureType::NormalMap,
-                true,
-                [&](mu::float4& colorValue) {
-                    stdmat.setBumpScale(colorValue[0]);
-                },
-                [&](int textureId) {
-                    stdmat.setBumpMap(textureId);
-                });
-        }
-        else if (STREQ(inputSocket->identifier, emissionIdentifier))
-        {
-            SetValueFromSocket(inputSocket, ms::TextureType::Default,
-                true,
-                [&](mu::float4& colorValue) {
-                    stdmat.setEmissionColor(colorValue);
-                },
-                [&](int textureId) {
-                    stdmat.setEmissionMap(textureId);
-                });
-        }
-    }
-
-    // Handle output node:
-    auto displacementSocket = getInputSocket(outputNode, displacementIdentifier);
-    if (displacementSocket)
-    {
-        SetValueFromSocket(displacementSocket, ms::TextureType::Default,
-            false,
-            [&](mu::float4& colorValue) {
-                stdmat.setHeightScale(colorValue[0]);
-            },
-            [&](int textureId)
-            {
-                stdmat.setHeightMap(textureId);
-            });
-    }
-}
-
 void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     std::shared_ptr<ms::Material> ret = ms::Material::create();
     ret->name = get_name(mat);
     ret->id = m_material_ids.getID(mat);
     ret->index = matIndex;
 
-    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-    bl::BMaterial bm(mat);
+    m_materialsHelper.m_settings = &m_settings;
+    m_materialsHelper.m_texture_manager = &m_texture_manager;
+    m_materialsHelper.exportMaterial(mat, ret);
     
-    if (mat->use_nodes) {
-        ExportMaterialFromNodeTree(mat, stdmat);
-    }
-    else {
-        stdmat.setColor(mu::float4{ mat->r, mat->g, mat->b, 1.0f });
-        stdmat.setColorMap(nullptr);
-
-        stdmat.setMetallic(mat->metallic);
-        stdmat.setSmoothness(1 - mat->roughness);
-        stdmat.setSpecular(mu::float3{ mat->spec, mat->spec, mat->spec });
-    }
-
-    // todo: handle texture
-#if 0
-    if (m_settings.sync_textures) {
-        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-            if (!mtex || !mtex->tex || !mtex->tex->ima)
-                return -1;
-            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-        };
-#if BLENDER_VERSION < 280
-        stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
-#endif
-    }
-#endif
-
     m_material_manager.add(ret);
-    
 }
 
 
@@ -1635,6 +1350,12 @@ void msblenContext::clear()
     m_texture_manager.clear();
     m_material_manager.clear();
     m_entity_manager.clear();
+}
+
+void msblenContext::resetMaterials()
+{
+    m_texture_manager.clear();
+    m_material_manager.clear();
 }
 
 bool msblenContext::prepare()

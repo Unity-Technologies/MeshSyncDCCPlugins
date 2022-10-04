@@ -25,7 +25,7 @@ public:
     // thread safe
     int add(TexturePtr tex);
     // thread safe
-    int addInMemoryImage(const std::string& name, const void* data, size_t size, TextureType type);
+    int addPackedImage(const std::string& name, const void* data, size_t size, TextureType type);
 
     std::vector<TexturePtr> getAllTextures();
     std::vector<TexturePtr> getDirtyTextures();
