@@ -3,7 +3,7 @@
 <img align="right" src="https://user-images.githubusercontent.com/1488611/39971860-7f6d1330-573e-11e8-9a1e-9d95709cbd50.png" height=400>
 
 - Start Maya, then go to Windows -> Settings/Preferences -> Plug-in Manager, and activate the plugin by checking Loaded under MeshSyncClient.
-- Now that the UnityMeshSync shelf has been added, click on the gear icon to open the settings menu.
+- Confirm that the UnityMeshSync shelf is added, and click on the gear icon to open the settings menu.
 - While "Auto Sync" is checked, any edits to the mesh will automatically be reflected in Unity. When Auto Sync is deactivated, click the  "Manual Sync" button to sync changes.
 - Clicking Sync under Animations causes the timer to advance from the first frame to the final frame while baking the animation and sending it to Unity.
 - The other buttons correspond to their respective manual sync and animation sync functions.
