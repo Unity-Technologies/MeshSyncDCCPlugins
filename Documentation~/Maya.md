@@ -15,6 +15,10 @@
 - Polygon mesh will carry skinning/bones (SkinCluster) and BlendShapes over to Unity as is.
    - MeshSync will attempt to apply any additional deformers, but if there is a SkinCluster before or after them they may not apply correctly.
    - Check "Bake Deformers" to sync the results of applying all deformers. This will mostly sync the Mesh on both the Maya and Unity sides, but this will result in loss of Skinning and BlendShape information.
+   - Checking "Bake Transform" will apply the position/rotation/scale to the vertices of the Mesh 
+     and reset the Transform to the default value in Unity. This option is only valid when "Bake Deformers" is enabled 
+     and will be useful to work around cases where it's difficult to reproduce complex transforms involving pivots in Unity. 
+        
 - Instancing is supported, but instancing for skinned meshes is currently not supported (on the Unity side they all end up in the same position as the original instance).
 
 ## Maya LT
