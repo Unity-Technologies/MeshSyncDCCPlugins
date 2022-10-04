@@ -32,9 +32,9 @@ def msb_apply_animation_settings(self = None, context = None):
     ctx.frame_step = scene.meshsync_frame_step
     return None
 
-def meshsync_material_sync_mode_update(self = None, context = None):
+def msb_on_material_sync_updated(self = None, context = None):
     msb_context.resetMaterials()
-    return msb_on_scene_settings_updated(self, context)
+    return None
 
 def msb_on_scene_settings_updated(self = None, context = None):
     msb_apply_scene_settings()
@@ -93,7 +93,7 @@ def msb_initialize_properties():
                                                                         ('1', 'Basic',
                                                                          'Sync colors and textures assigned to the BSDF')),
                                                                  default='0',
-                                                                 update=msb_on_scene_settings_updated)
+                                                                 update=msb_on_material_sync_updated)
 
 @persistent
 def on_scene_load(context):
