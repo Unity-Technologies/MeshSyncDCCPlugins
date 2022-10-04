@@ -7,7 +7,7 @@ Currently, this install method is available only for Blender. For other DCC tool
 ### Blender
 Install the Blender add-on:
 1. Download the latest MeshSyncDCCPlugins release from the [releases page on Github](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).
-1. Install the add-on manually, as described [here](./Installation.md#blender-1).
+1. Install the add-on manually, as described in the [manual installation for Blender](./Installation.md#blender-1).
 
 Setup MeshSync for a Unity Project:
 1. Select the location of an existing Unity Project and the location of the Unity Editors Folder.
