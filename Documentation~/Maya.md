@@ -16,7 +16,6 @@
    - MeshSync will attempt to apply any additional deformers, but if there is a SkinCluster before or after them they may not apply correctly.
    - Check "Bake Deformers" to sync the results of applying all deformers. This will mostly sync the Mesh on both the Maya and Unity sides, but this will result in loss of Skinning and BlendShape information.
 - Instancing is supported, but instancing for skinned meshes is currently not supported (on the Unity side they all end up in the same position as the original instance).
-- Commands are also registered to MEL, and all features can be accessed through MEL. See [the source code](https://github.com/unity3d-jp/MeshSync/blob/master/.MeshSync/Plugin/MeshSyncClientMaya/msmayaCommands.cpp) for details.
 
 ## Maya LT
 
