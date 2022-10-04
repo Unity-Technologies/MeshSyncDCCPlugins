@@ -2,12 +2,6 @@
 
 <img align="right" src="https://user-images.githubusercontent.com/1488611/39971860-7f6d1330-573e-11e8-9a1e-9d95709cbd50.png" height=400>
 
-- Installation:
-   - Download the package from [Releases](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases) and extract it to get UnityMeshSync_Maya_*.zip.
-   - Windows: If %MAYA_APP_DIR% is already setup, copy the modules directory there, if not copy it to %USERPROFILE%\Documents\maya (← copy paste into the Explorer address bar).
-      - For versions prior to 2016, copy to the version name directory (%MAYA_APP_DIR%\2016 etc.)
-   - Mac: Copy the UnityMeshSync directory and .mod file to /Users/Shared/Autodesk/modules/maya.
-   - Linux: Copy the modules directory to ~/maya/(Maya version).
 - Start Maya, then go to Windows -> Settings/Preferences -> Plug-in Manager, and activate the plugin by checking Loaded under MeshSyncClient.
 - Now that the UnityMeshSync shelf has been added, click on the gear icon to open the settings menu.
 - While "Auto Sync" is checked, any edits to the mesh will automatically be reflected in Unity. When Auto Sync is deactivated, click the  "Manual Sync" button to sync changes.
