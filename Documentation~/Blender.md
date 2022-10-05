@@ -1,4 +1,4 @@
-# MeshSyncDCCPlugins Usage in Blender
+# Usage in Blender
 
 <img src="images/MeshSyncClientBlender.png" alt="drawing" width="500"/>
 
