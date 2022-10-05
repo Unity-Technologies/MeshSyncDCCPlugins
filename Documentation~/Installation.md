@@ -17,6 +17,8 @@ Setup MeshSync for a Unity Project:
 
 The Unity project will be launched with the Blender scene synchronised.
 
+---
+
 ## Automatic Installation via Unity Editor
 
 ![](images/MeshSyncPreferences.png)
@@ -24,6 +26,8 @@ The Unity project will be launched with the Blender scene synchronised.
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.    
 Alternatively, we can also [install the plugins manually](#manual-installation).
+
+---
 
 ## Manual Installation
 
