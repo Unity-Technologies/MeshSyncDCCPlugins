@@ -1,5 +1,15 @@
 # Installation
 
+- [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
+- [Automatic Installation via Unity Editor](#automatic-installation-via-unity-editor)
+- [Manual Installation](#manual-installation)
+  - [Maya](#maya)
+  - [3ds Max](#3ds-max)
+  - [MotionBuilder](#motionbuilder)
+  - [Blender](#blender-1)
+  - [Metasequoia](#metasequoia)
+  - [Modo](#modo)
+
 ## Unity Project Setup via DCC tools
 We can install MeshSync on a Unity project through DCC tools. This install method is designed for users who are not familiar with the Unity Editor or the Unity Package Manager.
 
@@ -32,7 +42,7 @@ Alternatively, we can also [install the plugins manually](#manual-installation).
 ## Manual Installation
 
 
-### PackageManager
+### Preparation
 
 ![](images/PackageManager.png)
 
@@ -40,15 +50,6 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open [Package Manager](https://docs.unity3d.com/Manual/upm-ui.html). 
 2. Click the **+** button, and choose **Add package from git URL**.
 3. Type in `com.unity.meshsync.dcc-plugins`.
-
-### DCC Tools Setup
-
-1. [Maya](#maya)
-1. [3ds Max](#3ds-max)
-1. [MotionBuilder](#motionbuilder)
-1. [Blender](#blender-1)
-1. [Metasequoia](#metasequoia)
-1. [Modo](#modo)
 
 ### Maya
 
