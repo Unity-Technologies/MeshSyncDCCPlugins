@@ -1,11 +1,5 @@
-# MeshSyncDCCPlugins Usage in 3dsMax
+# Usage in 3dsMax
 
-- Installation:
-   - Copy MeshSyncClient3dsMax.dlu into the directory for plugin paths.
-      - Plugin paths can be added in Max by going to Add under Customize -> Configure User and System Paths -> 3rd Party Plug-Ins
-      - The default path (C:\Program Files\Autodesk\3ds Max 2019\Plugins) should be fine, but using a separate path is recommended
-- After installing, "UnityMeshSync" will be added to the main menu bar, and the settings window can be opened by clicking "Window".
-   - If you change the menu bar, the "UnityMeshSync" category will be added under Action, where MeshSync features can also be accessed
 - While "Auto Sync" is checked, changes to the Mesh will automatically be reflected in Unity. If Auto Sync is disabled, the "Manual Sync" button can be used to sync changes manually.
 - Clicking Sync under Animations will cause the timer to advance from the first frame to the final frame while baking the animation before sending it to Unity.
 - Clicking "Export Cache" will export all frame data into an *.sc file* for playback in Unity.   
