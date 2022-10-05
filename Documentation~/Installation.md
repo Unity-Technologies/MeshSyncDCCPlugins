@@ -62,10 +62,10 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
    - Mac:   
      Copy the *UnityMeshSync* directory and *UnityMeshSync.mod* file to `/Users/Shared/Autodesk/modules/maya`.
    - Linux:  
-     Copy the *modules* directory to `~/maya/<maya_version)`
+     Copy the *modules* directory to `~/maya/<maya_version>`
   
   
-1. Start Maya, then go to Windows -> Settings/Preferences -> Plug-in Manager.
+1. Start Maya, then go to Windows &rarr; Settings/Preferences &rarr; Plug-in Manager.
 1. Activate MeshSync DCC plugin by checking Loaded under *MeshSyncClient*.
 1. Notice that *UnityMeshSync* should now be available on the shelf UI.  
   Click on the gear icon to open the settings menu and start playing around with MeshSync.
