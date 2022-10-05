@@ -3,6 +3,7 @@
 - [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
 - [Automatic Installation via Unity Editor](#automatic-installation-via-unity-editor)
 - [Manual Installation](#manual-installation)
+  - [Preparation](#preparation)
   - [Maya](#maya)
   - [3ds Max](#3ds-max)
   - [MotionBuilder](#motionbuilder)
