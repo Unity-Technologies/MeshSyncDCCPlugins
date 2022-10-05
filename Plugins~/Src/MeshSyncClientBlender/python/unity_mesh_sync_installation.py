@@ -44,21 +44,24 @@ def msb_get_most_recent_version(v1, v2):
 
         return v2
 
+def msb_preferences(context):
+    return context.preferences.addons[__package__].preferences
+
 def msb_error_messages_for_status(status, context):
     if status == 'SUCCESS':
         return True
     if status == 'INVALID_PATH':
-        MS_MessageBox("Path "+context.scene.meshsync_unity_project_path+" is not a Unity Project.")
+        MS_MessageBox("Path "+msb_preferences(context).project_path+" is not a Unity Project.")
     elif status == 'EDITOR_NOT_EXISTS':
-        MS_MessageBox("Could not find Unity Editors in path "+ context.scene.meshsync_unity_editors_path+" .")
+        MS_MessageBox("Could not find Unity Editors in path "+ msb_preferences(context).editors_path+" .")
     elif status == 'SERVER_NOT_ADDED':
         MS_MessageBox("Could not add server to scene.")
     elif status == 'LAUNCH FAILED':
-        MS_MessageBox("Could not launch project in path "+context.scene.meshsync_unity_project_path+" .")
+        MS_MessageBox("Could not launch project in path "+msb_preferences(context).project_path+" .")
     elif status == 'SERVER_UNAVAILABLE':
         MS_MessageBox("Could not connect with scene server.")
     elif status == 'VERSION_MISMATCH':
-        MS_MessageBox("Project at "+context.scene.meshsync_unity_project_path+ " has an incompatible version of MeshSync installed.")
+        MS_MessageBox("Project at "+msb_preferences(context).project_path+ " has an incompatible version of MeshSync installed.")
 
     return False
 
@@ -73,7 +76,7 @@ def msb_get_editor_path_suffix():
     return None
 
 def msb_get_editor_path(context, editor_version):
-    return path.join(context.scene.meshsync_unity_editors_path,editor_version,msb_get_editor_path_suffix())
+    return path.join(msb_preferences(context).editors_path,editor_version,msb_get_editor_path_suffix())
 
 def msb_validate_project_path(directory):
     project_version_path = path.join(directory,"ProjectSettings","ProjectVersion.txt")
@@ -82,7 +85,7 @@ def msb_validate_project_path(directory):
     return False
 
 def msb_try_get_valid_project_path(context):
-    directory = context.scene.meshsync_unity_project_path
+    directory = msb_preferences(context).project_path
 
     #Validate that the path is a project
     if msb_validate_project_path(directory) == False:
@@ -159,7 +162,7 @@ def msb_try_setup_scene_server(context):
         return 'INVALID_PATH'
 
     # Write back the valid path, in case it comes from a listening server
-    context.scene.meshsync_unity_project_path = path
+    msb_preferences(context).project_path = path
 
     # Try install to unity project
     install_status = msb_try_install_meshsync_to_unity_project(path)
