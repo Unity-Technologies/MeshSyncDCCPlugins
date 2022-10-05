@@ -82,8 +82,8 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Copy *MeshSyncClient3dsMax.dlu* that corresponds to the used version of 3ds Max into 
    one of the following directories:
    - **(Recommended)** A custom directory for plugins that has been added in 3ds Max by the following menu:
-     * 3ds Max 2019 and earlier: Customize -> Configure System Paths. Then select *3rd Party Plug-Ins* tab.
-     * 3ds Max 2020: Customize -> Configure User and System Paths. Then select *3rd Party Plug-Ins* tab.
+     * 3ds Max 2019 and earlier: Customize &rarr; Configure System Paths. Then select *3rd Party Plug-Ins* tab.
+     * 3ds Max 2020: Customize &rarr; Configure User and System Paths. Then select *3rd Party Plug-Ins* tab.
    - The plugin path under the installation directory, e.g: `C:\Program Files\Autodesk\3ds Max 2019\Plugins`
 1. Restart 3ds Max 
 1. Confirm that "UnityMeshSync" has been added to the main menu bar.
@@ -100,14 +100,14 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for MotionBuilder.
 1. Start MotionBuilder.
-1. Add a path for custom plugins by clicking on Settings -> Preferences -> SDK menu.
+1. Add a path for custom plugins by clicking on Settings &rarr; Preferences &rarr; SDK menu.
 1. Copy *MeshSyncClientMotionBuilder.dll* that corresponds to the used version of MotionBuilder into 
    the custom plugin path.
 1. Restart MotionBuilder.
-1. Confirm that "UnityMeshSync" is added in the AssetBrowser under Templates -> Devices folder.
+1. Confirm that "UnityMeshSync" is added in the AssetBrowser under Templates &rarr; Devices folder.
 1. Add "UnityMeshSync" to the scene.
 1. Start playing around with various MeshSync settings and features by 
-   selecting Devices -> UnityMeshSync in the Navigator.
+   selecting Devices &rarr; UnityMeshSync in the Navigator.
 
 ![MeshSyncClientMotionBuilder](images/MeshSyncClientMotionBuilder.png)
 
@@ -118,7 +118,7 @@ First, get **MeshSync DCC Plugins** package in a Unity project.
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Blender.
 1. Start Blender
-1. Go to Edit -> User Preferences
+1. Go to Edit &rarr; User Preferences
 1. Click "Install" at the top right of the window, and select the appropriate **blender-x.xx.zip** file.
 1. Confirm that "Import-Export: Unity Mesh Sync" is added to the Add-ons tab.     
    ![MeshSyncClientBlender_Installation](images/MeshSyncClientBlender_Installation.png)
@@ -147,10 +147,10 @@ Steps to uninstall:
 1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
    and uncompress the appropriate zip file for Metasequoia.
 1. Start Metasequoia.
-1. Go to Help -> About Plug-ins, and click "Install" at the lower left of the Plug-win window.
+1. Go to Help &rarr; About Plug-ins, and click "Install" at the lower left of the Plug-win window.
 1. Select the plugin file from the extracted zip file that corresponds to the version of Metasequoia.  
    For example: *MeshSyncClientMQ472.plugin*
-1. Go to Panel -> Unity Mesh Sync.  
+1. Go to Panel &rarr; Unity Mesh Sync.  
    If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
 
 ![MeshSyncClientMQ](images/MeshSyncClientMQ.png)
@@ -163,8 +163,8 @@ Steps to uninstall:
    to build MeshSync plugin for Modo.   
    Due to Modo's licensing, manual building is required at the moment.
 1. Start Modo.
-3. Go to System -> Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
-4. Go to Modo's tabs UI, click on *+*, and choose Application -> Custom View -> UnityMeshSync.
+3. Go to System &rarr; Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
+4. Go to Modo's tabs UI, click on *+*, and choose Application &rarr; Custom View &rarr; UnityMeshSync.
 1. Confirm that UnityMeshSync view is added in the tabs UI.
 
 ![MeshSyncClientModo](images/MeshSyncClientModo.png)
