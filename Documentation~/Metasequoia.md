@@ -1,11 +1,5 @@
-# MeshSyncDCCPlugins Usage in Metasequioa
+# Usage in Metasequioa
 
-Supported in Windows for version 3 and 4 (32bit & 64bit) and Mac (version 4 only). All 3 versions are probably supported, but 4 versions must be 4.6.4 or later (bone output is not supported for earlier versions).
-Also, dll is different in version 4.7 and later. This is due to changes to the bone system after 4.7 which lead to a loss of plugin compatibility. Morph output is also supported in 4.7 and later.
-- Installation:
-   - Go to Help -> About Plug-ins in Metasequoia, and select the plugin file under "Install" in the lower left of the dialogue. It's a Station plugin type.
-   - **If older versions are already installed, remove them manually before hand**. Delete the appropriate files before starting Metasequoia.
-- Panel -> Unity Mesh Sync will be added after installation, open this and check "Auto Sync".
 - While "Auto Sync" is checked, changes to the mesh will automatically be reflected in Unity. If Auto Sync is disabled, use the "Manual Sync" button to sync changes.
 - Checking "Sync Camera" will sync the camera in Metasequoia. "Camera Path" is the camera path in Unity.
 - Clicking "Import Unity Scene" will import the currently open Unity scene. Changes made to the scene can be reflected in real time.
