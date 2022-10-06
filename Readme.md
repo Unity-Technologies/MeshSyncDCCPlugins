@@ -1,10 +1,8 @@
 ![demo](Documentation~/images/Demo.gif)
 
-# Other Languages
-- [日本語](Readme_JP.md)
-
 # Latest official docs
 - [English](https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@latest)
+- [日本語](https://docs.unity3d.com/ja/Packages/com.unity.meshsync.dcc-plugins@latest)
 
 # MeshSync DCC Plugins
 
@@ -267,4 +265,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Sep 27 02:33:08 UTC 2022*
+*Auto-generated on Thu Oct  6 07:07:29 UTC 2022*
