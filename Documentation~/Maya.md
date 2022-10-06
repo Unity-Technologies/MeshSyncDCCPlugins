@@ -1,4 +1,4 @@
-# MeshSyncDCCPlugins Usage in Maya
+# Usage in Maya
 
 <img align="right" src="images/MeshSyncClientMaya.png" height=600>
 
