@@ -1,6 +1,6 @@
-# MeshSyncDCCPlugins Usage in Maya
+# Usage in Maya
 
-<img align="right" src="https://user-images.githubusercontent.com/1488611/39971860-7f6d1330-573e-11e8-9a1e-9d95709cbd50.png" height=400>
+<img align="right" src="images/MeshSyncClientMaya.png" height=600>
 
 - Start Maya, then go to Windows -> Settings/Preferences -> Plug-in Manager, and activate the plugin by checking Loaded under MeshSyncClient.
 - Confirm that the UnityMeshSync shelf is added, and click on the gear icon to open the settings menu.
