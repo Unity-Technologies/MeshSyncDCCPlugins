@@ -1,10 +1,8 @@
 ![demo](Documentation~/images/Demo.gif)
 
-# Other Languages
-- [日本語](Readme_JP.md)
-
 # Latest official docs
 - [English](https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@latest)
+- [日本語](https://docs.unity3d.com/ja/Packages/com.unity.meshsync.dcc-plugins@latest)
 
 # MeshSync DCC Plugins
 
