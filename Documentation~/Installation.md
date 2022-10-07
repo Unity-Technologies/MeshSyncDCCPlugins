@@ -1,34 +1,15 @@
 # Installation
 
-- [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
 - [Automatic Installation via Unity Editor](#automatic-installation-via-unity-editor)
 - [Manual Installation](#manual-installation)
   - [Preparation](#preparation)
   - [Maya](#maya)
   - [3ds Max](#3ds-max)
   - [MotionBuilder](#motionbuilder)
-  - [Blender](#blender-1)
+  - [Blender](#blender)
   - [Metasequoia](#metasequoia)
   - [Modo](#modo)
-
-## Unity Project Setup via DCC tools
-We can install MeshSync on a Unity project through DCC tools. This install method is designed for users who are not familiar with the Unity Editor or the Unity Package Manager.
-
-Currently, this install method is available only for Blender. For other DCC tools, see [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s installation page.
-### Blender
-Install the Blender add-on:
-1. Download the latest MeshSyncDCCPlugins release from the [releases page on Github](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).
-1. Install the add-on manually, as described in the [manual installation for Blender](./Installation.md#blender-1).
-
-Setup MeshSync for a Unity Project:
-1. Select the location of an existing Unity Project and the location of the Unity Editors.
-![](images/BlenderUnityProjectSection.png)
-1. Click on **Auto Sync** or **Manual Sync**.
-![](images/BlenderSyncButtons.png)
-
-The Unity project will be launched with the Blender scene synchronised.
-
----
+- [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
 
 ## Automatic Installation via Unity Editor
 
@@ -192,7 +173,22 @@ then please try to remove manually after closing Modo.
      ```
    - Save the settings file, and restart Modo.
 
+---
 
+## Unity Project Setup via DCC tools
+We can install MeshSync on a Unity project through DCC tools. This install method is designed for users who are not familiar with the Unity Editor or the Unity Package Manager.
 
+Currently, this install method is available only for Blender. For other DCC tools, see [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s installation page.
+### Blender
+Install the Blender add-on:
+1. Download the latest MeshSyncDCCPlugins release from the [releases page on Github](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/releases).
+1. Install the add-on manually, as described in the [manual installation for Blender](./Installation.md#blender).
 
+Setup MeshSync for a Unity Project:
+1. Select the location of an existing Unity Project and the location of the Unity Editors.
+![](images/BlenderUnityProjectSection.png)
+1. Click on **Auto Sync** or **Manual Sync**.
+![](images/BlenderSyncButtons.png)
+
+The Unity project will be launched with the Blender scene synchronised.
 
