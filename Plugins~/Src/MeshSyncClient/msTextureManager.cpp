@@ -87,7 +87,7 @@ int TextureManager::addPackedImage(const std::string& name, const void* data, si
         tex->name = name;
         tex->format = TextureFormat::RawFile;
         tex->type = type;
-        // We don't know the width and heigghgt but they don't matter here. The image will just be saved anyway:
+        // We don't know the width and height but they don't matter here. The image will just be saved anyway:
         tex->width = 0;
         tex->height = 0;
         tex->data.assign((const char*)data, (const char*)data + size);
