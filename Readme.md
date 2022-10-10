@@ -1,10 +1,8 @@
 ![demo](Documentation~/images/Demo.gif)
 
-# Other Languages
-- [日本語](Readme_JP.md)
-
 # Latest official docs
 - [English](https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@latest)
+- [日本語](https://docs.unity3d.com/ja/Packages/com.unity.meshsync.dcc-plugins@latest)
 
 # MeshSync DCC Plugins
 
@@ -43,9 +41,6 @@ This allows devs to immediately see how things will look in-game while modelling
   Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
   deformer information.
   
-* To correctly do birectional sync for geometry nodes or meshes that have modifiers in Blender, we need to enable the **Bake Modifiers** option.  
-  ![](Documentation~/images/MeshSyncClientBlender_BakeMods.png)
-
 
 ## Supported DCC Tools
 
@@ -74,6 +69,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.3        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
@@ -269,4 +265,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Thu Sep  1 02:59:34 UTC 2022*
+*Auto-generated on Thu Oct  6 07:07:29 UTC 2022*

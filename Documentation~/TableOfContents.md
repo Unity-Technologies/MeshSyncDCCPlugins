@@ -7,6 +7,3 @@
     * [Blender](Blender.md)
     * [Modo](Modo.md)
     * [Metasequoia](Metasequoia.md)
-* 日本語
-    * [MeshSync DCC Plugins](jp/index.md)
-    * [インストール](jp/Installation.md)
