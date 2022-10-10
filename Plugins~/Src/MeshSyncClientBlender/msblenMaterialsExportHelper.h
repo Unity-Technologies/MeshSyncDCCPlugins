@@ -22,6 +22,21 @@ private:
 	void exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat);
 
 	int exportTexture(const std::string& path, ms::TextureType type) const;
+	void handleImageNode(ms::TextureType& textureType, bool resetIfInputIsTexture,
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handleNormalMapNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handleDisplacementNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handlePassthrough(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handleSocketValue(bNodeSocket* socket,
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler);
 
 	void exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret);
 
