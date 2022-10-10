@@ -17,6 +17,7 @@ const auto normalIdentifier = "Normal";
 const auto normalStrengthIdentifier = "Strength";
 const auto surfaceIdentifier = "Surface";
 const auto emissionIdentifier = "Emission";
+const auto emissionStrengthIdentifier = "Emission Strength";
 
 const auto shaderIdentifier = "Shader";
 
@@ -32,7 +33,7 @@ bNode* removeReroutes(bNode* node, const Material* mat) {
 	auto tree = mat->nodetree;
 	if (node->type == NODE_REROUTE)
 	{
-		for (auto link : blender::list_range((bNodeLink*)tree->links.first)) {
+		for (auto link : list_range((bNodeLink*)tree->links.first)) {
 			if (link->tonode == node) {
 				return removeReroutes(link->fromnode, mat);
 			}
@@ -55,7 +56,7 @@ bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 	// Find BSDF connected to an output node:
 	auto tree = mat->nodetree;
-	for (auto link : blender::list_range((bNodeLink*)tree->links.first)) {
+	for (auto link : list_range((bNodeLink*)tree->links.first)) {
 		if (link->tonode &&
 			link->tonode->type == SH_NODE_OUTPUT_MATERIAL &&
 			STREQ(link->tosock->identifier, surfaceIdentifier)) {
@@ -63,7 +64,7 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 
 			// If there is a mix shader, use the first input we can find that has a connection:
 			if (bsdf && bsdf->type == SH_NODE_MIX_SHADER) {
-				for (auto inputSocket : blender::list_range((bNodeSocket*)bsdf->inputs.first)) {
+				for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
 					if (STREQ(inputSocket->name, shaderIdentifier)) {
 						bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
 						if (connectedBSDF)
@@ -84,7 +85,7 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 }
 
 bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
-	for (auto inputSocket : blender::list_range((bNodeSocket*)node->inputs.first)) {
+	for (auto inputSocket : list_range((bNodeSocket*)node->inputs.first)) {
 		if (STREQ(inputSocket->name, socketName)) {
 			return inputSocket;
 		}
@@ -93,16 +94,16 @@ bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
 	return nullptr;
 }
 
-int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::TextureType type)
+int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::TextureType type) const
 {
 	return m_texture_manager->addFile(path, type);
 }
 
-void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
+void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	bNodeSocket* socket,
 	ms::TextureType textureType,
 	bool resetIfInputIsTexture,
-	std::function<void(mu::float4& colorValue)> setColorHandler,
+	std::function<void(const mu::float4& colorValue)> setColorHandler,
 	std::function<void(int textureId)> setTextureHandler)
 {
 	// If there is an image linked to the socket, send that as a texture:
@@ -132,7 +133,7 @@ void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
 					// Unpack if needed:
 					if (img->packedfiles.first)
 					{
-						for (auto imagePackedFile : blender::list_range((ImagePackedFile*)img->packedfiles.first)) {
+						for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
 							std::string name = img->id.name + 2; // +2 because of IM prefix!
 
 							// Use extension from filename if the name in the image node has a different extension:
@@ -179,7 +180,7 @@ void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
 				auto imageInput = getInputSocket(sourceNode, colorIdentifier);
 				if (imageInput)
 				{
-					SetValueFromSocket(mat,
+					setValueFromSocket(mat,
 						imageInput, textureType,
 						resetIfInputIsTexture,
 						nullptr,
@@ -201,7 +202,7 @@ void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
 			auto heightInput = getInputSocket(sourceNode, heightIdentifier);
 			if (heightInput && setTextureHandler)
 			{
-				SetValueFromSocket(mat,
+				setValueFromSocket(mat,
 					heightInput, textureType,
 					resetIfInputIsTexture,
 					setColorHandler,
@@ -225,7 +226,7 @@ void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
 			auto imageInput = getInputSocket(sourceNode, colorIdentifier);
 			if (imageInput)
 			{
-				SetValueFromSocket(mat,
+				setValueFromSocket(mat,
 					imageInput, textureType,
 					resetIfInputIsTexture,
 					setColorHandler,
@@ -266,16 +267,8 @@ void msblenMaterialsExportHelper::SetValueFromSocket(const Material* mat,
 	}
 }
 
-void msblenMaterialsExportHelper::ExportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
+void msblenMaterialsExportHelper::setShaderFromBSDF(ms::StandardMaterial& stdmat, bNode* bsdfNode)
 {
-	bNode* bsdfNode;
-	bNode* outputNode;
-
-	if (!getBSDFAndOutput(mat, bsdfNode, outputNode)) {
-		return;
-	}
-
-	// Handle BSDF node:
 	switch (bsdfNode->type)
 	{
 	case SH_NODE_BSDF_GLASS:
@@ -285,81 +278,17 @@ void msblenMaterialsExportHelper::ExportMaterialFromNodeTree(const Material* mat
 		stdmat.setShader("Default");
 		break;
 	}
+}
 
-	for (auto inputSocket : blender::list_range((bNodeSocket*)bsdfNode->inputs.first)) {
-		if (STREQ(inputSocket->identifier, baseColorIdentifier) ||
-			STREQ(inputSocket->identifier, colorIdentifier)) {
-			SetValueFromSocket(mat,
-				inputSocket, ms::TextureType::Default,
-				true,
-				[&](mu::float4& colorValue)
-				{
-					stdmat.setColor(colorValue);
-				},
-				[&](int textureId)
-				{
-					stdmat.setColorMap(textureId);
-				});
-		}
-		else if (STREQ(inputSocket->identifier, roughnessIdentifier))
-		{
-			SetValueFromSocket(mat,
-				inputSocket, ms::TextureType::Default,
-				false,
-				[&](mu::float4& colorValue)
-				{
-					stdmat.setSmoothness(1 - colorValue[0]);
-				},
-				[&](int textureId) {
-					stdmat.setSmoothnessMap(textureId);
-				});
-		}
-		else if (STREQ(inputSocket->identifier, metallicIdentifier))
-		{
-			SetValueFromSocket(mat,
-				inputSocket, ms::TextureType::Default,
-				true,
-				[&](mu::float4& colorValue) {
-					stdmat.setMetallic(colorValue[0]);
-				},
-				[&](int textureId) {
-					stdmat.setMetallicMap(textureId);
-				});
-		}
-		else if (STREQ(inputSocket->identifier, normalIdentifier))
-		{
-			SetValueFromSocket(mat,
-				inputSocket, ms::TextureType::NormalMap,
-				true,
-				[&](mu::float4& colorValue) {
-					stdmat.setBumpScale(colorValue[0]);
-				},
-				[&](int textureId) {
-					stdmat.setBumpMap(textureId);
-				});
-		}
-		else if (STREQ(inputSocket->identifier, emissionIdentifier))
-		{
-			SetValueFromSocket(mat,
-				inputSocket, ms::TextureType::Default,
-				true,
-				[&](mu::float4& colorValue) {
-					stdmat.setEmissionColor(colorValue);
-				},
-				[&](int textureId) {
-					stdmat.setEmissionMap(textureId);
-				});
-		}
-	}
-
-	// Handle output node:
+void msblenMaterialsExportHelper::setHeightFromOutputNode(const Material* mat, ms::StandardMaterial& stdmat, bNode* outputNode)
+{
 	auto displacementSocket = getInputSocket(outputNode, displacementIdentifier);
 	if (displacementSocket)
 	{
-		SetValueFromSocket(mat,
+		setValueFromSocket(mat,
 			displacementSocket, ms::TextureType::Default,
 			false,
-			[&](mu::float4& colorValue) {
+			[&](const mu::float4& colorValue) {
 				stdmat.setHeightScale(colorValue[0]);
 			},
 			[&](int textureId)
@@ -369,13 +298,111 @@ void msblenMaterialsExportHelper::ExportMaterialFromNodeTree(const Material* mat
 	}
 }
 
+void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms::StandardMaterial& stdmat, bNode* bsdfNode)
+{
+#define isSocket(NAME) STREQ(inputSocket->identifier, NAME)
+
+	// Go through all inputs on the bsdf and find colors and textures to set:
+	for (auto inputSocket : list_range((bNodeSocket*)bsdfNode->inputs.first)) {
+		if (isSocket(baseColorIdentifier) ||
+			isSocket(colorIdentifier)) {
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue)
+				{
+					stdmat.setColor(colorValue);
+				},
+				[&](int textureId)
+				{
+					stdmat.setColorMap(textureId);
+				});
+		}
+		else if (isSocket(roughnessIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				false,
+				[&](const mu::float4& colorValue)
+				{
+					stdmat.setSmoothness(1 - colorValue[0]);
+				},
+				[&](int textureId) {
+					stdmat.setSmoothnessMap(textureId);
+				});
+		}
+		else if (isSocket(metallicIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue) {
+					stdmat.setMetallic(colorValue[0]);
+				},
+				[&](int textureId) {
+					stdmat.setMetallicMap(textureId);
+				});
+		}
+		else if (isSocket(normalIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::NormalMap,
+				true,
+				[&](const mu::float4& colorValue) {
+					stdmat.setBumpScale(colorValue[0]);
+				},
+				[&](int textureId) {
+					stdmat.setBumpMap(textureId);
+				});
+		}
+		else if (isSocket(emissionIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue) {
+					stdmat.setEmissionColor(colorValue);
+				},
+				[&](int textureId) {
+					stdmat.setEmissionMap(textureId);
+				});
+		}
+		else if (isSocket(emissionStrengthIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue) {
+					// blender emission strength is in W/m^2
+				    // 1 W/m^2 = 683 Lumen/m^2 (Lux)
+					stdmat.setEmissionStrength(colorValue[0] * 683);
+				},
+				nullptr);
+		}
+	}
+}
+
+void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
+{
+	bNode* bsdfNode;
+	bNode* outputNode;
+
+	if (!getBSDFAndOutput(mat, bsdfNode, outputNode)) {
+		return;
+	}
+
+	setShaderFromBSDF(stdmat, bsdfNode);
+	setPropertiesFromBSDF(mat, stdmat, bsdfNode);
+	setHeightFromOutputNode(mat, stdmat, outputNode);
+}
+
 void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
-	ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
+	ms::StandardMaterial& stdmat = AsStandardMaterial(*ret);
 	BMaterial bm(mat);
 
 	if (mat->use_nodes) {
-		ExportMaterialFromNodeTree(mat, stdmat);
+		exportMaterialFromNodeTree(mat, stdmat);
 	}
 	else {
 		stdmat.setColor(mu::float4{ mat->r, mat->g, mat->b, 1.0f });
@@ -395,7 +422,7 @@ void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::share
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
 		exportBasic(mat, ret);
 		break;
-	default: 
+	default:
 		break;
 	}
 }
