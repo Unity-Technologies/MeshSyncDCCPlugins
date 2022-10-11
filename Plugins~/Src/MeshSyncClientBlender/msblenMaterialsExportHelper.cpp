@@ -26,23 +26,19 @@ const auto heightIdentifier = "Height";
 const auto scaleIdentifier = "Scale";
 
 bNode* removeReroutes(bNode* node, const Material* mat) {
-	if (!node) {
-		return nullptr;
+	if (!node || node->type != NODE_REROUTE) {
+		return node;
 	}
 
 	auto tree = mat->nodetree;
-	if (node->type == NODE_REROUTE)
-	{
-		for (auto link : list_range((bNodeLink*)tree->links.first)) {
-			if (link->tonode == node) {
-				return removeReroutes(link->fromnode, mat);
-			}
-		}
 
-		return nullptr;
+	for (auto link : list_range((bNodeLink*)tree->links.first)) {
+		if (link->tonode == node) {
+			return removeReroutes(link->fromnode, mat);
+		}
 	}
 
-	return node;
+	return nullptr;
 }
 
 bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
