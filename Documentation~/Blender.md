@@ -20,6 +20,8 @@ as can be seen above, where most of the options are self-explanatory.
 |:---       |:---|
 | **Unity Editors** | Path to the installation folder of the Unity editors. You can find this path in the settings of Unity Hub.| 
 
+| **Material sync mode** | How to handle materials. Refer to [Material sync mode](#Material sync mode) for more details.|
+
 ## Synchronizable Properties in Unity
 
 The plugin will send the following properties directly to Unity:
@@ -69,3 +71,28 @@ This option will only appear if we install [ProBuilder](https://docs.unity3d.com
 > If **Bake Modifiers** option is enabled in the plugin, 
 > a mesh that is sent from Unity back into Blender will have modifiers applied beforehand and have them removed after.
 
+## Material sync mode
+
+The MeshSyncServer in Unity always creates a material with a default shader for the active render pipeline.
+There are multiple options to export materials from blender:
+
+* None
+Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials.
+
+* Basic
+The materials are synced to Unity in a limited way.
+MeshSync looks for an active material output node and exports the BSDF connected to that.
+Colors and textures assigned to the active BSDF are exported.
+Mix shaders are not fully supported, the first found connected BSDF input to the mix shader is exported instead.
+If a BSDF was found, MeshSync exports the following sockets if they exist for that BSDF type:
+- Color
+- Roughness
+- Metallic
+- Normal (if a normal map node is used, MeshSync also exports the normal strength)
+- Emission
+- Emission Strength
+
+Only color and texture information is exported. 
+Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
+Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
+All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
