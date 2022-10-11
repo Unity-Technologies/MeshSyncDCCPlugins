@@ -95,6 +95,9 @@ There are multiple options to export materials from blender:
 > - Displacement from the material output node
 >
 > Only color and texture information is exported. 
+>
 > Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
+>
 > Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
+>
 > All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
