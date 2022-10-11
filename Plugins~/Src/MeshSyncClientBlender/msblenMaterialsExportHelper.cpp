@@ -50,14 +50,15 @@ bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 }
 
 bNode* handlePassthroughBSDF(const Material* mat, bNode* bsdf) {
-	if (bsdf && bsdf->type == SH_NODE_MIX_SHADER) {
-		for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
-			if (STREQ(inputSocket->name, shaderIdentifier)) {
-				bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
-				if (connectedBSDF)
-				{
-					return connectedBSDF;
-				}
+	if (!bsdf || bsdf->type != SH_NODE_MIX_SHADER)
+		return bsdf;
+
+	for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
+		if (STREQ(inputSocket->name, shaderIdentifier)) {
+			bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
+			if (connectedBSDF)
+			{
+				return connectedBSDF;
 			}
 		}
 	}
