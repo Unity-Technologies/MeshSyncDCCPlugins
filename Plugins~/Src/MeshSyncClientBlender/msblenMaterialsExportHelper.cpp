@@ -25,6 +25,7 @@ const auto displacementIdentifier = "Displacement";
 const auto heightIdentifier = "Height";
 const auto scaleIdentifier = "Scale";
 
+// Removes reroute nodes and returns the actual input node upstream.
 bNode* removeReroutes(bNode* node, const Material* mat) {
 	if (!node || node->type != NODE_REROUTE) {
 		return node;
