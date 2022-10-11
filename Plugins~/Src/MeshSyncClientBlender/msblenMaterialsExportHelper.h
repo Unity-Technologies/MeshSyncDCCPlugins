@@ -22,9 +22,12 @@ private:
 	void exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat);
 
 	int exportTexture(const std::string& path, ms::TextureType type) const;
+	void handleImageNodeWithAssignedImage(ms::TextureType& textureType, bool resetIfInputIsTexture,
+	                                       std::function<void(const mu::float4& colorValue)> setColorHandler,
+	                                       std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handleImageNode(ms::TextureType& textureType, bool resetIfInputIsTexture,
-		std::function<void(const mu::float4& colorValue)> setColorHandler,
-		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	                     std::function<void(const mu::float4& colorValue)> setColorHandler,
+	                     std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handleNormalMapNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);

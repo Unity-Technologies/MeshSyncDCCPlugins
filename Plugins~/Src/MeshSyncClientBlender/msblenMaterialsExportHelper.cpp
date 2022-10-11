@@ -104,6 +104,53 @@ int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::Text
 	return m_texture_manager->addFile(path, type);
 }
 
+void msblenMaterialsExportHelper::handleImageNodeWithAssignedImage(ms::TextureType& textureType,
+	bool resetIfInputIsTexture,
+	std::function<void(const mu::float4& colorValue)> setColorHandler,
+	std::function<void(int textureId)> setTextureHandler,
+	bNode* sourceNode)
+{
+	if (setTextureHandler) {
+		auto img = (Image*)sourceNode->id;
+
+		// Use non-color if the image node is not in sRGB space:
+		if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
+			textureType = ms::TextureType::NonColor;
+		}
+
+		// Unpack if needed:
+		if (img->packedfiles.first)
+		{
+			for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
+				std::string name = img->id.name + 2; // +2 because of IM prefix!
+
+				// Use extension from filename if the name in the image node has a different extension:
+				std::string filepath = img->filepath;
+				size_t extensionIndex = filepath.find_last_of('.');
+				if (extensionIndex > 0) {
+					std::string extension = filepath.substr(extensionIndex);
+
+					if (name.find(extension) != name.length() - extension.length()) {
+						name += extension;
+					}
+				}
+
+				int exported = m_texture_manager->addPackedImage(name, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, textureType);
+				setTextureHandler(exported);
+			}
+		}
+		else {
+			setTextureHandler(exportTexture(abspath(img->filepath), textureType));
+		}
+	}
+
+	// Ensure the color is white if there is a texture otherwise Unity will multiply that image with the color that was set before.
+	// Blender does not do that so they would not look the same:
+	if (resetIfInputIsTexture && setColorHandler) {
+		setColorHandler(mu::float4{ 1, 1, 1, 1 });
+	}
+}
+
 void msblenMaterialsExportHelper::handleImageNode(ms::TextureType& textureType,
 	bool resetIfInputIsTexture,
 	std::function<void(const mu::float4& colorValue)> setColorHandler,
@@ -111,45 +158,7 @@ void msblenMaterialsExportHelper::handleImageNode(ms::TextureType& textureType,
 	bNode* sourceNode)
 {
 	if (sourceNode->id) {
-		if (setTextureHandler) {
-			auto img = (Image*)sourceNode->id;
-
-			// Use non-color if the image node is not in sRGB space:
-			if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
-				textureType = ms::TextureType::NonColor;
-			}
-
-			// Unpack if needed:
-			if (img->packedfiles.first)
-			{
-				for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
-					std::string name = img->id.name + 2; // +2 because of IM prefix!
-
-					// Use extension from filename if the name in the image node has a different extension:
-					std::string filepath = img->filepath;
-					size_t extensionIndex = filepath.find_last_of('.');
-					if (extensionIndex > 0) {
-						std::string extension = filepath.substr(extensionIndex);
-
-						if (name.find(extension) != name.length() - extension.length()) {
-							name += extension;
-						}
-					}
-
-					int exported = m_texture_manager->addPackedImage(name, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, textureType);
-					setTextureHandler(exported);
-				}
-			}
-			else {
-				setTextureHandler(exportTexture(abspath(img->filepath), textureType));
-			}
-		}
-
-		// Ensure the color is white if there is a texture otherwise Unity will multiply that image with the color that was set before.
-		// Blender does not do that so they would not look the same:
-		if (resetIfInputIsTexture && setColorHandler) {
-			setColorHandler(mu::float4{ 1, 1, 1, 1 });
-		}
+		handleImageNodeWithAssignedImage(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
 	}
 	else {
 		if (setTextureHandler) {
