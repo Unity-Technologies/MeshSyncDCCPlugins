@@ -49,7 +49,8 @@ bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 	return nullptr;
 }
 
-bNode* handlePassthroughBSDF(const Material* mat, bNode* bsdf) {
+// For mix shaders, we pass through the first input that has a connection.
+bNode* handleMixShader(const Material* mat, bNode* bsdf) {
 	if (!bsdf || bsdf->type != SH_NODE_MIX_SHADER)
 		return bsdf;
 
@@ -75,8 +76,7 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 			STREQ(link->tosock->identifier, surfaceIdentifier)) {
 			bsdf = removeReroutes(link->fromnode, mat);
 
-			// Check for shaders that just pass through:
-			bsdf = handlePassthroughBSDF(mat, bsdf);
+			bsdf = handleMixShader(mat, bsdf);
 
 			output = link->tonode;
 			return bsdf && output;
@@ -234,10 +234,10 @@ void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
 		return;
 
 	setValueFromSocket(mat,
-	                   imageInput, textureType,
-	                   resetIfInputIsTexture,
-	                   setColorHandler,
-	                   setTextureHandler);
+		imageInput, textureType,
+		resetIfInputIsTexture,
+		setColorHandler,
+		setTextureHandler);
 }
 
 void msblenMaterialsExportHelper::handleSocketValue(bNodeSocket* socket,
