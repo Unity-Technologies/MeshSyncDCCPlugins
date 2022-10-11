@@ -27,8 +27,6 @@
 #include <sstream>
 #include "msblenBinder.h"
 #include "BlenderPyObjects/BlenderPyID.h"
-#include "BlenderPyObjects/BlenderPyID.h"
-#include "BlenderPyObjects/BlenderPyID.h"
 #include "MeshUtils/muLog.h"
 
 #include "MeshSync/msProtocol.h"
