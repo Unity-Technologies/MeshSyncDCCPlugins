@@ -282,45 +282,46 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	std::function<void(const mu::float4& colorValue)> setColorHandler,
 	std::function<void(int textureId)> setTextureHandler)
 {
-	// If there is an image linked to the socket, send that as a texture:
-	if (socket->link) {
-		auto sourceNode = removeReroutes(socket->link->fromnode, mat);
-
-		if (sourceNode->flag & NODE_MUTED) {
-			return;
-		}
-
-		if (!m_settings->sync_textures) {
-			setTextureHandler = nullptr;
-		}
-
-		switch (sourceNode->type) {
-		case SH_NODE_TEX_IMAGE:
-		{
-			handleImageNode(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
-			break;
-		}
-		case SH_NODE_NORMAL_MAP:
-		{
-			handleNormalMapNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
-			break;
-		}
-		case SH_NODE_DISPLACEMENT:
-		{
-			handleDisplacementNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
-			break;
-		}
-		// Pass input straight through these:
-		case SH_NODE_GAMMA:
-		case SH_NODE_HUE_SAT:
-		{
-			handlePassthrough(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
-			break;
-		}
-		}
-	}
-	else {
+	// If there is nothing connected to the socket, send the value set on the socket:
+	if (!socket->link) {
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
+		return;
+	}
+
+	// If there is an image linked to the socket, send that as a texture:
+	auto sourceNode = removeReroutes(socket->link->fromnode, mat);
+
+	if (sourceNode->flag & NODE_MUTED) {
+		return;
+	}
+
+	if (!m_settings->sync_textures) {
+		setTextureHandler = nullptr;
+	}
+
+	switch (sourceNode->type) {
+	case SH_NODE_TEX_IMAGE:
+	{
+		handleImageNode(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
+	case SH_NODE_NORMAL_MAP:
+	{
+		handleNormalMapNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
+	case SH_NODE_DISPLACEMENT:
+	{
+		handleDisplacementNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
+	// Pass input straight through these:
+	case SH_NODE_GAMMA:
+	case SH_NODE_HUE_SAT:
+	{
+		handlePassthrough(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
 	}
 }
 
