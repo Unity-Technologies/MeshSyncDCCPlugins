@@ -233,14 +233,14 @@ void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
 	bNode* sourceNode)
 {
 	auto imageInput = getInputSocket(sourceNode, colorIdentifier);
-	if (imageInput)
-	{
-		setValueFromSocket(mat,
-			imageInput, textureType,
-			resetIfInputIsTexture,
-			setColorHandler,
-			setTextureHandler);
-	}
+	if (!imageInput)
+		return;
+
+	setValueFromSocket(mat,
+	                   imageInput, textureType,
+	                   resetIfInputIsTexture,
+	                   setColorHandler,
+	                   setTextureHandler);
 }
 
 void msblenMaterialsExportHelper::handleSocketValue(bNodeSocket* socket,
@@ -341,19 +341,19 @@ void msblenMaterialsExportHelper::setShaderFromBSDF(ms::StandardMaterial& stdmat
 void msblenMaterialsExportHelper::setHeightFromOutputNode(const Material* mat, ms::StandardMaterial& stdmat, bNode* outputNode)
 {
 	auto displacementSocket = getInputSocket(outputNode, displacementIdentifier);
-	if (displacementSocket)
-	{
-		setValueFromSocket(mat,
-			displacementSocket, ms::TextureType::Default,
-			false,
-			[&](const mu::float4& colorValue) {
-				stdmat.setHeightScale(colorValue[0]);
-			},
-			[&](int textureId)
-			{
-				stdmat.setHeightMap(textureId);
-			});
-	}
+	if (!displacementSocket)
+		return;
+
+	setValueFromSocket(mat,
+		displacementSocket, ms::TextureType::Default,
+		false,
+		[&](const mu::float4& colorValue) {
+			stdmat.setHeightScale(colorValue[0]);
+		},
+		[&](int textureId)
+		{
+			stdmat.setHeightMap(textureId);
+		});
 }
 
 void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms::StandardMaterial& stdmat, bNode* bsdfNode)
@@ -471,7 +471,6 @@ void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_p
 		stdmat.setSpecular(mu::float3{ mat->spec, mat->spec, mat->spec });
 	}
 }
-
 
 void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
