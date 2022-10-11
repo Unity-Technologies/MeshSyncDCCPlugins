@@ -8,7 +8,6 @@
 namespace blender {
 class msblenMaterialsExportHelper
 {
-private:
 	void setValueFromSocket(const Material* mat,
 		bNodeSocket* socket,
 		ms::TextureType textureType,
@@ -22,12 +21,16 @@ private:
 	void exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat);
 
 	int exportTexture(const std::string& path, ms::TextureType type) const;
+	void exportPackedImages(ms::TextureType& textureType, std::function<void(int textureId)> setTextureHandler,
+	                        Image* img) const;
+	void exportImageFromImageNode(ms::TextureType& textureType, std::function<void(int textureId)> setTextureHandler,
+	                              bNode* sourceNode) const;
 	void handleImageNodeWithAssignedImage(ms::TextureType& textureType, bool resetIfInputIsTexture,
-	                                       std::function<void(const mu::float4& colorValue)> setColorHandler,
-	                                       std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode) const;
 	void handleImageNode(ms::TextureType& textureType, bool resetIfInputIsTexture,
-	                     std::function<void(const mu::float4& colorValue)> setColorHandler,
-	                     std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handleNormalMapNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);

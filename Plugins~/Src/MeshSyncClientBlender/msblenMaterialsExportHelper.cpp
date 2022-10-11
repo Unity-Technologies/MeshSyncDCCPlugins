@@ -102,11 +102,32 @@ int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::Text
 	return m_texture_manager->addFile(path, type);
 }
 
-void msblenMaterialsExportHelper::handleImageNodeWithAssignedImage(ms::TextureType& textureType,
-	bool resetIfInputIsTexture,
-	std::function<void(const mu::float4& colorValue)> setColorHandler,
+void msblenMaterialsExportHelper::exportPackedImages(ms::TextureType& textureType,
 	std::function<void(int textureId)> setTextureHandler,
-	bNode* sourceNode)
+	Image* img) const
+{
+	for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
+		std::string name = img->id.name + 2; // +2 because of IM prefix!
+
+		// Use extension from filename if the name in the image node has a different extension:
+		std::string filepath = img->filepath;
+		size_t extensionIndex = filepath.find_last_of('.');
+		if (extensionIndex > 0) {
+			std::string extension = filepath.substr(extensionIndex);
+
+			if (name.find(extension) != name.length() - extension.length()) {
+				name += extension;
+			}
+		}
+
+		int exported = m_texture_manager->addImage(name, 0, 0, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::RawFile, textureType);
+		setTextureHandler(exported);
+	}
+}
+
+void msblenMaterialsExportHelper::exportImageFromImageNode(ms::TextureType& textureType,
+	std::function<void(int textureId)> setTextureHandler,
+	bNode* sourceNode) const
 {
 	if (setTextureHandler) {
 		auto img = (Image*)sourceNode->id;
@@ -117,30 +138,22 @@ void msblenMaterialsExportHelper::handleImageNodeWithAssignedImage(ms::TextureTy
 		}
 
 		// Unpack if needed:
-		if (img->packedfiles.first)
-		{
-			for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
-				std::string name = img->id.name + 2; // +2 because of IM prefix!
-
-				// Use extension from filename if the name in the image node has a different extension:
-				std::string filepath = img->filepath;
-				size_t extensionIndex = filepath.find_last_of('.');
-				if (extensionIndex > 0) {
-					std::string extension = filepath.substr(extensionIndex);
-
-					if (name.find(extension) != name.length() - extension.length()) {
-						name += extension;
-					}
-				}
-
-				int exported = m_texture_manager->addImage(name, 0, 0, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::RawFile, textureType);
-				setTextureHandler(exported);
-			}
+		if (img->packedfiles.first) {
+			exportPackedImages(textureType, setTextureHandler, img);
 		}
 		else {
 			setTextureHandler(exportTexture(abspath(img->filepath), textureType));
 		}
 	}
+}
+
+void msblenMaterialsExportHelper::handleImageNodeWithAssignedImage(ms::TextureType& textureType,
+	bool resetIfInputIsTexture,
+	std::function<void(const mu::float4& colorValue)> setColorHandler,
+	std::function<void(int textureId)> setTextureHandler,
+	bNode* sourceNode) const
+{
+	exportImageFromImageNode(textureType, setTextureHandler, sourceNode);
 
 	// Ensure the color is white if there is a texture otherwise Unity will multiply that image with the color that was set before.
 	// Blender does not do that so they would not look the same:
