@@ -82,7 +82,9 @@ There are multiple options to export materials from blender:
 > The materials are synced to Unity in a limited way.
 > MeshSync looks for an active material output node and exports the BSDF connected to that.
 > Colors and textures assigned to the active BSDF are exported.
+
 > Mix shaders are not fully supported, the first found connected BSDF input to the mix shader is exported instead.
+
 > If a BSDF was found, MeshSync exports the following sockets if they exist for that BSDF type:
 > - Color
 > - Roughness
@@ -90,7 +92,7 @@ There are multiple options to export materials from blender:
 > - Normal (if a normal map node is used, MeshSync also exports the normal strength)
 > - Emission
 > - Emission Strength
-> 
+
 > Only color and texture information is exported. 
 > Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
 > Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
