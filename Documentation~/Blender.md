@@ -92,6 +92,7 @@ There are multiple options to export materials from blender:
 > - Normal (if a normal map node is used, MeshSync also exports the normal strength)
 > - Emission
 > - Emission Strength
+> - Displacement from the material output node
 >
 > Only color and texture information is exported. 
 > Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
