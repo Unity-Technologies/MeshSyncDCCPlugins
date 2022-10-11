@@ -44,7 +44,7 @@ int TextureManager::find(const std::string& name) const
     return InvalidID;
 }
 
-int TextureManager::addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format)
+int TextureManager::addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format, TextureType type)
 {
     auto& rec = lockAndGet(name);
     int id = rec.texture ?
@@ -62,34 +62,7 @@ int TextureManager::addImage(const std::string& name, int width, int height, con
         tex->format = format;
         tex->width = width;
         tex->height = height;
-        tex->data.assign((const char*)data, (const char*)data + size);
-        rec.dirty = true;
-    }
-    if (m_always_mark_dirty)
-        rec.dirty = true;
-    return id;
-}
-
-int TextureManager::addPackedImage(const std::string& name, const void* data, size_t size, TextureType type)
-{
-    auto& rec = lockAndGet(name);
-    int id = rec.texture ?
-        rec.texture->id :
-        (data && size ? genID() : -1);
-
-    // not worth to make tasks
-    const uint64_t checksum = mu::SumInt32(data, size);
-    if (!rec.texture || rec.checksum != checksum) {
-        rec.checksum = checksum;
-        rec.texture = Texture::create();
-        auto& tex = rec.texture;
-        tex->id = id;
-        tex->name = name;
-        tex->format = TextureFormat::RawFile;
         tex->type = type;
-        // We don't know the width and height but they don't matter here. The image will just be saved anyway:
-        tex->width = 0;
-        tex->height = 0;
         tex->data.assign((const char*)data, (const char*)data + size);
         rec.dirty = true;
     }

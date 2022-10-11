@@ -135,7 +135,7 @@ void msblenMaterialsExportHelper::handleImageNodeWithAssignedImage(ms::TextureTy
 					}
 				}
 
-				int exported = m_texture_manager->addPackedImage(name, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, textureType);
+				int exported = m_texture_manager->addImage(name, 0, 0, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::RawFile, textureType);
 				setTextureHandler(exported);
 			}
 		}
