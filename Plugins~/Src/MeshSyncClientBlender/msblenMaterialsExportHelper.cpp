@@ -53,6 +53,22 @@ bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 	return nullptr;
 }
 
+bNode* handlePassthroughBSDF(const Material* mat, bNode* bsdf) {
+	if (bsdf && bsdf->type == SH_NODE_MIX_SHADER) {
+		for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
+			if (STREQ(inputSocket->name, shaderIdentifier)) {
+				bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
+				if (connectedBSDF)
+				{
+					return connectedBSDF;
+				}
+			}
+		}
+	}
+
+	return bsdf;
+}
+
 bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 	// Find BSDF connected to an output node:
 	auto tree = mat->nodetree;
@@ -62,19 +78,8 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 			STREQ(link->tosock->identifier, surfaceIdentifier)) {
 			bsdf = removeReroutes(link->fromnode, mat);
 
-			// If there is a mix shader, use the first input we can find that has a connection:
-			if (bsdf && bsdf->type == SH_NODE_MIX_SHADER) {
-				for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
-					if (STREQ(inputSocket->name, shaderIdentifier)) {
-						bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
-						if (connectedBSDF)
-						{
-							bsdf = connectedBSDF;
-							break;
-						}
-					}
-				}
-			}
+			// Check for shaders that just pass through:
+			bsdf = handlePassthroughBSDF(mat, bsdf);
 
 			output = link->tonode;
 			return bsdf && output;
