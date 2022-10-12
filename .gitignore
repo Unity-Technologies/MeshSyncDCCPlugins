@@ -64,10 +64,6 @@ Plugins~/Src/MeshSyncClientMODO_*
 Plugins~/Dist/UnityMeshSync_**
 Plugins~/Dist/meta.txt
 
-# Manually extracted files from the zip files in the package
-Editor/Plugins~/*/*
-
-
 # Sample Project
 MeshSyncDCCPlugins~/Library/**
 MeshSyncDCCPlugins~/*.sln
@@ -78,8 +74,10 @@ MeshSyncDCCPlugins~/obj/**
 MeshSyncDCCPlugins~/.vs
 MeshSyncDCCPlugins~/UserSettings/**
 
+# Manually extracted files from the zip files in the package
+Editor/Plugins/*/*
+
 # Rider
 **/.idea/**
 **/ProjectSettings/RiderScriptEditorPersistedState.asset
-
 

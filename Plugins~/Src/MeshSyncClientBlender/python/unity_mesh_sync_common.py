@@ -1,8 +1,12 @@
 import os
 import re
 import bpy
+import platform
+
 from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
+
+from .unity_mesh_sync_installation import *
 
 msb_context = ms.Context()
 msb_cache = ms.Cache()
@@ -12,6 +16,7 @@ def msb_apply_scene_settings(self = None, context = None):
     scene = bpy.context.scene
     ctx.server_address = scene.meshsync_server_address
     ctx.server_port = scene.meshsync_server_port
+    ctx.editor_server_port = scene.meshsync_editor_server_port
     ctx.scale_factor = scene.meshsync_scale_factor
     ctx.sync_meshes = scene.meshsync_sync_meshes
     ctx.curves_as_mesh = scene.meshsync_curves_as_mesh
@@ -66,10 +71,16 @@ def msb_on_animation_settings_updated(self = None, context = None):
     # nothing to do for now
     return None
 
+def msb_on_unity_project_path_updated(self = None, context = None):
+    #TODO invoke callback for installing meshsync
+    return None
+
 def msb_initialize_properties():
     # sync settings
+    bpy.types.Scene.meshsync_auto_config_server = bpy.props.BoolProperty(name = "Auto Config (Local server)", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_server_address = bpy.props.StringProperty(name = "Address", default = "127.0.0.1", update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_server_port = bpy.props.IntProperty(name = "Port", default = 8080, min = 0, max = 65535, update = msb_on_scene_settings_updated)
+    bpy.types.Scene.meshsync_editor_server_port = bpy.props.IntProperty(name = "Unity Editor Port", default = 8081, min = 0, max = 65535, update= msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_scale_factor = bpy.props.FloatProperty(name = "Scale Factor", default = 1.0, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_sync_meshes = bpy.props.BoolProperty(name = "Sync Meshes", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_curves_as_mesh = bpy.props.BoolProperty(name = "Curves as Mesh", default = True, update = msb_on_scene_settings_updated)
@@ -84,7 +95,6 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_auto_sync = bpy.props.BoolProperty(name = "Auto Sync", default = False, update = msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
 
-
 @persistent
 def on_scene_load(context):
     msb_context.clear()
@@ -97,15 +107,16 @@ def on_scene_update(context):
         msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
-def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
-    def draw(self, context):
-        self.layout.label(text=message)
-    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
 class MESHSYNC_OT_SendObjects(bpy.types.Operator):
     bl_idname = "meshsync.send_objects"
     bl_label = "Export Objects"
     def execute(self, context):
+        
+        #Try to ensure there is a scene server running
+        status = msb_try_setup_scene_server(context)
+        if msb_error_messages_for_status(status, context) == False:
+            return {'FINISHED'}
+
         msb_apply_scene_settings()
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_OBJECTS)
@@ -116,6 +127,12 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
     bl_idname = "meshsync.send_animations"
     bl_label = "Export Animations"
     def execute(self, context):
+
+        #Try to ensure there is a scene server running
+        status = msb_try_setup_scene_server(context)
+        if msb_error_messages_for_status(status, context) == False:
+            return {'FINISHED'}
+
         msb_apply_scene_settings()
         msb_apply_animation_settings()
         msb_context.setup(bpy.context);
