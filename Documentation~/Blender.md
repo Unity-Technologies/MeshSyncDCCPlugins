@@ -76,28 +76,28 @@ The MeshSyncServer in Unity always creates a material with a default shader for 
 There are multiple options to export materials from blender:
 
 * None
-> Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials.
+Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials.
 
 * Basic
-> The materials are synced to Unity in a limited way.
-> MeshSync looks for an active material output node and exports the BSDF connected to that.
-> Colors and textures assigned to the active BSDF are exported.
->
-> Mix shaders are not fully supported, the first found connected BSDF input to the mix shader is exported instead.
->
-> If a BSDF was found, MeshSync exports the following sockets if they exist for that BSDF type:
-> - Color
-> - Roughness
-> - Metallic
-> - Normal (if a normal map node is used, MeshSync also exports the normal strength)
-> - Emission
-> - Emission Strength
-> - Displacement from the material output node
->
-> Only color and texture information is exported. 
->
-> Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
->
-> Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
->
-> All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
+The materials are synced to Unity in a limited way.
+MeshSync looks for an active material output node and exports the BSDF connected to that.
+Colors and textures assigned to the active BSDF are exported.
+
+Mix shaders are not fully supported, the first found connected BSDF input to the mix shader is exported instead.
+
+If a BSDF was found, MeshSync exports the following sockets if they exist for that BSDF type:
+- Color
+- Roughness
+- Metallic
+- Normal (if a normal map node is used, MeshSync also exports the normal strength)
+- Emission
+- Emission Strength
+- Displacement from the material output node
+
+Only color and texture information is exported. 
+
+Texture coordinates set in blender are not used, the Unity material uses the mesh UVs.
+
+Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
+
+All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
