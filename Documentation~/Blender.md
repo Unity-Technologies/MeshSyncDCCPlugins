@@ -91,7 +91,7 @@ If a BSDF was found, MeshSync exports the following sockets if they exist for th
 - Color
 - Roughness
 - Metallic
-- Normal (if a normal map node is used, MeshSync also exports the normal strength)
+- Normal (if a normal map node is used, MeshSync also exports the normal strength). Normal maps need to be in tangent space.
 - Emission
 - Emission Strength
 - Displacement from the material output node
