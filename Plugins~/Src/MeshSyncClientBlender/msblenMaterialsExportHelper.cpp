@@ -115,10 +115,14 @@ void msblenMaterialsExportHelper::exportPackedImages(ms::TextureType& textureTyp
 	Image* img) const
 {
 	for (auto imagePackedFile : list_range((ImagePackedFile*)img->packedfiles.first)) {
-		std::string name = img->id.name + 2; // +2 because of IM prefix!
+		std::string_view imageName = img->id.name;
+		std::string filepath = img->filepath;
+		std::string name = filepath;
+		if (imageName.length() >= 2) {
+			name = imageName.substr(2); // Remove blender's IM prefix
+		}
 
 		// Use extension from filename if the name in the image node has a different extension:
-		std::string filepath = img->filepath;
 		size_t extensionIndex = filepath.find_last_of('.');
 		if (extensionIndex > 0) {
 			std::string extension = filepath.substr(extensionIndex);
