@@ -141,21 +141,21 @@ void msblenMaterialsExportHelper::exportImageFromImageNode(ms::TextureType& text
 	std::function<void(int textureId)> setTextureHandler,
 	bNode* sourceNode) const
 {
-	if (setTextureHandler) {
-		auto img = (Image*)sourceNode->id;
+	if (!setTextureHandler) return;
 
-		// Use non-color if the image node is not in sRGB space:
-		if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
-			textureType = ms::TextureType::NonColor;
-		}
+	auto img = (Image*)sourceNode->id;
 
-		// Unpack if needed:
-		if (img->packedfiles.first) {
-			exportPackedImages(textureType, setTextureHandler, img);
-		}
-		else {
-			setTextureHandler(exportTexture(abspath(img->filepath), textureType));
-		}
+	// Use non-color if the image node is not in sRGB space:
+	if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
+		textureType = ms::TextureType::NonColor;
+	}
+
+	// Unpack if needed:
+	if (img->packedfiles.first) {
+		exportPackedImages(textureType, setTextureHandler, img);
+	}
+	else {
+		setTextureHandler(exportTexture(abspath(img->filepath), textureType));
 	}
 }
 
