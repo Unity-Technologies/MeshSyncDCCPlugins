@@ -26,7 +26,6 @@
 #include "DNA_node_types.h"
 #include <sstream>
 #include "msblenBinder.h"
-#include "BlenderPyObjects/BlenderPyID.h"
 #include "MeshUtils/muLog.h"
 
 #include "MeshSync/msProtocol.h"
