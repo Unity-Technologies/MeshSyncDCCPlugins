@@ -25,8 +25,8 @@ const auto displacementIdentifier = "Displacement";
 const auto heightIdentifier = "Height";
 const auto scaleIdentifier = "Scale";
 
-// Removes reroute nodes and returns the actual input node upstream.
-bNode* removeReroutes(bNode* node, const Material* mat) {
+// Moves upstream to find input nodes, passing through reroutes.
+bNode* traverseReroutes(bNode* node, const Material* mat) {
 	if (!node || node->type != NODE_REROUTE) {
 		return node;
 	}
@@ -35,7 +35,7 @@ bNode* removeReroutes(bNode* node, const Material* mat) {
 
 	for (auto link : list_range((bNodeLink*)tree->links.first)) {
 		if (link->tonode == node) {
-			return removeReroutes(link->fromnode, mat);
+			return traverseReroutes(link->fromnode, mat);
 		}
 	}
 
@@ -50,14 +50,22 @@ bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 	return nullptr;
 }
 
-// For mix shaders, we pass through the first input that has a connection.
-bNode* handleMixShader(const Material* mat, bNode* bsdf) {
-	if (!bsdf || bsdf->type != SH_NODE_MIX_SHADER)
+// Passes through some BSDF types and returns null for unsupported BSDF types.
+bNode* handleBSDFTypes(const Material* mat, bNode* bsdf) {
+	// Unsupported BSDFs:
+	if (!bsdf ||
+		bsdf->type == SH_NODE_HOLDOUT) {
+		return nullptr;
+	}
+
+	// BSDFs that we pass through:
+	if (bsdf->type != SH_NODE_MIX_SHADER &&
+		bsdf->type != SH_NODE_ADD_SHADER)
 		return bsdf;
 
 	for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
 		if (STREQ(inputSocket->name, shaderIdentifier)) {
-			bNode* connectedBSDF = removeReroutes(getNodeConnectedToSocket(inputSocket), mat);
+			bNode* connectedBSDF = handleBSDFTypes(mat, traverseReroutes(getNodeConnectedToSocket(inputSocket), mat));
 			if (connectedBSDF)
 			{
 				return connectedBSDF;
@@ -75,9 +83,9 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 		if (link->tonode &&
 			link->tonode->type == SH_NODE_OUTPUT_MATERIAL &&
 			STREQ(link->tosock->identifier, surfaceIdentifier)) {
-			bsdf = removeReroutes(link->fromnode, mat);
+			bsdf = traverseReroutes(link->fromnode, mat);
 
-			bsdf = handleMixShader(mat, bsdf);
+			bsdf = handleBSDFTypes(mat, bsdf);
 
 			output = link->tonode;
 			return bsdf && output;
@@ -298,14 +306,16 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-
+	
 	// If there is an image linked to the socket, send that as a texture:
-	auto sourceNode = removeReroutes(socket->link->fromnode, mat);
+	auto sourceNode = traverseReroutes(socket->link->fromnode, mat);
 
-	if (sourceNode->flag & NODE_MUTED) {
+	// Handle reroute that doesn't have inputs or muted inputs to use socket value:
+	if (!sourceNode || sourceNode->flag & NODE_MUTED) {
+		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-
+	
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
