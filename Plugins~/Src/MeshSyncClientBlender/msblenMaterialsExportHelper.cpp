@@ -218,7 +218,7 @@ void msblenMaterialsExportHelper::handleNormalMapNode(const Material* mat,
 	if (strengthInput && setColorHandler) {
 		auto defaultValue = (bNodeSocketValueFloat*)strengthInput->default_value;
 		auto val = defaultValue->value;
-		setColorHandler(mu::float4{ val,val,val, val });
+		setColorHandler(mu::float4{ val, val, val, val });
 	}
 }
 
