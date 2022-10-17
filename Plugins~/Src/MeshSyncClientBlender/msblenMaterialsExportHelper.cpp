@@ -18,6 +18,7 @@ const auto normalStrengthIdentifier = "Strength";
 const auto surfaceIdentifier = "Surface";
 const auto emissionIdentifier = "Emission";
 const auto emissionStrengthIdentifier = "Emission Strength";
+const auto clearcoatIdentifier = "Clearcoat";
 
 const auto shaderIdentifier = "Shader";
 
@@ -133,7 +134,7 @@ void msblenMaterialsExportHelper::exportPackedImages(ms::TextureType& textureTyp
 		}
 		else
 		{
-		    // If there is no extension, this is an internal jpg:
+			// If there is no extension, this is an internal jpg:
 			name += ".jpg";
 		}
 
@@ -313,7 +314,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-	
+
 	// If there is an image linked to the socket, send that as a texture:
 	auto sourceNode = traverseReroutes(socket->link->fromnode, mat);
 
@@ -322,7 +323,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-	
+
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
@@ -465,6 +466,18 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 					stdmat.setEmissionStrength(colorValue[0] * 683);
 				},
 				nullptr);
+		}
+		else if (isSocket(clearcoatIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue) {
+					stdmat.setClearCoat(colorValue[0]);
+				},
+				[&](int textureId) {
+					stdmat.setClearCoatMask(textureId);
+				});
 		}
 	}
 }
