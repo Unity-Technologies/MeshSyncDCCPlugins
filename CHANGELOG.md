@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.15.1-preview] - 2022-10-07
+
+### Added
+* blender-feat: add Add-on Preferences file
+* blender-doc: add Unity project panel documentation
+
+### Changed
+* doc: update Installation page (TOC, typo fixes) and add missing English docs in DCC pages
+* doc: put Unity setup via DCC section below in the Installation page
+
+### Fixed
+* blender-fix: avoid overwriting manifest package and report error if installed package is not supported
+* blender-fix: do not reset Server port if server is available
+* blender-fix: use default ports if possible in auto-config
+* blender-fix: fix for crash in blender 3.3 
+
+### Removed
+* doc: remove obsolete installation steps in DCC pages
+* doc: remove Japanese documentation. Moved to the official page
+
 ## [0.15.0-preview] - 2022-09-29
 
 ### Added
@@ -8,7 +28,6 @@
 * blender-feat: install MeshSync from Blender
 * blender-feat: auto-config of ports for AutoSetup via Blender
 * blender-doc: add doc for installing MeshSync via Blender
-
 
 ### Changed
 * change: change plugins folder to Plugins to reveal it in the Unity Editor
