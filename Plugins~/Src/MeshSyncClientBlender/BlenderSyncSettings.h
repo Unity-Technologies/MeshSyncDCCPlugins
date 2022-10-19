@@ -16,7 +16,5 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
         None  = 0,
         Basic = 1
     };
-
-    MaterialSyncMode material_sync_mode;
 };
 

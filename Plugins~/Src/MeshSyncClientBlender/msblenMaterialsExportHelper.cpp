@@ -499,7 +499,7 @@ void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_p
 
 void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
-	switch (m_settings->material_sync_mode)
+	switch (m_settings->scene_settings.material_sync_mode)
 	{
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
 		exportBasic(mat, ret);
