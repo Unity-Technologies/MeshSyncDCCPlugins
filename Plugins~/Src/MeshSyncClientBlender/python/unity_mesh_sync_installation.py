@@ -17,6 +17,14 @@ msb_context = ms.Context()
 
 unity_process = None
 
+def msb_is_project_open(directory):
+    full_path = path.join(directory, "Temp")
+    if not path.exists(full_path):
+        return False
+
+    lock_path = path.join(full_path, "UnityLockfile")
+    return path.exists(full_path)
+
 def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
@@ -220,6 +228,10 @@ def msb_is_unity_process_alive():
 
 def msb_try_start_unity_project (context, directory):
         
+
+    if msb_is_project_open(directory):
+        return 'ALREADY_STARTED'
+
     global unity_process
 
     #Check if we have launched the project as a subprocess
