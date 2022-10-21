@@ -317,6 +317,8 @@ msmayaContext::msmayaContext(MObject obj)
 #undef Body
 
         registerGlobalCallbacks();
+    
+    m_settings.client_settings.dcc_tool_name = "Maya_" + std::string(MGlobal::mayaVersion().asChar());
 }
 
 msmayaContext::~msmayaContext()

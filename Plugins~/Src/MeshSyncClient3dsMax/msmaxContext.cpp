@@ -17,6 +17,8 @@
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
+#include <maxscript/maxscript.h>
+
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
 #pragma comment(lib, "geom.lib")
@@ -64,6 +66,28 @@ static void FeedDeferredCalls()
     ::PostMessage(GetCOREInterface()->GetMAXHWnd(), WM_TRIGGER_CALLBACK, (WPARAM)&FeedDeferredCallsImpl, (LPARAM)nullptr);
 }
 
+std::string getVersion()
+{
+    // 3dsmax is windows only so this should be fine:
+    FPValue resulted_value;
+    ExecuteMAXScriptScript(L"getFileVersion \"$max/3dsmax.exe\"",
+        MAXScript::ScriptSource::NonEmbedded,
+        true,
+        &resulted_value);
+
+    std::wstring wstr = std::wstring(resulted_value.s);
+    std::string str = std::string(wstr.begin(), wstr.end());
+
+    // drop everything after tabs
+    size_t tabIndex = str.find("\t");
+    if(tabIndex >= 0)
+    {
+        str = str.substr(0, tabIndex);
+    }
+    
+    return str;
+}
+
 
 ms::Identifier msmaxContext::TreeNode::getIdentifier() const
 {
@@ -97,6 +121,8 @@ msmaxContext::msmaxContext()
     std::time( &m_time_to_update_scene);
     RegisterNotification(OnStartup, this, NOTIFY_SYSTEM_STARTUP);
     RegisterNotification(OnShutdown, this, NOTIFY_SYSTEM_SHUTDOWN);
+    
+    m_settings.client_settings.dcc_tool_name = "3dsMax_" + getVersion();
 }
 
 msmaxContext::~msmaxContext()
