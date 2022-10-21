@@ -240,17 +240,6 @@ def msb_try_start_unity_project (context, directory):
 
     global unity_process
 
-    #Check if we have launched the project as a subprocess
-    if msb_is_unity_process_alive():
-        return 'ALREADY_STARTED'
-
-    #Check if there is an editor server listening from the target project
-    if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
-        reply_path = msb_context.editor_command_reply;
-        if path.normpath(reply_path) == path.normpath(directory):
-            return 'ALREADY_STARTED'
-
     editor_version = msb_get_editor_version(directory)
     editor_path = msb_get_editor_path(context, editor_version)
 
