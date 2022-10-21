@@ -21,11 +21,13 @@ def msb_is_project_open(directory):
     full_path = path.join(directory, "Temp", "UnityLockfile")
     if not path.exists(full_path):
         return False
-
-    #In case the editor has crashed and not cleaned up the Temp folder
     try:
-        file = open(full_path)
-        file.close()
+        with open(full_path, 'wb') as file:
+            os = platform.system()
+            if os == "Darwin" or os == "Linux":
+                import fcntl
+                fcntl.lockf(file.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB)
+                fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
     except:
         return True
 
