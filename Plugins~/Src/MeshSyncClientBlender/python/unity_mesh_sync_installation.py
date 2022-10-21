@@ -28,6 +28,10 @@ def msb_is_project_open(directory):
                 import fcntl
                 fcntl.lockf(file.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB)
                 fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+            elif os == "Windows":
+                import msvcrt
+                msvcrt.locking(file.fileno(), msvcrt.LK_NBLCK, 0)
+                msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 0)
     except:
         return True
 
