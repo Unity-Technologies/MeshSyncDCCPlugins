@@ -49,6 +49,7 @@ def msb_get_min_supported_meshsync_version():
     return "0.15.0-preview"
 
 def msb_get_most_recent_version(v1, v2):
+
     tokens1 = v1.replace("-preview","").split('.')
     tokens2 = v2.replace("-preview","").split('.')
 
@@ -167,6 +168,19 @@ def msb_try_install_meshsync_to_unity_project(directory):
 
         return msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
+def msb_get_server_info(directory):
+    log_path = path.join(directory, "Assets","ProjectSettings", "MeshSyncEditorServerLog.txt")
+    if not path.exists(log_path):
+        return 'NO_INFO'
+
+    with open(log_path, 'r') as log:
+        first_line = log.readline()
+        second_line = log.readline()
+        active = bool(first_line.replace("active:", ""))
+        port = int(second_line.replace("port:",""))
+        return active, port
+
+
 def msb_try_setup_scene_server(context):
 
     #Check if scene server is listening
@@ -203,6 +217,17 @@ def msb_try_setup_scene_server(context):
         return 'EDITOR_NOT_EXISTS'
     elif start_status == 'FAILED' or start_status == 'UNKNOWN':
         return 'LAUNCH FAILED'
+    elif start_status == 'ALREADY_STARTED':
+        #Look for the Editor server logs
+        info = msb_get_server_info(path)
+        if not info == 'NO_INFO': #The log exists
+            active, port = info
+            if not active: #The server is deactivated
+                return 'SERVER_UNAVAILABLE'
+
+            if context.scene.meshsync_auto_config_server: #If in auto-config, change the port to the editor server port
+                context.scene.meshsync_editor_server_port = port
+
 
     # Send a command to add a scene server (if it doesn't exist already)
     msb_context.sendEditorCommand(EDITOR_COMMAND_ADD_SERVER, str(context.scene.meshsync_server_port))
