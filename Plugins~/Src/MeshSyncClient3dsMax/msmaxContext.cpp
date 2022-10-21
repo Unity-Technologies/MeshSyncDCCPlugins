@@ -80,11 +80,16 @@ std::string getVersion()
 
     // drop everything after tabs
     size_t tabIndex = str.find("\t");
-    if(tabIndex >= 0)
-    {
+    if (tabIndex != std::string::npos) {
         str = str.substr(0, tabIndex);
     }
-    
+
+    // Replace , with .
+    size_t index = 0;
+    while ((index = str.find(',', index)) != std::string::npos) {
+        str.replace(index, 1, ".");
+    }
+
     return str;
 }
 
