@@ -18,12 +18,18 @@ msb_context = ms.Context()
 unity_process = None
 
 def msb_is_project_open(directory):
-    full_path = path.join(directory, "Temp")
+    full_path = path.join(directory, "Temp", "UnityLockfile")
     if not path.exists(full_path):
         return False
 
-    lock_path = path.join(full_path, "UnityLockfile")
-    return path.exists(full_path)
+    #In case the editor has crashed and not cleaned up the Temp folder
+    try:
+        file = open(full_path)
+        file.close()
+    except:
+        return True
+
+    return False
 
 def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
