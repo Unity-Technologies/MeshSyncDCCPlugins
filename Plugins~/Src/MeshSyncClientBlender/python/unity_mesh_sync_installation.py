@@ -6,7 +6,9 @@ import time
 import bpy
 import os
 import socket
+import ssl
 from contextlib import closing
+from urllib.request import urlopen
 
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
@@ -23,6 +25,27 @@ def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 def msb_get_meshsync_entry():
+    releases = []
+    page = 1
+    while True:
+        print("page is "+str(page))
+        with urlopen(f"https://api.github.com/repos/unity3d-jp/MeshSync/releases?per_page=100&page={page}") as response:
+            response_content = response.read()
+            response_content.decode('utf-8')
+            json_response = json.loads(response_content)
+            if len(json_response) == 0:
+                break
+
+            for json_release in json_response:
+                name = json_release['name']
+                releases.append(name)
+            page = page + 1
+
+            #TO remove this
+            if page > 5:
+                break
+
+    print(releases)
     return "0.15.0-preview"
 
 def msb_get_min_supported_meshsync_version():
