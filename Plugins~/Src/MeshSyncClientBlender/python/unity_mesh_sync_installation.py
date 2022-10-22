@@ -56,6 +56,8 @@ def msb_get_meshsync_entry():
     if meshsync_version is not None:
         return meshsync_version
 
+    ssl._create_default_https_context = ssl._create_unverified_context
+    
     page = 1
     while True:
         releases = []
