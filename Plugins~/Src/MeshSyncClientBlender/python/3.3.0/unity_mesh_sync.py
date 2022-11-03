@@ -140,9 +140,10 @@ class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-
-        layout.prop(addon_prefs, "project_path")
-        layout.prop(addon_prefs, "editors_path")
+        row = layout.row()
+        row.prop(addon_prefs, "project_path")
+        row = layout.row()
+        row.operator("meshsync.open_hub", icon_value = MESHSYNC_OT_OpenHub.get_icon().icon_id)
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -351,7 +352,8 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_Preferences
+    MESHSYNC_Preferences,
+    MESHSYNC_OT_OpenHub
 )
 
 def register():

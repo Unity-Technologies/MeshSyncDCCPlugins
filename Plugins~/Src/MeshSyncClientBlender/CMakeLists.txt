@@ -76,5 +76,7 @@ install(FILES
     python/unity_mesh_sync_installation.py
     python/unity_mesh_sync_preferences.py
     DESTINATION ${PYD_DIR})
+install(FILES
+    resources/hub.png
+    DESTINATION "${PYD_DIR}/resources")
 install(TARGETS ${MESHSYNC_CLIENT_BLENDER} DESTINATION ${PYD_DIR})
-

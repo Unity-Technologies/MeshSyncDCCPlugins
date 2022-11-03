@@ -219,34 +219,8 @@ def msb_is_unity_process_alive():
     return False
 
 def msb_try_start_unity_project (context, directory):
-        
-    global unity_process
 
-    #Check if we have launched the project as a subprocess
-    if msb_is_unity_process_alive():
-        return 'ALREADY_STARTED'
-
-    #Check if there is an editor server listening from the target project
-    if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
-        reply_path = msb_context.editor_command_reply;
-        if path.normpath(reply_path) == path.normpath(directory):
-            return 'ALREADY_STARTED'
-
-    editor_version = msb_get_editor_version(directory)
-    editor_path = msb_get_editor_path(context, editor_version)
-
-    if not path.exists(editor_path):
-        return 'EDITOR_NOT_EXISTS'
-
-    #Launch the editor with the project
-    status, unity_process = msb_launch_project(context, editor_path, directory)
-    if status == 'FAILED':
-        return 'FAILED'
-    elif status == 'SUCCESS':
-        return 'STARTED'
-
-    return 'UNKNOWN'
+    return 'ALREADY_STARTED'
 
 def msb_is_port_available(port):
     try:
