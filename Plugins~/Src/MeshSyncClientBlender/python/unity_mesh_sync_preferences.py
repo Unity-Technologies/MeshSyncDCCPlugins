@@ -11,9 +11,15 @@ from bpy.props import StringProperty, IntProperty, BoolProperty
 
 msb_context = ms.Context()
 
+def msb_get_hub_dir():
+    system = platform.system()
+    if system == "Windows":
+        return os.path.join(os.getenv('APPDATA'),"UnityHub")
+    elif system == "Darwin":
+        return os.path.join(os.getenv("HOME"),"Library","Application Support","UnityHub")
 
 def msb_get_hub_path():
-    config_path = os.path.join(os.getenv('APPDATA'),"UnityHub", "hubInfo.json")
+    config_path = os.path.join(msb_get_hub_dir(), "hubInfo.json")
     with open(config_path, "r+") as file:
         data = json.load(file)
         return os.path.normpath(data['executablePath'])
@@ -86,7 +92,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def open_logs(self, context):
-        logs_path = os.path.join(os.getenv('APPDATA'),"UnityHub", "logs", "info-log.json")
+        logs_path = os.path.join(msb_get_hub_dir(), "logs", "info-log.json")
         log_file = open(logs_path, "r+")
         log_file.seek(0, os.SEEK_END)
         return log_file
