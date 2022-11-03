@@ -5,6 +5,8 @@ import subprocess
 import re
 import json
 
+from threading import Thread
+from time import sleep
 from . import MeshSyncClientBlender as ms
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty, IntProperty, BoolProperty
@@ -29,6 +31,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
     bl_label = "Open Unity Hub"
     log_file = None
     state = None
+    thread = None
 
     preview_collections = {}
 
@@ -47,7 +50,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
     def handle_log_entry(self, line, context):
         line = line.replace('"', '\"')
         if "openProject" in line:
-            result = re.search('openProject projectPath: (.*),', line)
+            result = re.search('openProject projectPath: (.*), current editor:', line)
             if result is not None:
                 path = os.path.normpath(result.group(1))
                 print(path)
@@ -55,7 +58,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
                 return
 
         if "createProject" in line:
-            result = re.search('createProject projectPath: (.*),', line)
+            result = re.search('createProject projectPath: (.*), current editor:', line)
             if result is not None:
                 path = os.path.normpath(result.group(1))
                 print(path)
@@ -85,7 +88,9 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
         if event_type == 'RIGHTMOUSE' or event_type == 'LEFTMOUSE':
             if self.state == 'FOCUSED_HUB':
                 self.state = 'FINISHED'
-                self.parse_lines(context)
+
+                self.thread.join()
+
                 return {'FINISHED'}
 
         # When the user returns the focus on Blender, we assume they have finished with the hub
@@ -97,10 +102,22 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
         log_file.seek(0, os.SEEK_END)
         return log_file
 
+    def monitor_logs(self, context):
+        while self.state != 'FINISHED':
+            self.parse_lines(context)
+            sleep(0.1)
+
+        self.parse_lines(context)
+        self.log_file.close()
+
     def invoke(self, context, event):
-        self.log_file = self.open_logs(context)
-        self.open_hub(context)
         self.state = 'STARTED'
+        self.log_file = self.open_logs(context)
+        self.thread = Thread(target = self.monitor_logs, args = (context,))
+        self.thread.start()
+
+        self.open_hub(context)
+
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
@@ -132,7 +149,17 @@ class MESHSYNC_Preferences(AddonPreferences):
     # when defining this in a submodule of a python package.
     bl_idname = __package__
 
-    project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH')
+    def redraw(self, context):
+        regions = context.area
+        if regions == None:
+            return None
+
+        for region in context.area.regions:
+            if region.type == "UI":
+                region.tag_redraw()
+        return None
+
+    project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH', update = redraw)
 
     hub_path: bpy.props.StringProperty(name = "Unity Hub", default= msb_get_hub_path(), subtype = 'DIR_PATH')
 
