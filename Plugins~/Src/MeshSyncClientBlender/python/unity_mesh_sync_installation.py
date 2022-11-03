@@ -17,6 +17,26 @@ msb_context = ms.Context()
 
 unity_process = None
 
+def msb_is_project_open(directory):
+    full_path = path.join(directory, "Temp", "UnityLockfile")
+    if not path.exists(full_path):
+        return False
+    try:
+        with open(full_path, 'wb') as file:
+            os = platform.system()
+            if os == "Darwin" or os == "Linux":
+                import fcntl
+                fcntl.lockf(file.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB)
+                fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+            elif os == "Windows":
+                import msvcrt
+                msvcrt.locking(file.fileno(), msvcrt.LK_NBLCK, 0)
+                msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 0)
+    except:
+        return True
+
+    return False
+
 def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
@@ -219,6 +239,24 @@ def msb_is_unity_process_alive():
     return False
 
 def msb_try_start_unity_project (context, directory):
+
+    if msb_is_project_open(directory):
+        return 'ALREADY_STARTED'
+
+    global unity_process
+
+    editor_version = msb_get_editor_version(directory)
+    editor_path = msb_get_editor_path(context, editor_version)
+
+    if not path.exists(editor_path):
+        return 'EDITOR_NOT_EXISTS'
+
+    #Launch the editor with the project
+    status, unity_process = msb_launch_project(context, editor_path, directory)
+    if status == 'FAILED':
+        return 'FAILED'
+    elif status == 'SUCCESS':
+        return 'STARTED'
 
     return 'ALREADY_STARTED'
 

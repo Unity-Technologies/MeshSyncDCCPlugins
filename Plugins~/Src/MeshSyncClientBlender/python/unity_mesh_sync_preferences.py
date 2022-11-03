@@ -26,9 +26,20 @@ def msb_get_hub_path():
         data = json.load(file)
         return os.path.normpath(data['executablePath'])
 
+def msb_get_editors_path():
+    try: #To avoid blocking the user from launching blender in case something goes wrong
+        path = msb_get_hub_path()
+        p = subprocess.Popen([path, "--", "--headless","ip", "-g" ], stdout = subprocess.PIPE)
+        path = None
+        for line in iter(p.stdout.readline, b''):
+            path = line.rstrip()
+        return path.decode('utf-8')
+    except:
+        return ""
+
 class MESHSYNC_OT_OpenHub(bpy.types.Operator):
     bl_idname = "meshsync.open_hub"
-    bl_label = "Open Unity Hub"
+    bl_label = "Create or Select Project with Unity Hub"
     log_file = None
     state = None
     thread = None
@@ -143,11 +154,29 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
             bpy.utils.previews.remove(pcoll)
         MESHSYNC_OT_OpenHub.preview_collections.clear()
 
+class MESHSYNC_OT_ResetPreferences(bpy.types.Operator):
+    bl_idname = "meshsync.reset_preferences"
+    bl_label = "Reset Preferences"
+
+    @classmethod
+    def description(cls, context, properties):
+        return "Find where the Unity Hub and the Unity Editors are located in the system"
+
+    def execute(self, context):
+        preferences = context.preferences.addons[__package__].preferences
+        preferences.reset()
+        return {'FINISHED'}
+
+
 class MESHSYNC_Preferences(AddonPreferences):
 
     # this must match the add-on name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = __package__
+
+    def reset(self):
+        self.hub_path = msb_get_hub_path()
+        self.editors_path = msb_get_editors_path()
 
     def redraw(self, context):
         regions = context.area
@@ -159,11 +188,20 @@ class MESHSYNC_Preferences(AddonPreferences):
                 region.tag_redraw()
         return None
 
-    project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH', update = redraw)
-
-    hub_path: bpy.props.StringProperty(name = "Unity Hub", default= msb_get_hub_path(), subtype = 'DIR_PATH')
+    project_path: StringProperty(name = "Unity Project", default= "C://Path//To//Unity//Project", subtype = 'DIR_PATH', update = redraw)
+    hub_path: bpy.props.StringProperty(name = "Unity Hub", subtype = 'FILE_PATH')
+    editors_path: bpy.props.StringProperty(name = "Unity Editors", subtype = 'DIR_PATH')
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "project_path")
-        layout.prop(self, "hub_path")
+
+        editor_layout = layout.box()
+        editor_layout.label(text ="Editor Settings")
+        editor_layout.prop(self, "hub_path")
+        editor_layout.prop(self, "editors_path")
+        editor_layout.operator("meshsync.reset_preferences", text="Auto Detect", icon="FILE_REFRESH")
+
+        project_layout = layout.box()
+        project_layout.label(text ="Project Settings")
+        project_layout.prop(self, "project_path")
+        project_layout.operator("meshsync.open_hub", icon_value = MESHSYNC_OT_OpenHub.get_icon().icon_id)
