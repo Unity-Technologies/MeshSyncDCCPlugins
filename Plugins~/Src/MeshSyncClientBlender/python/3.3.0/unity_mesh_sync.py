@@ -353,7 +353,8 @@ classes = (
     MESHSYNC_OT_ExportCache,
     MESHSYNC_Preferences,
     MESHSYNC_OT_OpenHub,
-    MESHSYNC_OT_ResetPreferences
+    MESHSYNC_OT_ResetPreferences,
+    MESHSYNC_OT_InstallMeshSync
 )
 
 def register():

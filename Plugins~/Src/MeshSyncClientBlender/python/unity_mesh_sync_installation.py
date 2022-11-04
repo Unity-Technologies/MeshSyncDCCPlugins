@@ -128,7 +128,7 @@ def msb_try_get_path_from_server():
 def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
 
     with open(lock_path, "r+") as file:
-        data = json.load(file);
+        data = json.load(file)
     
         # check if MeshSync is installed on selected project
         # if not installed, install it
