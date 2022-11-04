@@ -263,7 +263,7 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
             dependencies["com.unity.meshsync"] = entry
             file.seek(0)
             file.truncate(0)
-            json.dump(data, file)
+            json.dump(data, file, indent = 2)
 
     def execute(self, context):
         self.install(context)
