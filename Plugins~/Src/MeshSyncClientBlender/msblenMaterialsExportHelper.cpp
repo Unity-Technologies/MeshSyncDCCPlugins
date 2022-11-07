@@ -373,7 +373,8 @@ void msblenMaterialsExportHelper::setHeightFromOutputNode(const Material* mat, m
 		displacementSocket, ms::TextureType::Default,
 		false,
 		[&](const mu::float4& colorValue) {
-			stdmat.setHeightScale(colorValue[0]);
+			// Convert from meters to centimeters and / 2 because midpoint in Unity is half of that:
+			stdmat.setHeightScale(colorValue[0] * 100 / 2);
 		},
 		[&](int textureId)
 		{
