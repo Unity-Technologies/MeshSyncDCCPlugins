@@ -1115,21 +1115,16 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
 
     // uv
     if (settings.sync_uvs) {
-        //const int offset = emesh.uv_data_offset();
-        //if (offset != -1) {
-        //    dst.m_uv[0].resize_discard(num_indices);
-        //    size_t ii = 0;
-        //    for (size_t ti = 0; ti < num_triangles; ++ti) {
-        //        auto& triangle = triangles[ti];
-        //        for (auto *idx : triangle)
-        //            dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
-        //    }
-        //}
-        //
-        //
-        //
-        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
-
+        const int offset = emesh.uv_data_offset();
+        if (offset != -1) {
+            dst.m_uv[0].resize_discard(num_indices);
+            size_t ii = 0;
+            for (size_t ti = 0; ti < num_triangles; ++ti) {
+                auto& triangle = triangles[ti];
+                for (auto *idx : triangle)
+                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+            }
+        }
     }
 }
 
