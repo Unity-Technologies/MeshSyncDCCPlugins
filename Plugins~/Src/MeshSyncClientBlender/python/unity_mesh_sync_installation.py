@@ -32,7 +32,8 @@ def msb_is_project_open(directory):
                 import msvcrt
                 msvcrt.locking(file.fileno(), msvcrt.LK_NBLCK, 0)
                 msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 0)
-    except:
+    except OSError as e:
+        print ("Error when trying to lock file:" + str(e))
         return True
 
     return False
