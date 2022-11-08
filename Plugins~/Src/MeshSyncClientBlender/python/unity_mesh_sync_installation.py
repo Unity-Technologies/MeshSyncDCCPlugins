@@ -59,7 +59,8 @@ def msb_get_meshsync_entry():
     ssl._create_default_https_context = ssl._create_unverified_context
     
     page = 1
-    while True:
+
+    for _ in range(100):
         releases = []
 
         with urlopen(f"https://api.github.com/repos/unity3d-jp/MeshSync/releases?per_page=100&page={page}") as response:
