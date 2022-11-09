@@ -102,11 +102,29 @@ def msb_get_meshsync_entry():
 def msb_get_min_supported_meshsync_version():
     return "0.15.0-preview"
 
+def msb_get_local_package_version(dir):
+    dir = dir.replace("file:", "")
+    dir = path.join(dir, "package.json")
+
+    #The test projects would have local paths on their manifest
+    #We consider test projects to have the latest version
+    
+    if not path.isabs(dir):
+        return "inf.inf.inf-preview"
+
+    with open(dir, 'r') as file:
+        data = json.load(file)
+        return data['version']
+
 def msb_get_most_recent_version(v1, v2):
     if v1 is None:
         return v2
     if v2 is None:
         return v1
+    if "file:" in v1:
+        v1 = msb_get_local_package_version(v1)
+    if "file:" in v2:
+        v2 = msb_get_local_package_version(v2)
 
     tokens1 = v1.replace("-preview","").split('.')
     tokens2 = v2.replace("-preview","").split('.')
@@ -118,7 +136,7 @@ def msb_get_most_recent_version(v1, v2):
         if tokens1[i] == tokens2[i]:
             continue
         
-        if int(tokens1[i]) > int(tokens2[i]):
+        if float(tokens1[i]) > float(tokens2[i]):
             return v1
 
         return v2
