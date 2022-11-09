@@ -21,6 +21,27 @@ msb_context = ms.Context()
 unity_process = None
 meshsync_version = None
 
+def msb_is_project_open(directory):
+    full_path = path.join(directory, "Temp", "UnityLockfile")
+    if not path.exists(full_path):
+        return False
+    try:
+        with open(full_path, 'wb') as file:
+            os = platform.system()
+            if os == "Darwin" or os == "Linux":
+                import fcntl
+                fcntl.lockf(file.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB)
+                fcntl.lockf(file.fileno(), fcntl.LOCK_UN)
+            elif os == "Windows":
+                import msvcrt
+                msvcrt.locking(file.fileno(), msvcrt.LK_NBLCK, 0)
+                msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 0)
+    except OSError as e:
+        print ("Error when trying to lock file:" + str(e))
+        return True
+
+    return False
+
 def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
@@ -278,18 +299,11 @@ def msb_is_unity_process_alive():
 
 def msb_try_start_unity_project (context, directory):
         
-    global unity_process
 
-    #Check if we have launched the project as a subprocess
-    if msb_is_unity_process_alive():
+    if msb_is_project_open(directory):
         return 'ALREADY_STARTED'
 
-    #Check if there is an editor server listening from the target project
-    if msb_context.is_editor_server_available:
-        msb_context.sendEditorCommand(EDITOR_COMMAND_GET_PROJECT_PATH, None)
-        reply_path = msb_context.editor_command_reply;
-        if path.normpath(reply_path) == path.normpath(directory):
-            return 'ALREADY_STARTED'
+    global unity_process
 
     editor_version = msb_get_editor_version(directory)
     editor_path = msb_get_editor_path(context, editor_version)
