@@ -6,7 +6,10 @@ import time
 import bpy
 import os
 import socket
+import ssl
+import re
 from contextlib import closing
+from urllib.request import urlopen
 
 EDITOR_COMMAND_ADD_SERVER = 1
 EDITOR_COMMAND_GET_PROJECT_PATH = 2
@@ -16,19 +19,74 @@ from . import MeshSyncClientBlender as ms
 msb_context = ms.Context()
 
 unity_process = None
+meshsync_version = None
 
 def MS_MessageBox(message = "", title = "MeshSync", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+def msb_version_match_major_minor(v1, v2):
+    if v1 is None:
+        return v2
+    if v2 is None:
+        return v1
+
+    v1.replace("-preview", "")
+    v2.replace("-preview", "")
+    tokens1 = v1.split('.')
+    tokens2 = v2.split('.')
+    return float(tokens1[0]) == float(tokens2[0]) and float(tokens1[1]) == float(tokens2[1])
+
+def msb_find_latest_compatible_version(versions):
+    version_re = re.compile('[0-9]*\.[0-9]*\.[0-9]*-preview')
+
+    latest_version = None
+    for version in versions:
+        if version_re.match(version) is None:
+            continue
+        if msb_version_match_major_minor(version, msb_context.PLUGIN_VERSION):
+            latest_version = msb_get_most_recent_version(latest_version, version)
+    return latest_version
+
+
 def msb_get_meshsync_entry():
-    return "0.15.0-preview"
+
+    global meshsync_version
+    if meshsync_version is not None:
+        return meshsync_version
+
+    ssl._create_default_https_context = ssl._create_unverified_context
+    
+    page = 1
+
+    for _ in range(100):
+        releases = []
+
+        with urlopen(f"https://api.github.com/repos/unity3d-jp/MeshSync/releases?per_page=100&page={page}") as response:
+            response_content = response.read()
+            response_content.decode('utf-8')
+            json_response = json.loads(response_content)
+            if len(json_response) == 0:
+                break
+
+            for json_release in json_response:
+                name = json_release['name']
+                releases.append(name)
+            page = page + 1
+        meshsync_version = msb_find_latest_compatible_version(releases)
+        if meshsync_version is not None:
+            return meshsync_version
 
 def msb_get_min_supported_meshsync_version():
     return "0.15.0-preview"
 
 def msb_get_most_recent_version(v1, v2):
+    if v1 is None:
+        return v2
+    if v2 is None:
+        return v1
+
     tokens1 = v1.replace("-preview","").split('.')
     tokens2 = v2.replace("-preview","").split('.')
 
