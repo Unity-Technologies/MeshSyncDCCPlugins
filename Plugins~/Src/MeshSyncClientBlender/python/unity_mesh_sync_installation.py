@@ -373,3 +373,42 @@ def msb_try_auto_config_server_settings(context):
         context.scene.meshsync_editor_server_port = editorSocket.getsockname()[1]
         with closing(msb_bind_next_available_socket(context.scene.meshsync_server_port)) as sceneSocket:
             context.scene.meshsync_server_port = sceneSocket.getsockname()[1]
+
+def msb_get_hub_dir():
+    system = platform.system()
+    path = ""
+    if system == "Windows":
+        path = os.path.join(os.getenv('APPDATA'),"UnityHub")
+    elif system == "Darwin":
+        path = os.path.join(os.getenv("HOME"),"Library","Application Support","UnityHub")
+    #TODO Linux
+
+    return path
+
+def msb_get_hub_path():
+    hub_dir = msb_get_hub_dir()
+    if not os.path.exists(hub_dir):
+        return ""
+
+    config_path = os.path.join(hub_dir, "hubInfo.json")
+
+    if not os.path.exists(config_path):
+        return ""
+
+    with open(config_path, "r+") as file:
+        data = json.load(file)
+        path = os.path.normpath(data['executablePath'])
+        if not os.path.exists(path):
+            path = ""
+        return path
+
+def msb_get_editors_path():
+    path = msb_get_hub_path()
+    if not os.path.exists(path):
+        return ""
+
+    p = subprocess.Popen([path, "--", "--headless","ip", "-g" ], stdout = subprocess.PIPE)
+    path = None
+    for line in iter(p.stdout.readline, b''):
+        path = line.rstrip()
+    return path.decode('utf-8')
