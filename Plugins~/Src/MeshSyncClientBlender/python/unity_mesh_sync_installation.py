@@ -202,47 +202,46 @@ def msb_try_get_path_from_server():
     server_reply = msb_context.editor_command_reply
     return server_reply
 
-def msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, entry):
+def msb_meshsync_info_json(json_path):
+    with open(json_path, "r+") as file:
+        dependencies = json.load(file)['dependencies']
+        if 'com.unity.meshsync' in dependencies:
+            return dependencies['com.unity.meshsync']
+        return ""
 
-    with open(lock_path, "r+") as file:
-        data = json.load(file);
+def msb_meshsync_version_manifest(project_path):
+    manifest_path = path.join(project_path,"Packages","manifest.json")
+    return msb_meshsync_info_json(manifest_path)
+
+def msb_meshsync_version_package_lock(project_path):
+    lock_path = path.join(project_path,"Packages","packages-lock.json")
+    info = msb_meshsync_info_json(lock_path)
+    return info['version']
+
+def msb_add_meshsync_to_unity_manifest(project_path, entry):
+    manifest_path = path.join(project_path,"Packages","manifest.json")
+    with open(manifest_path, "r+") as file:
+        data = json.load(file)
+
+        dependencies = data["dependencies"];
+        dependencies["com.unity.meshsync"] = entry
+        file.seek(0)
+        file.truncate(0)
+        json.dump(data, file, indent = 2)
+
+def msb_try_install_meshsync_to_unity_project(project_path):
+    installed_version = msb_get_meshsync_entry()
+    version = msb_meshsync_version_package_lock(project_path)
+
+    if installed_version != "" and version != installed_version:
+        min_version = msb_get_min_supported_meshsync_version()
+        most_recent = msb_get_most_recent_version(min_version, version)
+        if most_recent == min_version or most_recent == 'VERSION_MISMATCH':
+            return 'VERSION_MISMATCH'
     
-        # check if MeshSync is installed on selected project
-        # if not installed, install it
-        found = False
-
-        for package in data['dependencies']:
-            if package == 'com.unity.meshsync':
-                version = data['dependencies']['com.unity.meshsync']['version']
-                if version != entry:
-                    min_version = msb_get_min_supported_meshsync_version()
-                    most_recent = msb_get_most_recent_version(min_version, version)
-                    if most_recent == min_version or most_recent == 'VERSION_MISMATCH':
-                        return 'VERSION_MISMATCH'
-                found = True
-                break
-            elif package == 'com.unity.meshsync':
-                print(data['dependencies']['com.unity.meshsync'])
-
-    if found == False:
-        with open(manifest_path, "r+") as file:
-            data = json.load(file);
-            #install for user
-            dependencies = data["dependencies"];
-            dependencies["com.unity.meshsync"] = entry
-            file.seek(0)
-            file.truncate(0)
-            json.dump(data, file)
-
+    if installed_version == "":
+        msb_add_meshsync_to_unity_manifest(project_path, manifest_entry)
     return 'SUCCESS'
-
-def msb_try_install_meshsync_to_unity_project(directory):
-        lock_path = path.join(directory,"Packages","packages-lock.json")
-        manifest_path = path.join(directory,"Packages","manifest.json")
-
-        manifest_entry = msb_get_meshsync_entry()
-
-        return msb_add_meshsync_to_unity_manifest(manifest_path, lock_path, manifest_entry)
 
 def msb_try_setup_scene_server(context):
 
