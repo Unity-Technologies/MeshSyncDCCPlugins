@@ -385,22 +385,31 @@ def msb_get_hub_dir():
 
     return path
 
-def msb_get_hub_path():
+def msb_get_hub_info():
     hub_dir = msb_get_hub_dir()
     if not os.path.exists(hub_dir):
-        return ""
+        return "", ""
 
     config_path = os.path.join(hub_dir, "hubInfo.json")
 
     if not os.path.exists(config_path):
-        return ""
+        return "", ""
 
     with open(config_path, "r+") as file:
         data = json.load(file)
         path = os.path.normpath(data['executablePath'])
+        version = data['version']
         if not os.path.exists(path):
-            path = ""
-        return path
+            path = "", ""
+        return path, version
+
+def msb_get_hub_path():
+    path, version = msb_get_hub_info()
+    return path
+
+def msb_get_hub_version():
+    path, version = msb_get_hub_info()
+    return version
 
 def msb_get_editors_path():
     path = msb_get_hub_path()
