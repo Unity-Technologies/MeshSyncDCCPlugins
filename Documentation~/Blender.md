@@ -78,10 +78,7 @@ There are multiple options to export materials from Blender:
 |**Mode** |**Description** |
 |:---       |:---|
 | None | Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials. |
-| Basic |
-The materials are synced to Unity in a limited way.
-MeshSync looks for an active material output node and exports the BSDF connected to that.
-Colors and textures assigned to the active BSDF are exported. |
+| Basic | The materials are synced to Unity in a limited way. MeshSync looks for an active material output node and exports the BSDF connected to that. Colors and textures assigned to the active BSDF are exported. |
 
 Mix shaders are not fully supported, the first found connected BSDF input to the mix shader is exported instead.
 
