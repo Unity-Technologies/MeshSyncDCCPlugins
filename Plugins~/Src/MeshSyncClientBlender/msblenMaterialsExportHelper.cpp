@@ -202,16 +202,14 @@ void msblenMaterialsExportHelper::handleNormalMapNode(const Material* mat,
 	std::function<void(int textureId)> setTextureHandler,
 	bNode* sourceNode)
 {
-	if (setTextureHandler) {
-		auto imageInput = getInputSocket(sourceNode, colorIdentifier);
-		if (imageInput)
-		{
-			setValueFromSocket(mat,
-				imageInput, textureType,
-				resetIfInputIsTexture,
-				nullptr,
-				setTextureHandler);
-		}
+	auto imageInput = getInputSocket(sourceNode, colorIdentifier);
+	if (imageInput && setTextureHandler)
+	{
+		setValueFromSocket(mat,
+			imageInput, textureType,
+			resetIfInputIsTexture,
+			nullptr,
+			setTextureHandler);
 	}
 
 	auto strengthInput = getInputSocket(sourceNode, normalStrengthIdentifier);
