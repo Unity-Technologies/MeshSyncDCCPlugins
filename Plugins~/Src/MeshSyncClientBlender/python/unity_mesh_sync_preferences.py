@@ -1,6 +1,7 @@
 import bpy
 import os
 import platform
+import atexit
 
 from .unity_mesh_sync_installation import *
 from . import MeshSyncClientBlender as ms
@@ -25,7 +26,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
     bl_label = "Select or Create Project with Unity Hub"
     active = False
     logs_thread = None
-
+    thread_timeout = 1.0
 
     @classmethod
     def description(cls, context, properties):
@@ -36,19 +37,28 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
         if MESHSYNC_OT_OpenHub.active:
             MESHSYNC_OT_OpenHub.active = False
             if self.logs_thread is not None:
-                self.logs_thread.join()
+                self.logs_thread.join(MESHSYNC_OT_OpenHub.thread_timeout)
+                atexit.unregister(MESHSYNC_OT_OpenHub.shutdown_thread)
         else:
             if self.logs_thread is not None:
-                self.logs_thread.join()
+                self.logs_thread.join(MESHSYNC_OT_OpenHub.thread_timeout)
             MESHSYNC_OT_OpenHub.active = True
 
-            self.logs_thread = Thread(target = self.monitor_logs, args = (context,))
+            self.logs_thread = Thread(target = self.monitor_logs, args = (context,), daemon = True)
             self.logs_thread.start()
+            
+            atexit.unregister(MESHSYNC_OT_OpenHub.shutdown_thread)
+            atexit.register(MESHSYNC_OT_OpenHub.shutdown_thread)
 
             hub_path = msb_preferences(context).hub_path
             subprocess.Popen([hub_path])
 
         return {'FINISHED'}
+
+    def shutdown_thread():
+        MESHSYNC_OT_OpenHub.active = False
+        if MESHSYNC_OT_OpenHub.logs_thread is not None:
+            MESHSYNC_OT_OpenHub.logs_thread.join(MESHSYNC_OT_OpenHub.thread_timeout)
 
     def monitor_logs(self, context):
         logs_path = os.path.join(msb_get_hub_dir(), "logs", "info-log.json")
@@ -56,17 +66,16 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
             log_file.seek(0, os.SEEK_END)
 
             while MESHSYNC_OT_OpenHub.active:
-                lines = log_file.readlines()
-                for line in lines:
+                line = log_file.readline()
+                while len(line) > 0:
+                    if not MESHSYNC_OT_OpenHub.active:
+                        return
+
                     MESHSYNC_OT_OpenHub.handle_log_entry(context, line)
+                    line = log_file.readline()
 
                 #if idle, sleep for 0.1 seconds
                 sleep(0.1)
-
-            # in case the state changed before the last set of line was read 
-            lines = log_file.readlines()
-            for line in lines:
-                MESHSYNC_OT_OpenHub.handle_log_entry(context, line)
 
     def handle_log_entry(context, line):
         path = MESHSYNC_OT_OpenHub.extract_path_from_log_entry(line, 'openProject', 'openProject projectPath: (.*), current editor:')
