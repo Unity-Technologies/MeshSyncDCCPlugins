@@ -22,14 +22,14 @@ def msb_get_editor_path_prefix_default():
 
 class MESHSYNC_OT_OpenHub(bpy.types.Operator):
     bl_idname = "meshsync.open_hub"
-    bl_label = "Select Project with Unity Hub"
+    bl_label = "Select or Create Project with Unity Hub"
     active = False
     logs_thread = None
 
 
     @classmethod
     def description(cls, context, properties):
-        return "Open Unity Hub to select a Unity project to sync data to"
+        return "Open Unity Hub to select or create a Unity project to sync data to"
 
     def invoke(self, context, event):
 
@@ -78,6 +78,10 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
         if path is not None:
             msb_preferences(context).project_path = path
             return
+
+        path = MESHSYNC_OT_OpenHub.extract_path_from_log_entry(line, 'createProject', 'createProject projectPath: (.*), editor version:')
+        if path is not None:
+            msb_preferences(context).project_path = path
 
     def extract_path_from_log_entry(line, token, regex):
         if token in line:
@@ -169,7 +173,7 @@ class MESHSYNC_Preferences(AddonPreferences):
             if MESHSYNC_OT_OpenHub.active:
                 row.operator("meshsync.open_hub", text = "Stop using Unity Hub", icon = 'PAUSE')
             else:
-                row.operator("meshsync.open_hub", text = "Select project via Unity Hub", icon = 'PLAY')
+                row.operator("meshsync.open_hub", text = "Select or Create project via Unity Hub", icon = 'PLAY')
 
 
     def register():
