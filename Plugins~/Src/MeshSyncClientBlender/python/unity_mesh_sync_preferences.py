@@ -58,7 +58,6 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
             while MESHSYNC_OT_OpenHub.active:
                 lines = log_file.readlines()
                 for line in lines:
-                    print(line)
                     MESHSYNC_OT_OpenHub.handle_log_entry(context, line)
 
                 #if idle, sleep for 0.1 seconds
@@ -67,18 +66,15 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
             # in case the state changed before the last set of line was read 
             lines = log_file.readlines()
             for line in lines:
-                print(line)
                 MESHSYNC_OT_OpenHub.handle_log_entry(context, line)
 
     def handle_log_entry(context, line):
         path = MESHSYNC_OT_OpenHub.extract_path_from_log_entry(line, 'openProject', 'openProject projectPath: (.*), current editor:')
-        print("Checking for already open project:" + str(path))
         if path is not None:
             msb_preferences(context).project_path = path
             return
 
         path  = MESHSYNC_OT_OpenHub.extract_path_from_log_entry(line, 'ALREADY_OPEN', '\"projectPath\":\"(.*)\"')
-        print("Checking for already open:" + str(path))
         if path is not None:
             msb_preferences(context).project_path = path
             return
