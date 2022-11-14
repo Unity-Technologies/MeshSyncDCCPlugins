@@ -203,7 +203,7 @@ def msb_try_get_path_from_server():
     return server_reply
 
 def msb_meshsync_info_json(json_path):
-    with open(json_path, "r+") as file:
+    with open(json_path, 'r') as file:
         dependencies = json.load(file)['dependencies']
         if 'com.unity.meshsync' in dependencies:
             return dependencies['com.unity.meshsync']

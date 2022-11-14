@@ -1,11 +1,14 @@
 import bpy
 import os
 import platform
+import atexit
 
 from .unity_mesh_sync_installation import *
 from . import MeshSyncClientBlender as ms
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty, IntProperty, BoolProperty
+from threading import Thread
+from time import sleep
 
 msb_context = ms.Context()
 
@@ -52,6 +55,9 @@ class MESHSYNC_Preferences(AddonPreferences):
     # when defining this in a submodule of a python package.
     bl_idname = __package__
 
+    thread = None
+    cancel_thread = False
+
     def hub_exists(self):
         return os.path.exists(self.hub_path)
 
@@ -77,13 +83,49 @@ class MESHSYNC_Preferences(AddonPreferences):
         self.update_project_info()
 
 
+    def monitor_package_lock(self, context):
+        while not self.cancel_thread:
+            sleep(0.5)
+            if msb_meshsync_version_package_lock(self.project_path) != "":
+                self.is_meshsync_in_manifest_lock = True
+                self.redraw(context)
+                return
+
+
+    def on_in_package_lock_updated(self, context):
+        if self.thread is not None:
+            self.cancel_thread = True
+            self.thead.join(2.0)
+
+        if not self.is_meshsync_in_manifest_lock:
+            self.thread = Thread(target = self.monitor_package_lock, args = (context,), daemon = True)
+            self.cancel_thread = False
+            self.thread.start()
+            atexit.unregister(self.shutdown_thread)
+            atexit.register(self.shutdown_thread)
+
+    def shutdown_thread():
+        MESHSYNC_Preferences.cancel_thread = True
+        if MESHSYNC_Preferences.thread is not None:
+            MESHSYNC_Preferences.thread.join(2.0)
+
+    def redraw(self, context):
+        regions = context.area
+        if regions == None:
+            return None
+
+        for region in context.area.regions:
+            if region.type == "UI":
+                region.tag_redraw()
+        return None
+
     project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH', update = on_project_path_updated)
     editors_path: bpy.props.StringProperty(name = "Unity Editors", default= msb_get_editor_path_prefix_default(), subtype = 'DIR_PATH')
     hub_path: bpy.props.StringProperty(name = "Unity Hub", default = msb_get_hub_path(), subtype = 'FILE_PATH')
     hub_installed: bpy.props.BoolProperty(name = "Hub Installed", default = is_hub_installed())
     is_unity_project: bpy.props.BoolProperty(name = "Is Unity project", default = False)
     is_meshsync_in_manifest: bpy.props.BoolProperty(name = "Is Meshsync added in the package manifest", default = False)
-    is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the unity editor", default = False)
+    is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the unity editor", default = False, update = on_in_package_lock_updated)
     is_project_running: bpy.props.BoolProperty(name = "Is the project open", default = False)
 
     def draw(self, context):
