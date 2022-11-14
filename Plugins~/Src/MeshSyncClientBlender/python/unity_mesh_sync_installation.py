@@ -216,6 +216,8 @@ def msb_meshsync_version_manifest(project_path):
 def msb_meshsync_version_package_lock(project_path):
     lock_path = path.join(project_path,"Packages","packages-lock.json")
     info = msb_meshsync_info_json(lock_path)
+    if info == "":
+        return ""
     return info['version']
 
 def msb_add_meshsync_to_unity_manifest(project_path, entry):
