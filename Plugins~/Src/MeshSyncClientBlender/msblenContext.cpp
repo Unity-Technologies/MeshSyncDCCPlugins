@@ -284,7 +284,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
 {
     if (!obj)
         return nullptr;
-    
+
     msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
@@ -450,8 +450,6 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
         dst->path = path;
         dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
-
-        dst->test = rec.dst;
     };
 
     if (is_mesh(src)) {
@@ -473,7 +471,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
                 state.manager.add(dst);
             };
             if (settings.multithreaded)
-                // deferred to execute after extracting src mesh data is 
+                // deferred to execute after extracting src mesh data is completed
                 m_asyncTasksController.AddTask(std::launch::deferred, do_merge);
             else
                 do_merge();
