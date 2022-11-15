@@ -280,8 +280,6 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
-std::vector<Object*> exportedThisFrame;
-
 ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
 {
     if (!obj)
@@ -291,14 +289,6 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     if (rec.dst)
         return rec.dst; // already exported
     
-    // If this is already exported/scheduled to be exported, don't do it again:
-    if (std::find(exportedThisFrame.begin(), exportedThisFrame.end(), (Object*)obj) != exportedThisFrame.end())
-    {
-        return rec.dst;
-    }
-
-    exportedThisFrame.push_back((Object*)obj);
-
     auto handle_parent = [&]() {
         if (parent)
             exportObject(state, paths, settings, obj->parent, parent, false);
@@ -466,14 +456,10 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
     if (is_mesh(src)) {
         if (settings.BakeTransform) {
-            // Make sure any pending export tasks are done for the referenced mesh:
-            //m_asyncTasksController.Wait();
-
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
             
-
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
@@ -485,26 +471,6 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 state.manager.add(dst);
-
-                if (dst_mesh.indices.size() != static_cast<ms::Mesh&>(*dst_mesh.test).indices.size())
-                {
-                    int i = 0;
-                    i++;
-                }
-
-
-                // test:
-                //{
-                //    ms::SceneImportSettings cv;
-
-                //    ms::Mesh& mesh = dst_mesh;// dynamic_cast<Mesh&>(*obj);
-                //    /*    for (std::vector<std::shared_ptr<BoneData>>::value_type& bone : mesh.bones)
-                //            sanitizeHierarchyPath(bone->path);*/
-                //    mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_SPLIT, true);
-                //    mesh.refine_settings.split_unit = cv.mesh_split_unit;
-                //    mesh.refine_settings.max_bone_influence = cv.mesh_max_bone_influence;
-                //    mesh.refine();
-                //}
             };
             if (settings.multithreaded)
                 // deferred to execute after extracting src mesh data is 
@@ -756,27 +722,13 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
     m_entity_manager.updateChecksumGeom(mesh);
 }
 
-
-//std::vector<Mesh*> exportedThisFrame;
-
 ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *src)
 {
     bl::BObject bobj(src);
     Mesh *data = nullptr;
     if (is_mesh(src))
         data = (Mesh*)src->data;
-
-    //if (data) {
-    //    std::vector<Mesh*> exportedThisFrame;
-    //    // If this is already exported/scheduled to be exported, don't do it again:
-    //    if (std::find(exportedThisFrame.begin(), exportedThisFrame.end(), data) != exportedThisFrame.end())
-    //    {
-    //        return static_cast<ms::MeshPtr>(state.records[src].dst);
-    //    }
-
-    //    exportedThisFrame.push_back(data);
-    //}
-
+    
     bool is_editing = false;
 
     if (settings.sync_meshes && data) {
@@ -826,12 +778,6 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     if (data) {
         auto task = [this, ret, src, data, &settings, &state]() {
             auto& dst = *ret;
-            // Is this already exported?
-            if(state.records[src].dst)
-            {
-                int i = 0;
-                i++;
-            }
             doExtractMeshData(state, settings, dst, src, data, dst.world_matrix);
             state.manager.add(ret);
         };
@@ -1532,9 +1478,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
-
-    exportedThisFrame.clear();
-
+    
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
