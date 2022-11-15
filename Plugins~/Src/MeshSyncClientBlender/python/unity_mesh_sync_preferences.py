@@ -155,7 +155,6 @@ class MESHSYNC_Preferences(AddonPreferences):
 
     def reset(self):
         self.hub_path = msb_get_hub_path()
-        self.hub_version = msb_get_hub_version()
         self.hub_installed = MESHSYNC_Preferences.is_hub_installed()
         self.hub_supported = MESHSYNC_Preferences.is_hub_supported()
         self.editors_path = msb_get_editors_path()
