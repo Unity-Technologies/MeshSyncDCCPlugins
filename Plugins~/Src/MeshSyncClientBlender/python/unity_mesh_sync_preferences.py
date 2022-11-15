@@ -316,6 +316,6 @@ class MESHSYNC_Preferences(AddonPreferences):
     hub_supported: bpy.props.BoolProperty(name = "Hub Supported", default = is_hub_supported())
     is_unity_project: bpy.props.BoolProperty(name = "Is Unity project", default = False)
     is_meshsync_in_manifest: bpy.props.BoolProperty(name = "Is Meshsync added in the package manifest", default = False)
-    is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the unity editor", default = False, update = on_in_package_lock_updated)
+    is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the Unity Editor", default = False, update = on_in_package_lock_updated)
     is_project_running: bpy.props.BoolProperty(name = "Is the project open", default = False)
     is_project_created: bpy.props.BoolProperty(name = "Is the project being created", default = False)
