@@ -90,7 +90,7 @@ class MESHSYNC_OT_OpenHub(bpy.types.Operator):
 
         path = MESHSYNC_OT_OpenHub.extract_path_from_log_entry(line, 'createProject', 'createProject projectPath: (.*), editor version:')
         if path is not None:
-            msb_preferences(context).project_path = path
+            msb_preferences(context).project_created(context, path)
 
     def extract_path_from_log_entry(line, token, regex):
         if token in line:
@@ -133,8 +133,11 @@ class MESHSYNC_Preferences(AddonPreferences):
     # when defining this in a submodule of a python package.
     bl_idname = __package__
 
-    thread = None
-    cancel_thread = False
+    package_lock_thread = None
+    cancel_package_lock_thread = False
+
+    create_project_thread = None
+    cancel_create_project_thread = False
 
     def hub_exists(self):
         return os.path.exists(self.hub_path)
@@ -167,33 +170,62 @@ class MESHSYNC_Preferences(AddonPreferences):
 
     def on_project_path_updated(self, context):
         self.update_project_info()
-
+        self.join_create_project_thread()
 
     def monitor_package_lock(self, context):
-        while not self.cancel_thread:
+        while not self.cancel_package_lock_thread:
             sleep(0.5)
             if msb_meshsync_version_package_lock(self.project_path) != "":
                 self.is_meshsync_in_manifest_lock = True
                 self.redraw(context)
                 return
 
-
     def on_in_package_lock_updated(self, context):
-        if self.thread is not None:
-            self.cancel_thread = True
-            self.thead.join(2.0)
+        if self.package_lock_thread is not None:
+            self.cancel_package_lock_thread = True
+            self.package_lock_thread.join(2.0)
 
         if not self.is_meshsync_in_manifest_lock:
-            self.thread = Thread(target = self.monitor_package_lock, args = (context,), daemon = True)
-            self.cancel_thread = False
-            self.thread.start()
-            atexit.unregister(self.shutdown_thread)
-            atexit.register(self.shutdown_thread)
+            self.package_lock_thread = Thread(target = self.monitor_package_lock, args = (context,), daemon = True)
+            self.cancel_package_lock_thread = False
+            self.package_lock_thread.start()
+            atexit.unregister(self.shutdown_threads)
+            atexit.register(self.shutdown_threads)
 
-    def shutdown_thread():
-        MESHSYNC_Preferences.cancel_thread = True
-        if MESHSYNC_Preferences.thread is not None:
-            MESHSYNC_Preferences.thread.join(2.0)
+    def join_create_project_thread(self):
+        if self.create_project_thread is not None:
+            self.cancel_create_project_thread = True
+            self.thead.join(2.0)
+
+    def monitor_project_created(self, context):
+        while not self.cancel_create_project_thread:
+            sleep(0.5)
+            if msb_validate_project_path(self.project_path):
+                self.is_project_created = False
+                self.is_unity_project = True
+                self.redraw(context)
+                return
+
+    def project_created(self, context, path):
+        self.project_path = path
+        self.is_project_created = True
+
+        self.join_create_project_thread()
+        
+        self.create_project_thread = Thread(target = self.monitor_project_created, args = (context,), daemon = True)
+        self.cancel_create_project_thread = False
+        self.create_project_thread.start()
+        atexit.unregister(self.shutdown_threads)
+        atexit.register(self.shutdown_threads)
+
+    def shutdown_threads(self):
+        self.cancel_package_lock_thread = True
+        if self.package_lock_thread is not None:
+            self.package_lock_thread.join(2.0)
+
+        self.cancel_create_project_thread = True
+        if self.create_project_thread is not None:
+            self.create_project_thread.join(2.0)
 
     def redraw(self, context):
         regions = context.area
@@ -235,6 +267,10 @@ class MESHSYNC_Preferences(AddonPreferences):
                 row.operator("meshsync.open_hub", text = "Stop using Unity Hub", icon = 'PAUSE')
             else:
                 row.operator("meshsync.open_hub", text = "Select or Create project via Unity Hub", icon = 'PLAY')
+
+        if self.is_project_created:
+            project_layout.label(text = "Project is being created..")
+            return
 
         if not self.is_unity_project:
             project_layout.label(text = "Not a Unity Project. Please select a Unity Project folder (parent of Assets folder).", icon = 'ERROR')
@@ -282,4 +318,4 @@ class MESHSYNC_Preferences(AddonPreferences):
     is_meshsync_in_manifest: bpy.props.BoolProperty(name = "Is Meshsync added in the package manifest", default = False)
     is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the unity editor", default = False, update = on_in_package_lock_updated)
     is_project_running: bpy.props.BoolProperty(name = "Is the project open", default = False)
-
+    is_project_created: bpy.props.BoolProperty(name = "Is the project being created", default = False)
