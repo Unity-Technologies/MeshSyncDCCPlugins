@@ -112,11 +112,29 @@ class MESHSYNC_OT_ResetPreferences(bpy.types.Operator):
         msb_preferences(context).reset()
         return {'FINISHED'}
 
+class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
+    bl_idname = "meshsync.install_meshsync"
+    bl_label = "Install MeshSync"
+
+    @classmethod
+    def description(cls, context, properties):
+        return "Install MeshSync for the selected project"
+
+    def execute(self, context):
+        entry = msb_get_meshsync_entry()
+        msb_add_meshsync_to_unity_manifest(msb_preferences(context).project_path, entry)
+        msb_preferences(context).update_project_info()
+
+        return {'FINISHED'}
+
 class MESHSYNC_Preferences(AddonPreferences):
 
     # this must match the add-on name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = __package__
+
+    thread = None
+    cancel_thread = False
 
     def hub_exists(self):
         return os.path.exists(self.hub_path)
@@ -137,11 +155,45 @@ class MESHSYNC_Preferences(AddonPreferences):
 
     def reset(self):
         self.hub_path = msb_get_hub_path()
-        self.hub_version = msb_get_hub_version()
         self.hub_installed = MESHSYNC_Preferences.is_hub_installed()
         self.hub_supported = MESHSYNC_Preferences.is_hub_supported()
-
         self.editors_path = msb_get_editors_path()
+
+    def update_project_info(self):
+        self.is_unity_project = msb_validate_project_path(self.project_path)
+        self.is_meshsync_in_manifest = msb_meshsync_version_manifest(self.project_path) != ""
+        self.is_meshsync_in_manifest_lock = msb_meshsync_version_package_lock(self.project_path) != ""
+        self.is_project_running = msb_is_project_open(self.project_path)
+
+    def on_project_path_updated(self, context):
+        self.update_project_info()
+
+
+    def monitor_package_lock(self, context):
+        while not self.cancel_thread:
+            sleep(0.5)
+            if msb_meshsync_version_package_lock(self.project_path) != "":
+                self.is_meshsync_in_manifest_lock = True
+                self.redraw(context)
+                return
+
+
+    def on_in_package_lock_updated(self, context):
+        if self.thread is not None:
+            self.cancel_thread = True
+            self.thead.join(2.0)
+
+        if not self.is_meshsync_in_manifest_lock:
+            self.thread = Thread(target = self.monitor_package_lock, args = (context,), daemon = True)
+            self.cancel_thread = False
+            self.thread.start()
+            atexit.unregister(self.shutdown_thread)
+            atexit.register(self.shutdown_thread)
+
+    def shutdown_thread():
+        MESHSYNC_Preferences.cancel_thread = True
+        if MESHSYNC_Preferences.thread is not None:
+            MESHSYNC_Preferences.thread.join(2.0)
 
     def redraw(self, context):
         regions = context.area
@@ -184,18 +236,50 @@ class MESHSYNC_Preferences(AddonPreferences):
             else:
                 row.operator("meshsync.open_hub", text = "Select or Create project via Unity Hub", icon = 'PLAY')
 
+        if not self.is_unity_project:
+            project_layout.label(text = "Not a Unity Project. Please select a Unity Project folder (parent of Assets folder).", icon = 'ERROR')
+            return
+
+        project_layout.label(text = "Valid project path.", icon = "CHECKMARK")
+
+        if not self.is_meshsync_in_manifest:
+            row = project_layout.row()
+            row.label(text = "MeshSync is missing from project manifest.", icon = 'ERROR')
+            row.operator("meshsync.install_meshsync", text = 'Add to manifest')
+            return
+
+        project_layout.label(text = "MeshSync found in project manifest.", icon = 'CHECKMARK')
+
+        if not self.is_meshsync_in_manifest_lock:
+            row = project_layout.row()
+            if self.is_project_running:
+                row.label(text = "Meshsync is not loaded from the manifest. Select the project window to allow the Unity Editor to load MeshSync.", icon = 'ERROR')
+                return
+            else:
+                row.label(text = "Meshsync will be loaded from the manifest the next time you launch the project.", icon = 'CHECKMARK')
+        else:
+            row = project_layout.row()
+            row.label(text = "MeshSync loaded from manifest", icon = 'CHECKMARK')
+
+        project_layout.label(text = "All set up! Use the MeshSync panel in Active Tool and Workspace Settings to sync data to your project.")
 
     def register():
         bpy.utils.register_class(MESHSYNC_OT_ResetPreferences)
         bpy.utils.register_class(MESHSYNC_OT_OpenHub)
+        bpy.utils.register_class(MESHSYNC_OT_InstallMeshSync)
 
     def unregister():
         bpy.utils.unregister_class(MESHSYNC_OT_ResetPreferences)
         bpy.utils.unregister_class(MESHSYNC_OT_OpenHub)
+        bpy.utils.unregister_class(MESHSYNC_OT_InstallMeshSync)
 
-    project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH', update = redraw)
-    editors_path: bpy.props.StringProperty(name = "Unity Editors Location", default= msb_get_editor_path_prefix_default(), subtype = 'DIR_PATH')
-    hub_path: bpy.props.StringProperty(name = "Unity Hub Location", default = msb_get_hub_path(), subtype = 'FILE_PATH')
-    hub_version = bpy.props.StringProperty(name = "Unity Hub Version", default = msb_get_hub_version())
-    hub_installed : bpy.props.BoolProperty(name = "Hub Installed", default = is_hub_installed())
+    project_path: StringProperty(name = "Unity Project", default= "C:/", subtype = 'DIR_PATH', update = on_project_path_updated)
+    editors_path: bpy.props.StringProperty(name = "Unity Editors", default= msb_get_editor_path_prefix_default(), subtype = 'DIR_PATH')
+    hub_path: bpy.props.StringProperty(name = "Unity Hub", default = msb_get_hub_path(), subtype = 'FILE_PATH')
+    hub_installed: bpy.props.BoolProperty(name = "Hub Installed", default = is_hub_installed())
     hub_supported: bpy.props.BoolProperty(name = "Hub Supported", default = is_hub_supported())
+    is_unity_project: bpy.props.BoolProperty(name = "Is Unity project", default = False)
+    is_meshsync_in_manifest: bpy.props.BoolProperty(name = "Is Meshsync added in the package manifest", default = False)
+    is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the unity editor", default = False, update = on_in_package_lock_updated)
+    is_project_running: bpy.props.BoolProperty(name = "Is the project open", default = False)
+
