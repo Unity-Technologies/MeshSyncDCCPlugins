@@ -8,6 +8,6 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
     bool curves_as_mesh = true;
     bool calc_per_index_normals = true;
     int frame_step = 1;
-    bool multithreaded = false;
+    bool multithreaded = true;
 };
 

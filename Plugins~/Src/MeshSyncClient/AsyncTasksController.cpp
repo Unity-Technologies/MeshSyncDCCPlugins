@@ -14,6 +14,7 @@ void AsyncTasksController::Wait() {
     {
         t();
     }
+    m_deferredTasks.clear();
 }
 
 
