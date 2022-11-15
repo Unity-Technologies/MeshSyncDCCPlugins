@@ -450,13 +450,19 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
         dst->path = path;
         dst->visibility = { visible_in_collection(src), visible_in_render(ctx.group_host), visible_in_viewport(ctx.group_host) };
         dst->world_matrix *= ctx.dst->world_matrix;
+
+        dst->test = rec.dst;
     };
 
     if (is_mesh(src)) {
         if (settings.BakeTransform) {
+            // Make sure any pending export tasks are done for the referenced mesh:
+            //m_asyncTasksController.Wait();
+
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
+            
 
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
@@ -469,9 +475,22 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
                 state.manager.add(dst);
+                
+                // test:
+                //{
+                //    ms::SceneImportSettings cv;
+
+                //    ms::Mesh& mesh = dst_mesh;// dynamic_cast<Mesh&>(*obj);
+                //    /*    for (std::vector<std::shared_ptr<BoneData>>::value_type& bone : mesh.bones)
+                //            sanitizeHierarchyPath(bone->path);*/
+                //    mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_SPLIT, true);
+                //    mesh.refine_settings.split_unit = cv.mesh_split_unit;
+                //    mesh.refine_settings.max_bone_influence = cv.mesh_max_bone_influence;
+                //    mesh.refine();
+                //}
             };
             if (settings.multithreaded)
-                // deferred to execute after extracting src mesh data is completed
+                // deferred to execute after extracting src mesh data is 
                 m_asyncTasksController.AddTask(std::launch::deferred, do_merge);
             else
                 do_merge();
