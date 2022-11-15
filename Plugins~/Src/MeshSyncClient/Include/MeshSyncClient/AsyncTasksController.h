@@ -13,7 +13,7 @@ public:
             m_tasks.push_back(std::async(std::launch::async, task));
         }
         else {
-            // Cannot use std::async's deferred mode here, we need to ensure these deferred tasks run after everything else is complete:
+        	// Cannot use std::async's deferred mode here, we need to ensure these deferred tasks run after everything else is complete:
             m_deferredTasks.push_back(std::function(task));
         }
     }

@@ -10,8 +10,7 @@ void AsyncTasksController::Wait() {
     m_tasks.clear();
 
     // Do deferred tasks now that everything else is done:
-    for (auto t : m_deferredTasks)
-    {
+    for (auto t : m_deferredTasks) {
         t();
     }
     m_deferredTasks.clear();
