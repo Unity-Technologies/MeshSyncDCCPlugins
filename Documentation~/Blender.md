@@ -83,7 +83,7 @@ There are multiple options to export materials from Blender:
 ## Basic Material sync mode
 MeshSync looks for an active material output node and exports the BSDF connected to that. 
 Colors and textures assigned to the active BSDF are exported.
-Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline.
+Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline. MeshSync supports the built-in render pipeline, URP and HDRP.
 All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
 
 The following is a list of supported nodes and how they are handled.
