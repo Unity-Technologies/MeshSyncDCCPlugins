@@ -375,7 +375,12 @@ bool blender::BObject::is_selected() const
 
 Mesh* BObject::to_mesh() const
 {
+#if BLENDER_VERSION >= 303
+    // In blender 3.3 the pointer to interpret the bool moves by 8 instead of 1 for some reason so this needs to be a type of that size:
+    return call<Object, Mesh*, bool*, Depsgraph*>(g_context, m_ptr, BObject_to_mesh, nullptr, nullptr);
+#else
     return call<Object, Mesh*, bool, Depsgraph*>(g_context, m_ptr, BObject_to_mesh, false, nullptr);
+#endif
 }
 
 void BObject::to_mesh_clear()

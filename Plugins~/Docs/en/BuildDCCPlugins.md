@@ -138,11 +138,12 @@ $ xcodebuild -alltargets -configuration Release build
    export CC=/opt/rh/devtoolset-7/root/usr/bin/gcc
    export CXX=/opt/rh/devtoolset-7/root/usr/bin/g++
    ``` 
+   Note: If you are compiling for Blender 3.2+, ensure that you are using gcc-8 or above and g++8 or above.
 
 1. Install [cmake](https://cmake.org/)  version 3.18 or later.  
    Example:
     ``` 
-    wget https://github.com/Kitware/CMake/releases/download/v3.18.0/cmake-3.18.4.tar.gz    
+    wget https://github.com/Kitware/CMake/releases/download/v3.18.4/cmake-3.18.4.tar.gz    
     tar zxvf cmake-3.18.4.tar.gz
     cd cmake-3.18.4
     ./bootstrap --prefix=/usr/local

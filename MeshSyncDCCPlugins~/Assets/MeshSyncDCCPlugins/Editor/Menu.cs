@@ -8,7 +8,7 @@ public static class Menu {
     [MenuItem("MeshSyncDCCPlugins/Rename Plugin Zip files")]
     static void RenamePluginZipFiles() {
 
-        string fullPath = Path.GetFullPath("Packages/com.unity.meshsync.dcc-plugins/Editor/Plugins~");
+        string fullPath = Path.GetFullPath("Packages/com.unity.meshsync.dcc-plugins/Editor/Plugins");
 
         IEnumerable<string> files = Directory.EnumerateFiles(fullPath, "*.zip", SearchOption.TopDirectoryOnly);
         foreach(string fileName in files) {

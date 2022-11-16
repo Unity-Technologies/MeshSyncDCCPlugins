@@ -36,6 +36,8 @@
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
 
+#include <MeshSync/Utility/msIdUtility.h>
+
 class msblenContext;
 
 class msblenContext {
@@ -54,6 +56,7 @@ public:
 
     void logInfo(const char *format, ...);
     bool isServerAvailable();
+    bool isEditorServerAvailable();
     const std::string& getErrorMessage();
 
     void wait();
@@ -72,6 +75,10 @@ public:
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
     void requestLiveEditMessage();
+    
+    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input = nullptr);
+    string& getEditorCommandReply();
+
 private:
     // todo
     struct NodeRecord {
@@ -201,6 +208,10 @@ private:
 
     bool m_server_requested_sync = false;
     bool m_server_requested_python_callback = false;
+
+    string m_editor_command_reply;
+
+    ms::IdUtility id_utility;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;

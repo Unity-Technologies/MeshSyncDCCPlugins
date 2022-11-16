@@ -16,7 +16,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
-
+| Bidirectional Sync  |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 
 ### Caveats
 
@@ -25,7 +25,7 @@ This allows devs to immediately see how things will look in-game while modelling
   Unity will treat the mesh as though every axis has a negative value.
   Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
   deformer information.
-
+  
 
 ## Supported DCC Tools
 
@@ -54,6 +54,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.3        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
@@ -69,4 +70,14 @@ Notes:
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](en/Installation.md) is also available.
+Alternatively, [Manual Installation](Installation.md) is also available.
+
+## Usage in DCC Tools
+
+1. [Maya](Maya.md)
+2. [3ds Max](3dsMax.md)
+3. [MotionBuilder](MotionBuilder.md)
+4. [Blender](Blender.md)
+5. [Modo](Modo.md)
+6. [Metasequoia](Metasequoia.md)
+

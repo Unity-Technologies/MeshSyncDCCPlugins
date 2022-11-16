@@ -27,6 +27,8 @@
 #include "msblenBinder.h"
 #include "MeshUtils/muLog.h"
 
+#include "MeshSync/msProtocol.h"
+
 
 #ifdef mscDebug
 #define mscTrace(...) ::mu::Print("MeshSync trace: " __VA_ARGS__)
@@ -286,7 +288,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
-
+    
     auto handle_parent = [&]() {
         if (parent)
             exportObject(state, paths, settings, obj->parent, parent, false);
@@ -455,7 +457,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
-
+            
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
@@ -542,6 +544,22 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+
+    // We don't use frame_set(), so the scene camera is not updated.
+    // Look at the markers to figure out what the active camera should be:
+    auto scene = bl::BlenderPyContext::get().scene();
+
+    const Object* currentCamera = src;
+    for (TimeMarker* marker : bl::list_range((TimeMarker*)scene->markers.first)) {
+        if (marker->frame <= scene->r.cfra) {
+            currentCamera = marker->camera;
+        }
+    }
+
+    if (strcmp(currentCamera->id.name, src->id.name) != 0) {
+        dst.visibility.visible_in_render = false;
+    }
+
     state.manager.add(ret);
     return ret;
 }
@@ -609,11 +627,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         mid_table[mi] = getMaterialID(blenMesh->mat[mi]);
     
     // Make reverse lookup list:
-    std::vector<int> rev_mid_table(mid_table.size());
+    std::map<int, int> rev_mid_table;
     for (int i = 0; i < mid_table.size(); i++)
-    {
-        rev_mid_table[mid_table[i]] = i;
-    }
+        rev_mid_table.insert(make_pair(mid_table[i], i));
 
     int num_indices = mesh->indices.size();
     int num_polygons = num_indices / 3;
@@ -670,8 +686,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
         const int material_index = mesh->material_ids[pi];
         if (material_index != ms::InvalidID) {
-            if (material_index < rev_mid_table.size()) {
-                bmeshPolygons[pi].mat_nr = rev_mid_table[material_index];
+            auto it = rev_mid_table.find(material_index);
+            if (it != rev_mid_table.end()) {
+                bmeshPolygons[pi].mat_nr = it->second;
             }
             else {
                 bmeshPolygons[pi].mat_nr = 0;
@@ -709,6 +726,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     Mesh *data = nullptr;
     if (is_mesh(src))
         data = (Mesh*)src->data;
+    
     bool is_editing = false;
 
     if (settings.sync_meshes && data) {
@@ -1118,21 +1136,16 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
 
     // uv
     if (settings.sync_uvs) {
-        //const int offset = emesh.uv_data_offset();
-        //if (offset != -1) {
-        //    dst.m_uv[0].resize_discard(num_indices);
-        //    size_t ii = 0;
-        //    for (size_t ti = 0; ti < num_triangles; ++ti) {
-        //        auto& triangle = triangles[ti];
-        //        for (auto *idx : triangle)
-        //            dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
-        //    }
-        //}
-        //
-        //
-        //
-        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
-
+        const int offset = emesh.uv_data_offset();
+        if (offset != -1) {
+            dst.m_uv[0].resize_discard(num_indices);
+            size_t ii = 0;
+            for (size_t ti = 0; ti < num_triangles; ++ti) {
+                auto& triangle = triangles[ti];
+                for (auto *idx : triangle)
+                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+            }
+        }
     }
 }
 
@@ -1334,6 +1347,22 @@ bool msblenContext::isServerAvailable()
     return m_sender.isServerAvaileble();
 }
 
+bool msblenContext::isEditorServerAvailable()
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+
+    ms::Client client(settings);
+
+    auto success = client.isServerAvailable();
+    return success;
+}
+
+string& msblenContext::getEditorCommandReply() {
+    return m_editor_command_reply;
+}
+
 const std::string& msblenContext::getErrorMessage()
 {
     return m_sender.getErrorMessage();
@@ -1395,6 +1424,26 @@ void msblenContext::requestLiveEditMessage()
     m_sender.requestLiveEditMessage();
 }
 
+
+bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input)
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+    ms::Client client(settings);
+
+    ms::EditorCommandMessage message;
+    message.command_type = type;
+    message.session_id = id_utility.GetSessionId();
+    message.message_id = id_utility.GetNextMessageId();
+    message.SetBuffer(input);
+
+    auto success = client.send(message, m_editor_command_reply);
+
+    return success;
+    
+}
+
 bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
 {
     bool result = sendObjects(scope, dirty_all);
@@ -1443,13 +1492,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
+    
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1464,10 +1514,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
 #if BLENDER_VERSION >= 300
-    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
+    // The dependency graph update event does not fire when the scene changes while the timeline is playing.
+    // To ensure geometry nodes get exported correctly while playing, check the frame number:
+    static int lastExportedFrame = -1;
+    int currentFrame = scene.GetCurrentFrame();
+
+    if (m_geometryNodeUtils.getInstancesDirty() ||
+        dirty_all || 
+        currentFrame != lastExportedFrame) {
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
+
+        lastExportedFrame = currentFrame;
     }
 #endif
 
@@ -1702,6 +1761,21 @@ void msblenContext::WaitAndKickAsyncExport()
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.geometries) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::Transform>>::value_type& obj : t.instanceMeshes) { cv.convert(*obj); }
             for (std::vector<std::shared_ptr<ms::AnimationClip>>::value_type& obj : t.animations) { cv.convert(*obj); }
+
+            if (scale_factor != 0) {
+                for (std::vector<std::shared_ptr<ms::InstanceInfo>>::value_type& obj : t.instanceInfos)
+                {
+                    // Requires meshsync update, do here for now:
+	                //cv.convertInstanceInfos(*obj);
+
+                    for (size_t i = 0; i < obj->transforms.size(); ++i)
+                    {
+                        obj->transforms[i][3][0] *= scale_factor;
+                        obj->transforms[i][3][1] *= scale_factor;
+                        obj->transforms[i][3][2] *= scale_factor;
+                    }
+                }
+            }
         }
     };
     exporter->on_success = [this]() {
