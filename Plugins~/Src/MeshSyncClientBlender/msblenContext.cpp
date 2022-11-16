@@ -288,7 +288,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
-
+    
     auto handle_parent = [&]() {
         if (parent)
             exportObject(state, paths, settings, obj->parent, parent, false);
@@ -457,7 +457,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
-
+            
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
@@ -726,6 +726,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     Mesh *data = nullptr;
     if (is_mesh(src))
         data = (Mesh*)src->data;
+    
     bool is_editing = false;
 
     if (settings.sync_meshes && data) {
@@ -1138,21 +1139,16 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
 
     // uv
     if (settings.sync_uvs) {
-        //const int offset = emesh.uv_data_offset();
-        //if (offset != -1) {
-        //    dst.m_uv[0].resize_discard(num_indices);
-        //    size_t ii = 0;
-        //    for (size_t ti = 0; ti < num_triangles; ++ti) {
-        //        auto& triangle = triangles[ti];
-        //        for (auto *idx : triangle)
-        //            dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
-        //    }
-        //}
-        //
-        //
-        //
-        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
-
+        const int offset = emesh.uv_data_offset();
+        if (offset != -1) {
+            dst.m_uv[0].resize_discard(num_indices);
+            size_t ii = 0;
+            for (size_t ti = 0; ti < num_triangles; ++ti) {
+                auto& triangle = triangles[ti];
+                for (auto *idx : triangle)
+                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+            }
+        }
     }
 }
 
@@ -1483,7 +1479,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
-
+    
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
