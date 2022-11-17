@@ -7,8 +7,6 @@
   - [3ds Max](#3ds-max)
   - [MotionBuilder](#motionbuilder)
   - [Blender](#blender)
-  - [Metasequoia](#metasequoia)
-  - [Modo](#modo)
 - [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
 
 ## Automatic Installation via Unity Editor
