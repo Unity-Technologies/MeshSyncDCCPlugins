@@ -1478,7 +1478,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
     if (m_server_requested_sync) {
-		scope = MeshSyncClient::ObjectScope::All;
+        scope = MeshSyncClient::ObjectScope::All;
         dirty_all = true;
         m_server_requested_sync = false;
     }
