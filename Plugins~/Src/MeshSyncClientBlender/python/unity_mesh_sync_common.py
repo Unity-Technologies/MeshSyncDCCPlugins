@@ -138,3 +138,32 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
         return{'FINISHED'}
+
+# Events that get called during the meshsync export stages, append your functions to these lists:
+# Called every frame when checking if something needs exporting:
+mesh_sync_on_prepare = []
+
+# Called before exporting
+mesh_sync_on_pre_export = []
+
+# Called after export is finished
+mesh_sync_on_post_export = []
+
+# Called when the server requests a python callback
+mesh_sync_server_requested_callback = []
+
+def meshsync_prepare():
+    for f in mesh_sync_on_prepare:
+        f()
+
+def meshsync_pre_export():
+    for f in mesh_sync_on_pre_export:
+        f()
+
+def meshsync_post_export():
+    for f in mesh_sync_on_post_export:
+        f()
+
+def meshsync_server_requested_callback():
+    for f in mesh_sync_server_requested_callback:
+        f()
