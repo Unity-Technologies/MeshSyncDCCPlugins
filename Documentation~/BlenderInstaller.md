@@ -3,7 +3,7 @@
 You can install MeshSync directly as a Blender Add-on.
 
 ## Downloads
-[MeshSyncInstaller.zip](https://drive.google.com/uc?export=download&id=1DT5Iw_4dpbAWKK6ruAQ3TGZ8iWvteik1)
+[MeshSyncInstaller.zip](https://drive.google.com/uc?export=download&id=1gLO1qkfS7exja4__GugjF_o8NMyyMuLL)
 
 ## How to use
 1. Install MeshSyncInstaller.zip as an add-on.
