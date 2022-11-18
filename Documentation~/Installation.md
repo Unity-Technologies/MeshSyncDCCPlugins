@@ -7,8 +7,6 @@
   - [3ds Max](#3ds-max)
   - [MotionBuilder](#motionbuilder)
   - [Blender](#blender)
-  - [Metasequoia](#metasequoia)
-  - [Modo](#modo)
 - [Unity Project Setup via DCC tools](#unity-project-setup-via-dcc-tools)
 
 ## Automatic Installation via Unity Editor
@@ -123,55 +121,6 @@ Steps to uninstall:
    ``` 
    ~/Library/ApplicationSupport/Blender/2.xx/scripts/addons/MeshSyncClientBlender
    ``` 
----
-
-### Metasequoia
-  
-1. Open `Packages/MeshSync DCC Plugins/Editor/Plugins` folder using a file explorer 
-   and uncompress the appropriate zip file for Metasequoia.
-1. Start Metasequoia.
-1. Go to Help &rarr; About Plug-ins, and click "Install" at the lower left of the Plug-win window.
-1. Select the plugin file from the extracted zip file that corresponds to the version of Metasequoia.  
-   For example: *MeshSyncClientMQ472.plugin*
-1. Go to Panel &rarr; Unity Mesh Sync.  
-   If this menu doesn't exist, confirm that "Unity Mesh Sync" is checked in the Plug-in window.
-
-![MeshSyncClientMQ](images/MeshSyncClientMQ.png)
-
----
-
-### Modo
-
-1. Follow the instructions in [Building Plugins](https://github.com/Unity-Technologies/MeshSyncDCCPlugins/blob/dev/Plugins~/Docs/en/BuildDCCPlugins.md)
-   to build MeshSync plugin for Modo.   
-   Due to Modo's licensing, manual building is required at the moment.
-1. Start Modo.
-3. Go to System &rarr; Add Plug-in, and select *MeshSyncClientModo.fx* for the applicable Modo version.
-4. Go to Modo's tabs UI, click on *+*, and choose Application &rarr; Custom View &rarr; UnityMeshSync.
-1. Confirm that UnityMeshSync view is added in the tabs UI.
-
-![MeshSyncClientModo](images/MeshSyncClientModo.png)
-
-#### Caveat
-
-When installing a newer version of the plugin, the existing version must be removed first if it exists.  
-Steps to remove:
-1. Close all UnityMeshSync views.
-1. Restart Modo.
-
-If installing a newer version still fails even after doing the above steps, 
-then please try to remove manually after closing Modo.
-1. Windows:
-   - Open settings file using a text editor.  
-     Example: `C:\Users\<user_name>\AppData\Roaming\Luxology\MODO<modo_version>.CFG`
-   - Remove UnityMeshSync items like the following:
-     ```
-     <hash type="Server" key="12345678-abcd-1234-abcd-111122223333:UnityMeshSync">
-       <atom type="Module">C:\ModoPlugins\Modo14\MeshSyncClientModo.lx</atom>
-       <atom type="Direct">1</atom>
-     </hash>
-     ```
-   - Save the settings file, and restart Modo.
 
 ---
 

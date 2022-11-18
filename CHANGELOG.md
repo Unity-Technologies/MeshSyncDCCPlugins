@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.15.2-preview] - 2022-11-16
+
+### Feat
+* blender: preferences UI for auto-detecting the hub and the editors folder
+* blender: use hub to select or create project 
+
+### Changed
+* blender-change: Handled local packages 
+
+### Fixed
+
+* fix: fix for crash when exporting baked transforms
+* blender-fix: fix for broken uvs on edit mode 
+* blender-fix: get latest compatible version of MeshSync package in AutoSetup
+* blender-fix: More reliable way to check if project is already running 
+* blender-fix: give feedback when selecting project
+* blender-fix: give feedback for project creation  
+
 ## [0.15.1-preview] - 2022-10-07
 
 ### Added
