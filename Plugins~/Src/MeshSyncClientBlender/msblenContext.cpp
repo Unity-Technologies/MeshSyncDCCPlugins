@@ -758,9 +758,12 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-            if (Mesh *tmp = bobj.to_mesh()) {
+            if (Mesh* tmp = bobj.to_mesh()) {
                 data = tmp;
-                m_meshes_to_clear.push_back(src);
+                // Only clear meshes that aren't created from others:
+                if (src->id.orig_id == NULL) {
+                    m_meshes_to_clear.push_back(src);
+                }
             }
         }
 

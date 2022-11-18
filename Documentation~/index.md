@@ -55,9 +55,6 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.3        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
 
 Notes:
 * :white_check_mark: : Supported

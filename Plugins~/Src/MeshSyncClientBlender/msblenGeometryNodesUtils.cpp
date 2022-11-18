@@ -8,6 +8,8 @@
 #include <msblenUtils.h>
 #include <BLI_listbase.h>
 
+#include "msblenEntityHandler.h"
+
 
 using namespace std;
 using namespace mu;
@@ -33,6 +35,8 @@ namespace blender {
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
             scale44(scale_z);
+        
+        m_camera_light_correction = to_mat4x4(rotate_x(90 * DegToRad));
     }
 
     /// <summary>
@@ -40,14 +44,26 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const float4x4& blenderMatrix) {            
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const Object* obj, const float4x4& blenderMatrix) const
+    {
+        float4x4 result = blenderMatrix;
 
-        return 
-            m_blender_to_unity_world *
-            blenderMatrix *
+        msblenEntityHandler::applyCorrectionIfNeeded(obj, result);
+
+        result = m_blender_to_unity_world *
+            result *
             m_blender_to_unity_local;
-    }
 
+        // Apply inverse of the correction because the original of the instanced light/camera
+        // would have the correction applied and without this its inverse would not match
+        // the inverse we use on blender's side:
+        if (msblenUtils::is_camera(obj) || msblenUtils::is_light(obj)) {
+            result = m_camera_light_correction * result;
+        }
+        
+        return result;
+    }
+        
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
         m_instances_dirty = dirty;
@@ -75,7 +91,7 @@ namespace blender {
     
                     records_by_name[obj->id.name] = &rec;
                 }
-
+                
                 rec.matrices.push_back(matrix);
             });
 
@@ -152,7 +168,8 @@ namespace blender {
 
             auto object = instance.object();
 
-            if (object->type != OB_MESH) {
+            // Don't instance empties, they have no data we can use to get a session id:
+            if (object->type == OB_EMPTY) {
                 continue;
             }
 
