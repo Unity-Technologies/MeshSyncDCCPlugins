@@ -1420,7 +1420,7 @@ void msblenContext::requestLiveEditMessage()
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
-        else if (messageFromServer == ms::REQUEST_SCRIPT_CALLBACK) {
+        else if (messageFromServer == ms::REQUEST_USER_SCRIPT_CALLBACK) {
             m_server_requested_python_callback = true;
         }
     };
