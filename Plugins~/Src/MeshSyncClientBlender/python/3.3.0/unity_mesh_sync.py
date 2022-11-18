@@ -142,7 +142,6 @@ class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
         addon_prefs = preferences.addons[__package__].preferences
 
         layout.prop(addon_prefs, "project_path")
-        layout.prop(addon_prefs, "editors_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
