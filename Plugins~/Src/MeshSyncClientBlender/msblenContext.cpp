@@ -280,6 +280,39 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
+ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, exportCache& cache, bool tip)
+{
+    if (!obj)
+        return nullptr;
+
+    auto data = obj->data;
+    ms::TransformPtr result = nullptr;
+    auto settingsOverride = settings;
+
+    auto isCached = cache[data].length() > 0;
+    if (isCached) {
+        settingsOverride.sync_meshes = false;
+        settingsOverride.sync_lights = false;
+        settingsOverride.sync_cameras = false;
+        settingsOverride.sync_bones = false;
+        settingsOverride.sync_blendshapes = false;
+        settingsOverride.sync_colors = false;
+        settingsOverride.sync_normals = false;
+        settingsOverride.sync_textures = false;
+        settingsOverride.sync_uvs = false;
+    }
+        
+    auto& trans = exportObject(state, paths, settingsOverride, obj, parent, tip);
+
+    if (isCached) {
+        trans->reference = cache[data];
+    }
+    else {
+        cache[data] = paths.get_path(obj);
+    }
+    return trans;
+}
+
 ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
 {
     if (!obj)
@@ -1482,22 +1515,24 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
+    std::unordered_map<void*, std::string> exportedData;
+
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        scene.each_objects([this](Object *obj) {
+        scene.each_objects([this, &exportedData](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false);
+                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, exportedData);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
-        for(std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
+        for (std::vector<Object*>::value_type obj : getNodes(scope))
+            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, exportedData);
     }
 
 #if BLENDER_VERSION >= 300

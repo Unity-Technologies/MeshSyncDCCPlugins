@@ -40,6 +40,8 @@
 
 class msblenContext;
 
+using exportCache = std::unordered_map<void*, std::string>;
+
 class msblenContext {
 public:
 
@@ -127,7 +129,7 @@ private:
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
-
+    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, exportCache& cache, bool tip = true);
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
