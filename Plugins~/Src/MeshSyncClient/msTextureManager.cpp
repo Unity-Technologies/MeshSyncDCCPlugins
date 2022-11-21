@@ -44,7 +44,7 @@ int TextureManager::find(const std::string& name) const
     return InvalidID;
 }
 
-int TextureManager::addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format)
+int TextureManager::addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format, TextureType type)
 {
     auto& rec = lockAndGet(name);
     int id = rec.texture ?
@@ -62,6 +62,7 @@ int TextureManager::addImage(const std::string& name, int width, int height, con
         tex->format = format;
         tex->width = width;
         tex->height = height;
+        tex->type = type;
         tex->data.assign((const char*)data, (const char*)data + size);
         rec.dirty = true;
     }
