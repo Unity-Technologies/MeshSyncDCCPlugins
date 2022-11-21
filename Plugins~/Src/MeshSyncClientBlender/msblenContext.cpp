@@ -1513,24 +1513,24 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
-    std::unordered_map<void*, std::string> exportedData;
+    exportCache cache;
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        scene.each_objects([this, &exportedData](Object *obj) {
+        scene.each_objects([this, &cache](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, exportedData);
+                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, cache);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
         for (std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, exportedData);
+            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, cache);
     }
 
 #if BLENDER_VERSION >= 300
