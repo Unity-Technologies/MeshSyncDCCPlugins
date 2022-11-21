@@ -44,7 +44,7 @@ class msblenMaterialsExportHelper
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler);
 
-	void exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret);
+	void exportBasicOrBaked(const Material* mat, std::shared_ptr<ms::Material> ret);
 
 public:
 	BlenderSyncSettings* m_settings;

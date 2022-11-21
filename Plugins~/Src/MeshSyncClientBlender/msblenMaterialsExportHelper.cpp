@@ -478,7 +478,7 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 	setHeightFromOutputNode(mat, stdmat, outputNode);
 }
 
-void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret)
+void msblenMaterialsExportHelper::exportBasicOrBaked(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
 	ms::StandardMaterial& stdmat = AsStandardMaterial(*ret);
 	BMaterial bm(mat);
@@ -501,7 +501,8 @@ void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::share
 	switch (m_settings->material_sync_mode)
 	{
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
-		exportBasic(mat, ret);
+	case BlenderSyncSettings::MaterialSyncMode::Baked:
+		exportBasicOrBaked(mat, ret);
 		break;
 	default:
 		break;

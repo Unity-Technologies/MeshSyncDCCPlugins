@@ -102,7 +102,10 @@ def msb_initialize_properties():
                                                                  items=(('0', 'None',
                                                                          'Sync material IDs but no material data'),
                                                                         ('1', 'Basic',
-                                                                         'Sync colors and textures assigned to the BSDF')),
+                                                                         'Sync colors and textures assigned to the BSDF'),
+                                                                        ('2', 'Baked',
+                                                                         'Sync colors and textures assigned to the BSDF and bake them if needed')
+                                                                        ),
                                                                  default='0',
                                                                  update=msb_on_material_sync_updated)
 @persistent
@@ -148,3 +151,126 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
         return{'FINISHED'}
+
+
+class MESHSYNC_OT_Bake(bpy.types.Operator):
+    bl_idname = "meshsync.bake_materials"
+    bl_label = "Bake!"
+
+    bakeWidth = 512
+    bakeHeight = 512
+
+    def findOrCreateImage(self, suffix, alpha=False):
+        active_object = bpy.context.active_object
+        imageName = f"{active_object.name}_baked_{suffix}"
+
+        for image in bpy.data.images:
+            if image.name == imageName:
+                return image
+
+        return bpy.data.images.new(imageName, width=self.bakeWidth, height=self.bakeHeight, alpha=alpha)
+
+    def execute(self, context):
+        scene = context.scene
+        active_object = bpy.context.active_object
+
+        if active_object is None:
+            self.report({'WARNING'}, "No active object selected")
+            return {'FINISHED'}
+
+        # if not msb_context.is_setup:
+        msb_context.flushPendingList()
+        msb_apply_scene_settings()
+        msb_context.setup(bpy.context)
+
+        # test:
+        bakeFolder = "C:\\Users\\Christian.Schinkoeth\\Documents\\test"
+        smartUV = True
+        samples = 4
+
+        hasfolder = os.access(bakeFolder, os.W_OK)
+        if hasfolder is False:
+            self.report({'WARNING'}, "Selected an invalid export folder")
+            return {'FINISHED'}
+
+        if smartUV:
+            if bpy.context.object.mode == 'OBJECT':
+                bpy.ops.object.mode_set(mode='EDIT')
+
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.select_linked(delimit={'SEAM'})
+            bpy.ops.uv.smart_project(island_margin=0.01, scale_to_bounds=True)
+            bpy.ops.uv.pack_islands(rotate=True, margin=0.001)
+
+        if bpy.context.object.mode == 'EDIT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        scene.render.engine = "CYCLES"
+        scene.cycles.device = "GPU"
+        scene.cycles.samples = samples
+
+        diffuseBakeImage = self.findOrCreateImage("diffuse", alpha=True)
+        roughnessBakeImage = self.findOrCreateImage("roughness")
+        aoBakeImage = self.findOrCreateImage("ao")
+
+        # ----- DIFFUSE -----
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.new("ShaderNodeTexImage")
+            node.select = True
+            node_tree.nodes.active = node
+            node.image = diffuseBakeImage
+
+        scene.render.bake.use_pass_direct = False
+        scene.render.bake.use_pass_indirect = False
+        scene.render.bake.use_pass_color = True
+
+        bpy.ops.object.bake(type='DIFFUSE', use_clear=True, use_selected_to_active=False)
+        diffuseBakeImage.filepath_raw = os.path.join(bakeFolder, diffuseBakeImage.name + ".png")
+        diffuseBakeImage.file_format = 'PNG'
+        diffuseBakeImage.save()
+
+        # ----- ROUGHNESS -----
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.active
+            node.image = roughnessBakeImage
+
+        bpy.ops.object.bake(type='ROUGHNESS', use_clear=True, use_selected_to_active=False)
+
+        roughnessBakeImage.filepath_raw = os.path.join(bakeFolder, roughnessBakeImage.name + ".png")
+        roughnessBakeImage.file_format = 'PNG'
+        roughnessBakeImage.save()
+
+        # ----- AO -----
+
+        for mat in bpy.context.active_object.data.materials:
+            node_tree = mat.node_tree
+            node = node_tree.nodes.active
+            node.image = aoBakeImage
+
+        bpy.ops.object.bake(type='AO', use_clear=True, use_selected_to_active=False)
+        aoBakeImage.filepath_raw = os.path.join(bakeFolder, aoBakeImage.name + ".png")
+        aoBakeImage.file_format = 'PNG'
+        aoBakeImage.save()
+
+        # ----- UV -----
+        # uvSuffix = "_uv"
+        #
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # bpy.ops.mesh.select_all(action='SELECT')
+        # bpy.ops.object.mode_set(mode='OBJECT')
+        #
+        # original_type = bpy.context.area.type
+        # bpy.context.area.type = "IMAGE_EDITOR"
+        # uvfilepath = bakeFolder + active_object.name + bakePrefix + uvSuffix + ".png"
+        # bpy.ops.uv.export_layout(filepath=uvfilepath, size=(self.bakeWidth, self.bakeHeight))
+        # bpy.context.area.type = original_type
+
+        # Create a new material and assign the baked textures:
+        bakedMat = bpy.data.materials.new(name=f"{active_object.name}_baked")
+
+        return {'FINISHED'}
