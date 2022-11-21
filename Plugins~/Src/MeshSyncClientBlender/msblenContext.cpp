@@ -285,32 +285,31 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     if (!obj)
         return nullptr;
 
-    auto data = obj->data;
-    ms::TransformPtr result = nullptr;
-    auto settingsOverride = settings;
+    void* data = obj->data;
+
+    if (settings.BakeModifiers) {
+        Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
+        auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
+        data = bobj->data;
+    }
 
     auto isCached = cache[data].length() > 0;
-    if (isCached) {
-        settingsOverride.sync_meshes = false;
-        settingsOverride.sync_lights = false;
-        settingsOverride.sync_cameras = false;
-        settingsOverride.sync_bones = false;
-        settingsOverride.sync_blendshapes = false;
-        settingsOverride.sync_colors = false;
-        settingsOverride.sync_normals = false;
-        settingsOverride.sync_textures = false;
-        settingsOverride.sync_uvs = false;
-    }
-        
-    auto& trans = exportObject(state, paths, settingsOverride, obj, parent, tip);
 
-    if (isCached) {
-        trans->reference = cache[data];
-    }
-    else {
+    if (!isCached) {
         cache[data] = paths.get_path(obj);
+        return exportObject(state, paths, settings, obj, parent, tip);
     }
-    return trans;
+
+    msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
+    if (rec.dst)
+        return rec.dst; // already exported
+
+    if (parent)
+        exportObject(state, paths, settings, obj->parent, parent, false);
+    
+    rec.dst = exportTransform(state, paths, settings, obj);
+    rec.dst->reference = cache[data];
+    return rec.dst;
 }
 
 ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
