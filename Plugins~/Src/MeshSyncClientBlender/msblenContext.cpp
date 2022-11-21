@@ -405,10 +405,9 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     }
     default:
     {
-        if (get_instance_collection(obj) || (!tip && parent)) {
-            handle_parent();
-            rec.dst = exportTransform(state, paths, settings, obj);
-        }
+        // Export everything, even if it's an empty object:
+        handle_parent();
+        rec.dst = exportTransform(state, paths, settings, obj);
         break;
     }
     }
