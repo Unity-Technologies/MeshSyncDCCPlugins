@@ -280,39 +280,7 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
-ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, exportCache& cache, bool tip)
-{
-    if (!obj)
-        return nullptr;
-
-    void* data = obj->data;
-
-    if (settings.BakeModifiers) {
-        Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
-        auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
-        data = bobj->data;
-    }
-
-    auto isCached = cache[data].length() > 0;
-
-    if (!isCached) {
-        cache[data] = paths.get_path(obj);
-        return exportObject(state, paths, settings, obj, parent, tip);
-    }
-
-    msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
-    if (rec.dst)
-        return rec.dst; // already exported
-
-    if (parent)
-        exportObject(state, paths, settings, obj->parent, parent, false);
-    
-    rec.dst = exportTransform(state, paths, settings, obj);
-    rec.dst->reference = cache[data];
-    return rec.dst;
-}
-
-ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
+ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip, exportCache* cache)
 {
     if (!obj)
         return nullptr;
@@ -323,12 +291,30 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     
     auto handle_parent = [&]() {
         if (parent)
-            exportObject(state, paths, settings, obj->parent, parent, false);
+            exportObject(state, paths, settings, obj->parent, parent, false, cache);
     };
     auto handle_transform = [&]() {
         handle_parent();
         rec.dst = exportTransform(state, paths, settings, obj);
     };
+
+    if (cache != nullptr) {
+        void* data = obj->data;
+        if (settings.BakeModifiers) {
+            Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
+            auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
+            data = bobj->data;
+        }
+
+        auto isCached = (*cache)[data].length() > 0;
+        if (isCached) {
+            handle_parent();
+            handle_transform();
+            rec.dst->reference = (*cache)[data];
+            return rec.dst;
+        }
+        (*cache)[data] = paths.get_path(obj);
+    }
 
     switch (obj->type) {
     case OB_ARMATURE:
@@ -1523,14 +1509,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         scene.each_objects([this, &cache](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, cache);
+                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, true, &cache);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
         for (std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, cache);
+            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, true, &cache);
     }
 
 #if BLENDER_VERSION >= 300
