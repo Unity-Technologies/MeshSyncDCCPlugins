@@ -29,9 +29,13 @@
 
 #include "msblenCurveHandler.h"
 
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodeUtils.h>
 #endif
+
+#include "msblenMaterialsExportHelper.h"
 
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
@@ -44,7 +48,6 @@ using exportCache = std::unordered_map<void*, std::string>;
 
 class msblenContext {
 public:
-
     msblenContext();
     ~msblenContext();
 
@@ -64,6 +67,8 @@ public:
     void wait();
     void clear();
     bool prepare();
+
+    void resetMaterials();
 
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
@@ -122,7 +127,6 @@ private:
 
     static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
-    int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
     ms::MaterialPtr CreateDefaultMaterial(const uint32_t matIndex);
     void RegisterSceneMaterials();
@@ -215,6 +219,8 @@ private:
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
 #endif
+
+    blender::msblenMaterialsExportHelper m_materialsHelper;
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

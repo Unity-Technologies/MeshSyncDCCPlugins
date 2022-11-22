@@ -170,6 +170,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(multithreaded,
                 [](const self_t& self) { return self->getSettings().multithreaded; },
                 [](self_t& self, int v) { self->getSettings().multithreaded = v; })
+            BindProperty(material_sync_mode,
+                [](const self_t& self) { return self->getSettings().material_sync_mode; },
+                [](self_t& self, int v) { self->getSettings().material_sync_mode = (BlenderSyncSettings::MaterialSyncMode)v; })
 
             BindMethod(flushPendingList, [](self_t& self) { self->flushPendingList(); })
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
@@ -182,9 +185,10 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                     auto graph = DepsgraphFromPyObject(depsgraph);
                     self->onDepsgraphUpdatedPost(graph);
                 })
+            BindMethod(resetMaterials, [](self_t& self) { self->resetMaterials(); })
 
             BindMethod(sendEditorCommand, [](self_t& self, int command, const char* input = nullptr) {
-                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command, input); 
+                    self->sendEditorCommand((ms::EditorCommandMessage::CommandType) command, input);
                 });
     }
     {
@@ -237,12 +241,10 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](const self_t& self) { return self->getCacheSettings().strip_tangents; },
                 [](self_t& self, bool v) { self->getCacheSettings().strip_tangents = v; })
 
-
             BindMethod(export, [](self_t& self, std::string path) {
                 BlenderCacheSettings settings = msblenContext::getInstance().getCacheSettings(); // copy
                 self->ExportCache(path, settings);
-            })
-            ;
+            });
     }
 #undef BindConst
 #undef BindMethod

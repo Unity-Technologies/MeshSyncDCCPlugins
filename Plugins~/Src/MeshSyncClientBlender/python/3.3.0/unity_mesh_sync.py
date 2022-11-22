@@ -85,6 +85,8 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         #layout.prop(scene, "meshsync_sync_textures")
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
+        layout.prop(scene, "meshsync_material_sync_mode")
+
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")

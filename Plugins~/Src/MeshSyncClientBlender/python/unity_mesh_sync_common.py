@@ -28,6 +28,7 @@ def msb_apply_scene_settings(self = None, context = None):
     ctx.sync_textures = scene.meshsync_sync_textures
     ctx.sync_cameras = scene.meshsync_sync_cameras
     ctx.sync_lights = scene.meshsync_sync_lights
+    ctx.material_sync_mode = int(scene.meshsync_material_sync_mode)
     return None
 
 def msb_apply_animation_settings(self = None, context = None):
@@ -36,6 +37,9 @@ def msb_apply_animation_settings(self = None, context = None):
     ctx.frame_step = scene.meshsync_frame_step
     return None
 
+def msb_on_material_sync_updated(self = None, context = None):
+    msb_context.resetMaterials()
+    return None
 
 def msb_on_scene_settings_updated(self = None, context = None):
     msb_apply_scene_settings()
@@ -94,7 +98,13 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_sync_lights = bpy.props.BoolProperty(name = "Sync Lights", default = True, update = msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_auto_sync = bpy.props.BoolProperty(name = "Auto Sync", default = False, update = msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name = "Frame Step", default = 1, min = 1, update = msb_on_animation_settings_updated)
-
+    bpy.types.Scene.meshsync_material_sync_mode = bpy.props.EnumProperty(name="Material sync mode",
+                                                                 items=(('0', 'None',
+                                                                         'Sync material IDs but no material data'),
+                                                                        ('1', 'Basic',
+                                                                         'Sync colors and textures assigned to the BSDF')),
+                                                                 default='0',
+                                                                 update=msb_on_material_sync_updated)
 @persistent
 def on_scene_load(context):
     msb_context.clear()
