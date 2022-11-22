@@ -5,5 +5,3 @@
     * [3ds Max](3dsMax.md)
     * [MotionBuilder](MotionBuilder.md)
     * [Blender](Blender.md)
-    * [Modo](Modo.md)
-    * [Metasequoia](Metasequoia.md)

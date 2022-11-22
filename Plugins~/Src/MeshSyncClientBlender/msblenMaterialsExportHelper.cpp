@@ -202,16 +202,14 @@ void msblenMaterialsExportHelper::handleNormalMapNode(const Material* mat,
 	std::function<void(int textureId)> setTextureHandler,
 	bNode* sourceNode)
 {
-	if (setTextureHandler) {
-		auto imageInput = getInputSocket(sourceNode, colorIdentifier);
-		if (imageInput)
-		{
-			setValueFromSocket(mat,
-				imageInput, textureType,
-				resetIfInputIsTexture,
-				nullptr,
-				setTextureHandler);
-		}
+	auto imageInput = getInputSocket(sourceNode, colorIdentifier);
+	if (imageInput && setTextureHandler)
+	{
+		setValueFromSocket(mat,
+			imageInput, textureType,
+			resetIfInputIsTexture,
+			nullptr,
+			setTextureHandler);
 	}
 
 	auto strengthInput = getInputSocket(sourceNode, normalStrengthIdentifier);
@@ -373,7 +371,8 @@ void msblenMaterialsExportHelper::setHeightFromOutputNode(const Material* mat, m
 		displacementSocket, ms::TextureType::Default,
 		false,
 		[&](const mu::float4& colorValue) {
-			stdmat.setHeightScale(colorValue[0]);
+			// Convert from meters to centimeters and / 2 because midpoint in Unity is half of that:
+			stdmat.setHeightScale(colorValue[0] * 100 / 2);
 		},
 		[&](int textureId)
 		{
@@ -499,7 +498,7 @@ void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_p
 
 void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
-	switch (m_settings->scene_settings.material_sync_mode)
+	switch (m_settings->material_sync_mode)
 	{
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
 		exportBasic(mat, ret);
