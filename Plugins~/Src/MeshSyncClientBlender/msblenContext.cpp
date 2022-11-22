@@ -268,7 +268,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
-
+    
     auto handle_parent = [&]() {
         if (parent)
             exportObject(state, paths, settings, obj->parent, parent, false);
@@ -352,10 +352,9 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     }
     default:
     {
-        if (get_instance_collection(obj) || (!tip && parent)) {
-            handle_parent();
-            rec.dst = exportTransform(state, paths, settings, obj);
-        }
+        // Export everything, even if it's an empty object:
+        handle_parent();
+        rec.dst = exportTransform(state, paths, settings, obj);
         break;
     }
     }
@@ -437,7 +436,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
-
+            
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
@@ -706,6 +705,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     Mesh *data = nullptr;
     if (is_mesh(src))
         data = (Mesh*)src->data;
+    
     bool is_editing = false;
 
     if (settings.sync_meshes && data) {
@@ -737,9 +737,12 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-            if (Mesh *tmp = bobj.to_mesh()) {
+            if (Mesh* tmp = bobj.to_mesh()) {
                 data = tmp;
-                m_meshes_to_clear.push_back(src);
+                // Only clear meshes that aren't created from others:
+                if (src->id.orig_id == NULL) {
+                    m_meshes_to_clear.push_back(src);
+                }
             }
         }
 
@@ -1476,7 +1479,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
-
+    
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
@@ -1529,7 +1532,10 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    bl::BlenderPyScene scene = bl::BlenderPyScene(pyContext.scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1555,7 +1561,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
             kvp.second.dst->reserve(reserve_size);
         };
         for (int f = frame_start;;) {
-            scene.frame_set(f);
+            scene.SetCurrentFrame(f, depsGraph);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             mu::parallel_for_each(m_anim_records.begin(), m_anim_records.end(), [this](auto& kvp) {
@@ -1568,7 +1574,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
                 f = std::min(f + interval, frame_end);
         }
         m_anim_records.clear();
-        scene.frame_set(frame_current);
+        scene.SetCurrentFrame(frame_current, depsGraph);
     }
 
     m_ignore_events = false;

@@ -45,48 +45,39 @@ void msblenContext::exportInstances() {
         // Not using threads seems to fix it but should be investigated more.
         settings.multithreaded = false;
 
+        auto world_matrix = msblenEntityHandler::getWorldMatrix(parent);
+        auto inverse = mu::invert(world_matrix);
+
         // If the instanced object is not present in the file
         if (!fromFile) {
             settings.BakeModifiers = false;
             auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, instanced, false);
             transform->reset();
-            return exportInstancesFromTree(instanced, parent, std::move(matrices));
+            return exportInstances(instanced, parent, std::move(matrices), inverse, m_intermediate_paths);
         }
-
-        auto world_matrix = msblenEntityHandler::getWorldMatrix(instanced);
-        auto inverse = mu::invert(world_matrix);
-
+        
         // check if the object has been already exported as part of the scene
         auto scene_object = scene_objects.find(instanced);
         if (scene_object == scene_objects.end()) {
             exportObject(*m_instances_state, m_default_paths, settings, instanced, false);
         }
 
-        return exportInstancesFromFile(instanced, parent, std::move(matrices), inverse);
-
+        return exportInstances(instanced, parent, std::move(matrices), inverse, m_default_paths);
         });
 
     m_geometryNodeUtils.setInstancesDirty(false);
 
     scene_objects.clear();
 }
-void msblenContext::exportInstancesFromFile(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse)
+
+void msblenContext::exportInstances(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat, mu::float4x4& inverse, msblenContextPathProvider& pathProvider)
 {
-    mu::parallel_for(0, mat.size(), 10, [this, &mat, &inverse](int i)
+    mu::parallel_for(0, mat.size(), 10, [&](int i)
         {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i] * inverse);
+            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(instancedObject, mat[i] * inverse);
         });
 
-    exportInstanceInfo(*m_instances_state, m_default_paths, instancedObject, parent, std::move(mat));
+    exportInstanceInfo(*m_instances_state, pathProvider, instancedObject, parent, std::move(mat));
 }
 
-void msblenContext::exportInstancesFromTree(Object* instancedObject, Object* parent, SharedVector<mu::float4x4> mat)
-{
-    mu::parallel_for(0, mat.size(), 10, [this, &mat](int i)
-        {
-            mat[i] = m_geometryNodeUtils.blenderToUnityWorldMatrix(mat[i]);
-        });
-
-    exportInstanceInfo(*m_instances_state, m_intermediate_paths, instancedObject, parent, std::move(mat));
-}
 #endif
