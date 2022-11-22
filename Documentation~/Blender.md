@@ -15,6 +15,7 @@ as can be seen above, where most of the options are self-explanatory.
 | **Manual Sync**           | Use the **Manual Sync** button to reflect mesh changes when **Auto Sync** is inactive.|
 | Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
 | **Export Cache** | Export into an *.sc* file. Please refer to the SceneCache feature in [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest).|
+| **Material sync mode**    | How to handle materials. Refer to [Material sync mode](#Material-sync-mode) for more details.|
 
 |**Paths** |**Description**|
 |:---       |:---|
@@ -69,3 +70,27 @@ This option will only appear if we install [ProBuilder](https://docs.unity3d.com
 > If **Bake Modifiers** option is enabled in the plugin, 
 > a mesh that is sent from Unity back into Blender will have modifiers applied beforehand and have them removed after.
 
+## Material sync mode
+
+The MeshSyncServer in Unity always creates a material with a default shader for the active render pipeline.
+There are multiple options to export materials from Blender:
+
+|**Mode** |**Description** |
+|:---       |:---|
+| None | Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials. |
+| Basic | The materials are synced to Unity in a limited way. Refer to [Basic Material sync mode](#Basic-Material-sync-mode) for more details.||
+
+## Basic Material sync mode
+MeshSync looks for an active material output node and exports the BSDF connected to that. 
+Colors and textures assigned to the active BSDF are exported.
+Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline. MeshSync supports the built-in render pipeline, URP and HDRP.
+All exported textures and baked maps are saved to the Asset Dir set on the MeshSyncServer.
+
+The following is a list of supported nodes and how they are handled.
+|**Node** |**Export** |
+|:---     |:---|
+| Material output | Connected BSDF and displacement is exported. |  
+| BSDF Node | Color, Roughness, Metallic, Normal, Emission and Emission Strength sockets are exported. BSDF nodes with shader input nodes (e.g. Mix shader) are not fully supported and the first connected BSDF is exported instead. |
+| Normal Map | Normal strength is exported. The normal map needs to be in tangent space. |
+| Image Texture | Images are exported but not the texture coordinates. Unity uses UV0. |
+| Displacement | Height and scale is exported. |
