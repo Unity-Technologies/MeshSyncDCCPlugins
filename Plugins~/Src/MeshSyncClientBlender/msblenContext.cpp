@@ -1517,7 +1517,10 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    bl::BlenderPyScene scene = bl::BlenderPyScene(pyContext.scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1543,7 +1546,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
             kvp.second.dst->reserve(reserve_size);
         };
         for (int f = frame_start;;) {
-            scene.frame_set(f);
+            scene.SetCurrentFrame(f, depsGraph);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             mu::parallel_for_each(m_anim_records.begin(), m_anim_records.end(), [this](auto& kvp) {
@@ -1556,7 +1559,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
                 f = std::min(f + interval, frame_end);
         }
         m_anim_records.clear();
-        scene.frame_set(frame_current);
+        scene.SetCurrentFrame(frame_current, depsGraph);
     }
 
     m_ignore_events = false;

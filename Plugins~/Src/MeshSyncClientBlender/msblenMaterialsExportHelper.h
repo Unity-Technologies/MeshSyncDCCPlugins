@@ -8,7 +8,6 @@
 namespace blender {
 class msblenMaterialsExportHelper
 {
-	std::string getBakeFolder();
 	void setValueFromSocket(const Material* mat,
 		bNodeSocket* socket,
 		ms::TextureType textureType,
@@ -47,6 +46,7 @@ class msblenMaterialsExportHelper
 
 	void exportBasicOrBaked(const Material* mat, std::shared_ptr<ms::Material> ret);
 
+	std::string getBakeFolder();
 public:
 	BlenderSyncSettings* m_settings;
 	ms::TextureManager* m_texture_manager;
