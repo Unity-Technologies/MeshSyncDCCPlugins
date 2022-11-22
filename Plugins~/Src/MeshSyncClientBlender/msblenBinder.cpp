@@ -639,11 +639,30 @@ void callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
 
     try {
-        auto module = py::module::import("unity_mesh_sync");
+        auto module = py::module::import("MeshSyncClientBlender");
         auto method = module.attr(name);
         method();
     }
     catch (...) {
+    }
+
+    py::gil_scoped_release release;
+}
+
+void bakeMaterials(std::string folder) {
+    py::gil_scoped_acquire acquire;
+
+    try {
+        auto global = py::dict();
+        auto local = py::dict();
+        local["folder"] = py::str(folder);
+        py::eval<py::eval_mode::eval_statements>(
+            "from MeshSyncClientBlender import bakeMaterials\n"
+            "bakeMaterials(folder)\n"
+            , global, local);
+    }
+    catch (py::error_already_set& e) {
+        muLogError("Unable to bake materials: %s\n", e.what());
     }
 
     py::gil_scoped_release release;

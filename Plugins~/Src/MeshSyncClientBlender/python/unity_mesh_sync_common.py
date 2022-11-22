@@ -108,6 +108,8 @@ def msb_initialize_properties():
                                                                         ),
                                                                  default='0',
                                                                  update=msb_on_material_sync_updated)
+    bpy.types.Scene.bakedTextures = bpy.props.StringProperty(name="bakedTextures")
+
 @persistent
 def on_scene_load(context):
     msb_context.clear()
@@ -157,26 +159,45 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     bl_idname = "meshsync.bake_materials"
     bl_label = "Bake!"
 
-    bakeWidth = 512
-    bakeHeight = 512
-
-    def findOrCreateImage(self, suffix, alpha=False):
-        active_object = bpy.context.active_object
-        imageName = f"{active_object.name}_baked_{suffix}"
-
-        for image in bpy.data.images:
-            if image.name == imageName:
-                return image
-
-        return bpy.data.images.new(imageName, width=self.bakeWidth, height=self.bakeHeight, alpha=alpha)
-
     def execute(self, context):
         scene = context.scene
         active_object = bpy.context.active_object
 
-        if active_object is None:
-            self.report({'WARNING'}, "No active object selected")
-            return {'FINISHED'}
+        self.bake(active_object)
+
+class BakeHelper():
+    bakeWidth = 512
+    bakeHeight = 512
+
+    bakedImages = {}
+
+    mapNameDiffuse = "diffuse"
+    mapNameRoughness = "roughness"
+    mapNameAO = "ao"
+
+    def __init__(self, objectToBake):
+        self.objectToBake = objectToBake
+
+    def findOrCreateImage(self, suffix, alpha=False):
+        imageName = f"{self.objectToBake.name}_baked_{suffix}"
+
+        result = None
+
+        for image in bpy.data.images:
+            if image.name == imageName:
+                result = image
+                break
+
+        if result is None:
+            result = bpy.data.images.new(imageName, width=self.bakeWidth, height=self.bakeHeight, alpha=alpha)
+
+        self.bakedImages[suffix] = result
+
+        return result
+
+    def bake(self, bakeFolder):
+        scene = bpy.context.scene
+        self.bakedImages.clear()
 
         # if not msb_context.is_setup:
         msb_context.flushPendingList()
@@ -184,7 +205,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         msb_context.setup(bpy.context)
 
         # test:
-        bakeFolder = "C:\\Users\\Christian.Schinkoeth\\Documents\\test"
         smartUV = True
         samples = 4
 
@@ -210,13 +230,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         scene.cycles.device = "GPU"
         scene.cycles.samples = samples
 
-        diffuseBakeImage = self.findOrCreateImage("diffuse", alpha=True)
-        roughnessBakeImage = self.findOrCreateImage("roughness")
-        aoBakeImage = self.findOrCreateImage("ao")
+        diffuseBakeImage = self.findOrCreateImage(self.mapNameDiffuse, alpha=True)
+        roughnessBakeImage = self.findOrCreateImage(self.mapNameRoughness)
+        aoBakeImage = self.findOrCreateImage(self.mapNameAO)
 
         # ----- DIFFUSE -----
 
-        for mat in bpy.context.active_object.data.materials:
+        for mat in self.objectToBake.data.materials:
             node_tree = mat.node_tree
             node = node_tree.nodes.new("ShaderNodeTexImage")
             node.select = True
@@ -234,7 +254,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         # ----- ROUGHNESS -----
 
-        for mat in bpy.context.active_object.data.materials:
+        for mat in self.objectToBake.data.materials:
             node_tree = mat.node_tree
             node = node_tree.nodes.active
             node.image = roughnessBakeImage
@@ -247,7 +267,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         # ----- AO -----
 
-        for mat in bpy.context.active_object.data.materials:
+        for mat in self.objectToBake.data.materials:
             node_tree = mat.node_tree
             node = node_tree.nodes.active
             node.image = aoBakeImage
@@ -270,7 +290,53 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # bpy.ops.uv.export_layout(filepath=uvfilepath, size=(self.bakeWidth, self.bakeHeight))
         # bpy.context.area.type = original_type
 
-        # Create a new material and assign the baked textures:
-        bakedMat = bpy.data.materials.new(name=f"{active_object.name}_baked")
+        # self.setupBakedMaterial(active_object)
 
         return {'FINISHED'}
+
+    def setupImageNode(self, mat, name, bsdf, inputName):
+        nodes = mat.node_tree.nodes
+        link = mat.node_tree.links.new
+
+        imageNode = bpy.types.ShaderNodeTexImage(nodes.new('ShaderNodeTexImage'))
+        imageNode.image = self.bakedImages[name]
+
+        link(imageNode.outputs[0], bsdf.inputs[inputName])
+
+    def setupBakedMaterial(self, bakedObj):
+        # Create a new material and assign the baked textures:
+        mat = bpy.data.materials.new(name=f"{bakedObj.name}_baked")
+        mat.use_nodes = True
+
+        originalMats = bakedObj.data.materials
+        bakedObj.data.materials.clear()
+        bakedObj.data.materials.append(mat)
+
+        nodes = mat.node_tree.nodes
+        bsdf = nodes['Principled BSDF']
+
+        self.setupImageNode(mat, self.mapNameDiffuse, bsdf, "Base Color")
+        self.setupImageNode(mat, self.mapNameRoughness, bsdf, "Roughness")
+        # self.setupImageNode(mat, self.mapNameAO, bsdf, "Roughness")
+
+        # Restore original materials
+        # Needs to be called separately after export:
+        if False:
+            bakedObj.data.materials.clear()
+            for origMat in originalMats:
+                bakedObj.data.materials.appen(origMat)
+
+def bakeMaterials(folder):
+    print("bakeMaterials")
+    import json
+    textureList = []
+    jsonString = bpy.context.scene.bakedTextures
+    if jsonString is not None and len(jsonString) > 0:
+        textureList = json.loads(bpy.types.Scene.bakedTextures)
+
+    for obj in bpy.context.scene.objects:
+        baker = BakeHelper(obj)
+        baker.bake(folder)
+
+    bpy.types.Scene.bakedTextures = json.dumps(textureList)
+    print(f"textureList: {textureList}")
