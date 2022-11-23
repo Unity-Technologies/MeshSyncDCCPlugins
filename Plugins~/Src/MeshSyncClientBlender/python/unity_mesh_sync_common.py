@@ -16,14 +16,12 @@ def msb_modifier_stack_values(objectName):
     try:
         mods = bpy.data.objects[objectName].modifiers
         values = []
-        keys = []
         for mod in mods:
             for prop in mod.bl_rna.properties.keys():
                 if prop == "name" or prop == "rna_type" or prop == "custom_profile":
                     continue
 
                 values.append(getattr(mod, prop, True))
-                keys.append(prop)
         return ''.join(map(str,values))
     except Exception as e:
         print (e)
