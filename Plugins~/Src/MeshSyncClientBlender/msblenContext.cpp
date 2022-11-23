@@ -278,14 +278,12 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
         rec.dst = exportTransform(state, paths, settings, obj);
     };
 
-    if (cache != nullptr) {
-        void* data = obj->data;
+    if (cache != nullptr && obj->data != nullptr) {
         auto id = std::string(((ID*)obj->data)->name);
         if (settings.BakeModifiers) {
 
             Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
             auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
-            data = bobj->data;
 
            id += msblenUtils::get_modifier_stack_values(obj);
         }
