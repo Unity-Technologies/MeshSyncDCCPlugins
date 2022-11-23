@@ -29,6 +29,9 @@ Bone* find_bone(Object *obj, const char *name);
 bPoseChannel* find_pose(Object *obj, const char *name);
 Object* get_object_from_path(std::string path);
 
+//returns the values of the object's modifiers stack, as a string
+std::string get_modifier_stack_values(const Object* obj);
+
 bool is_mesh(const Object *obj);
 bool is_camera(const Object *obj);
 bool is_light(const Object *obj);

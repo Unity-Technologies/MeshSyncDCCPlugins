@@ -280,20 +280,24 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
 
     if (cache != nullptr) {
         void* data = obj->data;
+        auto id = std::string(((ID*)obj->data)->name);
         if (settings.BakeModifiers) {
+
             Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
             auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
             data = bobj->data;
+
+           id += msblenUtils::get_modifier_stack_values(obj);
         }
 
-        auto isCached = (*cache)[data].length() > 0;
+        auto isCached = (*cache)[id].length() > 0;
         if (isCached) {
             handle_parent();
             handle_transform();
-            rec.dst->reference = (*cache)[data];
+            rec.dst->reference = (*cache)[id];
             return rec.dst;
         }
-        (*cache)[data] = paths.get_path(obj);
+        (*cache)[id] = paths.get_path(obj);
     }
 
     switch (obj->type) {

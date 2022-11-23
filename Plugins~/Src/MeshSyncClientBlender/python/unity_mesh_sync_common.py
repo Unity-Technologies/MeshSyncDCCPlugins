@@ -11,6 +11,26 @@ from .unity_mesh_sync_installation import *
 msb_context = ms.Context()
 msb_cache = ms.Cache()
 
+#invoked by C++ layer
+def msb_modifier_stack_values(objectName):
+    try:
+        mods = bpy.data.objects[objectName].modifiers
+        values = []
+        keys = []
+        for mod in mods:
+            for prop in mod.bl_rna.properties.keys():
+                if prop == "name" or prop == "rna_type" or prop == "custom_profile":
+                    continue
+
+                values.append(getattr(mod, prop, True))
+                keys.append(prop)
+        return ''.join(map(str,values))
+    except Exception as e:
+        print (e)
+        return ""
+
+
+
 def msb_apply_scene_settings(self = None, context = None):
     ctx = msb_context
     scene = bpy.context.scene

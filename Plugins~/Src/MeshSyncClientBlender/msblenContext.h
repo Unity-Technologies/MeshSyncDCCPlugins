@@ -44,7 +44,7 @@
 
 class msblenContext;
 
-using exportCache = std::unordered_map<void*, std::string>;
+using exportCache = std::unordered_map<std::string, std::string>;
 
 class msblenContext {
 public:
