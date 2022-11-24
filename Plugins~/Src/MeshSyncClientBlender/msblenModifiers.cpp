@@ -53,12 +53,13 @@ void addModifierProperties(ModifierData* modifier, const Object* obj, ms::Proper
 	}
 
 	auto nodeModifier = (NodesModifierData*)modifier;
-	auto group = nodeModifier->node_group;
-
-	// Loop through modifier data and get the values:
+	
 	if (nodeModifier->settings.properties == nullptr)
 		return;
 
+	auto group = nodeModifier->node_group;
+
+	// Loop through modifier data and get the values:
 	for (IDProperty* property : blender::list_range((IDProperty*)nodeModifier->settings.properties->data.group.first)) {
 		if (strstr(property->name, "_use_attribute") || strstr(property->name, "_attribute_name")) {
 			continue;
