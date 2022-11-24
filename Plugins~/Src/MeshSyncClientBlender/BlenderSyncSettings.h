@@ -9,5 +9,14 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
     bool calc_per_index_normals = true;
     int frame_step = 1;
     bool multithreaded = true;
+
+    // Keep in sync with unity_mesh_sync_common meshsync_material_sync_mode.py EnumProperty items:
+    enum class MaterialSyncMode
+    {
+        None  = 0,
+        Basic = 1
+    };
+
+    int material_sync_mode = 0;
 };
 

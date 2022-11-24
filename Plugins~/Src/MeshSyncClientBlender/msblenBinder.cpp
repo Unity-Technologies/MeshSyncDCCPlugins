@@ -635,6 +635,23 @@ std::string abspath(const std::string& path)
     }
 }
 
+std::string getBlenderVersion()
+{
+    try {
+        auto global = py::dict();
+        auto local = py::dict();
+        py::eval<py::eval_mode::eval_statements>(
+            "import bpy\n"
+            "ret = bpy.app.version_string"
+            , global, local);
+        return (py::str)local["ret"];
+    }
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
+        return "";
+    }
+}
+
 /**
  * Calls a python method that takes no arguments.
  */

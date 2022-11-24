@@ -19,7 +19,7 @@ public:
     int find(const std::string& name) const;
 
     // thread safe
-    int addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format);
+    int addImage(const std::string& name, int width, int height, const void *data, size_t size, TextureFormat format, TextureType type = TextureType::Default);
     // thread safe
     int addFile(const std::string& path, TextureType type);
     // thread safe

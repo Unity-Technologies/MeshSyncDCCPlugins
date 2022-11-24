@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "msblenBinder.h"
 #include "msblenContext.h"
+
+#include <BLI_listbase.h>
+
 #include "msblenUtils.h"
 
 #include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
@@ -13,8 +16,6 @@
 #include "MeshSync/SceneGraph/msScene.h"
 
 #include "msblenEntityHandler.h"
-
-#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
@@ -86,6 +87,7 @@ void msblenContext::Destroy() {
 msblenContext::msblenContext()
 {
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
+    m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
 }
 
 msblenContext::~msblenContext()
@@ -123,11 +125,6 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
     }
 
     return ret;
-}
-
-int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
-{
-    return m_texture_manager.addFile(path, type);
 }
 
 int msblenContext::getMaterialID(Material *m)
@@ -200,27 +197,11 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     ret->id = m_material_ids.getID(mat);
     ret->index = matIndex;
 
-    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-    bl::BMaterial bm(mat);
-    struct Material* color_src = mat;
-    stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
-
-    // todo: handle texture
-#if 0
-    if (m_settings.sync_textures) {
-        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-            if (!mtex || !mtex->tex || !mtex->tex->ima)
-                return -1;
-            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-        };
-#if BLENDER_VERSION < 280
-        stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
-#endif
-    }
-#endif
-
-    m_material_manager.add(ret);
+    m_materialsHelper.m_settings = &m_settings;
+    m_materialsHelper.m_texture_manager = &m_texture_manager;
+    m_materialsHelper.exportMaterial(mat, ret);
     
+    m_material_manager.add(ret);
 }
 
 
@@ -372,10 +353,9 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     }
     default:
     {
-        if (get_instance_collection(obj) || (!tip && parent)) {
-            handle_parent();
-            rec.dst = exportTransform(state, paths, settings, obj);
-        }
+        // Export everything, even if it's an empty object:
+        handle_parent();
+        rec.dst = exportTransform(state, paths, settings, obj);
         break;
     }
     }
@@ -1347,7 +1327,22 @@ void msblenContext::logInfo(const char * format, ...)
 bool msblenContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+
+    int server_session_id;
+    bool available = m_sender.isServerAvailable(&server_session_id);
+
+    // If server session changed, reset texture manager so textures are sent again:
+    if (m_sender.server_session_id != ms::InvalidID &&
+        server_session_id != m_sender.server_session_id) {
+        if (server_session_id != ms::InvalidID) {
+            resetMaterials();
+            // Ensure a full sync:
+            m_server_requested_sync = true;
+        }
+    }
+    m_sender.server_session_id = server_session_id;
+
+    return available;
 }
 
 bool msblenContext::isEditorServerAvailable()
@@ -1384,6 +1379,12 @@ void msblenContext::clear()
     m_texture_manager.clear();
     m_material_manager.clear();
     m_entity_manager.clear();
+}
+
+void msblenContext::resetMaterials()
+{
+    m_texture_manager.clear();
+    m_material_manager.clear();
 }
 
 bool msblenContext::prepare()
@@ -1548,7 +1549,10 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    bl::BlenderPyScene scene = bl::BlenderPyScene(pyContext.scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1574,7 +1578,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
             kvp.second.dst->reserve(reserve_size);
         };
         for (int f = frame_start;;) {
-            scene.frame_set(f);
+            scene.SetCurrentFrame(f, depsGraph);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             mu::parallel_for_each(m_anim_records.begin(), m_anim_records.end(), [this](auto& kvp) {
@@ -1587,7 +1591,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
                 f = std::min(f + interval, frame_end);
         }
         m_anim_records.clear();
-        scene.frame_set(frame_current);
+        scene.SetCurrentFrame(frame_current, depsGraph);
     }
 
     m_ignore_events = false;
