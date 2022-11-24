@@ -53,6 +53,10 @@ void addModifierProperties(ModifierData* modifier, const Object* obj, ms::Proper
 	}
 
 	auto nodeModifier = (NodesModifierData*)modifier;
+	
+	if (nodeModifier->settings.properties == nullptr)
+		return;
+
 	auto group = nodeModifier->node_group;
 
 	// Loop through modifier data and get the values:
