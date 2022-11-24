@@ -171,8 +171,8 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](const self_t& self) { return self->getSettings().multithreaded; },
                 [](self_t& self, int v) { self->getSettings().multithreaded = v; })
             BindProperty(material_sync_mode,
-                [](const self_t& self) { return self->getSettings().scene_settings.material_sync_mode; },
-                [](self_t& self, int v) { self->getSettings().scene_settings.material_sync_mode = v; })
+                [](const self_t& self) { return self->getSettings().material_sync_mode; },
+                [](self_t& self, int v) { self->getSettings().material_sync_mode = v; })
 
             BindMethod(flushPendingList, [](self_t& self) { self->flushPendingList(); })
             BindMethod(Destroy, [](self_t& self) { self->Destroy(); })
