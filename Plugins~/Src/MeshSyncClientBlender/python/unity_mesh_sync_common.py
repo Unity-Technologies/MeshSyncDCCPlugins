@@ -20,8 +20,12 @@ def msb_modifier_stack_values(objectName):
             for prop in mod.bl_rna.properties.keys():
                 if prop == "name" or prop == "rna_type" or prop == "custom_profile":
                     continue
+                value = getattr(mod, prop, True)
 
-                values.append(getattr(mod, prop, True))
+                #if the value is a flow, round to 8 decimal places
+                if isinstance(value, float):
+                    value = round(value, 5)
+                values.append(value)
         return ''.join(map(str,values))
     except Exception as e:
         print (e)
