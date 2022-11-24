@@ -124,12 +124,17 @@ void msblenMaterialsExportHelper::exportPackedImages(ms::TextureType& textureTyp
 
 		// Use extension from filename if the name in the image node has a different extension:
 		size_t extensionIndex = filepath.find_last_of('.');
-		if (extensionIndex > 0) {
+		if (extensionIndex != std::string::npos) {
 			std::string extension = filepath.substr(extensionIndex);
 
 			if (name.find(extension) != name.length() - extension.length()) {
 				name += extension;
 			}
+		}
+		else
+		{
+		    // If there is no extension, this is an internal jpg:
+			name += ".jpg";
 		}
 
 		int exported = m_texture_manager->addImage(name, 0, 0, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::RawFile, textureType);
