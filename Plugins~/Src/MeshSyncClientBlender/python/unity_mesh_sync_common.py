@@ -317,7 +317,7 @@ class BakeHelper():
 
         self.setupImageNode(mat, self.mapNameDiffuse, bsdf, "Base Color")
         self.setupImageNode(mat, self.mapNameRoughness, bsdf, "Roughness")
-        # self.setupImageNode(mat, self.mapNameAO, bsdf, "Roughness")
+        # self.setupImageNode(mat, self.mapNameAO, bsdf, "?")
 
         # Restore original materials
         # Needs to be called separately after export:
