@@ -87,6 +87,7 @@ void msblenContext::Destroy() {
 msblenContext::msblenContext()
 {
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
+    m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
 }
 
 msblenContext::~msblenContext()
@@ -1326,7 +1327,22 @@ void msblenContext::logInfo(const char * format, ...)
 bool msblenContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvailable();
+
+    int server_session_id;
+    bool available = m_sender.isServerAvailable(&server_session_id);
+
+    // If server session changed, reset texture manager so textures are sent again:
+    if (m_sender.server_session_id != ms::InvalidID &&
+        server_session_id != m_sender.server_session_id) {
+        if (server_session_id != ms::InvalidID) {
+            resetMaterials();
+            // Ensure a full sync:
+            m_server_requested_sync = true;
+        }
+    }
+    m_sender.server_session_id = server_session_id;
+
+    return available;
 }
 
 bool msblenContext::isEditorServerAvailable()
