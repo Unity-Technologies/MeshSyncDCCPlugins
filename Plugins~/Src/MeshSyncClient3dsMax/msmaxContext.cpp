@@ -68,6 +68,8 @@ static void FeedDeferredCalls()
 
 std::string getVersion()
 {
+
+#ifdef MeshSyncClient3DSMAX_2022_EXPORTS || MeshSyncClient3DSMAX_2023_EXPORTS || MeshSyncClient3DSMAX_2024_EXPORTS || MeshSyncClient3DSMAX_2025_EXPORTS
     // 3dsmax is windows only so this should be fine:
     FPValue resulted_value;
     ExecuteMAXScriptScript(L"getFileVersion \"$max/3dsmax.exe\"",
@@ -91,6 +93,9 @@ std::string getVersion()
     }
 
     return str;
+#else
+    return "<=2021";
+#endif
 }
 
 
