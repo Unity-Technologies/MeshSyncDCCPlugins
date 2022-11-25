@@ -49,7 +49,7 @@ void msmqContext::logInfo(const char * format, ...)
 bool msmqContext::isServerAvailable()
 {
     m_send_meshes.client_settings = m_settings.client_settings;
-    return m_send_meshes.isServerAvaileble();
+    return m_send_meshes.isServerAvailable();
 }
 
 const std::string& msmqContext::getErrorMessage()
