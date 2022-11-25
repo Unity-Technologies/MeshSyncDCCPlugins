@@ -263,7 +263,7 @@ void msmaxContext::logInfo(const char * format, ...)
 bool msmaxContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+    return m_sender.isServerAvailable();
 }
 
 const std::string& msmaxContext::getErrorMessage()
