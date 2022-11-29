@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.16.0-preview] - 2022-11-25
+
+### Feat
+* blender-feat: material support 
+* blender-feat: support exporting empty objects
+
+### Changed
+* blender-doc: update installation docs 
+
+### Fixed
+* blender-fix: make all object types (incl. lights) instantiable for geometry nodes 
+* blender-fix: fix for exporting keyframes in 3.3.0 and above 
+* blender-fix: null check for geometry node properties
+
+### Removed
+* blender: removed editor path property from project panel
+
 ## [0.15.2-preview] - 2022-11-16
 
 ### Feat

@@ -240,7 +240,7 @@ void msmayaContext::logError(const char * format, ...)
 bool msmayaContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+    return m_sender.isServerAvailable();
 }
 
 const std::string& msmayaContext::getErrorMessage()
