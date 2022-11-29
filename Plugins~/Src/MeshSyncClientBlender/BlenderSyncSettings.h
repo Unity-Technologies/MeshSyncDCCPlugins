@@ -18,6 +18,6 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
    		Baked = 2
     };
 
-    MaterialSyncMode material_sync_mode;
+    int material_sync_mode = 0;
 };
 

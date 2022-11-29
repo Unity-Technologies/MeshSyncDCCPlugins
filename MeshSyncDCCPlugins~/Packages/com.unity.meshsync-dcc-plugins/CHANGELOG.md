@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.16.0-preview] - 2022-11-25
+
+### Feat
+* blender-feat: material support 
+* blender-feat: support exporting empty objects
+
+### Changed
+* blender-doc: update installation docs 
+
+### Fixed
+* blender-fix: make all object types (incl. lights) instantiable for geometry nodes 
+* blender-fix: fix for exporting keyframes in 3.3.0 and above 
+* blender-fix: null check for geometry node properties
+
+### Removed
+* blender: removed editor path property from project panel
+
+## [0.15.2-preview] - 2022-11-16
+
+### Feat
+* blender: preferences UI for auto-detecting the hub and the editors folder
+* blender: use hub to select or create project 
+
+### Changed
+* blender-change: Handled local packages 
+
+### Fixed
+
+* fix: fix for crash when exporting baked transforms
+* blender-fix: fix for broken uvs on edit mode 
+* blender-fix: get latest compatible version of MeshSync package in AutoSetup
+* blender-fix: More reliable way to check if project is already running 
+* blender-fix: give feedback when selecting project
+* blender-fix: give feedback for project creation  
+
 ## [0.15.1-preview] - 2022-10-07
 
 ### Added

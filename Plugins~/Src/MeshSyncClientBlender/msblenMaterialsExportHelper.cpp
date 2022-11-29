@@ -21,6 +21,7 @@ const auto normalStrengthIdentifier = "Strength";
 const auto surfaceIdentifier = "Surface";
 const auto emissionIdentifier = "Emission";
 const auto emissionStrengthIdentifier = "Emission Strength";
+const auto clearcoatIdentifier = "Clearcoat";
 
 const auto shaderIdentifier = "Shader";
 
@@ -127,12 +128,17 @@ void msblenMaterialsExportHelper::exportPackedImages(ms::TextureType& textureTyp
 
 		// Use extension from filename if the name in the image node has a different extension:
 		size_t extensionIndex = filepath.find_last_of('.');
-		if (extensionIndex > 0) {
+		if (extensionIndex != std::string::npos) {
 			std::string extension = filepath.substr(extensionIndex);
 
 			if (name.find(extension) != name.length() - extension.length()) {
 				name += extension;
 			}
+		}
+		else
+		{
+			// If there is no extension, this is an internal jpg:
+			name += ".jpg";
 		}
 
 		int exported = m_texture_manager->addImage(name, 0, 0, imagePackedFile->packedfile->data, imagePackedFile->packedfile->size, ms::TextureFormat::RawFile, textureType);
@@ -311,7 +317,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-	
+
 	// If there is an image linked to the socket, send that as a texture:
 	auto sourceNode = traverseReroutes(socket->link->fromnode, mat);
 
@@ -320,7 +326,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		handleSocketValue(socket, setColorHandler, setTextureHandler);
 		return;
 	}
-	
+
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
@@ -472,6 +478,18 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 				},
 				nullptr);
 		}
+		else if (isSocket(clearcoatIdentifier))
+		{
+			setValueFromSocket(mat,
+				inputSocket, ms::TextureType::Default,
+				true,
+				[&](const mu::float4& colorValue) {
+					stdmat.setClearCoat(colorValue[0]);
+				},
+				[&](int textureId) {
+					stdmat.setClearCoatMask(textureId);
+				});
+		}
 	}
 }
 
@@ -519,7 +537,7 @@ void msblenMaterialsExportHelper::exportBasicOrBaked(const Material* mat, std::s
 
 void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
-	switch (m_settings->material_sync_mode)
+	switch ((BlenderSyncSettings::MaterialSyncMode)m_settings->material_sync_mode)
 	{
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
 		exportBasicOrBaked(mat, ret);

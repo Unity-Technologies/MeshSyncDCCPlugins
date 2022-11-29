@@ -16,6 +16,7 @@ namespace blender
     std::string abspath(const std::string& path);
     void callPythonMethod(const char* name);
     void bakeMaterials(std::string folder);
+    std::string getBlenderVersion();
 
     struct ListHeader { ListHeader *next, *prev; };
 
