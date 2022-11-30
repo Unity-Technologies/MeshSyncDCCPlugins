@@ -331,13 +331,13 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		setTextureHandler = nullptr;
 	}
 
-	if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked)
-	{
-		getBakeFolder();
-		//todo
-		//blender::callPythonMethod("bakeMaterials");
-		return;
-	}
+	//if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked)
+	//{
+	//	getBakeFolder();
+	//	//todo
+	//	//blender::callPythonMethod("bakeMaterials");
+	//	return;
+	//}
 
 	switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
@@ -493,11 +493,11 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 	}
 }
 
-std::string msblenMaterialsExportHelper::getBakeFolder()
-{
-	auto folder = std::filesystem::temp_directory_path().wstring();
-	return std::string(folder.begin(), folder.end());
-}
+//std::string msblenMaterialsExportHelper::getBakeFolder()
+//{
+//	auto folder = std::filesystem::temp_directory_path().wstring();
+//	return std::string(folder.begin(), folder.end());
+//}
 
 void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
 {
@@ -508,9 +508,9 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 		return;
 	}
 
-	if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked) {
-		blender::bakeMaterials(getBakeFolder());
-	}
+	//if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked) {
+	//	blender::bakeMaterials(getBakeFolder());
+	//}
 
 	setShaderFromBSDF(stdmat, bsdfNode);
 	setPropertiesFromBSDF(mat, stdmat, bsdfNode);

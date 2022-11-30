@@ -14,6 +14,7 @@ from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
+from .unity_mesh_sync_baking import *
 
 # Events that get called during the meshsync export stages, append your functions to these lists:
 # Called every frame when checking if something needs exporting:
@@ -93,7 +94,7 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
-        layout.operator("meshsync.bake_materials")
+        msb_drawTextureBakingUI(context, layout)
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -341,7 +342,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-classes = (
+classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
@@ -353,9 +354,8 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_Preferences,
-    MESHSYNC_OT_Bake
-)
+    MESHSYNC_Preferences
+] + sharedClasses
 
 def register():
     msb_initialize_properties()

@@ -155,7 +155,7 @@ void msblenContext::RegisterSceneMaterials()
     bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
 
     // Look for objects that need their own material copy if baking is enabled:
-    if (m_settings.material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked)
+    if (m_settings.material_sync_mode == (int)BlenderSyncSettings::MaterialSyncMode::Baked)
     {
         for (Material* mat : bpy_data.materials()) {
             for (Object* ob : bpy_data.objects()) {
@@ -1828,4 +1828,9 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
     m_geometryNodeUtils.setInstancesDirty(true);
 #endif
 
+}
+
+void msblenContext::BakeMaterials()
+{
+    
 }

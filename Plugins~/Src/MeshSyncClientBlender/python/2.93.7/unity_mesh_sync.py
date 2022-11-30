@@ -83,7 +83,7 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
-
+        msb_drawTextureBakingUI(context, layout)
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Animation"
@@ -328,7 +328,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-classes = (
+classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
@@ -340,8 +340,8 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_Preferences,
-)
+    MESHSYNC_Preferences
+] + sharedClasses
 
 def register():
     msb_initialize_properties()
