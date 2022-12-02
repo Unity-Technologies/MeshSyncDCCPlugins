@@ -789,8 +789,11 @@ class SingletonUpdater:
             request.add_header(
                 'User-Agent', "Python/" + str(platform.python_version()))
 
-            self.url_retrieve(urllib.request.urlopen(request, context=context),
-                              self._source_zip)
+            self.meshsync_url_retrieve(urllib.request.urlopen(request, context=context),
+                             self._source_zip)
+
+            #self.url_retrieve(urllib.request.urlopen(request, context=context),
+            #                 self._source_zip)
             # Add additional checks on file size being non-zero.
             self.print_verbose("Successfully downloaded update zip")
             return True
@@ -1142,6 +1145,69 @@ class SingletonUpdater:
         self._source_zip = None
         self._error = None
         self._error_msg = None
+
+    def meshsync_url_retrieve(self, url_file, filepath):
+        """Custom urlretrieve implementation for meshsync repo"""
+        
+        from zipfile import ZipFile
+        from io import BytesIO
+
+        def latest_version(v1, v2):
+            tokens1 = v1.split('.')
+            tokens2 = v2.split('.')
+
+            for i in range(len(tokens1)):
+                if int(tokens1[i]) == int(tokens2[i]):
+                    continue
+
+            if int(tokens1[i]) > int(tokens2[i]):
+                return v1
+            return v2
+
+        def eq_major_minor(v1, v2):
+            tokens1 = v1.split('.')
+            tokens2 = v2.split('.')
+            return int(tokens1[0]) == int(tokens2[0]) and int(tokens1[1]) == int(tokens2[1])
+
+        def latest_compatible_version(versions):
+            blender_version = bpy.app.version_string
+
+            latest_compatible = "0.0.0"
+
+            for version in versions:
+                if eq_major_minor(version, blender_version):
+                    latest_compatible = latest_version(latest_compatible, version)
+
+            return latest_compatible
+        
+        totalSize = int(url_file.getheader("Content-Length"))
+
+        print("totalSize:"+str(totalSize))
+
+        total_buffer = bytearray(totalSize)
+        buffer = bytearray(1024 * 1024)
+        count = 0
+
+        while count < totalSize:
+            offset = url_file.readinto(buffer)
+            total_buffer[count:count+offset] = buffer[:offset]
+            count += offset
+            percentage = count / float(totalSize)
+        versions = {}
+        with ZipFile(BytesIO(total_buffer), 'r') as zipfile:
+            for name in zipfile.namelist():
+                index = name.rfind('/')
+                if index == -1 or name[-1] == '/':
+                    continue
+                subname = name[index + 1:]
+                version = subname.replace('blender-','',).replace('.zip','')
+                versions[version]= name
+
+            version = latest_compatible_version(list(versions.keys()))
+            member = versions[version]
+            with open(filepath, "wb") as file:
+                file.write(zipfile.read(member))
+
 
     def url_retrieve(self, url_file, filepath):
         """Custom urlretrieve implementation"""
