@@ -75,7 +75,8 @@ except Exception as e:
 # not match and have errors. Must be all lowercase and no spaces! Should also
 # be unique among any other addons that could exist (using this updater code),
 # to avoid clashes in operator registration.
-updater.addon = "addon_updater_demo"
+updater.addon = "mesh_sync_client_blender"
+display_name = "MeshSync"
 
 
 # -----------------------------------------------------------------------------
@@ -132,7 +133,7 @@ def get_user_preferences(context=None):
 # Simple popup to prompt use to check for update & offer install if available.
 class AddonUpdaterInstallPopup(bpy.types.Operator):
     """Check and install update if available"""
-    bl_label = "Update {x} addon".format(x=updater.addon)
+    bl_label = "Update {x} addon".format(x=display_name)
     bl_idname = updater.addon + ".updater_install_popup"
     bl_description = "Popup to check and display current updates available"
     bl_options = {'REGISTER', 'INTERNAL'}
@@ -233,10 +234,10 @@ class AddonUpdaterInstallPopup(bpy.types.Operator):
 
 # User preference check-now operator
 class AddonUpdaterCheckNow(bpy.types.Operator):
-    bl_label = "Check now for " + updater.addon + " update"
+    bl_label = "Check now for " + display_name + " update"
     bl_idname = updater.addon + ".updater_check_now"
     bl_description = "Check now for an update to the {} addon".format(
-        updater.addon)
+        display_name)
     bl_options = {'REGISTER', 'INTERNAL'}
 
     def execute(self, context):
@@ -272,10 +273,10 @@ class AddonUpdaterCheckNow(bpy.types.Operator):
 
 
 class AddonUpdaterUpdateNow(bpy.types.Operator):
-    bl_label = "Update " + updater.addon + " addon now"
+    bl_label = "Update " + display_name + " addon now"
     bl_idname = updater.addon + ".updater_update_now"
     bl_description = "Update to the latest version of the {x} addon".format(
-        x=updater.addon)
+        x=display_name)
     bl_options = {'REGISTER', 'INTERNAL'}
 
     # If true, run clean install - ie remove all files before adding new
@@ -334,10 +335,10 @@ class AddonUpdaterUpdateNow(bpy.types.Operator):
 
 
 class AddonUpdaterUpdateTarget(bpy.types.Operator):
-    bl_label = updater.addon + " version target"
+    bl_label = display_name + " version target"
     bl_idname = updater.addon + ".updater_update_target"
     bl_description = "Install a targeted version of the {x} addon".format(
-        x=updater.addon)
+        x=display_name)
     bl_options = {'REGISTER', 'INTERNAL'}
 
     def target_version(self, context):
@@ -1374,7 +1375,7 @@ def register(bl_info):
     version = version.replace("-preview", "")
     version = version.split(".")
     version = list(map(int, version))
-    updater.current_version = version #bl_info["version"]
+    updater.current_version = version
 
     # Optional, to hard-set update frequency, use this here - however, this
     # demo has this set via UI properties.
@@ -1382,7 +1383,7 @@ def register(bl_info):
 
     # Optional, consider turning off for production or allow as an option
     # This will print out additional debugging info to the console
-    updater.verbose = True  # make False for production default
+    updater.verbose = False  # make False for production default
 
     # Optional, customize where the addon updater processing subfolder is,
     # essentially a staging folder used by the updater on its own
