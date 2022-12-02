@@ -10,6 +10,8 @@ from bpy.props import StringProperty, IntProperty, BoolProperty
 from threading import Thread
 from time import sleep
 
+from . import addon_updater_ops
+
 msb_context = ms.Context()
 
 
@@ -127,6 +129,7 @@ class MESHSYNC_OT_InstallMeshSync(bpy.types.Operator):
 
         return {'FINISHED'}
 
+@addon_updater_ops.make_annotations
 class MESHSYNC_Preferences(AddonPreferences):
 
     # this must match the add-on name, use '__package__'
@@ -238,6 +241,11 @@ class MESHSYNC_Preferences(AddonPreferences):
         return None
 
     def draw(self, context):
+
+        addon_updater_ops.update_notice_box_ui(self, context)
+        addon_updater_ops.update_settings_ui(self,context)
+        #addon_updater_ops.update_settings_ui_condensed(self, context, col)
+
         layout = self.layout
         editor_layout = layout.box()
         editor_layout.label(text ="Editor Settings")
@@ -300,6 +308,8 @@ class MESHSYNC_Preferences(AddonPreferences):
         project_layout.label(text = "All set up! Use the MeshSync panel in Active Tool and Workspace Settings to sync data to your project.")
 
     def register():
+        addon_updater_ops.register(None)
+        
         bpy.utils.register_class(MESHSYNC_OT_ResetPreferences)
         bpy.utils.register_class(MESHSYNC_OT_OpenHub)
         bpy.utils.register_class(MESHSYNC_OT_InstallMeshSync)
@@ -319,3 +329,36 @@ class MESHSYNC_Preferences(AddonPreferences):
     is_meshsync_in_manifest_lock: bpy.props.BoolProperty(name= "Is Meshsync resolved by the Unity Editor", default = False, update = on_in_package_lock_updated)
     is_project_running: bpy.props.BoolProperty(name = "Is the project open", default = False)
     is_project_created: bpy.props.BoolProperty(name = "Is the project being created", default = False)
+
+    # Addon updater preferences.
+    auto_check_update = bpy.props.BoolProperty(
+        name="Auto-check for Update",
+        description="If enabled, auto-check for updates using an interval",
+        default=False)
+
+    updater_interval_months = bpy.props.IntProperty(
+        name='Months',
+        description="Number of months between checking for updates",
+        default=0,
+        min=0)
+
+    updater_interval_days = bpy.props.IntProperty(
+        name='Days',
+        description="Number of days between checking for updates",
+        default=7,
+        min=0,
+        max=31)
+
+    updater_interval_hours = bpy.props.IntProperty(
+        name='Hours',
+        description="Number of hours between checking for updates",
+        default=0,
+        min=0,
+        max=23)
+
+    updater_interval_minutes = bpy.props.IntProperty(
+        name='Minutes',
+        description="Number of minutes between checking for updates",
+        default=0,
+        min=0,
+        max=59)
