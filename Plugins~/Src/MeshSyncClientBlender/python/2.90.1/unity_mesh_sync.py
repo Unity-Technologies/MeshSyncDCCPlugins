@@ -327,20 +327,23 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-classes = (
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+
+classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
     MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
+    MESHSYNC_PT_Baking,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
     MESHSYNC_OT_SendObjects,
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_Preferences,
-)
+    MESHSYNC_Preferences
+] + sharedClasses
 
 def register():
     msb_initialize_properties()

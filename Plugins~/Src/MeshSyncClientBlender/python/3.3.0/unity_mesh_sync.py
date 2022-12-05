@@ -27,12 +27,6 @@ mesh_sync_on_pre_export = []
 mesh_sync_on_post_export = []
 
 
-class MESHSYNC_PT:
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Tool"
-
-
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "MeshSync"
 
@@ -94,7 +88,6 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
-        msb_drawTextureBakingUI(context, layout)
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -342,12 +335,15 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+
 classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
     MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
+    MESHSYNC_PT_Baking,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
     MESHSYNC_OT_SendObjects,
