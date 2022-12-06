@@ -330,15 +330,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
-
-	//if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked)
-	//{
-	//	getBakeFolder();
-	//	//todo
-	//	//blender::callPythonMethod("bakeMaterials");
-	//	return;
-	//}
-
+	
 	switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
 	{
@@ -507,7 +499,7 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 	setHeightFromOutputNode(mat, stdmat, outputNode);
 }
 
-void msblenMaterialsExportHelper::exportBasicOrBaked(const Material* mat, std::shared_ptr<ms::Material> ret)
+void msblenMaterialsExportHelper::exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret)
 {
 	ms::StandardMaterial& stdmat = AsStandardMaterial(*ret);
 	BMaterial bm(mat);
@@ -530,7 +522,7 @@ void msblenMaterialsExportHelper::exportMaterial(const Material* mat, std::share
 	switch ((BlenderSyncSettings::MaterialSyncMode)m_settings->material_sync_mode)
 	{
 	case BlenderSyncSettings::MaterialSyncMode::Basic:
-		exportBasicOrBaked(mat, ret);
+		exportBasic(mat, ret);
 		break;
 	default:
 		break;

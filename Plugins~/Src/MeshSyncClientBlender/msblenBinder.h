@@ -15,7 +15,6 @@ namespace blender
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
     void callPythonMethod(const char* name);
-    void bakeMaterials(std::string folder);
     std::string getBlenderVersion();
 
     struct ListHeader { ListHeader *next, *prev; };

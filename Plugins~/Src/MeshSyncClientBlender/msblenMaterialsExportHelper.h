@@ -44,7 +44,7 @@ class msblenMaterialsExportHelper
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler);
 
-	void exportBasicOrBaked(const Material* mat, std::shared_ptr<ms::Material> ret);
+	void exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret);
 
 	std::string getBakeFolder();
 public:
