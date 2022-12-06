@@ -153,7 +153,6 @@ void msblenContext::RegisterSceneMaterials()
     m_material_manager.add(CreateDefaultMaterial(midx++));
 
     bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
-
     for (struct Material* mat : bpy_data.materials()) {
         RegisterMaterial(mat, midx++);
     }

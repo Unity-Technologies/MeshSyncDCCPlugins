@@ -7,9 +7,6 @@
 #include "MeshSync/SceneGraph/msTexture.h"
 #include "MeshSync/Utility/msMaterialExt.h"
 
-#include <iostream>
-#include <filesystem>
-
 namespace blender {
 // Blender uses hardcoded string identifiers to figure out what the sockets do:
 const auto baseColorIdentifier = "Base Color";
@@ -330,7 +327,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
-	
+    
 	switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
 	{

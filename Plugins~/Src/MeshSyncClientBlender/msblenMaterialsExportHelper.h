@@ -45,8 +45,7 @@ class msblenMaterialsExportHelper
 		std::function<void(int textureId)> setTextureHandler);
 
 	void exportBasic(const Material* mat, std::shared_ptr<ms::Material> ret);
-
-	std::string getBakeFolder();
+	
 public:
 	BlenderSyncSettings* m_settings;
 	ms::TextureManager* m_texture_manager;
