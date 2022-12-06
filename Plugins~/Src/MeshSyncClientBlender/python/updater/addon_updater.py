@@ -3,7 +3,7 @@
 #  
 #  Copyright (C) 2016  Patrick W. Crawford
 #  Modifications Copyright (c) 2022 Unity Technologies
-#  2022-12-02: Implemented custom staging function to work with MeshSync repo structure.
+#  2022-12-02: Implemented custom staging function to work with MeshSyncDCCPlugins repo structure.
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
