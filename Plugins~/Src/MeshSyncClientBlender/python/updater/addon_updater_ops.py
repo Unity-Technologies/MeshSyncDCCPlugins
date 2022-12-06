@@ -1,5 +1,10 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
+#  Blender Addon Updater
+#  Copyright (C) 2016  Patrick W. Crawford
+#  Modifications Copyright (c) 2022 Unity Technologies
+#  2022-12-02: Updated fields in registration to use MeshSyncDCCPlugins repo. 
+#
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
 #  as published by the Free Software Foundation; either version 2
