@@ -14,8 +14,7 @@ struct BlenderSyncSettings : public MeshSyncClient::BaseSyncSettings {
     enum class MaterialSyncMode
     {
         None  = 0,
-        Basic = 1,
-   		Baked = 2
+        Basic = 1
     };
 
     int material_sync_mode = 0;

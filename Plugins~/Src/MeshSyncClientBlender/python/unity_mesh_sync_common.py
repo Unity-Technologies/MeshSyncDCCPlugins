@@ -130,10 +130,7 @@ def msb_initialize_properties():
                                                                          items=(('0', 'None',
                                                                                  'Sync material IDs but no material data'),
                                                                                 ('1', 'Basic',
-                                                                                 'Sync colors and textures assigned to the BSDF'),
-                                                                                ('2', 'Baked',
-                                                                                 'Sync colors and textures assigned to the BSDF and bake them if needed')
-                                                                                ),
+                                                                                 'Sync colors and textures assigned to the BSDF')),
                                                                          default='0',
                                                                          update=msb_on_material_sync_updated)
     bpy.types.Scene.meshsync_bakedTexturesPath = bpy.props.StringProperty(name="Baked texture path", default='')

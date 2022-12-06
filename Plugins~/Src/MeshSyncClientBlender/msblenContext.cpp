@@ -154,34 +154,6 @@ void msblenContext::RegisterSceneMaterials()
 
     bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
 
-    // Look for objects that need their own material copy if baking is enabled:
-    if (m_settings.material_sync_mode == (int)BlenderSyncSettings::MaterialSyncMode::Baked)
-    {
-        for (Material* mat : bpy_data.materials()) {
-            for (Object* ob : bpy_data.objects()) {
-                if (ob->type != OB_MESH) {
-                    continue;
-                }
-
-          /*      Mesh* mesh = (Mesh*)ob->data;
-                mesh->mloopuv;*/
-
-                Material*** matar_obdata = &((Mesh*)ob->data)->mat;
-
-                Material*** matar_object = &ob->mat;
-                for (int i = ob->totcol; i--;) {
-                    auto matOnObject = ob->matbits[i] ? (*matar_object)[i] : (*matar_obdata)[i];
-
-                    if(STREQ(matOnObject->id.name, mat->id.name))
-                    {
-                        // Found an object that uses the material:
-                        
-                    }
-                }
-            }
-        }
-    }
-
     for (struct Material* mat : bpy_data.materials()) {
         RegisterMaterial(mat, midx++);
     }
