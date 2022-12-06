@@ -181,14 +181,3 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         msb_context.setup(bpy.context);
         msb_context.export(msb_context.TARGET_ANIMATIONS)
         return {'FINISHED'}
-
-class MESHSYNC_PT:
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Tool"
-
-from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_PT_Baking
-
-sharedClasses = [MESHSYNC_OT_select_bake_folder,
-                 MESHSYNC_OT_Bake,
-                 MESHSYNC_OT_RevertBake]
