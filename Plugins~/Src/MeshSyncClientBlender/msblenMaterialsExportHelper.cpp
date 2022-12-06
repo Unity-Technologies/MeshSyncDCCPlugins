@@ -327,8 +327,8 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	if (!m_settings->sync_textures) {
 		setTextureHandler = nullptr;
 	}
-    
-	switch (sourceNode->type) {
+
+    switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
 	{
 		handleImageNode(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
