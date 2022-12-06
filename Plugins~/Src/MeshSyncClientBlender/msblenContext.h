@@ -84,8 +84,6 @@ public:
     bool sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input = nullptr);
     string& getEditorCommandReply();
 
-    void BakeMaterials();
-
 private:
     // todo
     struct NodeRecord {

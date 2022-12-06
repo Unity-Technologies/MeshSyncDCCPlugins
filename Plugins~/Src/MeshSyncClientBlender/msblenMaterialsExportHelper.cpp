@@ -493,12 +493,6 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 	}
 }
 
-//std::string msblenMaterialsExportHelper::getBakeFolder()
-//{
-//	auto folder = std::filesystem::temp_directory_path().wstring();
-//	return std::string(folder.begin(), folder.end());
-//}
-
 void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
 {
 	bNode* bsdfNode;
@@ -507,10 +501,6 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 	if (!getBSDFAndOutput(mat, bsdfNode, outputNode)) {
 		return;
 	}
-
-	//if (m_settings->material_sync_mode == BlenderSyncSettings::MaterialSyncMode::Baked) {
-	//	blender::bakeMaterials(getBakeFolder());
-	//}
 
 	setShaderFromBSDF(stdmat, bsdfNode);
 	setPropertiesFromBSDF(mat, stdmat, bsdfNode);

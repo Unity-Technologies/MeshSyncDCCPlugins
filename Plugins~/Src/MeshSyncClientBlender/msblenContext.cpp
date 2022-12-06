@@ -1801,8 +1801,3 @@ void msblenContext::onDepsgraphUpdatedPost(Depsgraph* graph)
 #endif
 
 }
-
-void msblenContext::BakeMaterials()
-{
-    
-}
