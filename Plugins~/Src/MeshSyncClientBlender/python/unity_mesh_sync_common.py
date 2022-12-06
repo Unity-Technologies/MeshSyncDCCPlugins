@@ -136,13 +136,17 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_bakedTexturesPath = bpy.props.StringProperty(name="Baked texture path", default='')
     bpy.types.Scene.meshsync_bakedTextureSize = bpy.props.IntVectorProperty(name="Baked texture size", size=2,
                                                                             default=(512, 512))
-    bpy.types.Scene.meshsync_bake_selection = bpy.props.EnumProperty(name="Bake",
-                                                                         items=(('ALL', 'All',
-                                                                                 'Bake all objects in the scene (including hidden)'),
-                                                                                ('SELECTED', 'Selected',
-                                                                                 'Bake only the selected object')),
-                                                                         default='ALL')
-
+    bpy.types.Scene.meshsync_bake_selection = bpy.props.EnumProperty(name="Objects to bake",
+                                                                     items=(('ALL', 'All',
+                                                                             'Bake all objects in the scene (including hidden)'),
+                                                                            ('SELECTED', 'Selected',
+                                                                             'Bake only the selected object')),
+                                                                     default='ALL')
+    from .unity_mesh_sync_baking import MESHSYNC_BakeChannelSetting, msb_bakeAllSet, msb_bakeAllGet
+    bpy.types.Scene.meshsync_bake_channel_settings = bpy.props.CollectionProperty(type=MESHSYNC_BakeChannelSetting)
+    bpy.types.Scene.meshsync_bake_all_channels = bpy.props.BoolProperty(name="All", description="Toggle all",
+                                                                        get=msb_bakeAllGet,
+                                                                        set=msb_bakeAllSet)
 
 
 @persistent
@@ -196,8 +200,9 @@ class MESHSYNC_PT:
     bl_region_type = "UI"
     bl_category = "Tool"
 
-from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_PT_Baking
+from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_BakeChannelSetting
 
-sharedClasses = [MESHSYNC_OT_select_bake_folder,
+sharedClasses = [MESHSYNC_BakeChannelSetting,
+                 MESHSYNC_OT_select_bake_folder,
                  MESHSYNC_OT_Bake,
                  MESHSYNC_OT_RevertBake]

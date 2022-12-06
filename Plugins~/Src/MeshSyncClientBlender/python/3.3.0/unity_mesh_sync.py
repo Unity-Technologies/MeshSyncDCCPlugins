@@ -335,7 +335,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking, msb_setBakingDefaults
 
 classes = [
     MESHSYNC_PT_Main,
@@ -354,15 +354,17 @@ classes = [
 ] + sharedClasses
 
 def register():
-    msb_initialize_properties()
     bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
     for c in classes:
         bpy.utils.register_class(c)
+    msb_initialize_properties()
+    bpy.app.handlers.load_post.append(msb_setBakingDefaults)
 
 def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
+    bpy.app.handlers.load_post.remove(msb_setBakingDefaults)
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()

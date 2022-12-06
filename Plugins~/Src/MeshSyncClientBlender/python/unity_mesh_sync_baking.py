@@ -1,15 +1,16 @@
 import bpy, os, datetime, time
 from bpy_extras.io_utils import ExportHelper
+from bpy.app.handlers import persistent
 
 from .unity_mesh_sync_common import MESHSYNC_PT
+
 
 # Constants:
 ORIGINAL_MATERIAL = 'ORIGINAL_MATERIAL'
 BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
 
 
-BAKED_CHANNELS = ["Base Color", "Roughness", "Metallic", "Normal", "Emission",
-                  "Emission Strength", "Clearcoat"]
+BAKED_CHANNELS = ["Base Color", "Metallic", "Roughness", "Clearcoat", "Emission", "Emission Strength", "Normal"]
 
 channelNameToBakeName = {
     'Base Color': 'DIFFUSE',
@@ -18,6 +19,7 @@ channelNameToBakeName = {
     'Normal': 'NORMAL',
 }
 
+BAKE_INPUTS_DIRECTLY = True
 
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
     hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
@@ -30,6 +32,34 @@ def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
 
     return True
 
+class MESHSYNC_BakeChannelSetting(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="")
+    bakeChannelEnabled: bpy.props.BoolProperty(name="", description="Whether to bake this channel or not", default=True)
+
+def msb_bakeAllChanged(self, context):
+    for channelSetting in context.scene.meshsync_bake_channel_settings:
+        channelSetting.bakeChannelEnabled = context.scene.meshsync_bake_all_channels
+
+def msb_bakeAllGet(scene):
+    for channelSetting in scene.meshsync_bake_channel_settings:
+        if not channelSetting.bakeChannelEnabled:
+            return False
+    return True
+
+def msb_bakeAllSet(scene, newValue):
+    for channelSetting in scene.meshsync_bake_channel_settings:
+        channelSetting.bakeChannelEnabled = newValue
+
+@persistent
+def msb_setBakingDefaults(dummy):
+    context = bpy.context
+    context.scene.meshsync_bake_channel_settings.clear()
+    if len(context.scene.meshsync_bake_channel_settings) != len(BAKED_CHANNELS):
+        context.scene.meshsync_bake_channel_settings.clear()
+        for channel in BAKED_CHANNELS:
+            channelSettings = context.scene.meshsync_bake_channel_settings.add()
+            channelSettings.name = channel
+
 class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Baking"
     bl_parent_id = "MESHSYNC_PT_Main"
@@ -41,6 +71,15 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_decorate = False
 
         layout.prop(context.scene, "meshsync_bake_selection", expand=True)
+
+        box = layout# layout.box()
+        box.alignment = 'LEFT'
+        box.label(text="Material channels to bake")
+        box.prop(context.scene, "meshsync_bake_all_channels")
+        for channelSetting in context.scene.meshsync_bake_channel_settings:
+            row = box.row()
+            row.prop(channelSetting, "bakeChannelEnabled", text=channelSetting.name)
+
         layout.operator("meshsync.bake_materials")
         row = layout.row()
         row.prop(context.scene, "meshsync_bakedTexturesPath")
@@ -108,18 +147,16 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             node.parent = frame
 
     def connectBakedBSDF(self, bakedMat, bsdf):
-        # Find copies of the material and
-        # for mat in bpy.data.materials:
-        #     if ORIGINAL_MATERIAL in mat and \
-        #             mat[ORIGINAL_MATERIAL] == originalMat.name:
-        #         node_tree = mat.node_tree
-        #         bakedBSDF = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
-        #         materialOutputNodeName = bsdf.outputs[0].links[0].to_node.name
-        #         node_tree.links.new(bakedBSDF.outputs[0], node_tree.nodes[materialOutputNodeName].inputs[0])
         node_tree = bakedMat.node_tree
         bakedBSDF = node_tree.nodes[bakedMat[BAKED_MATERIAL_SHADER]]
         materialOutputNodeName = bsdf.outputs[0].links[0].to_node.name
         node_tree.links.new(bakedBSDF.outputs[0], node_tree.nodes[materialOutputNodeName].inputs[0])
+
+    def isChannelBakeEnabled(self, context, channel):
+        for channelSetting in context.scene.meshsync_bake_channel_settings:
+            if channelSetting.name == channel:
+                return channelSetting.bakeChannelEnabled
+        return False
 
     def bakeObject(self, context, obj):
         if not msb_canObjectMaterialsBeBaked(obj):
@@ -147,6 +184,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             # store that to frame all new nodes after everything is baked:
             bakedMat = mat
             for channel in BAKED_CHANNELS:
+                if not self.isChannelBakeEnabled(context, channel):
+                    continue
+
                 didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, channel)
                 if didBake:
                     bakedMat = newMat
@@ -311,7 +351,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return False, mat
 
-    def findOrCreateImage(self, context, obj, suffix, alpha=False):
+    def findOrCreateImage(self, context, obj, suffix, colorSpace, alpha=False):
         imageName = f"{obj.name}_baked_{suffix}"
 
         result = None
@@ -326,6 +366,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                                          width=context.scene.meshsync_bakedTextureSize[0],
                                          height=context.scene.meshsync_bakedTextureSize[1],
                                          alpha=alpha)
+            result.colorspace_settings.name = colorSpace
+
         return result
 
     def ensureUVs(self, context, obj):
@@ -404,6 +446,30 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         scene.render.bake.use_pass_direct = False
         scene.render.bake.use_pass_indirect = False
         scene.render.bake.use_pass_color = True
+        scene.render.image_settings.file_format = 'PNG'
+
+        # Set Correct Colour space for bake
+        scene.display_settings.display_device = 'sRGB'
+        scene.view_settings.view_transform = 'Standard'
+        scene.view_settings.look = 'None'
+        scene.view_settings.exposure = 0
+        scene.view_settings.gamma = 1
+        scene.sequencer_colorspace_settings.name = 'sRGB'
+        scene.cycles.time_limit = 0
+
+        # Set Cycles to use CUDA, if we aren't using any acceleration
+        if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
+            context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
+        scene.cycles.use_auto_tile = True
+        scene.cycles.max_bounces = 12
+        scene.cycles.diffuse_bounces = 8
+        scene.cycles.glossy_bounces = 2
+        scene.cycles.transparent_max_bounces = 0
+        scene.cycles.transmission_bounces = 2
+        scene.cycles.volume_bounces = 0
+
+        scene.render.bake.use_selected_to_active = False
+        scene.render.bake.use_cage = False
 
         return mat
 
@@ -414,10 +480,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             bakeType = channelNameToBakeName[channel]
         else:
             bakeType = 'EMIT'
+        print(f"Baking {channel} as {bakeType}")
 
-        bakeImage = self.findOrCreateImage(context, obj, bakeType.lower(), alpha=True)
-        # roughnessBakeImage = self.findOrCreateImage(self.mapNameRoughness)
-        # aoBakeImage = self.findOrCreateImage(self.mapNameAO)
+        if channel in ["Base Color", "Color"]:
+            colorSpace = 'sRGB'
+        else:
+            colorSpace = 'Non-Color'
+
+        bakeImage = self.findOrCreateImage(context, obj, bakeType.lower(), colorSpace, alpha=True)
 
         node_tree = mat.node_tree
         # Make sure bsdf points to material copy:
@@ -434,8 +504,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Bake
         bpy.ops.object.bake(type=bakeType, use_clear=True, use_selected_to_active=False)
         bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bakedTexturesPath, bakeImage.name + ".png")
-        bakeImage.file_format = 'PNG'
+        bakeImage.file_format = "PNG"
         bakeImage.save()
+
+        bakeImage.colorspace_settings.name = colorSpace
 
         inputChannelName = channel
         # Adapt input name for bsdf:
@@ -447,6 +519,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             normalMapNode = node_tree.nodes.new("ShaderNodeNormalMap")
             normalMapNode.location = (bakedImageNode.location[0], bakedImageNode.location[1])
             bakedImageNode.location = (bakedImageNode.location[0] - 300, bakedImageNode.location[1])
+
             node_tree.links.new(bakedImageNode.outputs[0], normalMapNode.inputs['Color'])
             node_tree.links.new(normalMapNode.outputs[0], bsdf.inputs[inputChannelName])
         else:
@@ -516,182 +589,3 @@ class MESHSYNC_OT_RevertBake(bpy.types.Operator):
             bpy.data.materials.remove(mat)
 
         return {'FINISHED'}
-
-# class BakeHelper():
-#     bakeWidth = 512
-#     bakeHeight = 512
-#
-#     bakedImages = {}
-#
-#     mapNameDiffuse = "diffuse"
-#     mapNameRoughness = "roughness"
-#     mapNameAO = "ao"
-#
-#     def __init__(self, objectToBake):
-#         self.objectToBake = objectToBake
-#
-#     def findOrCreateImage(self, suffix, alpha=False):
-#         imageName = f"{self.objectToBake.name}_baked_{suffix}"
-#
-#         result = None
-#
-#         for image in bpy.data.images:
-#             if image.name == imageName:
-#                 result = image
-#                 break
-#
-#         if result is None:
-#             result = bpy.data.images.new(imageName, width=self.bakeWidth, height=self.bakeHeight, alpha=alpha)
-#
-#         self.bakedImages[suffix] = result
-#
-#         return result
-#
-#     def bake(self, bakeFolder):
-#         scene = bpy.context.scene
-#         self.bakedImages.clear()
-#
-#         from .unity_mesh_sync_common import msb_apply_scene_settings, msb_context
-#
-#         # if not msb_context.is_setup:
-#         msb_context.flushPendingList()
-#         msb_apply_scene_settings()
-#         msb_context.setup(bpy.context)
-#
-#         # test:
-#         smartUV = True
-#         samples = 4
-#
-#         hasfolder = os.access(bakeFolder, os.W_OK)
-#         if hasfolder is False:
-#             self.report({'WARNING'}, "Selected an invalid export folder")
-#             return {'FINISHED'}
-#
-#         if smartUV:
-#             if bpy.context.object.mode == 'OBJECT':
-#                 bpy.ops.object.mode_set(mode='EDIT')
-#
-#             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
-#             bpy.ops.mesh.select_all(action='SELECT')
-#             bpy.ops.mesh.select_linked(delimit={'SEAM'})
-#             bpy.ops.uv.smart_project(island_margin=0.01, scale_to_bounds=True)
-#             bpy.ops.uv.pack_islands(rotate=True, margin=0.001)
-#
-#         if bpy.context.object.mode == 'EDIT':
-#             bpy.ops.object.mode_set(mode='OBJECT')
-#
-#         scene.render.engine = "CYCLES"
-#         scene.cycles.device = "GPU"
-#         scene.cycles.samples = samples
-#
-#         diffuseBakeImage = self.findOrCreateImage(self.mapNameDiffuse, alpha=True)
-#         roughnessBakeImage = self.findOrCreateImage(self.mapNameRoughness)
-#         aoBakeImage = self.findOrCreateImage(self.mapNameAO)
-#
-#         # ----- DIFFUSE -----
-#
-#         for mat in self.objectToBake.data.materials:
-#             node_tree = mat.node_tree
-#             node = node_tree.nodes.new("ShaderNodeTexImage")
-#             node.select = True
-#             node_tree.nodes.active = node
-#             node.image = diffuseBakeImage
-#
-#         scene.render.bake.use_pass_direct = False
-#         scene.render.bake.use_pass_indirect = False
-#         scene.render.bake.use_pass_color = True
-#
-#         bpy.ops.object.bake(type='DIFFUSE', use_clear=True, use_selected_to_active=False)
-#         diffuseBakeImage.filepath_raw = os.path.join(bakeFolder, diffuseBakeImage.name + ".png")
-#         diffuseBakeImage.file_format = 'PNG'
-#         diffuseBakeImage.save()
-#
-#         # ----- ROUGHNESS -----
-#
-#         for mat in self.objectToBake.data.materials:
-#             node_tree = mat.node_tree
-#             node = node_tree.nodes.active
-#             node.image = roughnessBakeImage
-#
-#         bpy.ops.object.bake(type='ROUGHNESS', use_clear=True, use_selected_to_active=False)
-#
-#         roughnessBakeImage.filepath_raw = os.path.join(bakeFolder, roughnessBakeImage.name + ".png")
-#         roughnessBakeImage.file_format = 'PNG'
-#         roughnessBakeImage.save()
-#
-#         # ----- AO -----
-#
-#         for mat in self.objectToBake.data.materials:
-#             node_tree = mat.node_tree
-#             node = node_tree.nodes.active
-#             node.image = aoBakeImage
-#
-#         bpy.ops.object.bake(type='AO', use_clear=True, use_selected_to_active=False)
-#         aoBakeImage.filepath_raw = os.path.join(bakeFolder, aoBakeImage.name + ".png")
-#         aoBakeImage.file_format = 'PNG'
-#         aoBakeImage.save()
-#
-#         # ----- UV -----
-#         # uvSuffix = "_uv"
-#         #
-#         # bpy.ops.object.mode_set(mode='EDIT')
-#         # bpy.ops.mesh.select_all(action='SELECT')
-#         # bpy.ops.object.mode_set(mode='OBJECT')
-#         #
-#         # original_type = bpy.context.area.type
-#         # bpy.context.area.type = "IMAGE_EDITOR"
-#         # uvfilepath = bakeFolder + active_object.name + bakePrefix + uvSuffix + ".png"
-#         # bpy.ops.uv.export_layout(filepath=uvfilepath, size=(self.bakeWidth, self.bakeHeight))
-#         # bpy.context.area.type = original_type
-#
-#         # self.setupBakedMaterial(active_object)
-#
-#         return {'FINISHED'}
-#
-#     def setupImageNode(self, mat, name, bsdf, inputName):
-#         nodes = mat.node_tree.nodes
-#         link = mat.node_tree.links.new
-#
-#         imageNode = bpy.types.ShaderNodeTexImage(nodes.new('ShaderNodeTexImage'))
-#         imageNode.image = self.bakedImages[name]
-#
-#         link(imageNode.outputs[0], bsdf.inputs[inputName])
-#
-#     def setupBakedMaterial(self, bakedObj):
-#         # Create a new material and assign the baked textures:
-#         mat = bpy.data.materials.new(name=f"{bakedObj.name}_baked")
-#         mat.use_nodes = True
-#
-#         originalMats = bakedObj.data.materials
-#         bakedObj.data.materials.clear()
-#         bakedObj.data.materials.append(mat)
-#
-#         nodes = mat.node_tree.nodes
-#         bsdf = nodes['Principled BSDF']
-#
-#         self.setupImageNode(mat, self.mapNameDiffuse, bsdf, "Base Color")
-#         self.setupImageNode(mat, self.mapNameRoughness, bsdf, "Roughness")
-#         # self.setupImageNode(mat, self.mapNameAO, bsdf, "?")
-#
-#         # Restore original materials
-#         # Needs to be called separately after export:
-#         if False:
-#             bakedObj.data.materials.clear()
-#             for origMat in originalMats:
-#                 bakedObj.data.materials.appen(origMat)
-#
-#
-# def bakeMaterials(folder):
-#     print("bakeMaterials")
-#     import json
-#     textureList = []
-#     jsonString = bpy.context.scene.bakedTextures
-#     if jsonString is not None and len(jsonString) > 0:
-#         textureList = json.loads(bpy.types.Scene.bakedTextures)
-#
-#     for obj in bpy.context.scene.objects:
-#         baker = BakeHelper(obj)
-#         baker.bake(folder)
-#
-#     bpy.types.Scene.bakedTextures = json.dumps(textureList)
-#     print(f"textureList: {textureList}")

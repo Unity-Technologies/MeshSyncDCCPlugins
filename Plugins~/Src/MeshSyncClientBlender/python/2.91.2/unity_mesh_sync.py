@@ -347,10 +347,10 @@ classes = [
 ] + sharedClasses
 
 def register():
-    msb_initialize_properties()
     bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
     for c in classes:
         bpy.utils.register_class(c)
+    msb_initialize_properties()
 
 def unregister():
     msb_context.Destroy()
