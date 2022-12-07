@@ -9,8 +9,14 @@ from .unity_mesh_sync_common import MESHSYNC_PT
 ORIGINAL_MATERIAL = 'ORIGINAL_MATERIAL'
 BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
 
-
-BAKED_CHANNELS = ["Base Color", "Metallic", "Roughness", "Clearcoat", "Emission", "Emission Strength", "Normal"]
+# Commented out ones will be supported in next version:
+BAKED_CHANNELS = ["Base Color",
+                  # "Metallic",
+                  "Roughness",
+                  # "Clearcoat",
+                  # "Emission",
+                  # "Emission Strength",
+                  "Normal"]
 
 channelNameToBakeName = {
     'Base Color': 'DIFFUSE',
@@ -485,7 +491,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
         else:
-            bakeType = 'EMIT'
+            print(f"Unable to print {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.")
+            return mat
+
         print(f"Baking {channel} as {bakeType}")
 
         if channel in ["Base Color", "Color"]:
