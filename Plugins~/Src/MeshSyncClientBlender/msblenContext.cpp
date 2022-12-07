@@ -779,7 +779,7 @@ void msblenContext::doExtractMeshData(msblenContextState& state, BlenderSyncSett
 
         // on edit mode, editing is applied to EditMesh and base Mesh is intact. so get data from EditMesh on edit mode.
         // todo: Blender 2.8 displays transparent final mesh on edit mode. extract data from it.
-        if (is_editing && !settings.BakeModifiers) {
+        if (is_editing) {
             doExtractEditMeshData(state, settings, dst, obj, data);
         }
         else {
