@@ -169,7 +169,7 @@ namespace blender {
             auto object = instance.object();
 
             // Don't instance empties, they have no data we can use to get a session id:
-            if (object->type == OB_EMPTY) {
+            if (object->type == OB_EMPTY || object->type == OB_CURVE) {
                 continue;
             }
 
