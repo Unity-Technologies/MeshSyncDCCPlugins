@@ -730,8 +730,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
-        const bool need_convert = 
-            (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
+        const bool need_convert = settings.BakeModifiers || !is_mesh(src);
 
         if (need_convert) {
             if (settings.BakeModifiers ) {
@@ -780,7 +779,7 @@ void msblenContext::doExtractMeshData(msblenContextState& state, BlenderSyncSett
 
         // on edit mode, editing is applied to EditMesh and base Mesh is intact. so get data from EditMesh on edit mode.
         // todo: Blender 2.8 displays transparent final mesh on edit mode. extract data from it.
-        if (is_editing) {
+        if (is_editing && !settings.BakeModifiers) {
             doExtractEditMeshData(state, settings, dst, obj, data);
         }
         else {
