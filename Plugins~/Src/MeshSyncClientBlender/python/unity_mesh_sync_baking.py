@@ -19,6 +19,8 @@ channelNameToBakeName = {
     'Normal': 'NORMAL',
 }
 
+BAKE_INPUTS_DIRECTLY = False
+
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
     hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
     if not hasMaterials:
@@ -391,7 +393,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def prepareBake(self, context, obj, bsdf, mat):
         if context.object is not None:
             bpy.ops.object.mode_set(mode='OBJECT')
-        # bpy.ops.object.select_all(view_3d, action='DESELECT')
         for ob in context.selected_objects:
             ob.select_set(False)
         obj.select_set(True)
@@ -426,8 +427,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 matIndex = obj.material_slots.find(mat.name)
                 obj.material_slots[matIndex].material = matCopy
-            # obj.data.materials.pop(index=obj.data.materials.find(mat.name))
-            # obj.data.materials.append(matCopy)
 
             mat = matCopy
 
@@ -471,8 +470,17 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return mat
 
+    def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, channel):
+
+
+
+        return mat
+
     def bakeChannel(self, context, obj, mat, bsdf, channel):
         mat = self.prepareBake(context, obj, bsdf, mat)
+
+        if BAKE_INPUTS_DIRECTLY:
+            return self.bakeChannelInputsDirectly(context, obj, mat, bsdf, channel)
 
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
