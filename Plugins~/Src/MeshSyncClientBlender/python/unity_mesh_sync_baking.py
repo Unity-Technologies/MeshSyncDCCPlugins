@@ -483,7 +483,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
         else:
-            print(f"Unable to print {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.")
+            print(f"Unable to bake {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.")
             return mat
 
         print(f"Baking {channel} as {bakeType}")
