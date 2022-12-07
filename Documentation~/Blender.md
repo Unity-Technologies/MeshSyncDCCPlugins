@@ -104,11 +104,11 @@ MeshSync has functionality to create baked material copies for each object to al
 
 |**Option** |**Description** |
 |:---     |:---|
-| Objects to bake | Bakes all objects in the scene or only seleccted objects (including hidden objects). |
-| Material channels to bake | Options to choose which channels should be baked. |
+| Objects to bake | Bakes all objects in the scene or only selected objects (including hidden objects). |
+| Material channels to bake | Choose which channels should be baked. |
 | Bake to individual materials | Performs the bake. |
 | Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |
 | Baked texture path | Folder to save baked textures in. |
 | Baked texture size | Baked texture dimensions. |
 
-NOTE: Baking is an experimental feature and only bakes the output the active *Material Output* node receives. This may not always be correct depending on the node setup and is meant to be used as a material preview only.
+NOTE: Baking is an experimental feature and only bakes the output the active *Material Output* node receives. The baked result may not always be correct, depending on the node setup, and is meant to be used as a material preview only.
