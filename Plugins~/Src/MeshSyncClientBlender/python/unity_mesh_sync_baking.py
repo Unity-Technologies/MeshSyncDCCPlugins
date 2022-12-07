@@ -11,11 +11,11 @@ BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
 
 # Commented out ones will be supported in next version:
 BAKED_CHANNELS = ["Base Color",
-                  # "Metallic",
+                  "Metallic",
                   "Roughness",
-                  # "Clearcoat",
-                  # "Emission",
-                  # "Emission Strength",
+                  "Clearcoat",
+                  "Emission",
+                  "Emission Strength",
                   "Normal"]
 
 channelNameToBakeName = {
@@ -491,7 +491,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
         else:
-            print(f"Unable to print {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.")
+            print(f"Unable to bake {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.\n")
             return mat
 
         print(f"Baking {channel} as {bakeType}")
