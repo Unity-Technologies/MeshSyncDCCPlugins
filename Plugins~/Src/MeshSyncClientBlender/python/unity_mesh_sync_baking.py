@@ -19,8 +19,6 @@ channelNameToBakeName = {
     'Normal': 'NORMAL',
 }
 
-BAKE_INPUTS_DIRECTLY = True
-
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
     hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
     if not hasMaterials:
