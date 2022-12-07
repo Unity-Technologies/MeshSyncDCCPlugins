@@ -196,6 +196,9 @@ class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
         return {'FINISHED'}
 
 class MESHSYNC_PT:
+    '''
+    Base class for meshsync panels.
+    '''
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Tool"
