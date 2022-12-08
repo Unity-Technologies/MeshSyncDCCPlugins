@@ -16,6 +16,9 @@ BAKED_CHANNELS = ["Base Color",
                   "Emission",
                   "Normal"]
 
+# The above channels may not exist in all BSDF types, mapping of alternative names:
+synonymMap = {"Base Color": ["Color"]}
+
 channelNameToBakeName = {
     'Base Color': 'DIFFUSE',
     'Color': 'DIFFUSE',
@@ -125,18 +128,21 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         outputNode = self.findMaterialOutputNode(mat)
 
         if outputNode is None:
-            print(f"Cannot find material output node with an input. Cannot bake {mat.name}!")
+            print(f"Cannot find material output node with a surface input. Cannot bake {mat.name}!")
             return None, None
 
         # Get used shader or whatever is connected to the material output node:
         input = self.traverseReroutes(outputNode.inputs[0].links[0].from_node)
-
         if input is None:
-            print(f"Cannot find material output node with an input. Cannot bake {mat.name}!")
+            print(f"Cannot find material output node with a valid surface input. Cannot bake {mat.name}!")
             return outputNode, None
 
         if input.mute:
             print(f"Input to material output is muted. Cannot bake {mat.name}!")
+            return outputNode, None
+
+        if input.type in ['HOLDOUT']:
+            print(f"Input to material output is an unsupported shader type: {input.type}!")
             return outputNode, None
 
         return outputNode, input
@@ -190,10 +196,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             for matSlot in obj.material_slots:
                 matSlot.material = None
             # if len(materials) > 0:
-                # for i in range(len(obj.material_slots)):
-                #     bpy.ops.object.material_slot_remove({'object': obj})
-                #
-                # obj.data.materials.append(materials[0])
+            # for i in range(len(obj.material_slots)):
+            #     bpy.ops.object.material_slot_remove({'object': obj})
+            #
+            # obj.data.materials.append(materials[0])
 
         for matIndex, mat in enumerate(materials):
             obj.material_slots[matIndex].material = mat
@@ -362,17 +368,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if bsdf is None:
             return [True, "Material output is not connected to a shader."]
 
-        if 'bsdf' not in bsdf.type.lower():
-            return [True, f"Material output is not connected to a shader but a node of type: {bsdf.type}."]
+        if not self.canBsdfBeBaked(bsdf):
+            return [True, f"Material output is not connected to a supported shader but a node of type: {bsdf.type}."]
 
-        if channel not in bsdf.inputs:
-            # If the bsdf doesn't have "Base Color", it might have "Color":
-            if channel == "Base Color":
-                return self.doesBSDFChannelNeedBaking(obj, bsdf, "Color")
-
+        bsdfInputName = self.getBSDFChannelInputName(bsdf, channel)
+        if bsdfInputName is None:
             return [False]
 
-        inputSocket = bsdf.inputs[channel]
+        inputSocket = bsdf.inputs[bsdfInputName]
 
         # If there's nothing connected to the socket, we can use the socket's default value.
         if len(inputSocket.links) == 0:
@@ -438,7 +441,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             location += self.getNodeYLocation(node.parent)
         return location
 
-    def prepareBake(self, context, obj, bsdf, mat):
+    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
         if context.object is not None:
             bpy.ops.object.mode_set(mode='OBJECT')
         for ob in context.selected_objects:
@@ -461,12 +464,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 print(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
 
-                bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
+                if canBakeBSDF:
+                    bakedBSDF = matCopy.node_tree.nodes.new(type=bsdf.bl_idname)
+                else:
+                    bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
 
-                # If the original bsdf is a principled BSDF, copy the input settings from it:
-                if bsdf.type == 'BSDF_PRINCIPLED':
-                    for input in bsdf.inputs:
-                        bakedBSDF.inputs[input.name].default_value = input.default_value
+                # Copy the input settings from the original bsdf so anything that's not baked still matches:
+                for input in bsdf.inputs:
+                    bakedBSDFInputName = self.getBSDFChannelInputName(bakedBSDF, input.name)
+                    if bakedBSDFInputName is None:
+                        continue
+
+                    bakedBSDF.inputs[input.name].default_value = input.default_value
 
                 # Find lowest node in the tree and put the baked bsdf under that:
                 minYLocation = bsdf.location[1]
@@ -536,13 +545,16 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return self.traverseReroutes(node.inputs[0].links[0].from_node)
 
     def canBsdfBeBaked(self, bsdf):
-        print(f"canBsdfBeBaked: {bsdf.type}")
+        if bsdf.type in ['EMISSION', 'SUBSURFACE_SCATTERING']:
+            return True
+
         return 'bsdf' in bsdf.type.lower()
 
     def bakeToImage(self, context, obj, mat, bsdf, bakeType, channel):
         colorSpace = self.getChannelColourSpace(channel)
 
-        bakeImage = self.createImage(context, obj, f"{mat.name}_{channel.lower()}", colorSpace, alpha=(colorSpace == 'sRGB'))
+        bakeImage = self.createImage(context, obj, f"{mat.name}_{channel.lower()}", colorSpace,
+                                     alpha=(colorSpace == 'sRGB'))
 
         node_tree = mat.node_tree
 
@@ -572,7 +584,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
     def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, matOutput, channel):
         # Connect BSDF channel input directly to the material output and bake that:
-        print(f"Baking inputs of channel:'{channel}'.")
+
+        bsdfChannelSocketName = self.getBSDFChannelInputName(bsdf, channel)
+
+        print(f"Baking inputs of channel:'{bsdfChannelSocketName}'.")
 
         node_tree = mat.node_tree
         link = mat.node_tree.links.new
@@ -582,11 +597,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bakedBSDF = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
         matOutput = node_tree.nodes[matOutput.name]
 
+        # Normals cannot be baked this way, use what the material output receives instead:
         if channel == 'Normal':
             link(bsdf.outputs[0], matOutput.inputs[0])
             return self.bakeWithFallback(context, obj, mat, channel)
 
-        channelInput = bsdf.inputs[channel].links[0].from_socket
+        bsdfChannelSocket = bsdf.inputs[bsdfChannelSocketName]
+
+        channelInput = bsdfChannelSocket.links[0].from_socket
         link(channelInput, matOutput.inputs[0])
 
         return self.bakeToImage(context, obj, mat, bakedBSDF, 'EMIT', channel)
@@ -606,11 +624,28 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return self.bakeToImage(context, obj, mat, bsdf, bakeType, channel)
 
+    def getChannelNameSynonyms(self, channel):
+        if channel in synonymMap:
+            return synonymMap[channel]
+        return []
+
+    def getBSDFChannelInputName(self, bsdf, channel):
+        if channel in bsdf.inputs:
+            return channel
+
+        for c in self.getChannelNameSynonyms(channel):
+            if c in bsdf.inputs:
+                return c
+
+        return None
+
     def bakeChannel(self, context, obj, mat, bsdf, matOutput, channel):
-        mat = self.prepareBake(context, obj, bsdf, mat)
+        canBakeBSDF = self.canBsdfBeBaked(bsdf)
+
+        mat = self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
 
         # Ideally, we should bake the BSDF inputs:
-        if self.canBsdfBeBaked(bsdf):
+        if canBakeBSDF:
             bakedImageNode = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
         else:
             bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
@@ -621,10 +656,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Connect baked image to baked bsdf node:
         node_tree = mat.node_tree
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
-        inputChannelName = channel
-        # Adapt input name for bsdf:
-        if channel == 'Color':
-            inputChannelName = 'Base Color'
+        inputChannelName = self.getBSDFChannelInputName(bsdf, channel)
 
         # Connect baked image to the input now:
         if inputChannelName == 'Normal':

@@ -111,4 +111,15 @@ MeshSync has functionality to create baked material copies for each object to al
 | Baked texture path | Folder to save baked textures in. |
 | Baked texture size | Baked texture dimensions. |
 
-NOTE: Baking is an experimental feature and only bakes the output the active *Material Output* node receives. The baked result may not always be correct, depending on the node setup, and is meant to be used as a material preview only.
+MeshSync will attempt to find a BSDF node connected to the *Material Output* node and bake the input of the BSDF. If there is no BSDF connected, MeshSync will bake the data coming into the *Material Output* that can be baked (Only color, normals and roughness are supported). 
+Shader nodes that take other shader nodes as input (Mix and Add Shader) cannot be baked and will use the fallback mode.
+
+If the object has no UVs, MeshSync will use blender's *Smart UV Project* operator to generate UVs.
+
+The blender console will show progress during the bake.
+
+## Material baking troubleshooting
+|**Problem** |**Possible cause** |
+|:---     |:---|
+| The baked maps are black | Is the object UV unwrapped? Baking will not work without valid UVs. |
+| The baked maps do not match the original material | The material node tree does not use a BSDF as input to the *Material Output* node. |
