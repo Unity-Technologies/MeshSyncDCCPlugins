@@ -4,7 +4,6 @@ from bpy.app.handlers import persistent
 
 from .unity_mesh_sync_common import MESHSYNC_PT
 
-
 # Constants:
 ORIGINAL_MATERIAL = 'ORIGINAL_MATERIAL'
 BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
@@ -15,7 +14,6 @@ BAKED_CHANNELS = ["Base Color",
                   "Roughness",
                   "Clearcoat",
                   "Emission",
-                  "Emission Strength",
                   "Normal"]
 
 channelNameToBakeName = {
@@ -25,7 +23,6 @@ channelNameToBakeName = {
     'Normal': 'NORMAL',
 }
 
-BAKE_INPUTS_DIRECTLY = False
 
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
     hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
@@ -38,13 +35,16 @@ def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
 
     return True
 
+
 class MESHSYNC_BakeChannelSetting(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="")
     bakeChannelEnabled: bpy.props.BoolProperty(name="", description="Whether to bake this channel or not", default=True)
 
+
 def msb_bakeAllChanged(self, context):
     for channelSetting in context.scene.meshsync_bake_channel_settings:
         channelSetting.bakeChannelEnabled = context.scene.meshsync_bake_all_channels
+
 
 def msb_bakeAllGet(scene):
     for channelSetting in scene.meshsync_bake_channel_settings:
@@ -52,19 +52,21 @@ def msb_bakeAllGet(scene):
             return False
     return True
 
+
 def msb_bakeAllSet(scene, newValue):
     for channelSetting in scene.meshsync_bake_channel_settings:
         channelSetting.bakeChannelEnabled = newValue
 
+
 @persistent
 def msb_setBakingDefaults(dummy):
     context = bpy.context
-    context.scene.meshsync_bake_channel_settings.clear()
     if len(context.scene.meshsync_bake_channel_settings) != len(BAKED_CHANNELS):
         context.scene.meshsync_bake_channel_settings.clear()
         for channel in BAKED_CHANNELS:
             channelSettings = context.scene.meshsync_bake_channel_settings.add()
             channelSettings.name = channel
+
 
 class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Baking"
@@ -78,7 +80,7 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
 
         layout.prop(context.scene, "meshsync_bake_selection", expand=True)
 
-        box = layout# layout.box()
+        box = layout  # layout.box()
         box.alignment = 'LEFT'
         box.label(text="Material channels to bake")
         box.prop(context.scene, "meshsync_bake_all_channels")
@@ -104,8 +106,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return ORIGINAL_MATERIAL in mat
 
     def canMaterialBeBaked(self, mat):
-        return mat is not None and\
-            not self.isMaterialCopy(mat) and\
+        return mat is not None and \
+            not self.isMaterialCopy(mat) and \
             mat.use_nodes
 
     def findMaterialOutputNode(self, mat):
@@ -119,21 +121,25 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return outputNode
 
-    def findMaterialOutputNodeInput(self, mat):
+    def findMaterialOutputNodeAndInput(self, mat):
         outputNode = self.findMaterialOutputNode(mat)
 
         if outputNode is None:
             print(f"Cannot find material output node with an input. Cannot bake {mat.name}!")
-            return None
+            return None, None
 
         # Get used shader or whatever is connected to the material output node:
-        input = outputNode.inputs[0].links[0].from_node
+        input = self.traverseReroutes(outputNode.inputs[0].links[0].from_node)
+
+        if input is None:
+            print(f"Cannot find material output node with an input. Cannot bake {mat.name}!")
+            return outputNode, None
 
         if input.mute:
-            print(f"Input too material output is muted. Cannot bake {mat.name}!")
-            return None
+            print(f"Input to material output is muted. Cannot bake {mat.name}!")
+            return outputNode, None
 
-        return input
+        return outputNode, input
 
     def deselectAllMaterialNodes(self, mat):
         for node in mat.node_tree.nodes:
@@ -152,11 +158,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for node in selected:
             node.parent = frame
 
-    def connectBakedBSDF(self, bakedMat, bsdf):
+    def connectBakedBSDF(self, bakedMat, bsdf, matOutput):
         node_tree = bakedMat.node_tree
         bakedBSDF = node_tree.nodes[bakedMat[BAKED_MATERIAL_SHADER]]
-        materialOutputNodeName = bsdf.outputs[0].links[0].to_node.name
-        node_tree.links.new(bakedBSDF.outputs[0], node_tree.nodes[materialOutputNodeName].inputs[0])
+        materialOutputNode = node_tree.nodes[matOutput.name]
+        node_tree.links.new(bakedBSDF.outputs[0], materialOutputNode.inputs[0])
 
     def isChannelBakeEnabled(self, context, channel):
         for channelSetting in context.scene.meshsync_bake_channel_settings:
@@ -168,14 +174,39 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if not msb_canObjectMaterialsBeBaked(obj):
             return
 
+        bakeIndividualMats = True
+
+        # In order to bake individual materials, we need to remove any other materials.
+        # To do this we need to:
+        # - Create a list of all materials that are on the object
+        # - Remove all materials from the object
+        # - Iterate over the materials and assign each one and bake it
+        materials = []
+        finalMaterials = []
         for matSlot in obj.material_slots:
-            mat = matSlot.material
+            materials.append(matSlot.material)
+
+        if bakeIndividualMats:
+            for matSlot in obj.material_slots:
+                matSlot.material = None
+            # if len(materials) > 0:
+                # for i in range(len(obj.material_slots)):
+                #     bpy.ops.object.material_slot_remove({'object': obj})
+                #
+                # obj.data.materials.append(materials[0])
+
+        for matIndex, mat in enumerate(materials):
+            obj.material_slots[matIndex].material = mat
+
             if not self.canMaterialBeBaked(mat):
                 continue
 
             self.bakedImageNodeYOffset = 0
 
-            bsdf = self.findMaterialOutputNodeInput(mat)
+            matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
+
+            if matOutput is None or bsdf is None:
+                continue
 
             # Ensure object is not hidden, otherwise baking will fail:
             wasHidden = obj.hide_get()
@@ -193,18 +224,32 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
-                didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, channel)
+                didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, matOutput, channel)
                 if didBake:
                     bakedMat = newMat
 
             if bakedMat != mat:
                 print(f"Baked '{mat.name}' on '{obj.name}'.\n")
                 self.frameSelectedNodes(bakedMat)
-                self.connectBakedBSDF(bakedMat, bsdf)
+                self.connectBakedBSDF(bakedMat, bsdf, matOutput)
+
+            # Needed for restore afterwards:
+            finalMaterials.append(bakedMat)
+
+            obj.material_slots[matIndex].material = None
 
             # Restore state:
             obj.select_set(False)
             obj.hide_set(wasHidden)
+
+        if bakeIndividualMats:
+            # Restore material slots:
+            # for i in range(len(obj.material_slots)):
+            #     bpy.ops.object.material_slot_remove({'object': obj})
+            # for mat in finalMaterials:
+            #     obj.data.materials.append(mat)
+            for matIndex, mat in enumerate(finalMaterials):
+                obj.material_slots[matIndex].material = mat
 
     def bakeAll(self, context):
         for obj in context.scene.objects:
@@ -348,40 +393,37 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return result
 
-    def bakeBSDFChannelIfNeeded(self, context, obj, mat, bsdf, channel):
+    def bakeBSDFChannelIfNeeded(self, context, obj, mat, bsdf, matOutput, channel):
         result = self.doesBSDFChannelNeedBaking(obj, bsdf, channel)
         if result[0]:
             print(f"Baking {channel} for {obj.name}. Reason: {result[1]}")
-            bakedMat = self.bakeChannel(context, obj, mat, bsdf, channel)
+            bakedMat = self.bakeChannel(context, obj, mat, bsdf, matOutput, channel)
             return True, bakedMat
 
         return False, mat
 
-    def findOrCreateImage(self, context, obj, suffix, colorSpace, alpha=False):
-        imageName = f"{obj.name}_baked_{suffix}"
+    def createImage(self, context, obj, name, colorSpace, alpha=False):
+        imageName = name.replace(" ", "_")
 
-        result = None
+        # Delete any existing image with this name to ensure the dimensions and alpha settings are correct:
+        existingImageIndex = bpy.data.images.find(imageName)
+        if existingImageIndex >= 0:
+            bpy.data.images.remove(bpy.data.images[existingImageIndex])
 
-        for image in bpy.data.images:
-            if image.name == imageName:
-                result = image
-                break
-
-        if result is None:
-            result = bpy.data.images.new(imageName,
-                                         width=context.scene.meshsync_bakedTextureSize[0],
-                                         height=context.scene.meshsync_bakedTextureSize[1],
-                                         alpha=alpha)
-            result.colorspace_settings.name = colorSpace
+        result = bpy.data.images.new(imageName,
+                                     width=context.scene.meshsync_bakedTextureSize[0],
+                                     height=context.scene.meshsync_bakedTextureSize[1],
+                                     alpha=alpha)
+        result.colorspace_settings.name = colorSpace
 
         return result
 
     def ensureUVs(self, context, obj):
-        # test:
         createUVs = len(obj.data.uv_layers) == 0
 
         if createUVs:
-            if bpy.context.object.mode == 'OBJECT':
+            print(f"Object: '{obj.name}' has no UVs, auto-generating some.")
+            if context.object.mode == 'OBJECT':
                 bpy.ops.object.mode_set(mode='EDIT')
 
             bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='VERT')
@@ -412,7 +454,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             if matCopyIndex >= 0:
                 matCopy = bpy.data.materials[matCopyIndex]
             else:
-                mat.use_fake_user = True    # Make sure this does not get deleted when it's not referenced anymore
+                mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
                 matCopy = mat.copy()
                 matCopy[ORIGINAL_MATERIAL] = mat.name
                 matCopy.name = f"{mat.name}_{obj.name}_baked"
@@ -420,6 +462,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 print(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
 
                 bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
+
+                # If the original bsdf is a principled BSDF, copy the input settings from it:
+                if bsdf.type == 'BSDF_PRINCIPLED':
+                    for input in bsdf.inputs:
+                        bakedBSDF.inputs[input.name].default_value = input.default_value
 
                 # Find lowest node in the tree and put the baked bsdf under that:
                 minYLocation = bsdf.location[1]
@@ -445,7 +492,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         scene.render.engine = "CYCLES"
         scene.cycles.device = "GPU"
-        scene.cycles.samples = 10       # TODO: This could be a setting for the user to change
+        scene.cycles.samples = 10  # TODO: This could be a setting for the user to change
         scene.render.bake.use_pass_direct = False
         scene.render.bake.use_pass_indirect = False
         scene.render.bake.use_pass_color = True
@@ -476,36 +523,28 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return mat
 
-    def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, channel):
+    def traverseReroutes(self, node):
+        if node.mute:
+            return None
 
+        if node is None or node.type != 'REROUTE':
+            return node
 
+        if len(node.inputs[0].links) == 0:
+            return None
 
-        return mat
+        return self.traverseReroutes(node.inputs[0].links[0].from_node)
 
-    def bakeChannel(self, context, obj, mat, bsdf, channel):
-        mat = self.prepareBake(context, obj, bsdf, mat)
+    def canBsdfBeBaked(self, bsdf):
+        print(f"canBsdfBeBaked: {bsdf.type}")
+        return 'bsdf' in bsdf.type.lower()
 
-        if BAKE_INPUTS_DIRECTLY:
-            return self.bakeChannelInputsDirectly(context, obj, mat, bsdf, channel)
+    def bakeToImage(self, context, obj, mat, bsdf, bakeType, channel):
+        colorSpace = self.getChannelColourSpace(channel)
 
-        if channel in channelNameToBakeName:
-            bakeType = channelNameToBakeName[channel]
-        else:
-            print(f"Unable to bake {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.\n")
-            return mat
-
-        print(f"Baking {channel} as {bakeType}")
-
-        if channel in ["Base Color", "Color"]:
-            colorSpace = 'sRGB'
-        else:
-            colorSpace = 'Non-Color'
-
-        bakeImage = self.findOrCreateImage(context, obj, bakeType.lower(), colorSpace, alpha=True)
+        bakeImage = self.createImage(context, obj, f"{mat.name}_{channel.lower()}", colorSpace, alpha=(colorSpace == 'sRGB'))
 
         node_tree = mat.node_tree
-        # Make sure bsdf points to material copy:
-        bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
 
         # Set up image node
         bakedImageNode = node_tree.nodes.new("ShaderNodeTexImage")
@@ -516,13 +555,72 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.bakedImageNodeYOffset += 300
 
         # Bake
-        bpy.ops.object.bake(type=bakeType, use_clear=True, use_selected_to_active=False)
+        bpy.ops.object.bake(type=bakeType, use_clear=True, use_selected_to_active=False, use_split_materials=True)
         bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bakedTexturesPath, bakeImage.name + ".png")
         bakeImage.file_format = "PNG"
         bakeImage.save()
 
         bakeImage.colorspace_settings.name = colorSpace
 
+        return bakedImageNode
+
+    def getChannelColourSpace(self, channel):
+        if channel in ["Base Color", "Color"]:
+            return 'sRGB'
+        else:
+            return 'Non-Color'
+
+    def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, matOutput, channel):
+        # Connect BSDF channel input directly to the material output and bake that:
+        print(f"Baking inputs of channel:'{channel}'.")
+
+        node_tree = mat.node_tree
+        link = mat.node_tree.links.new
+
+        # Make sure bsdf points to material copy:
+        bsdf = node_tree.nodes[bsdf.name]
+        bakedBSDF = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
+        matOutput = node_tree.nodes[matOutput.name]
+
+        if channel == 'Normal':
+            link(bsdf.outputs[0], matOutput.inputs[0])
+            return self.bakeWithFallback(context, obj, mat, channel)
+
+        channelInput = bsdf.inputs[channel].links[0].from_socket
+        link(channelInput, matOutput.inputs[0])
+
+        return self.bakeToImage(context, obj, mat, bakedBSDF, 'EMIT', channel)
+
+    def bakeWithFallback(self, context, obj, mat, channel):
+        if channel in channelNameToBakeName:
+            bakeType = channelNameToBakeName[channel]
+        else:
+            print(
+                f"Unable to bake {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.\n")
+            return None
+
+        print(f"Baking {channel} in fallback mode as {bakeType}")
+
+        node_tree = mat.node_tree
+        bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
+
+        return self.bakeToImage(context, obj, mat, bsdf, bakeType, channel)
+
+    def bakeChannel(self, context, obj, mat, bsdf, matOutput, channel):
+        mat = self.prepareBake(context, obj, bsdf, mat)
+
+        # Ideally, we should bake the BSDF inputs:
+        if self.canBsdfBeBaked(bsdf):
+            bakedImageNode = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
+        else:
+            bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
+
+        if not bakedImageNode:
+            return mat
+
+        # Connect baked image to baked bsdf node:
+        node_tree = mat.node_tree
+        bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
         inputChannelName = channel
         # Adapt input name for bsdf:
         if channel == 'Color':
@@ -555,6 +653,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         print(f"Finished baking. Time taken: {datetime.timedelta(seconds=(time.time() - startTime))}")
         return {'FINISHED'}
 
+
 class MESHSYNC_OT_select_bake_folder(bpy.types.Operator, ExportHelper):
     bl_idname = "meshsync.choose_material_bake_folder"
     bl_label = "Choose folder for baked textures"
@@ -564,6 +663,7 @@ class MESHSYNC_OT_select_bake_folder(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         context.scene.meshsync_bakedTexturesPath = os.path.dirname(self.properties.filepath)
         return {'FINISHED'}
+
 
 class MESHSYNC_OT_RevertBake(bpy.types.Operator):
     bl_idname = "meshsync.revert_bake_materials"
@@ -591,12 +691,12 @@ class MESHSYNC_OT_RevertBake(bpy.types.Operator):
                 if ORIGINAL_MATERIAL in mat:
                     origMatName = mat[ORIGINAL_MATERIAL]
                     if origMatName not in bpy.data.materials:
-                        print(f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.")
+                        print(
+                            f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.")
                         continue
 
                     origMat = bpy.data.materials[origMatName]
-                    obj.data.materials.pop(index=obj.data.materials.find(mat.name))
-                    obj.data.materials.append(origMat)
+                    matSlot.material = origMat
                     materialsToDelete.add(mat)
 
         for mat in materialsToDelete:
