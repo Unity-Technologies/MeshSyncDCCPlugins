@@ -1421,6 +1421,9 @@ void msblenContext::requestLiveEditMessage()
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
+        else if (messageFromServer == ms::REQUEST_USER_SCRIPT_CALLBACK) {
+            m_server_requested_python_callback = true;
+        }
     };
     m_sender.requestLiveEditMessage();
 }
@@ -1464,6 +1467,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     importEntities(m_property_manager.getReceivedEntities());
 
     m_property_manager.clearReceivedData();
+
+    // If a python callback was requested, that may change the scene so run it and don't export until next update:
+    if (m_server_requested_python_callback) {
+        m_server_requested_python_callback = false;
+        m_ignore_events = true;
+        blender::callPythonMethod("meshsync_server_requested_callback");
+        m_ignore_events = false;
+        // Set this to true to force a sync after a python update.
+        // This ensures the server gets refreshed even if the python callback
+        // did not change the scene:
+        m_server_requested_sync = true;
+        return false;
+    }
 
     if (m_server_requested_sync) {
         scope = MeshSyncClient::ObjectScope::All;

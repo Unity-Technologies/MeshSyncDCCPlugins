@@ -652,15 +652,23 @@ std::string getBlenderVersion()
     }
 }
 
+/**
+ * Calls a python method that takes no arguments.
+ */
 void callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
 
     try {
-        auto module = py::module::import("unity_mesh_sync");
-        auto method = module.attr(name);
-        method();
+        auto statement = Format("import MeshSyncClientBlender\n" 
+            "from MeshSyncClientBlender.unity_mesh_sync_common import *\n"
+            "try: %s()\n"
+            "except Exception as e: print(e)", name);
+        
+        py::eval<py::eval_mode::eval_statements>(
+            statement.c_str());
     }
-    catch (...) {
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
     }
 
     py::gil_scoped_release release;
