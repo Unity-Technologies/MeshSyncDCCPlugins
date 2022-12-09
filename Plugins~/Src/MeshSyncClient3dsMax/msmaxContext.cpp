@@ -17,6 +17,8 @@
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
 
+#include <maxscript/maxscript.h>
+
 #ifdef _WIN32
 #pragma comment(lib, "core.lib")
 #pragma comment(lib, "geom.lib")
@@ -64,6 +66,38 @@ static void FeedDeferredCalls()
     ::PostMessage(GetCOREInterface()->GetMAXHWnd(), WM_TRIGGER_CALLBACK, (WPARAM)&FeedDeferredCallsImpl, (LPARAM)nullptr);
 }
 
+std::string getVersion()
+{
+
+#ifdef MeshSyncClient3DSMAX_2022_EXPORTS || MeshSyncClient3DSMAX_2023_EXPORTS || MeshSyncClient3DSMAX_2024_EXPORTS || MeshSyncClient3DSMAX_2025_EXPORTS
+    // 3dsmax is windows only so this should be fine:
+    FPValue resulted_value;
+    ExecuteMAXScriptScript(L"getFileVersion \"$max/3dsmax.exe\"",
+        MAXScript::ScriptSource::NonEmbedded,
+        true,
+        &resulted_value);
+
+    std::wstring wstr = std::wstring(resulted_value.s);
+    std::string str = std::string(wstr.begin(), wstr.end());
+
+    // drop everything after tabs
+    size_t tabIndex = str.find("\t");
+    if (tabIndex != std::string::npos) {
+        str = str.substr(0, tabIndex);
+    }
+
+    // Replace , with .
+    size_t index = 0;
+    while ((index = str.find(',', index)) != std::string::npos) {
+        str.replace(index, 1, ".");
+    }
+
+    return str;
+#else
+    return "<=2021";
+#endif
+}
+
 
 ms::Identifier msmaxContext::TreeNode::getIdentifier() const
 {
@@ -97,6 +131,8 @@ msmaxContext::msmaxContext()
     std::time( &m_time_to_update_scene);
     RegisterNotification(OnStartup, this, NOTIFY_SYSTEM_STARTUP);
     RegisterNotification(OnShutdown, this, NOTIFY_SYSTEM_SHUTDOWN);
+    
+    m_settings.client_settings.dcc_tool_name = "3dsMax_" + getVersion();
 }
 
 msmaxContext::~msmaxContext()
@@ -227,7 +263,7 @@ void msmaxContext::logInfo(const char * format, ...)
 bool msmaxContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+    return m_sender.isServerAvailable();
 }
 
 const std::string& msmaxContext::getErrorMessage()

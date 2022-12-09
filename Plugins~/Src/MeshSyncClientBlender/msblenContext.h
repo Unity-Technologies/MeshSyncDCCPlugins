@@ -210,7 +210,8 @@ private:
 
     msblenCurveHandler m_curves_handler;
 
-    bool m_server_requested_sync;
+    bool m_server_requested_sync = false;
+    bool m_server_requested_python_callback = false;
 
     string m_editor_command_reply;
 

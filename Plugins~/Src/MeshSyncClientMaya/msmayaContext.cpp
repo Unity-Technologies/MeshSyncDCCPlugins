@@ -240,7 +240,7 @@ void msmayaContext::logError(const char * format, ...)
 bool msmayaContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+    return m_sender.isServerAvailable();
 }
 
 const std::string& msmayaContext::getErrorMessage()
@@ -317,6 +317,8 @@ msmayaContext::msmayaContext(MObject obj)
 #undef Body
 
         registerGlobalCallbacks();
+    
+    m_settings.client_settings.dcc_tool_name = "Maya_" + std::string(MGlobal::mayaVersion().asChar());
 }
 
 msmayaContext::~msmayaContext()
