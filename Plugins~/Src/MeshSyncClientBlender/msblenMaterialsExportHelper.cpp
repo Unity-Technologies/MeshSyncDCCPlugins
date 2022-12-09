@@ -416,7 +416,7 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 					stdmat.setSmoothness(1 - colorValue[0]);
 				},
 				[&](int textureId) {
-					stdmat.setSmoothnessMap(textureId);
+					stdmat.setRoughnessMap(textureId);
 				});
 		}
 		else if (isSocket(metallicIdentifier))

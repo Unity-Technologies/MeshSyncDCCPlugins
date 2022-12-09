@@ -147,6 +147,16 @@ def msb_initialize_properties():
     bpy.types.Scene.meshsync_bake_all_channels = bpy.props.BoolProperty(name="All", description="Toggle all",
                                                                         get=msb_bakeAllGet,
                                                                         set=msb_bakeAllSet)
+    bpy.types.Scene.meshsync_generate_uvs = bpy.props.EnumProperty(name="Generate UVs",
+                                                                   description="Whether to auto-generate UVs",
+                                                                   items=(('OFF', 'Off',
+                                                                           'Bake all objects in the scene (including hidden)'),
+                                                                          ('IF_NEEDED', 'If needed',
+                                                                           'Automatically UV unwraps objects if there are no UVs or existing UVs are not in the 0..1 range. WARNING: This will delete existing UVs on the object!'),
+                                                                          ('ALWAYS', 'Always',
+                                                                           'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!'),
+                                                                          ),
+                                                                   default='OFF')
 
 
 @persistent
