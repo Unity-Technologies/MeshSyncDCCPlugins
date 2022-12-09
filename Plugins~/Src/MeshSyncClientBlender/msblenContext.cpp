@@ -730,8 +730,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
-        const bool need_convert = 
-            (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
+        const bool need_convert = settings.BakeModifiers || !is_mesh(src);
 
         if (need_convert) {
             if (settings.BakeModifiers ) {
