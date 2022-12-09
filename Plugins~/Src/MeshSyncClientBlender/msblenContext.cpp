@@ -1122,10 +1122,10 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
                 if (smooth) {
                     auto index =  idx->v->head.index;
                     auto vertext = vertices[index];
-                    dst.normals[ii++] = to_float3(vertext->no);
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(vertext->no));
                 }
                 else {
-                    dst.normals[ii++] = to_float3(idx->f->no);
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(idx->f->no));
                 }
             }
         }
