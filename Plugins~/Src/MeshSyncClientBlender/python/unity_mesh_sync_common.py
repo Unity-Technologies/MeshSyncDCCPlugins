@@ -22,7 +22,7 @@ def msb_modifier_stack_values(objectName):
                     continue
                 value = getattr(mod, prop, True)
 
-                #if the value is a flow, round to 8 decimal places
+                #if the value is a float, round to 8 decimal places
                 if isinstance(value, float):
                     value = round(value, 5)
                 values.append(value)
