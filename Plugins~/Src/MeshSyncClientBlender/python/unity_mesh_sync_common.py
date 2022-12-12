@@ -210,3 +210,14 @@ def meshsync_post_export():
 def meshsync_server_requested_callback():
     for f in mesh_sync_server_requested_callback:
         f()
+
+class MESHSYNC_PT:
+    '''
+    Base class for meshsync panels.
+    '''
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Tool"
+
+# This will hold the baking classes later:
+sharedClasses = []

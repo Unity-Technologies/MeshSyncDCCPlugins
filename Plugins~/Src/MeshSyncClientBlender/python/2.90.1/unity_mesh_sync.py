@@ -15,11 +15,6 @@ from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
 
-class MESHSYNC_PT:
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Tool"
-
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "MeshSync"
@@ -327,7 +322,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-classes = (
+classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
@@ -339,14 +334,14 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-    MESHSYNC_Preferences,
-)
+    MESHSYNC_Preferences
+] + sharedClasses
 
 def register():
-    msb_initialize_properties()
     bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
     for c in classes:
         bpy.utils.register_class(c)
+    msb_initialize_properties()
 
 def unregister():
     msb_context.Destroy()
