@@ -10,6 +10,9 @@ ORIGINAL_MATERIAL = 'ORIGINAL_MATERIAL'
 BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
 UV_OVERRIDE = 'UV_OVERRIDE'
 
+# For debugging and getting a callstack on error:
+throwExceptions = True
+
 # Commented out ones will be supported in next version:
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
@@ -51,35 +54,65 @@ def rgetattr(obj, attr, *args):
 
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
+# Setting classes:
 class MESHSYNC_BakeChannelSetting(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="")
     bakeChannelEnabled: bpy.props.BoolProperty(name="", description="Whether to bake this channel or not", default=True)
 
-
-def msb_bakeAllChanged(self, context):
-    for channelSetting in context.scene.meshsync_bake_channel_settings:
-        channelSetting.bakeChannelEnabled = context.scene.meshsync_bake_all_channels
-
-
-def msb_bakeAllGet(scene):
-    for channelSetting in scene.meshsync_bake_channel_settings:
+def msb_bakeAllGet(meshsync_bake_settings):
+    for channelSetting in meshsync_bake_settings.bake_channel_settings:
         if not channelSetting.bakeChannelEnabled:
             return False
     return True
 
-
-def msb_bakeAllSet(scene, newValue):
-    for channelSetting in scene.meshsync_bake_channel_settings:
+def msb_bakeAllSet(meshsync_bake_settings, newValue):
+    for channelSetting in meshsync_bake_settings.bake_channel_settings:
         channelSetting.bakeChannelEnabled = newValue
 
+class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
+    '''
+    Groups all bake settings in a single class.
+    '''
+    bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default='')
+    bakedTextureSize: bpy.props.IntVectorProperty(name="Baked texture size", size=2,
+                                                  default=(512, 512))
+    bake_selection: bpy.props.EnumProperty(name="Objects to bake",
+                                           items=(('ALL', 'All',
+                                                   'Bake all objects in the scene (including hidden)'),
+                                                  ('SELECTED', 'Selected',
+                                                   'Bake only the selected object')),
+                                           default='ALL')
+    bake_channel_settings: bpy.props.CollectionProperty(type=MESHSYNC_BakeChannelSetting)
+    bake_all_channels: bpy.props.BoolProperty(name="All", description="Toggle all",
+                                              get=msb_bakeAllGet,
+                                              set=msb_bakeAllSet)
+    generate_uvs: bpy.props.EnumProperty(name="Generate UVs",
+                                         description="Whether to auto-generate UVs",
+                                         items=(('OFF', 'Off',
+                                                 'Bake all objects in the scene (including hidden)'),
+                                                ('IF_NEEDED', 'If needed',
+                                                 'Automatically UV unwraps objects if there are no UVs or existing UVs are not in the 0..1 range. WARNING: This will delete existing UVs on the object!'),
+                                                ('ALWAYS', 'Always',
+                                                 'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!')),
+                                         default='OFF')
+    apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
+                                            description="In order to bake and get correct UVs, all modifiers need to be applied",
+                                            default=True)
+
+
+
+def msb_bakeAllChanged(self, context):
+    bakeAll = context.scene.meshsync_bake_settings.bake_all_channels
+    for channelSetting in context.scene.meshsync_bake_settings.bake_channel_settings:
+        channelSetting.bakeChannelEnabled = bakeAll
 
 @persistent
 def msb_setBakingDefaults(dummy):
     context = bpy.context
-    if len(context.scene.meshsync_bake_channel_settings) != len(BAKED_CHANNELS):
-        context.scene.meshsync_bake_channel_settings.clear()
+    if len(context.scene.meshsync_bake_settings.bake_channel_settings) != len(BAKED_CHANNELS):
+        context.scene.meshsync_bake_settings.bake_channel_settings.clear()
         for channel in BAKED_CHANNELS:
-            channelSettings = context.scene.meshsync_bake_channel_settings.add()
+            channelSettings = context.scene.meshsync_bake_settings.bake_channel_settings.add()
             channelSettings.name = channel
 
 
@@ -93,24 +126,26 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        layout.prop(context.scene, "meshsync_bake_selection", expand=True)
+        bakeSettings = context.scene.meshsync_bake_settings
+
+        layout.prop(bakeSettings, "bake_selection", expand=True)
 
         box = layout.box()
         box.alignment = 'LEFT'
         box.label(text="Material channels to bake")
-        box.prop(context.scene, "meshsync_bake_all_channels")
-        for channelSetting in context.scene.meshsync_bake_channel_settings:
+        box.prop(bakeSettings, "bake_all_channels")
+        for channelSetting in bakeSettings.bake_channel_settings:
             row = box.row()
             row.prop(channelSetting, "bakeChannelEnabled", text=channelSetting.name)
 
-        layout.prop(context.scene, "meshsync_generate_uvs", expand=True)
+        layout.prop(bakeSettings, "generate_uvs", expand=True)
+        layout.prop(bakeSettings, "apply_modifiers")
         layout.operator("meshsync.bake_materials")
         row = layout.row()
-        row.prop(context.scene, "meshsync_bakedTexturesPath")
+        row.prop(bakeSettings, "bakedTexturesPath")
         row.operator("meshsync.choose_material_bake_folder", icon="FILE_FOLDER", text="")
-        layout.prop(context.scene, "meshsync_bakedTextureSize")
+        layout.prop(bakeSettings, "bakedTextureSize")
         layout.operator("meshsync.revert_bake_materials")
-
 
 
 class MESHSYNC_OT_Bake(bpy.types.Operator):
@@ -186,7 +221,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             node_tree.nodes.remove(node)
 
     def isChannelBakeEnabled(self, context, channel):
-        for channelSetting in context.scene.meshsync_bake_channel_settings:
+        bakeSettings = context.scene.meshsync_bake_settings
+        for channelSetting in bakeSettings.bake_channel_settings:
             if channelSetting.name == channel:
                 return channelSetting.bakeChannelEnabled
         return False
@@ -265,7 +301,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 obj.hide_set(wasHidden)
 
             if UV_OVERRIDE in obj.data and len(obj.data.uv_layers) > 1:
-                print(f"New UVs were generated for '{obj.name}' for baking. Old UVs need to be deleted so the baked textures work correctly.")
+                print(
+                    f"New UVs were generated for '{obj.name}' for baking. Old UVs need to be deleted so the baked textures work correctly.")
                 bakedUVLayer = obj.data[UV_OVERRIDE]
                 for uvLayerIndex in range(len(obj.data.uv_layers) - 1, -1, -1):
                     uvLayer = obj.data.uv_layers[uvLayerIndex]
@@ -274,6 +311,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                         obj.data.uv_layers.remove(uvLayer)
                 del obj.data[UV_OVERRIDE]
         except Exception as e:
+            if throwExceptions:
+                raise e
             finalMaterials = materials
             print(f"Error: {e}")
 
@@ -297,11 +336,24 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         activeObject = context.object
 
-        self.objectsProcessedForUVs = []
+        self.objectsProcessedForBaking = []
 
         self.setupRenderSettings(context)
 
-        bakeSelection = context.scene.meshsync_bake_selection
+        # Make sure all collections are visible, baking won't work for objects in hidden collections:
+        hiddenCollectionsViewport = []
+        hiddenCollectionsRender = []
+
+        for col in context.scene.collection.children_recursive:
+            if col.hide_viewport:
+                col.hide_viewport = False
+                hiddenCollectionsViewport.append(col.name)
+            if col.hide_render:
+                col.hide_render = False
+                hiddenCollectionsRender.append(col.name)
+
+        bakeSettings = context.scene.meshsync_bake_settings
+        bakeSelection = bakeSettings.bake_selection
         if bakeSelection == 'ALL':
             self.bakeAll(context)
         elif bakeSelection == 'SELECTED':
@@ -314,6 +366,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Restore state:
         self.restoreOriginalSettings(context)
         context.view_layer.objects.active = activeObject
+        for hiddenCollection in hiddenCollectionsViewport:
+            for col in context.scene.collection.children_recursive:
+                if col.name == hiddenCollection:
+                    col.hide_viewport = True
+        for hiddenCollection in hiddenCollectionsRender:
+            for col in context.scene.collection.children_recursive:
+                if col.name == hiddenCollection:
+                    col.hide_render = True
 
     def checkForUV0(self, obj, uvMapName, channel):
         '''
@@ -443,28 +503,44 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if existingImageIndex >= 0:
             bpy.data.images.remove(bpy.data.images[existingImageIndex])
 
+        bakeSettings = context.scene.meshsync_bake_settings
+
         result = bpy.data.images.new(imageName,
-                                     width=context.scene.meshsync_bakedTextureSize[0],
-                                     height=context.scene.meshsync_bakedTextureSize[1],
+                                     width=bakeSettings.bakedTextureSize[0],
+                                     height=bakeSettings.bakedTextureSize[1],
                                      alpha=alpha)
         result.colorspace_settings.name = colorSpace
 
         return result
 
-    def ensureUVs(self, context, obj):
-        if obj in self.objectsProcessedForUVs:
+    def prepareObjectForBaking(self, context, obj):
+        if obj in self.objectsProcessedForBaking:
             return
 
-        self.objectsProcessedForUVs.append(obj)
+        self.objectsProcessedForBaking.append(obj)
 
-        generateUVs = context.scene.meshsync_generate_uvs == 'ALWAYS' or len(obj.data.uv_layers) == 0
+        # Modifiers:
+        bakeSettings = context.scene.meshsync_bake_settings
+
+        if len(obj.modifiers) > 0:
+            if bakeSettings.apply_modifiers:
+                # for mod in [m for m in obj.modifiers]:
+                for mod in obj.modifiers[:]:
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
+            else:
+                print(f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.")
+
+        # UVs:
+        generateUVs = bakeSettings.generate_uvs == 'ALWAYS' or len(obj.data.uv_layers) == 0
 
         if generateUVs:
-            if context.scene.meshsync_generate_uvs == 'OFF':
-                raise Exception(f"Object: '{obj.name}' has no UVs. Automatically generating UVs is disabled, so this object cannot be baked!")
+            if bakeSettings.generate_uvs == 'OFF':
+                raise Exception(
+                    f"Object: '{obj.name}' has no UVs. Automatically generating UVs is disabled, so this object cannot be baked!")
         else:
             # Even though there are UVs, they might not be useful for baking.
             # Make sure they're not all in the same spot and in the 0..1 range:
+            # Note: This does not prevent overlapping UVs or faces with no area but that's up to the user to fix:
             import numpy as np
             uvOutOfBounds = False
             for i in range(len(obj.data.uv_layers)):
@@ -473,7 +549,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     nl = len(obj.data.loops)
                     uv_verts = np.zeros(nl * 2)
                     uv_map.data.foreach_get("uv", uv_verts)
-                    # uv_verts.shape = nl, 2
                     uniqueUVs = np.unique(uv_verts.round(decimals=4))
                     greater = np.any(np.greater(uniqueUVs, 1))
                     if greater:
@@ -486,16 +561,12 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     break
 
             if uvOutOfBounds:
-                if context.scene.meshsync_generate_uvs == 'OFF':
-                    raise Exception(f"Object: '{obj.name}' has no usable UVs. Automatically generating UVs is disabled, so this object cannot be baked!")
+                if bakeSettings.generate_uvs == 'OFF':
+                    raise Exception(
+                        f"Object: '{obj.name}' has no usable UVs. Automatically generating UVs is disabled, so this object cannot be baked!")
 
                 print("UVs are not in 0..1 range for baking, generating new UVs.")
                 generateUVs = True
-                # bakeUVLayer = obj.data.uv_layers.new(name="Baked")
-                # obj.data.uv_layers.active = bakeUVLayer
-                # # Store uv override on the mesh, we'll need this later to delete all other UV layers,
-                # # otherwise the baked images will use the wrong UVs!
-                # obj.data[UV_OVERRIDE] = bakeUVLayer.name
 
         if generateUVs:
             print(f"Auto generating UVs for object: '{obj.name}'.")
@@ -534,7 +605,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
 
-        self.ensureUVs(context, obj)
+        self.prepareObjectForBaking(context, obj)
 
         # Make material copy if this is not a copy already:
         if ORIGINAL_MATERIAL not in mat:
@@ -598,7 +669,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 for node in matCopy.node_tree.nodes:
                     minYLocation = min(minYLocation, self.getNodeYLocation(node))
 
-                bakedBSDF.location = bsdf.location # (bsdf.location[0], minYLocation - 1000)
+                bakedBSDF.location = bsdf.location  # (bsdf.location[0], minYLocation - 1000)
                 # Give bsdf a name and set its name on the material, so we can find it again:
                 bakedBSDF.name = BAKED_MATERIAL_SHADER
                 matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
@@ -619,7 +690,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.setRestorableContextSetting(context, "scene.render.engine", "CYCLES")
         self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
 
-        self.setRestorableContextSetting(context, "scene.cycles.samples", 10)     # TODO: This could be a setting for the user to change
+        self.setRestorableContextSetting(context, "scene.cycles.samples",
+                                         10)  # TODO: This could be a setting for the user to change
 
         self.setRestorableContextSetting(context, "scene.render.bake.use_pass_direct", False)
         self.setRestorableContextSetting(context, "scene.render.bake.use_pass_indirect", False)
@@ -698,7 +770,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Bake
         print("Baking in progress...")
         bpy.ops.object.bake(type=bakeType, use_clear=True, use_selected_to_active=False, use_split_materials=True)
-        bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bakedTexturesPath, bakeImage.name + ".png")
+        bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bake_settings.bakedTexturesPath, bakeImage.name + ".png")
         bakeImage.file_format = "PNG"
         bakeImage.save()
         bakeImage.colorspace_settings.name = colorSpace
@@ -711,7 +783,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         else:
             return 'Non-Color'
 
-    def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, matOutput, channel) -> bpy.types.ShaderNodeTexImage :
+    def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, matOutput, channel) -> bpy.types.ShaderNodeTexImage:
         '''
         Connects BSDF channel input directly to the material output and bakes it:
         :param context:
@@ -809,7 +881,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return mat
 
     def execute(self, context):
-        if not os.access(context.scene.meshsync_bakedTexturesPath, os.W_OK):
+        if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
             self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
             return {'CANCELLED'}
 
@@ -830,7 +902,7 @@ class MESHSYNC_OT_select_bake_folder(bpy.types.Operator, ExportHelper):
     filename_ext = ""
 
     def execute(self, context):
-        context.scene.meshsync_bakedTexturesPath = os.path.dirname(self.properties.filepath)
+        context.scene.meshsync_bake_settings.bakedTexturesPath = os.path.dirname(self.properties.filepath)
         return {'FINISHED'}
 
 

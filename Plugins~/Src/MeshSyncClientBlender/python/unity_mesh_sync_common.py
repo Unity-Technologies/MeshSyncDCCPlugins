@@ -133,30 +133,8 @@ def msb_initialize_properties():
                                                                                  'Sync colors and textures assigned to the BSDF')),
                                                                          default='0',
                                                                          update=msb_on_material_sync_updated)
-    bpy.types.Scene.meshsync_bakedTexturesPath = bpy.props.StringProperty(name="Baked texture path", default='')
-    bpy.types.Scene.meshsync_bakedTextureSize = bpy.props.IntVectorProperty(name="Baked texture size", size=2,
-                                                                            default=(512, 512))
-    bpy.types.Scene.meshsync_bake_selection = bpy.props.EnumProperty(name="Objects to bake",
-                                                                     items=(('ALL', 'All',
-                                                                             'Bake all objects in the scene (including hidden)'),
-                                                                            ('SELECTED', 'Selected',
-                                                                             'Bake only the selected object')),
-                                                                     default='ALL')
-    from .unity_mesh_sync_baking import MESHSYNC_BakeChannelSetting, msb_bakeAllSet, msb_bakeAllGet
-    bpy.types.Scene.meshsync_bake_channel_settings = bpy.props.CollectionProperty(type=MESHSYNC_BakeChannelSetting)
-    bpy.types.Scene.meshsync_bake_all_channels = bpy.props.BoolProperty(name="All", description="Toggle all",
-                                                                        get=msb_bakeAllGet,
-                                                                        set=msb_bakeAllSet)
-    bpy.types.Scene.meshsync_generate_uvs = bpy.props.EnumProperty(name="Generate UVs",
-                                                                   description="Whether to auto-generate UVs",
-                                                                   items=(('OFF', 'Off',
-                                                                           'Bake all objects in the scene (including hidden)'),
-                                                                          ('IF_NEEDED', 'If needed',
-                                                                           'Automatically UV unwraps objects if there are no UVs or existing UVs are not in the 0..1 range. WARNING: This will delete existing UVs on the object!'),
-                                                                          ('ALWAYS', 'Always',
-                                                                           'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!'),
-                                                                          ),
-                                                                   default='OFF')
+    from .unity_mesh_sync_baking import MESHSYNC_BakeSettings
+    bpy.types.Scene.meshsync_bake_settings = bpy.props.PointerProperty(type=MESHSYNC_BakeSettings)
 
 
 @persistent
@@ -213,9 +191,10 @@ class MESHSYNC_PT:
     bl_region_type = "UI"
     bl_category = "Tool"
 
-from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_BakeChannelSetting
+from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_BakeSettings, MESHSYNC_BakeChannelSetting
 
 sharedClasses = [MESHSYNC_BakeChannelSetting,
+                 MESHSYNC_BakeSettings,
                  MESHSYNC_OT_select_bake_folder,
                  MESHSYNC_OT_Bake,
                  MESHSYNC_OT_RevertBake]
