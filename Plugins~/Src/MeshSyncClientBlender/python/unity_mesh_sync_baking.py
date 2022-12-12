@@ -127,19 +127,21 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             not self.isMaterialCopy(mat) and \
             mat.use_nodes
 
-    def findMaterialOutputNode(self, mat):
-        node_tree = mat.node_tree
-
+    def findMaterialOutputNode(self, node_tree):
         outputNode = None
         for node in node_tree.nodes:
-            if node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1:
+            if node.type == 'GROUP':
+                outputNodeInGroup = self.findMaterialOutputNode(node.node_tree)
+                if outputNodeInGroup is not None:
+                    outputNode = outputNodeInGroup
+            elif node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1:
                 outputNode = node
                 # Blender uses the last OUTPUT_MATERIAL node, so don't stop search here
 
         return outputNode
 
     def findMaterialOutputNodeAndInput(self, mat):
-        outputNode = self.findMaterialOutputNode(mat)
+        outputNode = self.findMaterialOutputNode(mat.node_tree)
 
         if outputNode is None:
             print(f"Cannot find material output node with a surface input. Cannot bake {mat.name}!")
@@ -219,6 +221,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 if not self.canMaterialBeBaked(mat):
                     continue
+
+                obj.active_material_index = matIndex
 
                 self.bakedImageNodeYOffset = 0
 
@@ -545,6 +549,33 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 matCopy[ORIGINAL_MATERIAL] = mat.name
                 matCopy.name = f"{mat.name}_{obj.name}_baked"
 
+                matIndex = obj.material_slots.find(mat.name)
+                obj.material_slots[matIndex].material = matCopy
+
+                # Ungroup all node groups for easy, error-free access:
+                for node in matCopy.node_tree.nodes:
+                    node.select = False
+
+                # Need to set the context area type for the group_ungroup operator to work:
+                area = context.area
+                old_type = area.type
+                area.ui_type = 'ShaderNodeTree'
+
+                space = context.space_data
+                space.node_tree = matCopy.node_tree
+
+                for node in matCopy.node_tree.nodes:
+                    if node.type == 'GROUP':
+                        node.select = True
+                        bpy.ops.node.group_ungroup()
+                        node.select = False
+
+                for node in matCopy.node_tree.nodes:
+                    node.select = False
+
+                # Restore context area type:
+                area.type = old_type
+
                 print(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
 
                 # Use same BSDF type if we can bake its inputs,
@@ -571,9 +602,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 # Give bsdf a name and set its name on the material, so we can find it again:
                 bakedBSDF.name = BAKED_MATERIAL_SHADER
                 matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
-
-                matIndex = obj.material_slots.find(mat.name)
-                obj.material_slots[matIndex].material = matCopy
 
             mat = matCopy
 
