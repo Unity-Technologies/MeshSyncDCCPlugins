@@ -55,7 +55,10 @@ void msblenContext::exportInstances() {
                 exportedTransforms[rec.id] = transform;
             }
             else if (scene_objects.find(rec.name) == scene_objects.end()) {
-                exportedTransforms[rec.id] = exportObject(*m_instances_state, m_default_paths, m_settings, rec.obj, false);
+                auto settings = m_settings;
+                settings.multithreaded = false;
+                settings.BakeModifiers = false;
+                exportedTransforms[rec.id] = exportObject(*m_instances_state, m_default_paths, settings, rec.obj, false, true);
             }
             else {
                 exportedTransforms[rec.id] = exportObject(*m_entities_state, m_default_paths, m_settings, rec.obj, true, true);
