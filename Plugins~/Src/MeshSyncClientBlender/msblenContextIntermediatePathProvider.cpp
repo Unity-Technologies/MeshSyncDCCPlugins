@@ -31,8 +31,5 @@ std::string msblenContextIntermediatePathProvider::get_path(const Object* obj, c
         path = "/" + msblenUtils::get_name(obj);
     }
 
-    auto data = (ID*)obj->data;
-    auto name = std::string(data->name);
-
     return append_id(path, obj);
 }
