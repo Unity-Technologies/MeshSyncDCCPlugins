@@ -1,6 +1,7 @@
 import bpy, os, datetime, time
 from bpy_extras.io_utils import ExportHelper
 from bpy.app.handlers import persistent
+import functools
 
 from .unity_mesh_sync_common import MESHSYNC_PT
 
@@ -39,6 +40,16 @@ def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
 
     return True
 
+# Methods to help getting and setting nested attributes:
+def rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+
+def rgetattr(obj, attr, *args):
+    def _getattr(obj, attr):
+        return getattr(obj, attr, *args)
+
+    return functools.reduce(_getattr, [obj] + attr.split('.'))
 
 class MESHSYNC_BakeChannelSetting(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="")
@@ -284,6 +295,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.objectsProcessedForUVs = []
 
+        self.setupRenderSettings(context)
+
         bakeSelection = context.scene.meshsync_bake_selection
         if bakeSelection == 'ALL':
             self.bakeAll(context)
@@ -295,6 +308,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 print("No objects selected, nothing to bake!")
 
         # Restore state:
+        self.restoreOriginalSettings(context)
         context.view_layer.objects.active = activeObject
 
     def checkForUV0(self, obj, uvMapName, channel):
@@ -563,43 +577,61 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             mat = matCopy
 
-        scene = context.scene
-
         if obj.mode == 'EDIT':
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        scene.render.engine = "CYCLES"
-        scene.cycles.device = "GPU"
-        scene.cycles.samples = 10  # TODO: This could be a setting for the user to change
-        scene.render.bake.use_pass_direct = False
-        scene.render.bake.use_pass_indirect = False
-        scene.render.bake.use_pass_color = True
-        scene.render.image_settings.file_format = 'PNG'
+        return mat
+
+    def setupRenderSettings(self, context):
+        if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
+            print("The cycles render device is not set. Baking would be faster if this is set to CUDA or OptiX.")
+
+        self.originalSceneSettings = []
+
+        self.setRestorableContextSetting(context, "scene.render.engine", "CYCLES")
+        self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
+
+        self.setRestorableContextSetting(context, "scene.cycles.samples", 10)     # TODO: This could be a setting for the user to change
+
+        self.setRestorableContextSetting(context, "scene.render.bake.use_pass_direct", False)
+        self.setRestorableContextSetting(context, "scene.render.bake.use_pass_indirect", False)
+        self.setRestorableContextSetting(context, "scene.render.bake.use_pass_color", True)
+        self.setRestorableContextSetting(context, "scene.render.bake.image_settings.file_format", 'PNG')
+        self.setRestorableContextSetting(context, "scene.render.bake.use_selected_to_active", False)
+        self.setRestorableContextSetting(context, "scene.render.bake.use_cage", False)
 
         # Set Correct Colour space for bake
-        scene.display_settings.display_device = 'sRGB'
-        scene.view_settings.view_transform = 'Standard'
-        scene.view_settings.look = 'None'
-        scene.view_settings.exposure = 0
-        scene.view_settings.gamma = 1
-        scene.sequencer_colorspace_settings.name = 'sRGB'
-        scene.cycles.time_limit = 0
+        self.setRestorableContextSetting(context, "scene.display_settings.display_device", 'sRGB')
+        self.setRestorableContextSetting(context, "scene.view_settings.view_transform", 'Standard')
+        self.setRestorableContextSetting(context, "scene.view_settings.look", 'None')
+        self.setRestorableContextSetting(context, "scene.view_settings.exposure", 0)
+        self.setRestorableContextSetting(context, "scene.view_settings.gamma", 1)
+        self.setRestorableContextSetting(context, "scene.sequencer_colorspace_settings.name", 'sRGB')
+        self.setRestorableContextSetting(context, "scene.cycles.time_limit", 0)
+        self.setRestorableContextSetting(context, "scene.cycles.use_auto_tile", True)
 
-        # Set Cycles to use CUDA, if we aren't using any acceleration
-        if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
-            context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
-        scene.cycles.use_auto_tile = True
-        scene.cycles.max_bounces = 12
-        scene.cycles.diffuse_bounces = 8
-        scene.cycles.glossy_bounces = 2
-        scene.cycles.transparent_max_bounces = 0
-        scene.cycles.transmission_bounces = 2
-        scene.cycles.volume_bounces = 0
+        self.setRestorableContextSetting(context, "scene.cycles.max_bounces", 12)
+        self.setRestorableContextSetting(context, "scene.cycles.diffuse_bounces", 8)
+        self.setRestorableContextSetting(context, "scene.cycles.glossy_bounces", 2)
+        self.setRestorableContextSetting(context, "scene.cycles.transparent_max_bounces", 0)
+        self.setRestorableContextSetting(context, "scene.cycles.transmission_bounces", 2)
+        self.setRestorableContextSetting(context, "scene.cycles.volume_bounces", 0)
 
-        scene.render.bake.use_selected_to_active = False
-        scene.render.bake.use_cage = False
+    def setRestorableContextSetting(self, context, settingName, value):
+        '''
+        Allows to set nested settings and record their original value to restore them after baking.
+        '''
+        self.originalSceneSettings.append((settingName, rgetattr(context, settingName)))
 
-        return mat
+        rsetattr(context, settingName, value)
+        pass
+
+    def restoreOriginalSettings(self, context):
+        '''
+        Restores original settings that were set using 'setRestorableContextSetting'.
+        '''
+        for originalSettingName, originalSettingValue in self.originalSceneSettings:
+            rsetattr(context, originalSettingName, originalSettingValue)
 
     def traverseReroutes(self, node):
         if node.mute:
