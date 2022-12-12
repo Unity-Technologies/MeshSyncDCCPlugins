@@ -457,8 +457,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     uv_map.data.foreach_get("uv", uv_verts)
                     # uv_verts.shape = nl, 2
                     uniqueUVs = np.unique(uv_verts.round(decimals=4))
-                    # len(uniqueUVs)
-                    print(f"uniqueUVs: {uniqueUVs}")
                     greater = np.any(np.greater(uniqueUVs, 1))
                     if greater:
                         uvOutOfBounds = True
