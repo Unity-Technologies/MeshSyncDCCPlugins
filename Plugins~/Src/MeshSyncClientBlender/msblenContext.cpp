@@ -1086,6 +1086,7 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
 
+
             int material_index = 0;
             const int polygon_index = triangle[0]->f->head.index;
             if (polygon_index < polygons.size())
@@ -1111,8 +1112,21 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
-            for (struct BMLoop* idx : triangle)
-                dst.normals[ii++] = -bl::BM_loop_calc_face_normal(*idx);
+            const int polygon_index = triangle[0]->f->head.index;
+
+            auto polygon = polygons[polygon_index];
+            auto smooth = polygon->head.hflag & BM_ELEM_SMOOTH;
+
+            for (struct BMLoop* idx : triangle) {
+                if (smooth) {
+                    auto index =  idx->v->head.index;
+                    auto vertext = vertices[index];
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(vertext->no));
+                }
+                else {
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(idx->f->no));
+                }
+            }
         }
     }
 
