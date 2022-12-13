@@ -443,8 +443,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
             auto do_merge = [this, dst, &dst_mesh, &src_mesh, &settings, &state]() {
                 dst_mesh.merge(src_mesh);
-                if (settings.ExportSceneCache)
-                    dst_mesh.detach();
+                dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
