@@ -231,6 +231,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if not msb_canObjectMaterialsBeBaked(obj):
             return
 
+        # Select object:
+        for o in context.selected_objects:
+            o.select_set(False)
+        obj.select_set(True)
+
         print(f"********** Processing object '{obj.name}' **********")
 
         # We might want to support baking all materials into one:
@@ -335,6 +340,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         msb_context.setup(context)
 
         activeObject = context.object
+        selectedObjects = context.selected_objects
 
         self.objectsProcessedForBaking = []
 
@@ -358,7 +364,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             self.bakeAll(context)
         elif bakeSelection == 'SELECTED':
             if len(context.selected_objects) > 0:
-                for obj in context.selected_objects:
+                for obj in selectedObjects:
                     self.bakeObject(context, obj)
             else:
                 print("No objects selected, nothing to bake!")
@@ -366,6 +372,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Restore state:
         self.restoreOriginalSettings(context)
         context.view_layer.objects.active = activeObject
+        for o in context.selected_objects:
+            o.select_set(False)
+        for o in selectedObjects:
+            o.select_set(True)
         for hiddenCollection in hiddenCollectionsViewport:
             for col in context.scene.collection.children_recursive:
                 if col.name == hiddenCollection:
@@ -524,7 +534,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         if len(obj.modifiers) > 0:
             if bakeSettings.apply_modifiers:
-                # for mod in [m for m in obj.modifiers]:
+                # Can't apply modifiers with shared data:
+                bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                 for mod in obj.modifiers[:]:
                     bpy.ops.object.modifier_apply(modifier=mod.name)
             else:
@@ -682,13 +693,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return mat
 
     def setupRenderSettings(self, context):
-        if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
-            print("The cycles render device is not set. Baking would be faster if this is set to CUDA or OptiX.")
-
         self.originalSceneSettings = []
 
         self.setRestorableContextSetting(context, "scene.render.engine", "CYCLES")
         self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
+
+        if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
+            print("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")
 
         self.setRestorableContextSetting(context, "scene.cycles.samples",
                                          10)  # TODO: This could be a setting for the user to change
