@@ -230,6 +230,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def bakeObject(self, context, obj):
         if not msb_canObjectMaterialsBeBaked(obj):
             return
+        
+        # Make sure previous bake is undone:
+        msb_revertBakedMaterials(obj)
 
         # Select object:
         for o in context.selected_objects:
@@ -265,7 +268,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 obj.active_material_index = matIndex
 
-                self.bakedImageNodeYOffset = 0
+                self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
+                self.objectBakeInfo = {}        # To keep track of baked channels for this object to check if image nodes can be reused
 
                 matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
 
@@ -744,17 +748,35 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for originalSettingName, originalSettingValue in self.originalSceneSettings:
             rsetattr(context, originalSettingName, originalSettingValue)
 
-    def traverseReroutes(self, node):
+    def traverseReroutes(self, nodeOrSocket):
+        '''
+        Goes upstream until it finds a node or node socket that is not a reroute node.
+        :param node: node or node socket
+        :return: upstream input the node or node socket resolves to after reroutes
+        '''
+
+        if isinstance(nodeOrSocket, bpy.types.NodeSocket):
+            isSocket = True
+            node = nodeOrSocket.node
+        else:
+            isSocket = False
+            node = nodeOrSocket
+
         if node.mute:
             return None
 
         if node is None or node.type != 'REROUTE':
-            return node
+            return nodeOrSocket
 
         if len(node.inputs[0].links) == 0:
             return None
 
-        return self.traverseReroutes(node.inputs[0].links[0].from_node)
+        if isSocket:
+            result = self.traverseReroutes(node.inputs[0].links[0].from_socket)
+        else:
+            result = self.traverseReroutes(node.inputs[0].links[0].from_node)
+
+        return result
 
     def canBsdfBeBaked(self, bsdf):
         if bsdf.type in ['EMISSION', 'SUBSURFACE_SCATTERING']:
@@ -807,8 +829,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         '''
         bsdfChannelSocketName = self.getBSDFChannelInputName(bsdf, channel)
 
-        print(f"Baking inputs of channel: '{bsdfChannelSocketName}'.")
-
         node_tree = mat.node_tree
         link = mat.node_tree.links.new
 
@@ -824,10 +844,21 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         bsdfChannelSocket = bsdf.inputs[bsdfChannelSocketName]
 
-        channelInput = bsdfChannelSocket.links[0].from_socket
+        channelInput = self.traverseReroutes(bsdfChannelSocket.links[0].from_socket)
+
+        if channelInput in self.objectBakeInfo:
+            print(f"Input for channel {bsdfChannelSocketName} was already baked, reusing the same image.")
+            return self.objectBakeInfo[channelInput]
+
+        print(f"Baking inputs of channel: '{bsdfChannelSocketName}'.")
+
         link(channelInput, matOutput.inputs[0])
 
-        return self.bakeToImage(context, obj, mat, bakedBSDF, 'EMIT', channel)
+        bakedImageNode = self.bakeToImage(context, obj, mat, bakedBSDF, 'EMIT', channel)
+
+        self.objectBakeInfo[channelInput] = bakedImageNode
+
+        return bakedImageNode
 
     def bakeWithFallback(self, context, obj, mat, channel):
         if channel in channelNameToBakeName:
@@ -897,8 +928,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             return {'CANCELLED'}
 
         startTime = time.time()
-        # Make sure previous bake is undone:
-        bpy.ops.meshsync.revert_bake_materials()
 
         self.bake(context)
 
@@ -916,6 +945,30 @@ class MESHSYNC_OT_select_bake_folder(bpy.types.Operator, ExportHelper):
         context.scene.meshsync_bake_settings.bakedTexturesPath = os.path.dirname(self.properties.filepath)
         return {'FINISHED'}
 
+def msb_revertBakedMaterials(obj):
+    materialsToDelete = set()
+
+    if not msb_canObjectMaterialsBeBaked(obj):
+        return
+
+    for matSlot in obj.material_slots:
+        mat = matSlot.material
+        if mat is None:
+            continue
+
+        if ORIGINAL_MATERIAL in mat:
+            origMatName = mat[ORIGINAL_MATERIAL]
+            if origMatName not in bpy.data.materials:
+                print(
+                    f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.")
+                continue
+
+            origMat = bpy.data.materials[origMatName]
+            matSlot.material = origMat
+            materialsToDelete.add(mat)
+
+    for mat in materialsToDelete:
+        bpy.data.materials.remove(mat)
 
 class MESHSYNC_OT_RevertBake(bpy.types.Operator):
     bl_idname = "meshsync.revert_bake_materials"
@@ -929,29 +982,7 @@ class MESHSYNC_OT_RevertBake(bpy.types.Operator):
         msb_apply_scene_settings()
         msb_context.setup(context)
 
-        materialsToDelete = set()
-
         for obj in context.scene.objects:
-            if not msb_canObjectMaterialsBeBaked(obj):
-                continue
-
-            for matSlot in obj.material_slots:
-                mat = matSlot.material
-                if mat is None:
-                    continue
-
-                if ORIGINAL_MATERIAL in mat:
-                    origMatName = mat[ORIGINAL_MATERIAL]
-                    if origMatName not in bpy.data.materials:
-                        print(
-                            f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.")
-                        continue
-
-                    origMat = bpy.data.materials[origMatName]
-                    matSlot.material = origMat
-                    materialsToDelete.add(mat)
-
-        for mat in materialsToDelete:
-            bpy.data.materials.remove(mat)
+            msb_revertBakedMaterials(obj)
 
         return {'FINISHED'}

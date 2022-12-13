@@ -121,5 +121,6 @@ The blender console will show progress during the bake.
 ## Material baking troubleshooting
 |**Problem** |**Possible cause** |
 |:---     |:---|
-| The baked maps are black | Is the object UV unwrapped? Baking will not work without valid UVs. |
-| The baked maps do not match the original material | The material node tree does not use a BSDF as input to the *Material Output* node. |
+| The baked maps are black | There are many possible causes. Is the object UV unwrapped? Baking will not work without valid UVs. Metallic materials do not bake well in blender. |
+| The baked maps do not match the original material | The material node tree does not use a BSDF as input to the *Material Output* node and the lower quality fallback bake mode had to be used. |
+| Geometry node instances are missing | To bake materials, all modifiers need to be applied. When geometry node modifiers are applied, instances are lost. Use a *Realize Instances* node to make the instances real geometry. |
