@@ -18,6 +18,17 @@ public:
 
     GeometryNodesUtils();
 
+    struct Record {
+        Object* parent = nullptr;
+        Object* obj = nullptr;
+        SharedVector<mu::float4x4> matrices;
+        bool handled_matrices = false;
+        bool handled_object = false;
+        bool from_file = false;
+        std::string name;
+        unsigned int id;
+    };
+
     /// <summary>
     /// Invokes the handler function for each instance.
     /// </summary>
@@ -37,12 +48,14 @@ public:
     /// parent is the object that has the geometry node modifier.
     /// transforms is the collection of transforms for the instanced object.
     /// </param>
-    void each_instanced_object(std::function<void(Object*, Object*, SharedVector<mu::float4x4>, bool)> handler);
+    void each_instanced_object(
+        std::function<void(GeometryNodesUtils::Record& rec)> object_handler,
+        std::function<void(GeometryNodesUtils::Record& rec)> matrix_handler);
 
     /// <summary>
     /// Converts the world matrix from blender to Unity coordinate system
     /// </summary>
-    mu::float4x4 blenderToUnityWorldMatrix(const Object* obj, const mu::float4x4& blenderMatrix) const;
+    mu::float4x4 blenderToUnityWorldMatrix(ms::TransformPtr transform, const mu::float4x4& blenderMatrix) const;
     
     void setInstancesDirty(bool dirty);
     bool getInstancesDirty();
@@ -53,14 +66,6 @@ private:
     mu::float4x4 m_blender_to_unity_local;
     mu::float4x4 m_blender_to_unity_world;
     mu::float4x4 m_camera_light_correction;
-        
-    struct Record {
-        Object object_copy;
-        Object* parent = nullptr;
-        SharedVector<mu::float4x4> matrices;
-        bool handled = false;
-        bool updated = false;
-    };
 };
 
 
