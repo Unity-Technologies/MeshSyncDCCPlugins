@@ -46,7 +46,7 @@ def msb_log(text, level=LogLevel.VERBOSE):
 
 
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
-    hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
+    hasMaterials = obj.data is not None and obj.type == 'MESH' # hasattr(obj.data, 'materials')
     if not hasMaterials:
         return False
     # If it's a mesh, make sure it actually has vertices, or we'll get errors baking it later:
@@ -124,7 +124,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
         name="Progress",
         subtype="PERCENTAGE",
         min=0,
-        soft_max=100,
+        max=100,
         precision=0)
     bake_message: bpy.props.StringProperty()
     bake_time_remaining: bpy.props.StringProperty(name="Estimated time left")
@@ -179,8 +179,8 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
             box = layout.box()
             box.prop(bakeSettings, "bake_progress")
             box.label(text=bakeSettings.bake_message, icon='INFO')
-            if bakeSettings.bake_time_remaining is not None:
-                box.label(text=f"Estimated time remaining: {bakeSettings.bake_time_remaining}")
+            if len(bakeSettings.bake_time_remaining) > 0:
+                box.label(text=bakeSettings.bake_time_remaining)
 
         row = layout.row()
         row.prop(bakeSettings, "bakedTexturesPath")
@@ -271,16 +271,32 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 return channelSetting.bakeChannelEnabled
         return False
 
-    def incrementProgress(self, context, message, reset=False):
+    def incrementProgress(self, context, message, obj=None, reset=False):
         bakeSettings = context.scene.meshsync_bake_settings
         if reset:
             bakeSettings.bake_progress = 100
-            bakeSettings.bake_time_remaining = None
+            bakeSettings.bake_time_remaining = ""
         else:
-            bakeSettings.bake_progress += 100.0 / self.maxBakeProgress
-            elapsedTime = datetime.timedelta(seconds=(time.time() - self.startTime))
-            remaining = int(elapsedTime.total_seconds() / (bakeSettings.bake_progress / 100) - elapsedTime.total_seconds())
-            bakeSettings.bake_time_remaining = f"{(remaining // 60):02d}:{(remaining % 60):02d}"
+            bakeSettings.bake_progress += 100.0 / self.maxBakeProgress * self.getObjectProgressWeight(obj)
+            elapsedSeconds = datetime.timedelta(seconds=(time.time() - self.startTime)).total_seconds()
+
+            # The remaining time is not going to be very precise because
+            # it's hard to predict how complex each baking task is.
+            # Show approximate times only:
+            if elapsedSeconds > 3 and bakeSettings.bake_progress > 0:
+                remainingTotalSeconds = int(elapsedSeconds / (bakeSettings.bake_progress / 100) - elapsedSeconds)
+
+                if remainingTotalSeconds <= 60:
+                    bakeSettings.bake_time_remaining = "Estimated time left: Less than a minute."
+                else:
+                    remainingMinutes = remainingTotalSeconds / 60
+                    if remainingMinutes > 60:
+                        remainingHours = remainingMinutes / 60
+                        bakeSettings.bake_time_remaining = f"Estimated time left: {int(remainingHours+1)} hour"
+                    else:
+                        bakeSettings.bake_time_remaining = f"Estimated time left: {int(remainingMinutes+1)} minutes"
+            else:
+                bakeSettings.bake_time_remaining = "Calculating remaining time..."
 
         bakeSettings.bake_message = message
 
@@ -316,9 +332,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
-                self.maxBakeProgress += 1
+                self.maxBakeProgress += self.getObjectProgressWeight(obj)
 
             obj.material_slots[matIndex].material = mat
+
+    def getObjectProgressWeight(self, obj):
+        # The polygon count has some impact on baking duration but not a lot, so scale it down:
+        return max(1, int(len(obj.data.polygons) / 10000))
 
     def bakeObject(self, obj):
         if not msb_canObjectMaterialsBeBaked(obj):
@@ -386,7 +406,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     if not self.isChannelBakeEnabled(context, channel):
                         continue
 
-                    self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'")
+                    self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'", obj)
                     if bakeSettings.run_modal:
                         yield
                         context = self.context
