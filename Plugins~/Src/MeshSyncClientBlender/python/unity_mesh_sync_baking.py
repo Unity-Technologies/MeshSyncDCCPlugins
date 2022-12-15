@@ -19,7 +19,6 @@ class LogLevel:
 
 # For debugging and getting a callstack on error:
 throwExceptions = True
-useModal = True
 showLogLevel = LogLevel.VERBOSE
 
 # Commented out ones will be supported in next version:
@@ -118,6 +117,9 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied",
                                             default=True)
+    run_modal: bpy.props.BoolProperty(name="Run Modal",
+                                            description="If this is enabled blender stays more interactive but baking is slower.",
+                                            default=False)
     bake_progress: bpy.props.FloatProperty(
         name="Progress",
         subtype="PERCENTAGE",
@@ -125,6 +127,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
         soft_max=100,
         precision=0)
     bake_message: bpy.props.StringProperty()
+    bake_time_remaining: bpy.props.StringProperty(name="Estimated time left")
 
 
 def msb_bakeAllChanged(self, context):
@@ -169,12 +172,15 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
 
         layout.prop(bakeSettings, "generate_uvs", expand=True)
         layout.prop(bakeSettings, "apply_modifiers")
+        layout.prop(bakeSettings, "run_modal")
         layout.operator("meshsync.bake_materials")
 
         if bakeSettings.bake_progress > 0.0:
             box = layout.box()
             box.prop(bakeSettings, "bake_progress")
             box.label(text=bakeSettings.bake_message, icon='INFO')
+            if bakeSettings.bake_time_remaining is not None:
+                box.label(text=f"Estimated time remaining: {bakeSettings.bake_time_remaining}")
 
         row = layout.row()
         row.prop(bakeSettings, "bakedTexturesPath")
@@ -269,14 +275,17 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bakeSettings = context.scene.meshsync_bake_settings
         if reset:
             bakeSettings.bake_progress = 100
+            bakeSettings.bake_time_remaining = None
         else:
             bakeSettings.bake_progress += 100.0 / self.maxBakeProgress
+            elapsedTime = datetime.timedelta(seconds=(time.time() - self.startTime))
+            remaining = int(elapsedTime.total_seconds() / (bakeSettings.bake_progress / 100) - elapsedTime.total_seconds())
+            bakeSettings.bake_time_remaining = f"{(remaining // 60):02d}:{(remaining % 60):02d}"
 
         bakeSettings.bake_message = message
 
     def preBakeObject(self, obj):
         '''
-        Does things that are required to happen before running in modal mode.
         Counts how many textures need to be baked so progress can be calculated.
         :return:
         '''
@@ -302,17 +311,12 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             if matOutput is None or bsdf is None:
                 continue
 
-            materialUpdated = False
             context = self.context
             for channel in BAKED_CHANNELS:
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
                 self.maxBakeProgress += 1
-                if not materialUpdated:
-                    canBakeBSDF = self.canBsdfBeBaked(bsdf)
-                    self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
-                    materialUpdated = True
 
             obj.material_slots[matIndex].material = mat
 
@@ -321,6 +325,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             return
 
         context = self.context
+
+        bakeSettings = context.scene.meshsync_bake_settings
 
         # Select object:
         for o in context.selected_objects:
@@ -381,7 +387,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                         continue
 
                     self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'")
-                    if useModal:
+                    if bakeSettings.run_modal:
                         yield
                         context = self.context
 
@@ -389,7 +395,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     if didBake:
                         bakedMat = newMat
 
-                    if useModal:
+                    if bakeSettings.run_modal:
                         yield
                         context = self.context
 
@@ -405,7 +411,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 obj.select_set(False)
                 obj.hide_set(wasHidden)
 
-                if useModal:
+                if bakeSettings.run_modal:
                     yield
                     context = self.context
 
@@ -477,9 +483,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for obj in objectsToBake:
             self.preBakeObject(obj)
 
-        yield
+        if bakeSettings.run_modal:
+            yield
+
         for obj in objectsToBake:
-            for o in self.bakeObject(obj):
+            for _ in self.bakeObject(obj):
                 yield
 
         # Restore state:
@@ -759,17 +767,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     node.select = False
 
                 # Need to set the context area type for the group_ungroup operator to work:
-                area = context.area
+                area = self.area
                 old_type = area.type
                 area.ui_type = 'ShaderNodeTree'
 
-                space = context.space_data
+                space = area.spaces.active
                 space.node_tree = matCopy.node_tree
 
                 for node in matCopy.node_tree.nodes:
                     if node.type == 'GROUP':
                         node.select = True
-                        bpy.ops.node.group_ungroup()
+                        with context.temp_override(area=area):
+                            bpy.ops.node.group_ungroup()
                         node.select = False
 
                 for node in matCopy.node_tree.nodes:
@@ -1052,7 +1061,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def execute(self, context):
         if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
             self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
-            self.unregister(context)
+            self.stop(context)
             return {'CANCELLED'}
 
         self.startTime = time.time()
@@ -1061,7 +1070,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return {'RUNNING_MODAL'}
 
-    def unregister(self, context):
+    def stop(self, context):
         wm = context.window_manager
         wm.event_timer_remove(self.timer)
 
@@ -1069,24 +1078,28 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         wm = context.window_manager
         self.timer = wm.event_timer_add(0, window=context.window)
         context.window_manager.modal_handler_add(self)
+
+        # Store area for later use, these won't exist on modal timer callbacks:
+        self.area = context.area
+
         return self.execute(context)
 
     def modal(self, context, event):
         # Allow cancellation by pressing escape:
         if event.type == 'ESC':
-            self.unregister(context)
+            self.stop(context)
             self.incrementProgress(context, "Baking cancelled by user", reset=True)
             return {'FINISHED'}
 
         # Refresh context each run:
         self.context = context
-        for o in self.bakeTask:
+        for _ in self.bakeTask:
             return {'RUNNING_MODAL'}
 
         msb_log(f"Finished baking. Time taken: {datetime.timedelta(seconds=(time.time() - self.startTime))}",
                 LogLevel.ERROR)
 
-        self.unregister(context)
+        self.stop(context)
         return {'FINISHED'}
 
 
