@@ -10,8 +10,17 @@ ORIGINAL_MATERIAL = 'ORIGINAL_MATERIAL'
 BAKED_MATERIAL_SHADER = 'BAKED_MATERIAL_SHADER'
 UV_OVERRIDE = 'UV_OVERRIDE'
 
+
+class LogLevel:
+    VERBOSE = 0
+    NORMAL = 1
+    ERROR = 2
+
+
 # For debugging and getting a callstack on error:
 throwExceptions = True
+useModal = True
+showLogLevel = LogLevel.VERBOSE
 
 # Commented out ones will be supported in next version:
 BAKED_CHANNELS = ["Base Color",
@@ -32,6 +41,11 @@ channelNameToBakeName = {
 }
 
 
+def msb_log(text, level=LogLevel.VERBOSE):
+    if level >= showLogLevel:
+        print(text)
+
+
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
     hasMaterials = obj.data is not None and hasattr(obj.data, 'materials')
     if not hasMaterials:
@@ -43,21 +57,25 @@ def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
 
     return True
 
-# Methods to help getting and setting nested attributes:
-def rsetattr(obj, attr, val):
-    pre, _, post = attr.rpartition('.')
-    return setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
-def rgetattr(obj, attr, *args):
+# Methods to help getting and setting nested attributes:
+def msb_rsetattr(obj, attr, val):
+    pre, _, post = attr.rpartition('.')
+    return setattr(msb_rgetattr(obj, pre) if pre else obj, post, val)
+
+
+def msb_rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
 
     return functools.reduce(_getattr, [obj] + attr.split('.'))
 
+
 # Setting classes:
 class MESHSYNC_BakeChannelSetting(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="")
     bakeChannelEnabled: bpy.props.BoolProperty(name="", description="Whether to bake this channel or not", default=True)
+
 
 def msb_bakeAllGet(meshsync_bake_settings):
     for channelSetting in meshsync_bake_settings.bake_channel_settings:
@@ -65,9 +83,11 @@ def msb_bakeAllGet(meshsync_bake_settings):
             return False
     return True
 
+
 def msb_bakeAllSet(meshsync_bake_settings, newValue):
     for channelSetting in meshsync_bake_settings.bake_channel_settings:
         channelSetting.bakeChannelEnabled = newValue
+
 
 class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     '''
@@ -98,7 +118,13 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied",
                                             default=True)
-
+    bake_progress: bpy.props.FloatProperty(
+        name="Progress",
+        subtype="PERCENTAGE",
+        min=0,
+        soft_max=100,
+        precision=0)
+    bake_message: bpy.props.StringProperty()
 
 
 def msb_bakeAllChanged(self, context):
@@ -106,13 +132,16 @@ def msb_bakeAllChanged(self, context):
     for channelSetting in context.scene.meshsync_bake_settings.bake_channel_settings:
         channelSetting.bakeChannelEnabled = bakeAll
 
+
 @persistent
 def msb_setBakingDefaults(dummy):
     context = bpy.context
-    if len(context.scene.meshsync_bake_settings.bake_channel_settings) != len(BAKED_CHANNELS):
-        context.scene.meshsync_bake_settings.bake_channel_settings.clear()
+    bakeSettings = context.scene.meshsync_bake_settings
+    bakeSettings.bake_progress = 0
+    if len(bakeSettings.bake_channel_settings) != len(BAKED_CHANNELS):
+        bakeSettings.bake_channel_settings.clear()
         for channel in BAKED_CHANNELS:
-            channelSettings = context.scene.meshsync_bake_settings.bake_channel_settings.add()
+            channelSettings = bakeSettings.bake_channel_settings.add()
             channelSettings.name = channel
 
 
@@ -141,6 +170,12 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         layout.prop(bakeSettings, "generate_uvs", expand=True)
         layout.prop(bakeSettings, "apply_modifiers")
         layout.operator("meshsync.bake_materials")
+
+        if bakeSettings.bake_progress > 0.0:
+            box = layout.box()
+            box.prop(bakeSettings, "bake_progress")
+            box.label(text=bakeSettings.bake_message, icon='INFO')
+
         row = layout.row()
         row.prop(bakeSettings, "bakedTexturesPath")
         row.operator("meshsync.choose_material_bake_folder", icon="FILE_FOLDER", text="")
@@ -153,6 +188,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     bl_label = "Bake to individual materials"
     bl_description = "Bakes textures, creates material copies and assigns the baked materials for all materials that " \
                      "cannot be exported without baking them to textures"
+
+    maxBakeProgress = 0
 
     def isMaterialCopy(self, mat):
         return ORIGINAL_MATERIAL in mat
@@ -179,21 +216,22 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         outputNode = self.findMaterialOutputNode(mat.node_tree)
 
         if outputNode is None:
-            print(f"Cannot find material output node with a surface input. Cannot bake {mat.name}!")
+            msb_log(f"Cannot find material output node with a surface input. Cannot bake {mat.name}!", LogLevel.ERROR)
             return None, None
 
         # Get used shader or whatever is connected to the material output node:
         input = self.traverseReroutes(outputNode.inputs[0].links[0].from_node)
         if input is None:
-            print(f"Cannot find material output node with a valid surface input. Cannot bake {mat.name}!")
+            msb_log(f"Cannot find material output node with a valid surface input. Cannot bake {mat.name}!",
+                    LogLevel.ERROR)
             return outputNode, None
 
         if input.mute:
-            print(f"Input to material output is muted. Cannot bake {mat.name}!")
+            msb_log(f"Input to material output is muted. Cannot bake {mat.name}!", LogLevel.ERROR)
             return outputNode, None
 
         if input.type in ['HOLDOUT']:
-            print(f"Input to material output is an unsupported shader type: {input.type}!")
+            msb_log(f"Input to material output is an unsupported shader type: {input.type}!", LogLevel.ERROR)
             return outputNode, None
 
         return outputNode, input
@@ -227,19 +265,69 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 return channelSetting.bakeChannelEnabled
         return False
 
-    def bakeObject(self, context, obj):
-        if not msb_canObjectMaterialsBeBaked(obj):
-            return
-        
-        # Make sure previous bake is undone:
-        msb_revertBakedMaterials(obj)
+    def incrementProgress(self, context, message, reset=False):
+        bakeSettings = context.scene.meshsync_bake_settings
+        if reset:
+            bakeSettings.bake_progress = 100
+        else:
+            bakeSettings.bake_progress += 100.0 / self.maxBakeProgress
+
+        bakeSettings.bake_message = message
+
+    def preBakeObject(self, obj):
+        '''
+        Does things that are required to happen before running in modal mode.
+        Counts how many textures need to be baked so progress can be calculated.
+        :return:
+        '''
+        context = self.context
 
         # Select object:
         for o in context.selected_objects:
             o.select_set(False)
         obj.select_set(True)
 
-        print(f"********** Processing object '{obj.name}' **********")
+        # Make sure previous bake is undone:
+        msb_revertBakedMaterials(obj)
+
+        for matIndex, matSlot in enumerate(obj.material_slots):
+            mat = matSlot.material
+            if not self.canMaterialBeBaked(mat):
+                continue
+
+            obj.active_material_index = matIndex
+
+            matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
+
+            if matOutput is None or bsdf is None:
+                continue
+
+            materialUpdated = False
+            context = self.context
+            for channel in BAKED_CHANNELS:
+                if not self.isChannelBakeEnabled(context, channel):
+                    continue
+
+                self.maxBakeProgress += 1
+                if not materialUpdated:
+                    canBakeBSDF = self.canBsdfBeBaked(bsdf)
+                    self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
+                    materialUpdated = True
+
+            obj.material_slots[matIndex].material = mat
+
+    def bakeObject(self, obj):
+        if not msb_canObjectMaterialsBeBaked(obj):
+            return
+
+        context = self.context
+
+        # Select object:
+        for o in context.selected_objects:
+            o.select_set(False)
+        obj.select_set(True)
+
+        msb_log(f"********** Processing object '{obj.name}' **********")
 
         # We might want to support baking all materials into one:
         bakeIndividualMats = True
@@ -268,13 +356,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 obj.active_material_index = matIndex
 
-                self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
-                self.objectBakeInfo = {}        # To keep track of baked channels for this object to check if image nodes can be reused
-
                 matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
 
                 if matOutput is None or bsdf is None:
                     continue
+
+                self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
+                self.objectBakeInfo = {}  # To keep track of baked channels for this object to check if image nodes can be reused
 
                 # Ensure object is not hidden, otherwise baking will fail:
                 wasHidden = obj.hide_get()
@@ -283,7 +371,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
                 self.deselectAllMaterialNodes(mat)
 
-                print(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
+                msb_log(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
 
                 # If any channel was baked, it will be on a new material,
                 # store that to frame all new nodes after everything is baked:
@@ -292,12 +380,20 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     if not self.isChannelBakeEnabled(context, channel):
                         continue
 
+                    self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'")
+                    if useModal:
+                        yield
+                        context = self.context
+
                     didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, matOutput, channel)
                     if didBake:
                         bakedMat = newMat
 
+                    if useModal:
+                        yield
+                        context = self.context
+
                 if bakedMat != mat:
-                    print(f"Baked '{mat.name}' on '{obj.name}'.\n")
                     self.cleanUpNodeTreeAndConnectBakedBSDF(bakedMat, matOutput)
 
                 # Needed for restore afterwards:
@@ -309,32 +405,34 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 obj.select_set(False)
                 obj.hide_set(wasHidden)
 
+                if useModal:
+                    yield
+                    context = self.context
+
             if UV_OVERRIDE in obj.data and len(obj.data.uv_layers) > 1:
-                print(
+                msb_log(
                     f"New UVs were generated for '{obj.name}' for baking. Old UVs need to be deleted so the baked textures work correctly.")
                 bakedUVLayer = obj.data[UV_OVERRIDE]
                 for uvLayerIndex in range(len(obj.data.uv_layers) - 1, -1, -1):
                     uvLayer = obj.data.uv_layers[uvLayerIndex]
                     if uvLayer.name != bakedUVLayer:
-                        print(f"Deleting uv layer: {uvLayer.name}")
+                        msb_log(f"Deleting uv layer: {uvLayer.name}")
                         obj.data.uv_layers.remove(uvLayer)
                 del obj.data[UV_OVERRIDE]
         except Exception as e:
             if throwExceptions:
                 raise e
             finalMaterials = materials
-            print(f"Error: {e}")
+            msb_log(f"Error: {e}", LogLevel.ERROR)
 
         if bakeIndividualMats:
             # Restore material slots:
             for matIndex, mat in enumerate(finalMaterials):
                 obj.material_slots[matIndex].material = mat
 
-    def bakeAll(self, context):
-        for obj in context.scene.objects:
-            self.bakeObject(context, obj)
+    def bake(self):
+        context = self.context
 
-    def bake(self, context):
         # Make sure meshsync is finished and ready:
         from .unity_mesh_sync_common import msb_apply_scene_settings, msb_context
 
@@ -347,6 +445,19 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         selectedObjects = context.selected_objects
 
         self.objectsProcessedForBaking = []
+        bakeSettings = context.scene.meshsync_bake_settings
+        bakeSettings.bake_progress = 0
+
+        bakeSelection = bakeSettings.bake_selection
+
+        if bakeSelection == 'ALL':
+            objectsToBake = context.scene.objects
+        elif bakeSelection == 'SELECTED':
+            if len(context.selected_objects) > 0:
+                objectsToBake = selectedObjects
+            else:
+                msb_log("No objects selected, nothing to bake!", LogLevel.ERROR)
+                return {'CANCELLED'}
 
         self.setupRenderSettings(context)
 
@@ -362,19 +473,19 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 col.hide_render = False
                 hiddenCollectionsRender.append(col.name)
 
-        bakeSettings = context.scene.meshsync_bake_settings
-        bakeSelection = bakeSettings.bake_selection
-        if bakeSelection == 'ALL':
-            self.bakeAll(context)
-        elif bakeSelection == 'SELECTED':
-            if len(context.selected_objects) > 0:
-                for obj in selectedObjects:
-                    self.bakeObject(context, obj)
-            else:
-                print("No objects selected, nothing to bake!")
+        self.maxBakeProgress = 0
+        for obj in objectsToBake:
+            self.preBakeObject(obj)
+
+        yield
+        for obj in objectsToBake:
+            for o in self.bakeObject(obj):
+                yield
 
         # Restore state:
         self.restoreOriginalSettings(context)
+        bakeSettings = context.scene.meshsync_bake_settings
+        bakeSettings.bake_progress = 0
         context.view_layer.objects.active = activeObject
         for o in context.selected_objects:
             o.select_set(False)
@@ -401,13 +512,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         else:
             # If there is a UV map set, we need to bake if the object has other UV maps we could use instead:
             if len(obj.data.uv_layers) == 0:
-                print(
+                msb_log(
                     f"Cannot bake '{obj.name}' because it does not have any UV channels but the input for '{channel}' needs a '{uvMapName}' UV map.")
                 return [False]
 
             # If this is UV0 of the object, don't bake:
             if obj.data.uv_layers.find(uvMapName) == -1:
-                print(
+                msb_log(
                     f"Cannot bake '{obj.name}' because it does not have the UV map {uvMapName} that the input for '{channel}' needs.")
                 return [False]
 
@@ -503,7 +614,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def bakeBSDFChannelIfNeeded(self, context, obj, mat, bsdf, matOutput, channel):
         result = self.doesBSDFChannelNeedBaking(obj, bsdf, channel)
         if result[0]:
-            print(f"Baking {channel} for '{obj.name}'. Reason: {result[1]}")
+            msb_log(f"Baking {channel} for '{obj.name}'. Reason: {result[1]}")
             bakedMat = self.bakeChannel(context, obj, mat, bsdf, matOutput, channel)
             return True, bakedMat
 
@@ -541,9 +652,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 # Can't apply modifiers with shared data:
                 bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                 for mod in obj.modifiers[:]:
-                    bpy.ops.object.modifier_apply(modifier=mod.name)
+                    try:
+                        bpy.ops.object.modifier_apply(modifier=mod.name)
+                    except Exception as e:
+                        print(f"Error applying modifier: {e}")
             else:
-                print(f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.")
+                msb_log(
+                    f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.",
+                    LogLevel.ERROR)
 
         # UVs:
         generateUVs = bakeSettings.generate_uvs == 'ALWAYS' or len(obj.data.uv_layers) == 0
@@ -580,11 +696,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     raise Exception(
                         f"Object: '{obj.name}' has no usable UVs. Automatically generating UVs is disabled, so this object cannot be baked!")
 
-                print("UVs are not in 0..1 range for baking, generating new UVs.")
+                msb_log("UVs are not in 0..1 range for baking, generating new UVs.")
                 generateUVs = True
 
         if generateUVs:
-            print(f"Auto generating UVs for object: '{obj.name}'.")
+            msb_log(f"Auto generating UVs for object: '{obj.name}'.")
 
             bakeUVLayer = obj.data.uv_layers.new(name="Baked")
             obj.data.uv_layers.active = bakeUVLayer
@@ -606,35 +722,35 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         else:
             obj.data.uv_layers.active = obj.data.uv_layers[0]
 
+        if obj.mode == 'EDIT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
     def getNodeYLocation(self, node):
         location = node.location[1]
         if node.parent is not None:
             location += self.getNodeYLocation(node.parent)
         return location
 
-    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
-        if context.object is not None:
-            bpy.ops.object.mode_set(mode='OBJECT')
-        for ob in context.selected_objects:
-            ob.select_set(False)
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
-
-        self.prepareObjectForBaking(context, obj)
-
+    def prepareMaterial(self, context, obj, bsdf, mat, canBakeBSDF):
         # Make material copy if this is not a copy already:
         if ORIGINAL_MATERIAL not in mat:
             # Use existing copy if there is one:
             matCopyName = f"{mat.name}_{obj.name}_baked"
+
             matCopyIndex = bpy.data.materials.find(matCopyName)
             if matCopyIndex >= 0:
                 matCopy = bpy.data.materials[matCopyIndex]
+
+                # Replace material with its baking copy:
+                matIndex = obj.material_slots.find(mat.name)
+                obj.material_slots[matIndex].material = matCopy
             else:
                 mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
                 matCopy = mat.copy()
                 matCopy[ORIGINAL_MATERIAL] = mat.name
-                matCopy.name = f"{mat.name}_{obj.name}_baked"
+                matCopy.name = matCopyName
 
+                # Replace material with its baking copy:
                 matIndex = obj.material_slots.find(mat.name)
                 obj.material_slots[matIndex].material = matCopy
 
@@ -662,7 +778,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 # Restore context area type:
                 area.type = old_type
 
-                print(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
+                msb_log(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
 
                 # Use same BSDF type if we can bake its inputs,
                 # otherwise connect the fallback baked maps to principled bsdf:
@@ -691,8 +807,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             mat = matCopy
 
-        if obj.mode == 'EDIT':
+        return mat
+
+    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
+        if context.object is not None:
             bpy.ops.object.mode_set(mode='OBJECT')
+        for ob in context.selected_objects:
+            ob.select_set(False)
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+
+        self.prepareObjectForBaking(context, obj)
+        mat = self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
 
         return mat
 
@@ -703,7 +829,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
 
         if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
-            print("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")
+            msb_log("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")
 
         self.setRestorableContextSetting(context, "scene.cycles.samples",
                                          10)  # TODO: This could be a setting for the user to change
@@ -736,9 +862,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         '''
         Allows to set nested settings and record their original value to restore them after baking.
         '''
-        self.originalSceneSettings.append((settingName, rgetattr(context, settingName)))
+        self.originalSceneSettings.append((settingName, msb_rgetattr(context, settingName)))
 
-        rsetattr(context, settingName, value)
+        msb_rsetattr(context, settingName, value)
         pass
 
     def restoreOriginalSettings(self, context):
@@ -746,7 +872,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         Restores original settings that were set using 'setRestorableContextSetting'.
         '''
         for originalSettingName, originalSettingValue in self.originalSceneSettings:
-            rsetattr(context, originalSettingName, originalSettingValue)
+            msb_rsetattr(context, originalSettingName, originalSettingValue)
 
     def traverseReroutes(self, nodeOrSocket):
         '''
@@ -801,9 +927,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.bakedImageNodeYOffset += 300
 
         # Bake
-        print("Baking in progress...")
+        msb_log("Baking in progress...")
         bpy.ops.object.bake(type=bakeType, use_clear=True, use_selected_to_active=False, use_split_materials=True)
-        bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bake_settings.bakedTexturesPath, bakeImage.name + ".png")
+        bakeImage.filepath_raw = os.path.join(context.scene.meshsync_bake_settings.bakedTexturesPath,
+                                              bakeImage.name + ".png")
         bakeImage.file_format = "PNG"
         bakeImage.save()
         bakeImage.colorspace_settings.name = colorSpace
@@ -847,10 +974,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         channelInput = self.traverseReroutes(bsdfChannelSocket.links[0].from_socket)
 
         if channelInput in self.objectBakeInfo:
-            print(f"Input for channel {bsdfChannelSocketName} was already baked, reusing the same image.")
+            msb_log(f"Input for channel {bsdfChannelSocketName} was already baked, reusing the same image.")
             return self.objectBakeInfo[channelInput]
 
-        print(f"Baking inputs of channel: '{bsdfChannelSocketName}'.")
+        msb_log(f"Baking inputs of channel: '{bsdfChannelSocketName}'.")
 
         link(channelInput, matOutput.inputs[0])
 
@@ -864,11 +991,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
         else:
-            print(
+            msb_log(
                 f"Unable to bake {channel} for {mat.name} on {obj.name}. The channel is not supported in fallback mode.\n")
             return None
 
-        print(f"Baking {channel} in fallback mode as {bakeType}")
+        msb_log(f"Baking {channel} in fallback mode as {bakeType}")
 
         node_tree = mat.node_tree
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
@@ -925,13 +1052,41 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def execute(self, context):
         if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
             self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
+            self.unregister(context)
             return {'CANCELLED'}
 
-        startTime = time.time()
+        self.startTime = time.time()
+        self.context = context
+        self.bakeTask = self.bake()
 
-        self.bake(context)
+        return {'RUNNING_MODAL'}
 
-        print(f"Finished baking. Time taken: {datetime.timedelta(seconds=(time.time() - startTime))}")
+    def unregister(self, context):
+        wm = context.window_manager
+        wm.event_timer_remove(self.timer)
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        self.timer = wm.event_timer_add(0, window=context.window)
+        context.window_manager.modal_handler_add(self)
+        return self.execute(context)
+
+    def modal(self, context, event):
+        # Allow cancellation by pressing escape:
+        if event.type == 'ESC':
+            self.unregister(context)
+            self.incrementProgress(context, "Baking cancelled by user", reset=True)
+            return {'FINISHED'}
+
+        # Refresh context each run:
+        self.context = context
+        for o in self.bakeTask:
+            return {'RUNNING_MODAL'}
+
+        msb_log(f"Finished baking. Time taken: {datetime.timedelta(seconds=(time.time() - self.startTime))}",
+                LogLevel.ERROR)
+
+        self.unregister(context)
         return {'FINISHED'}
 
 
@@ -944,6 +1099,7 @@ class MESHSYNC_OT_select_bake_folder(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         context.scene.meshsync_bake_settings.bakedTexturesPath = os.path.dirname(self.properties.filepath)
         return {'FINISHED'}
+
 
 def msb_revertBakedMaterials(obj):
     materialsToDelete = set()
@@ -959,8 +1115,9 @@ def msb_revertBakedMaterials(obj):
         if ORIGINAL_MATERIAL in mat:
             origMatName = mat[ORIGINAL_MATERIAL]
             if origMatName not in bpy.data.materials:
-                print(
-                    f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.")
+                msb_log(
+                    f"Cannot revert bake for material '{mat.name}' on '{obj.name}'. Original material '{origMatName}' does not exist.",
+                    LogLevel.ERROR)
                 continue
 
             origMat = bpy.data.materials[origMatName]
@@ -969,6 +1126,7 @@ def msb_revertBakedMaterials(obj):
 
     for mat in materialsToDelete:
         bpy.data.materials.remove(mat)
+
 
 class MESHSYNC_OT_RevertBake(bpy.types.Operator):
     bl_idname = "meshsync.revert_bake_materials"
@@ -981,6 +1139,9 @@ class MESHSYNC_OT_RevertBake(bpy.types.Operator):
         msb_context.flushPendingList()
         msb_apply_scene_settings()
         msb_context.setup(context)
+
+        bakeSettings = context.scene.meshsync_bake_settings
+        bakeSettings.bake_progress = 0
 
         for obj in context.scene.objects:
             msb_revertBakedMaterials(obj)
