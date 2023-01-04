@@ -292,7 +292,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     remainingMinutes = remainingTotalSeconds / 60
                     if remainingMinutes > 60:
                         remainingHours = remainingMinutes / 60
-                        bakeSettings.bake_time_remaining = f"Estimated time left: {int(remainingHours+1)} hour"
+                        bakeSettings.bake_time_remaining = f"Estimated time left: {int(remainingHours+1)} hours"
                     else:
                         bakeSettings.bake_time_remaining = f"Estimated time left: {int(remainingMinutes+1)} minutes"
             else:
