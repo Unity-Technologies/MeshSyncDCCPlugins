@@ -127,6 +127,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
         max=100,
         precision=0)
     bake_message: bpy.props.StringProperty()
+    bake_maps_remaining: bpy.props.StringProperty(name="Maps baked")
     bake_time_remaining: bpy.props.StringProperty(name="Estimated time left")
 
 
@@ -179,6 +180,7 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
             box = layout.box()
             box.prop(bakeSettings, "bake_progress")
             box.label(text=bakeSettings.bake_message, icon='INFO')
+            box.label(text=bakeSettings.bake_maps_remaining)
             if len(bakeSettings.bake_time_remaining) > 0:
                 box.label(text=bakeSettings.bake_time_remaining)
 
@@ -196,6 +198,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                      "cannot be exported without baking them to textures"
 
     maxBakeProgress = 0
+    currentBakeProgress = 0
 
     def isMaterialCopy(self, mat):
         return ORIGINAL_MATERIAL in mat
@@ -279,6 +282,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         else:
             bakeSettings.bake_progress += 100.0 / self.maxBakeProgress * self.getObjectProgressWeight(obj)
             elapsedSeconds = datetime.timedelta(seconds=(time.time() - self.startTime)).total_seconds()
+
+            self.currentBakeProgress += 1
+
+            bakeSettings.bake_maps_remaining = f"Baking map {self.currentBakeProgress}/{self.maxBakeProgress}"
 
             # The remaining time is not going to be very precise because
             # it's hard to predict how complex each baking task is.
@@ -500,6 +507,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 hiddenCollectionsRender.append(col.name)
 
         self.maxBakeProgress = 0
+        self.currentBakeProgress = 0
         for obj in objectsToBake:
             self.preBakeObject(obj)
 
