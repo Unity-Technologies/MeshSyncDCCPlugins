@@ -914,7 +914,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def traverseReroutes(self, nodeOrSocket):
         '''
         Goes upstream until it finds a node or node socket that is not a reroute node.
-        :param node: node or node socket
+        :param nodeOrSocket: node or node socket
         :return: upstream input the node or node socket resolves to after reroutes
         '''
 
@@ -982,14 +982,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
     def bakeChannelInputsDirectly(self, context, obj, mat, bsdf, matOutput, channel) -> bpy.types.ShaderNodeTexImage:
         '''
-        Connects BSDF channel input directly to the material output and bakes it:
-        :param context:
-        :param obj:
-        :param mat:
-        :param bsdf:
-        :param matOutput:
-        :param channel:
-        :return:
+        Connects BSDF channel input directly to the material output and bakes it.
+        :return: Image node that contains the baked image
         '''
         bsdfChannelSocketName = self.getBSDFChannelInputName(bsdf, channel)
 
@@ -1025,6 +1019,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return bakedImageNode
 
     def bakeWithFallback(self, context, obj, mat, channel):
+        '''
+        Does default blender bake of the given channel.
+        :return: Image node that contains the baked image
+        '''
         if channel in channelNameToBakeName:
             bakeType = channelNameToBakeName[channel]
         else:
@@ -1040,11 +1038,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return self.bakeToImage(context, obj, mat, bsdf, bakeType, channel)
 
     def getChannelNameSynonyms(self, channel):
+        '''
+        Returns possible other names for the given channel because some BSDFs use other names for the same channel.
+        '''
         if channel in synonymMap:
             return synonymMap[channel]
         return []
 
     def getBSDFChannelInputName(self, bsdf, channel):
+        '''
+        Returns the name of the input for the given channel on the bsdf.
+        None if the BSDF does not support the input.
+        '''
         if channel in bsdf.inputs:
             return channel
 
