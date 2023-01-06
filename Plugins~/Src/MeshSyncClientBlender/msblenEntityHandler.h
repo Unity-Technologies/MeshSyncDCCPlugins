@@ -37,5 +37,6 @@ public:
 	static void extract_bone_trs(const mu::float4x4& mat, mu::float3& t, mu::quatf& r, mu::float3& s);
 
 	static void applyCorrectionIfNeeded(const Object* obj, mu::float4x4& matrix);
+	static void applyCorrectionIfNeeded(mu::float4x4& matrix, bool is_camera, bool is_light);
 };
 

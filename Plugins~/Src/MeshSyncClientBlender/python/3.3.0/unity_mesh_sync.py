@@ -16,17 +16,6 @@ from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
 from .unity_mesh_sync_baking import *
 
-# Events that get called during the meshsync export stages, append your functions to these lists:
-# Called every frame when checking if something needs exporting:
-mesh_sync_on_prepare = []
-
-# Called before exporting
-mesh_sync_on_pre_export = []
-
-# Called after export is finished
-mesh_sync_on_post_export = []
-
-
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "MeshSync"
 
@@ -368,18 +357,6 @@ def unregister():
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
-
-def meshsync_prepare():
-    for f in mesh_sync_on_prepare:
-        f()
-
-def meshsync_pre_export():
-    for f in mesh_sync_on_pre_export:
-        f()
-
-def meshsync_post_export():
-    for f in mesh_sync_on_post_export:
-        f()
 
 import atexit
 atexit.register(DestroyMeshSyncContext)

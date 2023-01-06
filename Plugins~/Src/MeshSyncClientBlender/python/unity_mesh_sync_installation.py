@@ -126,8 +126,8 @@ def msb_get_most_recent_version(v1, v2):
     if "file:" in v2:
         v2 = msb_get_local_package_version(v2)
 
-    tokens1 = v1.replace("-preview","").split('.')
-    tokens2 = v2.replace("-preview","").split('.')
+    tokens1 = v1.split('-')[0].split('.')
+    tokens2 = v2.split('-')[0].split('.')
 
     if len(tokens1) != len(tokens2):
         return 'VERSION_MISMATCH'

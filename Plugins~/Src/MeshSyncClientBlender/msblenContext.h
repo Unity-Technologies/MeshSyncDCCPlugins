@@ -167,13 +167,13 @@ private:
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
-    void exportInstances(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse, msblenContextPathProvider& pathProvider);
+    void exportInstances(ms::TransformPtr transform, ms::TransformPtr parent, SharedVector<mu::float4x4>, mu::float4x4& inverse, msblenContextPathProvider& pathProvider);
 
     ms::InstanceInfoPtr exportInstanceInfo(
         msblenContextState& state,
         msblenContextPathProvider& paths,
-        Object* instancedObject,
-        Object* parent,
+        ms::TransformPtr transform,
+        ms::TransformPtr parent,
         SharedVector<mu::float4x4> mat);
 
 #endif
@@ -208,7 +208,8 @@ private:
 
     msblenCurveHandler m_curves_handler;
 
-    bool m_server_requested_sync;
+    bool m_server_requested_sync = false;
+    bool m_server_requested_python_callback = false;
 
     string m_editor_command_reply;
 

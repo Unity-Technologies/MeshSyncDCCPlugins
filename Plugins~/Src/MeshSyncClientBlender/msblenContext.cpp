@@ -443,8 +443,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
             auto do_merge = [this, dst, &dst_mesh, &src_mesh, &settings, &state]() {
                 dst_mesh.merge(src_mesh);
-                if (settings.ExportSceneCache)
-                    dst_mesh.detach();
+                dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
@@ -730,8 +729,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
-        const bool need_convert = 
-            (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
+        const bool need_convert = settings.BakeModifiers || !is_mesh(src);
 
         if (need_convert) {
             if (settings.BakeModifiers ) {
@@ -1098,6 +1096,7 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
 
+
             int material_index = 0;
             const int polygon_index = triangle[0]->f->head.index;
             if (polygon_index < polygons.size())
@@ -1123,8 +1122,21 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
-            for (struct BMLoop* idx : triangle)
-                dst.normals[ii++] = -bl::BM_loop_calc_face_normal(*idx);
+            const int polygon_index = triangle[0]->f->head.index;
+
+            auto polygon = polygons[polygon_index];
+            auto smooth = polygon->head.hflag & BM_ELEM_SMOOTH;
+
+            for (struct BMLoop* idx : triangle) {
+                if (smooth) {
+                    auto index =  idx->v->head.index;
+                    auto vertext = vertices[index];
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(vertext->no));
+                }
+                else {
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(idx->f->no));
+                }
+            }
         }
     }
 
@@ -1432,6 +1444,9 @@ void msblenContext::requestLiveEditMessage()
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
+        else if (messageFromServer == ms::REQUEST_USER_SCRIPT_CALLBACK) {
+            m_server_requested_python_callback = true;
+        }
     };
     m_sender.requestLiveEditMessage();
 }
@@ -1475,6 +1490,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     importEntities(m_property_manager.getReceivedEntities());
 
     m_property_manager.clearReceivedData();
+
+    // If a python callback was requested, that may change the scene so run it and don't export until next update:
+    if (m_server_requested_python_callback) {
+        m_server_requested_python_callback = false;
+        m_ignore_events = true;
+        blender::callPythonMethod("meshsync_server_requested_callback");
+        m_ignore_events = false;
+        // Set this to true to force a sync after a python update.
+        // This ensures the server gets refreshed even if the python callback
+        // did not change the scene:
+        m_server_requested_sync = true;
+        return false;
+    }
 
     if (m_server_requested_sync) {
         scope = MeshSyncClient::ObjectScope::All;
