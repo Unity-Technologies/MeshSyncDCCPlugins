@@ -93,6 +93,13 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     Groups all bake settings in a single class.
     '''
     bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default='')
+    baked_texture_dimensions: bpy.props.EnumProperty(name="Texture dimensions",
+                                           items=(('PIXELS', 'Pixels',
+                                                   'Custom texture size'),
+                                                  ('TEXEL_RATIO', 'Texel ratio',
+                                                   'Use object size to determine texture dimensions')),
+                                           default='PIXELS')
+    texel_ratio: bpy.props.FloatProperty(name="Texels / World Unit", default=20.48)
     bakedTextureSize: bpy.props.IntVectorProperty(name="Baked texture size", size=2,
                                                   default=(512, 512))
     bake_selection: bpy.props.EnumProperty(name="Objects to bake",
@@ -174,6 +181,13 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         layout.prop(bakeSettings, "generate_uvs", expand=True)
         layout.prop(bakeSettings, "apply_modifiers")
         layout.prop(bakeSettings, "run_modal")
+
+        layout.prop(bakeSettings, "baked_texture_dimensions", expand=True)
+        if bakeSettings.baked_texture_dimensions == 'PIXELS':
+            layout.prop(bakeSettings, "bakedTextureSize")
+        else:
+            layout.prop(bakeSettings, "texel_ratio")
+
         layout.operator("meshsync.bake_materials")
 
         if bakeSettings.bake_progress > 0.0:
@@ -187,7 +201,7 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         row = layout.row()
         row.prop(bakeSettings, "bakedTexturesPath")
         row.operator("meshsync.choose_material_bake_folder", icon="FILE_FOLDER", text="")
-        layout.prop(bakeSettings, "bakedTextureSize")
+
         layout.operator("meshsync.revert_bake_materials")
 
 
@@ -656,6 +670,75 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return False, mat
 
+    def getTextureDimensions(self, context, obj):
+        bakeSettings = context.scene.meshsync_bake_settings
+
+        if bakeSettings.baked_texture_dimensions == 'PIXELS':
+            return bakeSettings.bakedTextureSize
+        else:
+            # For each face, get the area in space and UV space
+            mesh = obj.data
+
+            import numpy as np
+            uv_layer = mesh.uv_layers.active.data
+
+            def polyArea(x, y):
+                return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
+
+            # Build a list of [world units, UV space units]
+            world_uvArea_list = []
+
+            ratioSum = 0
+
+            for poly in mesh.polygons:
+                # calculate UV area:
+                x = []
+                y = []
+
+                # Put vertices of the polygon into lists to calculate the UV area:
+                for loop_index in range(poly.loop_start, poly.loop_start + poly.loop_total):
+                    uv = uv_layer[loop_index].uv
+                    x.append(uv[0])
+                    y.append(uv[1])
+
+                uvArea = polyArea(x, y)
+                pArea = poly.area
+
+                if pArea <= 0.000001:
+                    pArea = 0.001
+
+                # print(f"p: {pArea}: {uvArea}")
+                world_uvArea_list.append([pArea, uvArea])
+
+                ratioSum += uvArea / pArea
+
+            # Calculate average texel density for each face:
+            avgDensity = ratioSum / len(mesh.polygons)
+            print(f"avgDensity: {avgDensity}")
+
+            # # UVs could overlap or be unoccupied.
+            # # Ensure that is taken into account for the texel density calculation
+            # # by adding up all UV areas and using each area as a fraction of the total:
+            # totalUsedUVArea = 0
+            # for world_uvArea in world_uvArea_list:
+            #     totalUsedUVArea += world_uvArea[1]
+            #
+            # print(f"totalUsedUVArea: {totalUsedUVArea}")
+            #
+            # #
+            # texel_density = 0
+            # for world_uvArea in world_uvArea_list:
+            #     texel_density += world_uvArea[1] / totalUsedUVArea / world_uvArea[0]
+            #
+            # print(f"texel density: {texel_density}")
+
+            # Calculate how large the texture needs to be to get the desired texel density:
+            dims = max(1, int(bakeSettings.texel_ratio * avgDensity * 100))
+            dims = (dims, dims)
+            print(f"Calculated texture size: {dims}")
+
+            return dims
+
     def createImage(self, context, obj, name, colorSpace, alpha=False):
         imageName = name.replace(" ", "_")
 
@@ -664,11 +747,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if existingImageIndex >= 0:
             bpy.data.images.remove(bpy.data.images[existingImageIndex])
 
-        bakeSettings = context.scene.meshsync_bake_settings
+        texDims = self.getTextureDimensions(context, obj)
 
         result = bpy.data.images.new(imageName,
-                                     width=bakeSettings.bakedTextureSize[0],
-                                     height=bakeSettings.bakedTextureSize[1],
+                                     width=texDims[0],
+                                     height=texDims[1],
                                      alpha=alpha)
         result.colorspace_settings.name = colorSpace
 
