@@ -768,6 +768,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return location
 
     def prepareMaterial(self, context, obj, bsdf, mat, canBakeBSDF):
+        '''
+        Creates a material copy for baking if necessary.
+        :return: Material copy for baking or the material if it's already a baking copy.
+        '''
         # If this is a material copy, do not copy it again:
         if ORIGINAL_MATERIAL in mat:
             return mat
