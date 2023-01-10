@@ -870,7 +870,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.originalSceneSettings = []
 
         self.setRestorableContextSetting(context, "scene.render.engine", "CYCLES")
-        self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
+        if context.preferences.addons['cycles'].preferences.has_active_device():
+            self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
 
         if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
             msb_log("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")
