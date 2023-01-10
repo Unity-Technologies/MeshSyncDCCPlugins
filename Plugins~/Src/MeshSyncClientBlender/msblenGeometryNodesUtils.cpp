@@ -86,15 +86,21 @@ namespace blender {
         // Collect object names in the file
         auto ctx = blender::BlenderPyContext::get();
         auto objects = ctx.data()->objects;
-        std::unordered_map<std::string, Object*> file_objects;
+        std::unordered_set<std::string> file_objects;
+
+        auto get_path = [](Object* obj) {
+            auto data = (ID*)obj->data;
+            return string(data->name) + string(obj->id.name);
+        };
+
         LISTBASE_FOREACH(Object*, obj, &objects) {
 
             if (obj->data == nullptr)
                 continue;
 
-            auto id = (ID*)obj->data;
+            auto path = get_path(obj);
 
-            file_objects[id->name + 2] = obj;
+            file_objects.insert(path);
         }
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
@@ -112,14 +118,15 @@ namespace blender {
                     rec.name = id->name + 2;
                     rec.obj = obj;
                     rec.parent = parent;
-                    rec.from_file = file_objects.find(rec.name) != file_objects.end();
-                    rec.id = rec.name + "_" + std::to_string(id->session_uuid);
+                    
+                    rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
+
+                    rec.id = rec.name +"_" + std::to_string(id->session_uuid);
                     obj_handler(rec);
                 }
                 
                 rec.matrices.push_back(matrix);
             });
-
 
 
             // Export transforms
