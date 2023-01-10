@@ -21,7 +21,6 @@ class LogLevel:
 throwExceptions = True
 showLogLevel = LogLevel.VERBOSE
 
-# Commented out ones will be supported in next version:
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
                   "Roughness",
