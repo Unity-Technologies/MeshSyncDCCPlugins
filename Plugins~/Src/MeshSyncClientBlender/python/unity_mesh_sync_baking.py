@@ -214,9 +214,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 outputNodeInGroup = self.findMaterialOutputNode(node.node_tree)
                 if outputNodeInGroup is not None:
                     outputNode = outputNodeInGroup
-            elif node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1:
+            elif node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1 and node.is_active_output:
                 outputNode = node
-                # Blender uses the last OUTPUT_MATERIAL node, so don't stop search here
+                break
 
         return outputNode
 
