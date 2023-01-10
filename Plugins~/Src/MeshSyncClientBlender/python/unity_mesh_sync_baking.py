@@ -1,4 +1,4 @@
-import bpy, os, datetime, time
+import bpy, os, datetime, time, math
 from bpy_extras.io_utils import ExportHelper
 from bpy.app.handlers import persistent
 import functools
@@ -96,10 +96,20 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     baked_texture_dimensions: bpy.props.EnumProperty(name="Texture dimensions",
                                            items=(('PIXELS', 'Pixels',
                                                    'Custom texture size'),
-                                                  ('TEXEL_RATIO', 'Texel ratio',
-                                                   'Use object size to determine texture dimensions')),
+                                                  ('TEXEL_DENSITY', 'Texel density',
+                                                   'Use polygon size in the UV map to determine texture dimensions')),
                                            default='PIXELS')
-    texel_ratio: bpy.props.FloatProperty(name="Texels / World Unit", default=20.48)
+    texel_density: bpy.props.FloatProperty(name="Texels / World Unit",
+                                         description="How many texture pixels for 1 blender world unit",
+                                         default=20.48)
+    texel_density_limit: bpy.props.IntProperty(name="Max texture size",
+                                             description="Maximum texture size when calculating dimensions from texel density",
+                                             min=1,
+                                             max=65536,
+                                             default=2048)
+    texel_density_pot: bpy.props.BoolProperty(name="Power of 2",
+                                              description="Whether to increase the texture size to the next power of 2",
+                                              default=True)
     bakedTextureSize: bpy.props.IntVectorProperty(name="Baked texture size", size=2,
                                                   default=(512, 512))
     bake_selection: bpy.props.EnumProperty(name="Objects to bake",
@@ -186,7 +196,9 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         if bakeSettings.baked_texture_dimensions == 'PIXELS':
             layout.prop(bakeSettings, "bakedTextureSize")
         else:
-            layout.prop(bakeSettings, "texel_ratio")
+            layout.prop(bakeSettings, "texel_density")
+            layout.prop(bakeSettings, "texel_density_limit")
+            layout.prop(bakeSettings, "texel_density_pot")
 
         layout.operator("meshsync.bake_materials")
 
@@ -670,6 +682,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return False, mat
 
+    def getNextPowerOf2(self, number):
+        return 2**(number - 1).bit_length()
+
     def getTextureDimensions(self, context, obj):
         bakeSettings = context.scene.meshsync_bake_settings
 
@@ -688,6 +703,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             # Build a list of [world units, UV space units]
             world_uvArea_list = []
 
+            # Add up uvArea / polygon area and divide by number of polygons to get the average ratio
+            # and calculate the texture dimensions based on the texel density from that:
             ratioSum = 0
 
             for poly in mesh.polygons:
@@ -704,38 +721,26 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 uvArea = polyArea(x, y)
                 pArea = poly.area
 
+                # Avoid division by 0:
                 if pArea <= 0.000001:
                     pArea = 0.001
 
-                # print(f"p: {pArea}: {uvArea}")
                 world_uvArea_list.append([pArea, uvArea])
-
-                ratioSum += uvArea / pArea
+                # ratioSum += math.sqrt(uvArea) / math.sqrt(pArea)
+                ratioSum += math.sqrt(uvArea / pArea)
 
             # Calculate average texel density for each face:
             avgDensity = ratioSum / len(mesh.polygons)
-            print(f"avgDensity: {avgDensity}")
-
-            # # UVs could overlap or be unoccupied.
-            # # Ensure that is taken into account for the texel density calculation
-            # # by adding up all UV areas and using each area as a fraction of the total:
-            # totalUsedUVArea = 0
-            # for world_uvArea in world_uvArea_list:
-            #     totalUsedUVArea += world_uvArea[1]
-            #
-            # print(f"totalUsedUVArea: {totalUsedUVArea}")
-            #
-            # #
-            # texel_density = 0
-            # for world_uvArea in world_uvArea_list:
-            #     texel_density += world_uvArea[1] / totalUsedUVArea / world_uvArea[0]
-            #
-            # print(f"texel density: {texel_density}")
 
             # Calculate how large the texture needs to be to get the desired texel density:
-            dims = max(1, int(bakeSettings.texel_ratio * avgDensity * 100))
+            dims = max(1, int(bakeSettings.texel_density / avgDensity))
+
+            if bakeSettings.texel_density_pot:
+                dims = self.getNextPowerOf2(dims)
+
+            dims = min(dims, bakeSettings.texel_density_limit)
             dims = (dims, dims)
-            print(f"Calculated texture size: {dims}")
+            msb_log(f"Calculated texture size: {dims}", LogLevel.VERBOSE)
 
             return dims
 
