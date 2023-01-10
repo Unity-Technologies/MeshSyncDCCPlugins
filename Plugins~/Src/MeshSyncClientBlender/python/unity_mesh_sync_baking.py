@@ -782,71 +782,72 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             # Replace material with its baking copy:
             matIndex = obj.material_slots.find(mat.name)
             obj.material_slots[matIndex].material = matCopy
+
+            return matCopy
+
+        # Make material copy for baking:
+        mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
+        matCopy = mat.copy()
+        matCopy[ORIGINAL_MATERIAL] = mat.name
+        matCopy.name = matCopyName
+
+        # Replace material with its baking copy:
+        matIndex = obj.material_slots.find(mat.name)
+        obj.material_slots[matIndex].material = matCopy
+
+        # Ungroup all node groups for easy, error-free access:
+        for node in matCopy.node_tree.nodes:
+            node.select = False
+
+        # Need to set the context area type for the group_ungroup operator to work:
+        area = self.area
+        old_type = area.type
+        area.ui_type = 'ShaderNodeTree'
+
+        space = area.spaces.active
+        space.node_tree = matCopy.node_tree
+
+        for node in matCopy.node_tree.nodes:
+            if node.type == 'GROUP':
+                node.select = True
+                with context.temp_override(area=area):
+                    bpy.ops.node.group_ungroup()
+                node.select = False
+
+        for node in matCopy.node_tree.nodes:
+            node.select = False
+
+        # Restore context area type:
+        area.type = old_type
+
+        msb_log(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
+
+        # Use same BSDF type if we can bake its inputs,
+        # otherwise connect the fallback baked maps to principled bsdf:
+        if canBakeBSDF:
+            bakedBSDF = matCopy.node_tree.nodes.new(type=bsdf.bl_idname)
         else:
-            mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
-            matCopy = mat.copy()
-            matCopy[ORIGINAL_MATERIAL] = mat.name
-            matCopy.name = matCopyName
+            bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
 
-            # Replace material with its baking copy:
-            matIndex = obj.material_slots.find(mat.name)
-            obj.material_slots[matIndex].material = matCopy
+        # Copy the input settings from the original bsdf so anything that's not baked still matches:
+        for input in bsdf.inputs:
+            bakedBSDFInputName = self.getBSDFChannelInputName(bakedBSDF, input.name)
+            if bakedBSDFInputName is None:
+                continue
 
-            # Ungroup all node groups for easy, error-free access:
-            for node in matCopy.node_tree.nodes:
-                node.select = False
+            bakedBSDF.inputs[input.name].default_value = input.default_value
 
-            # Need to set the context area type for the group_ungroup operator to work:
-            area = self.area
-            old_type = area.type
-            area.ui_type = 'ShaderNodeTree'
+        # Find the lowest node in the tree and put the baked bsdf under that:
+        minYLocation = bsdf.location[1]
+        for node in matCopy.node_tree.nodes:
+            minYLocation = min(minYLocation, self.getNodeYLocation(node))
 
-            space = area.spaces.active
-            space.node_tree = matCopy.node_tree
+        bakedBSDF.location = bsdf.location  # (bsdf.location[0], minYLocation - 1000)
+        # Give bsdf a name and set its name on the material, so we can find it again:
+        bakedBSDF.name = BAKED_MATERIAL_SHADER
+        matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
 
-            for node in matCopy.node_tree.nodes:
-                if node.type == 'GROUP':
-                    node.select = True
-                    with context.temp_override(area=area):
-                        bpy.ops.node.group_ungroup()
-                    node.select = False
-
-            for node in matCopy.node_tree.nodes:
-                node.select = False
-
-            # Restore context area type:
-            area.type = old_type
-
-            msb_log(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
-
-            # Use same BSDF type if we can bake its inputs,
-            # otherwise connect the fallback baked maps to principled bsdf:
-            if canBakeBSDF:
-                bakedBSDF = matCopy.node_tree.nodes.new(type=bsdf.bl_idname)
-            else:
-                bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
-
-            # Copy the input settings from the original bsdf so anything that's not baked still matches:
-            for input in bsdf.inputs:
-                bakedBSDFInputName = self.getBSDFChannelInputName(bakedBSDF, input.name)
-                if bakedBSDFInputName is None:
-                    continue
-
-                bakedBSDF.inputs[input.name].default_value = input.default_value
-
-            # Find the lowest node in the tree and put the baked bsdf under that:
-            minYLocation = bsdf.location[1]
-            for node in matCopy.node_tree.nodes:
-                minYLocation = min(minYLocation, self.getNodeYLocation(node))
-
-            bakedBSDF.location = bsdf.location  # (bsdf.location[0], minYLocation - 1000)
-            # Give bsdf a name and set its name on the material, so we can find it again:
-            bakedBSDF.name = BAKED_MATERIAL_SHADER
-            matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
-
-        mat = matCopy
-
-        return mat
+        return matCopy
 
     def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
         if context.object is not None:
