@@ -700,9 +700,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             def polyArea(x, y):
                 return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
-            # Build a list of [world units, UV space units]
-            world_uvArea_list = []
-
             # Add up uvArea / polygon area and divide by number of polygons to get the average ratio
             # and calculate the texture dimensions based on the texel density from that:
             ratioSum = 0
@@ -725,7 +722,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if pArea <= 0.000001:
                     pArea = 0.001
 
-                world_uvArea_list.append([pArea, uvArea])
                 ratioSum += math.sqrt(uvArea / pArea)
 
             # Calculate average texel density for each face:
