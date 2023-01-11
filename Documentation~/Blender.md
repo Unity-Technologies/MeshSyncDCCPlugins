@@ -112,12 +112,9 @@ MeshSync has functionality to create baked material copies for each object to al
 | Bake to individual materials | Performs the bake. |
 | Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |
 | Baked texture path | Folder to save baked textures in. |
-
-| Texture dimensions | Folder to save baked textures in. |
-
+| Texture dimensions | Selects how texture dimensions are set. |
 | Pixels | Set exact texture dimensions |
 | Baked texture size | Baked texture dimensions. |
-
 | Texel density | Set texture dimensions based on a texel density |
 | Texels / World Unit | How many texels the baked texture should have relative to the size of the polygon in blender's world space. The average of all polygons is used. |
 | Max texture size | Limits the texture dimensions so they don't get too large for higher texel densities. |
