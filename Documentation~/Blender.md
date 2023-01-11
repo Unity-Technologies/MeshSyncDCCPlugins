@@ -113,7 +113,7 @@ MeshSync has functionality to create baked material copies for each object to al
 | Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |
 | Baked texture path | Folder to save baked textures in. |
 
-|**Texture dimensions options** |**Description** |
+|**Texture dimension options** |**Description** |
 |:---     |:---|
 | Texture dimensions | Selects how texture dimensions are set. |
 | Pixels | Set exact texture dimensions |
