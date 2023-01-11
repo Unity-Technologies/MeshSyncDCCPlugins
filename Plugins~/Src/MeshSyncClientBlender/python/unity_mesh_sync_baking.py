@@ -21,7 +21,6 @@ class LogLevel:
 throwExceptions = True
 showLogLevel = LogLevel.VERBOSE
 
-# Commented out ones will be supported in next version:
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
                   "Roughness",
@@ -241,9 +240,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 outputNodeInGroup = self.findMaterialOutputNode(node.node_tree)
                 if outputNodeInGroup is not None:
                     outputNode = outputNodeInGroup
-            elif node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1:
+            elif node.type == 'OUTPUT_MATERIAL' and len(node.inputs[0].links) == 1 and node.is_active_output:
                 outputNode = node
-                # Blender uses the last OUTPUT_MATERIAL node, so don't stop search here
+                break
 
         return outputNode
 
@@ -851,83 +850,90 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return location
 
     def prepareMaterial(self, context, obj, bsdf, mat, canBakeBSDF):
-        # Make material copy if this is not a copy already:
-        if ORIGINAL_MATERIAL not in mat:
-            # Use existing copy if there is one:
-            matCopyName = f"{mat.name}_{obj.name}_baked"
+        '''
+        Creates a material copy for baking if necessary.
+        :return: Material copy for baking or the material if it's already a baking copy.
+        '''
+        # If this is a material copy, do not copy it again:
+        if ORIGINAL_MATERIAL in mat:
+            return mat
 
-            matCopyIndex = bpy.data.materials.find(matCopyName)
-            if matCopyIndex >= 0:
-                matCopy = bpy.data.materials[matCopyIndex]
+        # Use existing copy if there is one:
+        matCopyName = f"{mat.name}_{obj.name}_baked"
 
-                # Replace material with its baking copy:
-                matIndex = obj.material_slots.find(mat.name)
-                obj.material_slots[matIndex].material = matCopy
-            else:
-                mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
-                matCopy = mat.copy()
-                matCopy[ORIGINAL_MATERIAL] = mat.name
-                matCopy.name = matCopyName
+        matCopyIndex = bpy.data.materials.find(matCopyName)
+        if matCopyIndex >= 0:
+            matCopy = bpy.data.materials[matCopyIndex]
 
-                # Replace material with its baking copy:
-                matIndex = obj.material_slots.find(mat.name)
-                obj.material_slots[matIndex].material = matCopy
+            # Replace material with its baking copy:
+            matIndex = obj.material_slots.find(mat.name)
+            obj.material_slots[matIndex].material = matCopy
 
-                # Ungroup all node groups for easy, error-free access:
-                for node in matCopy.node_tree.nodes:
-                    node.select = False
+            return matCopy
 
-                # Need to set the context area type for the group_ungroup operator to work:
-                area = self.area
-                old_type = area.type
-                area.ui_type = 'ShaderNodeTree'
+        # Make material copy for baking:
+        mat.use_fake_user = True  # Make sure this does not get deleted when it's not referenced anymore
+        matCopy = mat.copy()
+        matCopy[ORIGINAL_MATERIAL] = mat.name
+        matCopy.name = matCopyName
 
-                space = area.spaces.active
-                space.node_tree = matCopy.node_tree
+        # Replace material with its baking copy:
+        matIndex = obj.material_slots.find(mat.name)
+        obj.material_slots[matIndex].material = matCopy
 
-                for node in matCopy.node_tree.nodes:
-                    if node.type == 'GROUP':
-                        node.select = True
-                        with context.temp_override(area=area):
-                            bpy.ops.node.group_ungroup()
-                        node.select = False
+        # Ungroup all node groups for easy, error-free access:
+        for node in matCopy.node_tree.nodes:
+            node.select = False
 
-                for node in matCopy.node_tree.nodes:
-                    node.select = False
+        # Need to set the context area type for the group_ungroup operator to work:
+        area = self.area
+        old_type = area.type
+        area.ui_type = 'ShaderNodeTree'
 
-                # Restore context area type:
-                area.type = old_type
+        space = area.spaces.active
+        space.node_tree = matCopy.node_tree
 
-                msb_log(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
+        for node in matCopy.node_tree.nodes:
+            if node.type == 'GROUP':
+                node.select = True
+                with context.temp_override(area=area):
+                    bpy.ops.node.group_ungroup()
+                node.select = False
 
-                # Use same BSDF type if we can bake its inputs,
-                # otherwise connect the fallback baked maps to principled bsdf:
-                if canBakeBSDF:
-                    bakedBSDF = matCopy.node_tree.nodes.new(type=bsdf.bl_idname)
-                else:
-                    bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
+        for node in matCopy.node_tree.nodes:
+            node.select = False
 
-                # Copy the input settings from the original bsdf so anything that's not baked still matches:
-                for input in bsdf.inputs:
-                    bakedBSDFInputName = self.getBSDFChannelInputName(bakedBSDF, input.name)
-                    if bakedBSDFInputName is None:
-                        continue
+        # Restore context area type:
+        area.type = old_type
 
-                    bakedBSDF.inputs[input.name].default_value = input.default_value
+        msb_log(f"Creating material copy '{mat.name}'->'{matCopy.name}'")
 
-                # Find the lowest node in the tree and put the baked bsdf under that:
-                minYLocation = bsdf.location[1]
-                for node in matCopy.node_tree.nodes:
-                    minYLocation = min(minYLocation, self.getNodeYLocation(node))
+        # Use same BSDF type if we can bake its inputs,
+        # otherwise connect the fallback baked maps to principled bsdf:
+        if canBakeBSDF:
+            bakedBSDF = matCopy.node_tree.nodes.new(type=bsdf.bl_idname)
+        else:
+            bakedBSDF = matCopy.node_tree.nodes.new(type='ShaderNodeBsdfPrincipled')
 
-                bakedBSDF.location = bsdf.location  # (bsdf.location[0], minYLocation - 1000)
-                # Give bsdf a name and set its name on the material, so we can find it again:
-                bakedBSDF.name = BAKED_MATERIAL_SHADER
-                matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
+        # Copy the input settings from the original bsdf so anything that's not baked still matches:
+        for input in bsdf.inputs:
+            bakedBSDFInputName = self.getBSDFChannelInputName(bakedBSDF, input.name)
+            if bakedBSDFInputName is None:
+                continue
 
-            mat = matCopy
+            bakedBSDF.inputs[input.name].default_value = input.default_value
 
-        return mat
+        # Find the lowest node in the tree and put the baked bsdf under that:
+        minYLocation = bsdf.location[1]
+        for node in matCopy.node_tree.nodes:
+            minYLocation = min(minYLocation, self.getNodeYLocation(node))
+
+        bakedBSDF.location = bsdf.location  # (bsdf.location[0], minYLocation - 1000)
+        # Give bsdf a name and set its name on the material, so we can find it again:
+        bakedBSDF.name = BAKED_MATERIAL_SHADER
+        matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
+
+        return matCopy
 
     def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
         if context.object is not None:
@@ -946,7 +952,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.originalSceneSettings = []
 
         self.setRestorableContextSetting(context, "scene.render.engine", "CYCLES")
-        self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
+        if context.preferences.addons['cycles'].preferences.has_active_device():
+            self.setRestorableContextSetting(context, "scene.cycles.device", "GPU")
 
         if context.preferences.addons["cycles"].preferences.compute_device_type == "None":
             msb_log("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")

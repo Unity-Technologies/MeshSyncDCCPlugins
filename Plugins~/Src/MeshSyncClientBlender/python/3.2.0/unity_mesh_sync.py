@@ -15,11 +15,6 @@ from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
 
-class MESHSYNC_PT:
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Tool"
-
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "MeshSync"

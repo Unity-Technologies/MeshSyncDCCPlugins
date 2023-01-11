@@ -200,6 +200,18 @@ def meshsync_prepare():
     for f in mesh_sync_on_prepare:
         f()
 
+def meshsync_pre_export():
+    for f in mesh_sync_on_pre_export:
+        f()
+
+def meshsync_post_export():
+    for f in mesh_sync_on_post_export:
+        f()
+
+def meshsync_server_requested_callback():
+    for f in mesh_sync_server_requested_callback:
+        f()
+
 class MESHSYNC_PT:
     '''
     Base class for meshsync panels.
