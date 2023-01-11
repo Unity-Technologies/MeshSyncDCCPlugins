@@ -726,7 +726,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     pArea = 0.001
 
                 world_uvArea_list.append([pArea, uvArea])
-                # ratioSum += math.sqrt(uvArea) / math.sqrt(pArea)
                 ratioSum += math.sqrt(uvArea / pArea)
 
             # Calculate average texel density for each face:
