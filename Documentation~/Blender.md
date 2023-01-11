@@ -116,7 +116,7 @@ MeshSync has functionality to create baked material copies for each object to al
 | Pixels | Set exact texture dimensions |
 | Baked texture size | Size of the baked texture in pixels. |
 | Texel density | Set texture dimensions based on a texel density. |
-| Texels / World Unit | How many texels the baked texture should have relative to the size of the polygon in blender's world space. The average of all polygons is used. |
+| Texels / World Unit | How many pixels the baked texture should have relative to the area of the polygon in blender's world space. The average of each polygon's area in the UV map vs its world space area is used to calculate this. |
 | Max texture size | Limits the texture dimensions so they don't get too large for higher texel densities. |
 
 MeshSync will attempt to find a BSDF node connected to the *Material Output* node and bake the input of the BSDF. If there is no BSDF connected, MeshSync will bake the data coming into the *Material Output* that can be baked (Only color, normals and roughness are supported). 
