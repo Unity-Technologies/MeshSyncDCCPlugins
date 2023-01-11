@@ -114,6 +114,7 @@ MeshSync has functionality to create baked material copies for each object to al
 | Baked texture path | Folder to save baked textures in. |
 
 |**Texture dimensions options** |**Description** |
+|:---     |:---|
 | Texture dimensions | Selects how texture dimensions are set. |
 | Pixels | Set exact texture dimensions |
 | Baked texture size | Size of the baked texture in pixels. |
