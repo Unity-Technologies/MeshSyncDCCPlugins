@@ -114,8 +114,8 @@ MeshSync has functionality to create baked material copies for each object to al
 | Baked texture path | Folder to save baked textures in. |
 | Texture dimensions | Selects how texture dimensions are set. |
 | Pixels | Set exact texture dimensions |
-| Baked texture size | Baked texture dimensions. |
-| Texel density | Set texture dimensions based on a texel density |
+| Baked texture size | Size of the baked texture in pixels. |
+| Texel density | Set texture dimensions based on a texel density. |
 | Texels / World Unit | How many texels the baked texture should have relative to the size of the polygon in blender's world space. The average of all polygons is used. |
 | Max texture size | Limits the texture dimensions so they don't get too large for higher texel densities. |
 
