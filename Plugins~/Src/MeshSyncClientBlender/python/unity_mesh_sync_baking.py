@@ -182,6 +182,8 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
             box.label(text=bakeSettings.bake_maps_remaining)
             if len(bakeSettings.bake_time_remaining) > 0:
                 box.label(text=bakeSettings.bake_time_remaining)
+            if bakeSettings.bake_progress < 100:
+                box.label(text="Hold ESC to cancel")
 
         row = layout.row()
         row.prop(bakeSettings, "bakedTexturesPath")
