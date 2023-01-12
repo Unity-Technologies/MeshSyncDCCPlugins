@@ -346,11 +346,13 @@ def register():
     for c in classes:
         bpy.utils.register_class(c)
     msb_initialize_properties()
+    bpy.app.handlers.load_post.append(msb_setBakingDefaults)
 
 def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
+    bpy.app.handlers.load_post.remove(msb_setBakingDefaults)
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()
