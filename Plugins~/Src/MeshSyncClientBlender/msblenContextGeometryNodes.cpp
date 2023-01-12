@@ -40,7 +40,7 @@ void msblenContext::exportInstances() {
     // Assume everything is now dirty
     m_instances_state->manager.setAlwaysMarkDirty(true);
 
-    std::unordered_map<unsigned int, ms::TransformPtr> exportedTransforms;
+    std::unordered_map<std::string, ms::TransformPtr> exportedTransforms;
 
     m_geometryNodeUtils.each_instanced_object(
         [this, &scene_objects, &exportedTransforms](blender::GeometryNodesUtils::Record& rec) {
