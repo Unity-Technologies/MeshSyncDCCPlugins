@@ -861,9 +861,20 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
-    std::vector<int> mid_table(mesh.totcol);
-    for (int mi = 0; mi < mesh.totcol; ++mi)
-        mid_table[mi] = getMaterialID(mesh.mat[mi]);
+    std::vector<int> mid_table(bobj.m_ptr->totcol);
+
+    // Materials in blender can be on the object or on the mesh.
+    // If there is a material on the object's material slot,
+    // it overrides the mesh material.
+    for (int mi = 0; mi < bobj.m_ptr->totcol; ++mi) {
+        auto mat = bobj.m_ptr->mat[mi];
+        if (!mat) {
+            mat = mesh.mat[mi];
+        }
+
+        mid_table[mi] = getMaterialID(mat);
+    }
+
     if (mid_table.empty())
         mid_table.push_back(ms::InvalidID);
 
