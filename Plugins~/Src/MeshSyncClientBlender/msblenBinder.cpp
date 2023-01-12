@@ -519,9 +519,15 @@ barray_range<BMTriangle> BEditMesh::triangles()
     return barray_range<BMTriangle> { m_ptr->looptris, (size_t)m_ptr->tottri };
 }
 
-int BEditMesh::uv_data_offset() const
+int BEditMesh::uv_data_offset(int index) const
 {
-    return CustomData_get_offset(m_ptr->bm->ldata, CD_MLOOPUV);
+    int layer_index = CustomData_get_layer_index_n(&m_ptr->bm->ldata, CD_MLOOPUV, index);
+    if (layer_index == -1) {
+        return NULL;
+    }
+
+    auto layer = m_ptr->bm->ldata.layers[layer_index];
+    return layer.offset;
 }
 
 MLoopUV* BEditMesh::GetUV(const int index) const {

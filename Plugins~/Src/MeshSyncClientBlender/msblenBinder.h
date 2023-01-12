@@ -139,10 +139,13 @@ namespace blender
         barray_range<BMFace*> polygons();
         barray_range<BMVert*> vertices();
         barray_range<BMTriangle> triangles();
-        int uv_data_offset() const;
+        int uv_data_offset(int index) const;
+        inline uint32_t GetNumUVs() const;
 
         MLoopUV* GetUV(const int index) const;
     };
+
+    uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }
 
     //----------------------------------------------------------------------------------------------------------------------
     
