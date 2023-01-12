@@ -26,7 +26,8 @@ BAKED_CHANNELS = ["Base Color",
                   "Roughness",
                   "Clearcoat",
                   "Emission",
-                  "Normal"]
+                  "Normal",
+                  "Ambient Occlusion"]
 
 # The above channels may not exist in all BSDF types, mapping of alternative names:
 synonymMap = {"Base Color": ["Color"]}
