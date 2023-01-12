@@ -667,10 +667,18 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         if (material_index != ms::InvalidID) {
             auto it = rev_mid_table.find(material_index);
             if (it != rev_mid_table.end()) {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = it->second;
+#else
                 bmeshPolygons[pi].mat_nr = it->second;
+#endif
             }
             else {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = 0;
+#else
                 bmeshPolygons[pi].mat_nr = 0;
+#endif
             }
         }
 
@@ -884,7 +892,12 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         int ii = 0;
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
+
+#if BLENDER_VERSION >= 304
+            const int material_index = polygon.mat_nr_legacy;
+#else
             const int material_index = polygon.mat_nr;
+#endif
             const int count = polygon.totloop;
             dst.counts[pi] = count;
             dst.material_ids[pi] = mid_table[material_index];
