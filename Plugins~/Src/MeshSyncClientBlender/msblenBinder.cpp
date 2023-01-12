@@ -516,8 +516,6 @@ int BEditMesh::uv_data_offset(int index) const
 
     auto layer = m_ptr->bm->ldata.layers[layer_index];
     return layer.offset;
-
-    return CustomData_get_offset(m_ptr->bm->ldata, CD_MLOOPUV);
 }
 
 MLoopUV* BEditMesh::GetUV(const int index) const {
