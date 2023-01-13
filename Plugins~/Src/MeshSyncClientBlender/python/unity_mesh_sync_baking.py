@@ -568,7 +568,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             return [True, "Image UV input is not UV0."]
 
-    def doesImageNodeUseUv0(self, obj, link, imageNode, channel):
+    def doesImageNodeNotUseUv0(self, obj, link, imageNode, channel):
         if link.from_socket.name != 'Color':
             return [True, f"Not using Color output of image node."]
 
@@ -590,7 +590,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel == 'Normal':
             return [True, "Normals require a normal map node as input."]
 
-        return self.doesImageNodeUseUv0(obj, link, imageNode, channel)
+        return self.doesImageNodeNotUseUv0(obj, link, imageNode, channel)
 
     def handleNormalNode(self, obj, link, channel, normalMapNode):
         if channel != 'Normal':
@@ -615,7 +615,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             if colorInput.links[0].from_socket.name != 'Color':
                 return [True, "Non-color channel of texture is used as normal map input."]
 
-            return self.doesImageNodeUseUv0(obj, colorInput.links[0], colorInputNode, channel)
+            return self.doesImageNodeNotUseUv0(obj, colorInput.links[0], colorInputNode, channel)
 
         return [False]
 
