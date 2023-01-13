@@ -45,7 +45,7 @@ def msb_log(text, level=LogLevel.VERBOSE):
 
 
 def msb_canObjectMaterialsBeBaked(obj: bpy.types.Object) -> bool:
-    hasMaterials = obj.data is not None and obj.type == 'MESH' # hasattr(obj.data, 'materials')
+    hasMaterials = obj.data is not None and obj.type == 'MESH'
     if not hasMaterials:
         return False
     # If it's a mesh, make sure it actually has vertices, or we'll get errors baking it later:
