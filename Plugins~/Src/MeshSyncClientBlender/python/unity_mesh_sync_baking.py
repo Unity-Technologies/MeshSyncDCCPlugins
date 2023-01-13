@@ -475,7 +475,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Make sure meshsync is finished and ready:
         from .unity_mesh_sync_common import msb_apply_scene_settings, msb_context
 
-        # if not msb_context.is_setup:
         msb_context.flushPendingList()
         msb_apply_scene_settings()
         msb_context.setup(context)
