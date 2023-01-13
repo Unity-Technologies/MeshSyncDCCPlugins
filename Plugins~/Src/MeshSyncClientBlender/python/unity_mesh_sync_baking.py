@@ -18,7 +18,7 @@ class LogLevel:
 
 
 # For debugging and getting a callstack on error:
-throwExceptions = True
+throwExceptions = False
 showLogLevel = LogLevel.ERROR
 
 BAKED_CHANNELS = ["Base Color",
@@ -1048,7 +1048,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         node_tree = mat.node_tree
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
 
-        return self.bakeToImage(context, obj, mat, bsdf, bakeType, channel)
+        return self.bakeToImage(context, mat, bsdf, bakeType, channel)
 
     def getChannelNameSynonyms(self, channel):
         '''
