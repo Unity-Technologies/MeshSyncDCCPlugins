@@ -19,7 +19,7 @@ class LogLevel:
 
 # For debugging and getting a callstack on error:
 throwExceptions = True
-showLogLevel = LogLevel.ERROR
+showLogLevel = LogLevel.VERBOSE
 
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
