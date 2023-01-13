@@ -348,13 +348,88 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # The polygon count has some impact on baking duration but not a lot, so scale it down:
         return max(1, int(len(obj.data.polygons) / 10000))
 
+    def bakeObjectMaterials(self, obj, materials):
+        context = self.context
+        bakeSettings = context.scene.meshsync_bake_settings
+        self.finalMaterials = []
+
+        for matIndex, mat in enumerate(materials):
+            obj.material_slots[matIndex].material = mat
+
+            if not self.canMaterialBeBaked(mat):
+                continue
+
+            obj.active_material_index = matIndex
+
+            matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
+
+            if matOutput is None or bsdf is None:
+                continue
+
+            self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
+            self.objectBakeInfo = {}  # To keep track of baked channels for this object to check if image nodes can be reused
+
+            # Ensure object is not hidden, otherwise baking will fail:
+            wasHidden = obj.hide_get()
+            obj.hide_set(False)
+            context.view_layer.objects.active = obj
+
+            self.deselectAllMaterialNodes(mat)
+
+            msb_log(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
+
+            # If any channel was baked, it will be on a new material,
+            # store that to frame all new nodes after everything is baked:
+            bakedMat = mat
+            for channel in BAKED_CHANNELS:
+                if not self.isChannelBakeEnabled(context, channel):
+                    continue
+
+                self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'", obj)
+                if bakeSettings.run_modal:
+                    yield
+                    context = self.context
+
+                didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, matOutput, channel)
+                if didBake:
+                    bakedMat = newMat
+
+                if bakeSettings.run_modal:
+                    yield
+                    context = self.context
+
+            if bakedMat != mat:
+                self.cleanUpNodeTreeAndConnectBakedBSDF(bakedMat, matOutput)
+
+            # Needed for restore afterwards:
+            self.finalMaterials.append(bakedMat)
+
+            obj.material_slots[matIndex].material = None
+
+            # Restore state:
+            obj.select_set(False)
+            obj.hide_set(wasHidden)
+
+            if bakeSettings.run_modal:
+                yield
+                context = self.context
+
+        if UV_OVERRIDE in obj.data and len(obj.data.uv_layers) > 1:
+            msb_log(
+                f"New UVs were generated for '{obj.name}' for baking. Old UVs need to be deleted so the baked textures work correctly.")
+            bakedUVLayer = obj.data[UV_OVERRIDE]
+            for uvLayerIndex in range(len(obj.data.uv_layers) - 1, -1, -1):
+                uvLayer = obj.data.uv_layers[uvLayerIndex]
+                if uvLayer.name != bakedUVLayer:
+                    msb_log(f"Deleting uv layer: {uvLayer.name}")
+                    obj.data.uv_layers.remove(uvLayer)
+            del obj.data[UV_OVERRIDE]
+
     def bakeObject(self, obj):
         if not msb_canObjectMaterialsBeBaked(obj):
             return
 
         context = self.context
-
-        bakeSettings = context.scene.meshsync_bake_settings
 
         # Select object:
         for o in context.selected_objects:
@@ -373,7 +448,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # - Iterate over the materials and assign each one and bake it
         # - Assign the baked materials to the slots in the order of the original materials
         materials = []
-        finalMaterials = []
         for matSlot in obj.material_slots:
             materials.append(matSlot.material)
 
@@ -382,86 +456,17 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 matSlot.material = None
 
         try:
-            for matIndex, mat in enumerate(materials):
-                obj.material_slots[matIndex].material = mat
-
-                if not self.canMaterialBeBaked(mat):
-                    continue
-
-                obj.active_material_index = matIndex
-
-                matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
-
-                if matOutput is None or bsdf is None:
-                    continue
-
-                self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
-                self.objectBakeInfo = {}  # To keep track of baked channels for this object to check if image nodes can be reused
-
-                # Ensure object is not hidden, otherwise baking will fail:
-                wasHidden = obj.hide_get()
-                obj.hide_set(False)
-                context.view_layer.objects.active = obj
-
-                self.deselectAllMaterialNodes(mat)
-
-                msb_log(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
-
-                # If any channel was baked, it will be on a new material,
-                # store that to frame all new nodes after everything is baked:
-                bakedMat = mat
-                for channel in BAKED_CHANNELS:
-                    if not self.isChannelBakeEnabled(context, channel):
-                        continue
-
-                    self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'", obj)
-                    if bakeSettings.run_modal:
-                        yield
-                        context = self.context
-
-                    didBake, newMat = self.bakeBSDFChannelIfNeeded(context, obj, mat, bsdf, matOutput, channel)
-                    if didBake:
-                        bakedMat = newMat
-
-                    if bakeSettings.run_modal:
-                        yield
-                        context = self.context
-
-                if bakedMat != mat:
-                    self.cleanUpNodeTreeAndConnectBakedBSDF(bakedMat, matOutput)
-
-                # Needed for restore afterwards:
-                finalMaterials.append(bakedMat)
-
-                obj.material_slots[matIndex].material = None
-
-                # Restore state:
-                obj.select_set(False)
-                obj.hide_set(wasHidden)
-
-                if bakeSettings.run_modal:
-                    yield
-                    context = self.context
-
-            if UV_OVERRIDE in obj.data and len(obj.data.uv_layers) > 1:
-                msb_log(
-                    f"New UVs were generated for '{obj.name}' for baking. Old UVs need to be deleted so the baked textures work correctly.")
-                bakedUVLayer = obj.data[UV_OVERRIDE]
-                for uvLayerIndex in range(len(obj.data.uv_layers) - 1, -1, -1):
-                    uvLayer = obj.data.uv_layers[uvLayerIndex]
-                    if uvLayer.name != bakedUVLayer:
-                        msb_log(f"Deleting uv layer: {uvLayer.name}")
-                        obj.data.uv_layers.remove(uvLayer)
-                del obj.data[UV_OVERRIDE]
+            for _ in self.bakeObjectMaterials(obj, materials):
+                yield
         except Exception as e:
             if throwExceptions:
                 raise e
-            finalMaterials = materials
+            self.finalMaterials = materials
             msb_log(f"Error: {e}", LogLevel.ERROR)
 
         if bakeIndividualMats:
             # Restore material slots:
-            for matIndex, mat in enumerate(finalMaterials):
+            for matIndex, mat in enumerate(self.finalMaterials):
                 obj.material_slots[matIndex].material = mat
 
     def bake(self):
