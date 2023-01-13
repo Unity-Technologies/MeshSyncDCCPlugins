@@ -541,7 +541,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if col.name == hiddenCollection:
                     col.hide_render = True
 
-    def checkForUV0(self, obj, uvMapName, channel):
+    def checkIfUVMapIsNotUV0(self, obj, uvMapName, channel):
         '''
         :param obj: Object the material is on
         :param uvMapName: Name of the UV map
@@ -584,7 +584,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             uvMapName = uvCoordNode.uv_map
 
-            return self.checkForUV0(obj, uvMapName, channel)
+            return self.checkIfUVMapIsNotUV0(obj, uvMapName, channel)
 
     def handleImageNode(self, obj, link, channel, imageNode):
         if channel == 'Normal':
@@ -596,7 +596,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if channel != 'Normal':
             return [True, "The 'normal map' node is only supported as input for normals."]
 
-        uvmapCheck = self.checkForUV0(obj, normalMapNode.uv_map, channel)
+        uvmapCheck = self.checkIfUVMapIsNotUV0(obj, normalMapNode.uv_map, channel)
         if uvmapCheck[0]:
             return uvmapCheck
 
