@@ -114,7 +114,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
                                                  'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!')),
                                          default='OFF')
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
-                                            description="In order to bake and get correct UVs, all modifiers need to be applied",
+                                            description="In order to bake and get correct UVs, all modifiers need to be applied. WARNING: This will apply and remove existing modifiers on the object!",
                                             default=True)
     run_modal: bpy.props.BoolProperty(name="Run Modal",
                                             description="If this is enabled blender stays more interactive but baking is slower.",
