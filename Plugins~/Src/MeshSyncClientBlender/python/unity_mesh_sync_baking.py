@@ -18,8 +18,10 @@ class LogLevel:
 
 
 # For debugging and getting a callstack on error:
-throwExceptions = True
-showLogLevel = LogLevel.VERBOSE
+throwExceptions = False
+showLogLevel = LogLevel.ERROR
+
+AO_CHANNEL_NAME = "Ambient Occlusion"
 
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
@@ -27,7 +29,7 @@ BAKED_CHANNELS = ["Base Color",
                   "Clearcoat",
                   "Emission",
                   "Normal",
-                  "Ambient Occlusion"]
+                  AO_CHANNEL_NAME]
 
 # The above channels may not exist in all BSDF types, mapping of alternative names:
 synonymMap = {"Base Color": ["Color"]}
@@ -37,6 +39,7 @@ channelNameToBakeName = {
     'Color': 'DIFFUSE',
     'Roughness': 'ROUGHNESS',
     'Normal': 'NORMAL',
+    AO_CHANNEL_NAME: 'AO'
 }
 
 
@@ -644,6 +647,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
     def doesBSDFChannelNeedBaking(self, obj, bsdf,
                                   channel: str) -> list:
+        if channel == AO_CHANNEL_NAME:
+            return [True, "Ambient occlusion requires baking."]
+
         if bsdf is None:
             return [True, "Material output is not connected to a shader."]
 
@@ -1157,11 +1163,16 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         mat = self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
 
-        # Ideally, we should bake the BSDF inputs:
-        if canBakeBSDF:
-            bakedImageNode = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
-        else:
+        # AO cannot be baked from inputs:
+        if channel == AO_CHANNEL_NAME:
             bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
+            bakedImageNode.name = "BAKED_AO"
+        else:
+            # Ideally, we should bake the BSDF inputs:
+            if canBakeBSDF:
+                bakedImageNode = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
+            else:
+                bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
 
         if not bakedImageNode:
             return mat
@@ -1171,16 +1182,17 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
         inputChannelName = self.getBSDFChannelInputName(bsdf, channel)
 
-        # Connect baked image to the input now:
-        if inputChannelName == 'Normal':
-            normalMapNode = node_tree.nodes.new("ShaderNodeNormalMap")
-            normalMapNode.location = (bakedImageNode.location[0], bakedImageNode.location[1])
-            bakedImageNode.location = (bakedImageNode.location[0] - 300, bakedImageNode.location[1])
+        if channel != AO_CHANNEL_NAME:
+            # Connect baked image to the input now:
+            if inputChannelName == 'Normal':
+                normalMapNode = node_tree.nodes.new("ShaderNodeNormalMap")
+                normalMapNode.location = (bakedImageNode.location[0], bakedImageNode.location[1])
+                bakedImageNode.location = (bakedImageNode.location[0] - 300, bakedImageNode.location[1])
 
-            node_tree.links.new(bakedImageNode.outputs[0], normalMapNode.inputs['Color'])
-            node_tree.links.new(normalMapNode.outputs[0], bsdf.inputs[inputChannelName])
-        else:
-            node_tree.links.new(bakedImageNode.outputs[0], bsdf.inputs[inputChannelName])
+                node_tree.links.new(bakedImageNode.outputs[0], normalMapNode.inputs['Color'])
+                node_tree.links.new(normalMapNode.outputs[0], bsdf.inputs[inputChannelName])
+            else:
+                node_tree.links.new(bakedImageNode.outputs[0], bsdf.inputs[inputChannelName])
 
         return mat
 

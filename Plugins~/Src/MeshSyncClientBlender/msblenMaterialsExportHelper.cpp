@@ -26,6 +26,10 @@ const auto displacementIdentifier = "Displacement";
 const auto heightIdentifier = "Height";
 const auto scaleIdentifier = "Scale";
 
+// This is the name of the image AO is baked to. It's not connected to the BSDF or material output:
+const auto bakedAOImageName = "BAKED_AO";
+
+
 // Moves upstream to find input nodes, passing through reroutes.
 bNode* traverseReroutes(bNode* node, const Material* mat) {
 	if (!node || node->type != NODE_REROUTE) {
@@ -482,6 +486,28 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 	}
 }
 
+void msblenMaterialsExportHelper::setAmbientOcclusion(const Material* mat, ms::StandardMaterial& stdmat)
+{
+	// Checks if there is an image node called 'BAKED_AO' and if there is, it sends its image as AO:
+	auto tree = mat->nodetree;
+	for (auto node : list_range((bNode*)tree->nodes.first)) {
+		if(node->type == SH_NODE_TEX_IMAGE)
+		{
+		    if(STREQ(node->name, bakedAOImageName))
+		    {
+                ms::TextureType textureType = ms::TextureType::NonColor;
+				exportImageFromImageNode(textureType,
+					[&](int textureId)
+					{
+						stdmat.setOcclusionMap(textureId);
+					},
+					node);
+			
+		    }
+		}
+	}
+}
+
 void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
 {
 	bNode* bsdfNode;
@@ -493,6 +519,7 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 
 	setShaderFromBSDF(stdmat, bsdfNode);
 	setPropertiesFromBSDF(mat, stdmat, bsdfNode);
+	setAmbientOcclusion(mat, stdmat);
 	setHeightFromOutputNode(mat, stdmat, outputNode);
 }
 

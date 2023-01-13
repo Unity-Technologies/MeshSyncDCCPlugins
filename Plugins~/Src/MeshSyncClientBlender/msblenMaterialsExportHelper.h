@@ -17,6 +17,7 @@ class msblenMaterialsExportHelper
 	void setShaderFromBSDF(ms::StandardMaterial& stdmat, bNode* bsdfNode);
 	void setHeightFromOutputNode(const Material* mat, ms::StandardMaterial& stdmat, bNode* outputNode);
 	void setPropertiesFromBSDF(const Material* mat, ms::StandardMaterial& stdmat, bNode* bsdfNode);
+	void setAmbientOcclusion(const Material* mat, ms::StandardMaterial& stdmat);
 
 	void exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat);
 
