@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (2, 93, 7),
+    "blender": (3, 4, 0),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -32,9 +32,8 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-
         layout.prop(scene, "meshsync_auto_config_server")
-
+        
         row = layout.row()
         row.prop(scene, "meshsync_server_address")
         row.enabled = not context.scene.meshsync_auto_config_server
@@ -71,13 +70,14 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
         layout.prop(scene, "meshsync_material_sync_mode")
-        
+
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
+
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Animation"
@@ -186,9 +186,11 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def update(self):
-        msb_context.flushPendingList();
+        if not bpy.context.scene.meshsync_auto_sync:
+            return
+        msb_context.flushPendingList()
         msb_apply_scene_settings()
-        msb_context.setup(bpy.context);
+        msb_context.setup(bpy.context)
         msb_context.exportUpdatedObjects()
 
 class MESHSYNC_OT_ExportCache(bpy.types.Operator):
@@ -276,7 +278,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
         self.material_frame_range = str(ctx.material_frame_range);
         self.frame_end = ctx.frame_end;
         self.zstd_compression_level = ctx.zstd_compression_level;
-        self.frame_step = ctx.frame_step;
+        self.frame_step = round(ctx.frame_step);
         self.curves_as_mesh = ctx.curves_as_mesh;
         self.make_double_sided = ctx.make_double_sided;
         self.bake_modifiers = ctx.bake_modifiers;
@@ -322,7 +324,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking, msb_setBakingDefaults
 
 classes = [
     MESHSYNC_PT_Main,
@@ -358,6 +360,15 @@ def DestroyMeshSyncContext():
 
 import atexit
 atexit.register(DestroyMeshSyncContext)
+
+@persistent
+def on_depsgraph_update_post(scene):
+    graph = bpy.context.evaluated_depsgraph_get()
+    msb_context.setup(bpy.context)
+    msb_context.OnDepsgraphUpdatePost(graph)
+
+bpy.app.handlers.depsgraph_update_post.append(on_depsgraph_update_post)
+bpy.app.handlers.load_post.append(on_depsgraph_update_post)
     
 # ---------------------------------------------------------------------------------------------------------------------
 

@@ -106,8 +106,8 @@ MeshSync has functionality to create baked material copies for each object to al
 |:---     |:---|
 | Objects to bake | Bakes all objects in the scene or only selected objects (including hidden objects). |
 | Material channels to bake | Choose which channels should be baked. |
-| Generate UVs | Off: Uses UVs on the object, If needed: Generates UVs if there are no usable UVs on the object, Always: Always generates UVs for baking, even if there are existing UVs. NOTE: These settings can be destructive to existing UVs. |
-| Apply modifiers | Applies all modifiers on the object to ensure the UV coordinates are correct for baking. |
+| Generate UVs | *Off*: Uses UVs on the object. <br /> *If needed*: Generates UVs if there are no usable UVs on the object. <br /> *Always*: Always generates UVs for baking, even if there are existing UVs. <br /> <br /> **NOTE**: These settings can be destructive to existing UVs. |
+| Apply modifiers | Applies all modifiers on the object to ensure the UV coordinates are correct for baking. <br /> <br /> **NOTE**: This is not reversible. Please backup your file before using this option. |
 | Run modal | Redraws the blender UI periodically so blender does not freeze. |
 | Bake to individual materials | Performs the bake. |
 | Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |

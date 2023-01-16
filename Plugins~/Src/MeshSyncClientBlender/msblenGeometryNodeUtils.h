@@ -26,7 +26,7 @@ public:
         bool handled_object = false;
         bool from_file = false;
         std::string name;
-        unsigned int id;
+        std::string id;
     };
 
     /// <summary>
