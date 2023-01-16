@@ -1702,10 +1702,13 @@ void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(*m_entities_state, m_default_paths, m_settings, n, true);
 
+
 #if BLENDER_VERSION >= 300
+    if (m_cache_settings.export_instances) {
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
+    }
 #endif
 
     m_texture_manager.clearDirtyFlags();

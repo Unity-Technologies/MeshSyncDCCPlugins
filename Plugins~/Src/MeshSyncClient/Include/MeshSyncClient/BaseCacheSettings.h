@@ -30,6 +30,7 @@ struct BaseCacheSettings {
 
     bool strip_normals = false;
     bool strip_tangents = true;
+    bool export_instances = false;
 
 };
 
