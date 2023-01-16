@@ -1699,6 +1699,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
     Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
 
     int sceneIndex = 0;
+    std::unordered_map<uint64_t, std::string> path_cache;
     for (int f = frameStart; f <= frameEnd; f += frameStep) {
 
         //[Note-sin: 2021-3-29] use Depsgraph.update() to optimize for setting frame (scene.frame_set(f))
@@ -1714,9 +1715,11 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
             RegisterObjectMaterials(nodes);
         }
 
-        DoExportSceneCache(nodes);
+        DoExportSceneCache(nodes, &path_cache);
         ++sceneIndex;
     }
+
+
     scene.SetCurrentFrame(prevFrame, depsGraph);
 
     m_asyncTasksController.Wait();
@@ -1728,7 +1731,7 @@ bool msblenContext::ExportCache(const std::string& path, const BlenderCacheSetti
 }
 
 
-void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
+void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes, std::unordered_map<uint64_t, std::string>* cache = nullptr)
 {
     for (const std::vector<Object*>::value_type& n : nodes)
         exportObject(*m_entities_state, m_default_paths, m_settings, n, true);
@@ -1738,8 +1741,23 @@ void msblenContext::DoExportSceneCache(const std::vector<Object*>& nodes)
     if (m_cache_settings.export_instances) {
         exportInstances();
         m_asyncTasksController.Wait();
-        m_instances_state->eraseStaleObjects();
-    }
+        
+        if (cache != nullptr) {
+            auto meshes = m_instances_manager.getDirtyMeshes();
+            for (auto& mesh : meshes) {
+                auto cs = mesh->checksumGeom();
+                auto entry = (*cache)[cs];
+                if (entry != "") {
+                    mesh->path = entry;
+                }
+                else {
+                    (*cache)[cs] = mesh->path;
+                }
+            }
+        }
+
+    m_instances_state->eraseStaleObjects();
+}
 #endif
 
     m_texture_manager.clearDirtyFlags();

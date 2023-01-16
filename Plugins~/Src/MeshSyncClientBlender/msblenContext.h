@@ -162,7 +162,7 @@ private:
     void extractLightAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
     void extractMeshAnimationData(BlenderSyncSettings& settings, ms::TransformAnimation& dst, void *obj);
 
-    void DoExportSceneCache(const std::vector<Object*>& nodes);
+    void DoExportSceneCache(const std::vector<Object*>& nodes, std::unordered_map<uint64_t, std::string>* cache);
     void WaitAndKickAsyncExport();
 
 #if BLENDER_VERSION >= 300
