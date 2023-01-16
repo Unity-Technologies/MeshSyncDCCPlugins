@@ -15,7 +15,7 @@ from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
 from .unity_mesh_sync_scene_cache import *
-
+from .unity_mesh_sync_baking import *
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "MeshSync"
@@ -184,12 +184,15 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking, msb_setBakingDefaults
+
 classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
     MESHSYNC_PT_UnityProject,
     MESHSYNC_PT_Animation,
+    MESHSYNC_PT_Baking,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
     MESHSYNC_OT_SendObjects,
@@ -204,11 +207,13 @@ def register():
     for c in classes:
         bpy.utils.register_class(c)
     msb_initialize_properties()
+    bpy.app.handlers.load_post.append(msb_setBakingDefaults)
 
 def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
+    bpy.app.handlers.load_post.remove(msb_setBakingDefaults)
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()

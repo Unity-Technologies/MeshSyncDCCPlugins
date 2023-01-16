@@ -328,7 +328,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		setTextureHandler = nullptr;
 	}
 
-	switch (sourceNode->type) {
+    switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
 	{
 		handleImageNode(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
@@ -416,7 +416,7 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 					stdmat.setSmoothness(1 - colorValue[0]);
 				},
 				[&](int textureId) {
-					stdmat.setSmoothnessMap(textureId);
+					stdmat.setRoughnessMap(textureId);
 				});
 		}
 		else if (isSocket(metallicIdentifier))

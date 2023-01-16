@@ -405,7 +405,11 @@ blist_range<bDeformGroup> BObject::deform_groups()
 
 barray_range<MLoop> BMesh::indices()
 {
+#if BLENDER_VERSION >= 304
+    return{ (MLoop*)CustomData_get(m_ptr->ldata, CD_MLOOP), (size_t)m_ptr->totloop };
+#else
     return { m_ptr->mloop, (size_t)m_ptr->totloop };
+#endif
 }
 barray_range<MEdge> BMesh::edges()
 {
@@ -413,12 +417,20 @@ barray_range<MEdge> BMesh::edges()
 }
 barray_range<MPoly> BMesh::polygons()
 {
+#if BLENDER_VERSION >= 304
+    return { (MPoly*)CustomData_get(m_ptr->pdata, CD_MPOLY), (size_t)m_ptr->totpoly };
+#else
     return { m_ptr->mpoly, (size_t)m_ptr->totpoly };
+#endif
 }
 
 barray_range<MVert> BMesh::vertices()
 {
+#if BLENDER_VERSION >= 304
+    return { (MVert*)CustomData_get(m_ptr->vdata, CD_MVERT),(size_t) m_ptr->totvert};
+#else
     return { m_ptr->mvert, (size_t)m_ptr->totvert };
+#endif
 }
 barray_range<mu::float3> BMesh::normals()
 {
@@ -507,9 +519,15 @@ barray_range<BMTriangle> BEditMesh::triangles()
     return barray_range<BMTriangle> { m_ptr->looptris, (size_t)m_ptr->tottri };
 }
 
-int BEditMesh::uv_data_offset() const
+int BEditMesh::uv_data_offset(int index) const
 {
-    return CustomData_get_offset(m_ptr->bm->ldata, CD_MLOOPUV);
+    int layer_index = CustomData_get_layer_index_n(&m_ptr->bm->ldata, CD_MLOOPUV, index);
+    if (layer_index == -1) {
+        return NULL;
+    }
+
+    auto layer = m_ptr->bm->ldata.layers[layer_index];
+    return layer.offset;
 }
 
 MLoopUV* BEditMesh::GetUV(const int index) const {

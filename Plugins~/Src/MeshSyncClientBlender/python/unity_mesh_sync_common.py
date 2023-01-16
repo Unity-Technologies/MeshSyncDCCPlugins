@@ -133,7 +133,8 @@ def msb_initialize_properties():
                                                                                  'Sync colors and textures assigned to the BSDF')),
                                                                          default='0',
                                                                          update=msb_on_material_sync_updated)
-
+    from .unity_mesh_sync_baking import MESHSYNC_BakeSettings
+    bpy.types.Scene.meshsync_bake_settings = bpy.props.PointerProperty(type=MESHSYNC_BakeSettings)
 
 
 @persistent
@@ -219,5 +220,10 @@ class MESHSYNC_PT:
     bl_region_type = "UI"
     bl_category = "Tool"
 
-# This will hold the baking classes later:
-sharedClasses = []
+from .unity_mesh_sync_baking import MESHSYNC_OT_select_bake_folder, MESHSYNC_OT_Bake, MESHSYNC_OT_RevertBake, MESHSYNC_BakeSettings, MESHSYNC_BakeChannelSetting
+
+sharedClasses = [MESHSYNC_BakeChannelSetting,
+                 MESHSYNC_BakeSettings,
+                 MESHSYNC_OT_select_bake_folder,
+                 MESHSYNC_OT_Bake,
+                 MESHSYNC_OT_RevertBake]

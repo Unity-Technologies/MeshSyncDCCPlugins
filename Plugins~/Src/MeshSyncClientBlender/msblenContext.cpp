@@ -667,10 +667,18 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         if (material_index != ms::InvalidID) {
             auto it = rev_mid_table.find(material_index);
             if (it != rev_mid_table.end()) {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = it->second;
+#else
                 bmeshPolygons[pi].mat_nr = it->second;
+#endif
             }
             else {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = 0;
+#else
                 bmeshPolygons[pi].mat_nr = 0;
+#endif
             }
         }
 
@@ -853,9 +861,20 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
-    std::vector<int> mid_table(mesh.totcol);
-    for (int mi = 0; mi < mesh.totcol; ++mi)
-        mid_table[mi] = getMaterialID(mesh.mat[mi]);
+    std::vector<int> mid_table(bobj.m_ptr->totcol);
+
+    // Materials in blender can be on the object or on the mesh.
+    // If there is a material on the object's material slot,
+    // it overrides the mesh material.
+    for (int mi = 0; mi < bobj.m_ptr->totcol; ++mi) {
+        auto mat = bobj.m_ptr->mat[mi];
+        if (!mat) {
+            mat = mesh.mat[mi];
+        }
+
+        mid_table[mi] = getMaterialID(mat);
+    }
+
     if (mid_table.empty())
         mid_table.push_back(ms::InvalidID);
 
@@ -873,7 +892,12 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         int ii = 0;
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
+
+#if BLENDER_VERSION >= 304
+            const int material_index = polygon.mat_nr_legacy;
+#else
             const int material_index = polygon.mat_nr;
+#endif
             const int count = polygon.totloop;
             dst.counts[pi] = count;
             dst.material_ids[pi] = mid_table[material_index];
@@ -1129,16 +1153,23 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         }
     }
 
-    // uv
     if (settings.sync_uvs) {
-        const int offset = emesh.uv_data_offset();
-        if (offset != -1) {
-            dst.m_uv[0].resize_discard(num_indices);
+        
+        const int num_uv_layers = std::min(emesh.GetNumUVs(), ms::MeshSyncConstants::MAX_UV);
+
+        for (auto layerIndex = 0; layerIndex < num_uv_layers; layerIndex++) {
+            
+            const int offset = emesh.uv_data_offset(layerIndex);
+
+            if (offset == -1)
+                continue;
+
+            dst.m_uv[layerIndex].resize_discard(num_indices);
             size_t ii = 0;
             for (size_t ti = 0; ti < num_triangles; ++ti) {
                 auto& triangle = triangles[ti];
-                for (auto *idx : triangle)
-                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+                for (auto* idx : triangle)
+                    dst.m_uv[layerIndex][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
             }
         }
     }
