@@ -256,12 +256,22 @@ void msblenMaterialsExportHelper::handleDisplacementNode(const Material* mat,
 	}
 }
 
-void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
-	ms::TextureType textureType,
-	bool resetIfInputIsTexture,
+void msblenMaterialsExportHelper::handleValueNode(
 	std::function<void(const mu::float4& colorValue)> setColorHandler,
-	std::function<void(int textureId)> setTextureHandler,
+    std::function<void(int textureId)> setTextureHandler, 
 	bNode* sourceNode)
+{
+	bNodeSocket* outputSocket = (bNodeSocket*)sourceNode->outputs.first;
+
+	handleSocketValue(outputSocket, setColorHandler, setTextureHandler);
+}
+
+void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
+                                                    ms::TextureType textureType,
+                                                    bool resetIfInputIsTexture,
+                                                    std::function<void(const mu::float4& colorValue)> setColorHandler,
+                                                    std::function<void(int textureId)> setTextureHandler,
+                                                    bNode* sourceNode)
 {
 	auto imageInput = getInputSocket(sourceNode, colorIdentifier);
 	if (!imageInput)
@@ -346,6 +356,12 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	case SH_NODE_DISPLACEMENT:
 	{
 		handleDisplacementNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
+	case SH_NODE_RGB:
+	case SH_NODE_VALUE:
+	{
+		handleValueNode(setColorHandler, setTextureHandler, sourceNode);
 		break;
 	}
 	// Pass input straight through these:

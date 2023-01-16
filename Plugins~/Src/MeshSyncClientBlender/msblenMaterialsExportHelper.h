@@ -38,6 +38,8 @@ class msblenMaterialsExportHelper
 	void handleDisplacementNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handleValueNode(std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handlePassthrough(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
