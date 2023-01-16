@@ -858,6 +858,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     def prepareMaterial(self, context, obj, bsdf, mat, canBakeBSDF):
         '''
         Creates a material copy for baking if necessary.
+
+        Keeps the original material so the bake can be reverted.
+        The material copy is modified to bake the individual channels by connecting them
+        directly to the material output and baking it as emission.
+        After all the baking is complete, all nodes in the material copy,
+        except the BSDF and material output and baked images are deleted so the material only uses the baked images.
+        
         :return: Material copy for baking or the material if it's already a baking copy.
         '''
         # If this is a material copy, do not copy it again:
