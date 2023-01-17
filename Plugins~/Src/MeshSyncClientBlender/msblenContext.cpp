@@ -869,6 +869,11 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     for (int mi = 0; mi < bobj.m_ptr->totcol; ++mi) {
         auto mat = bobj.m_ptr->mat[mi];
         if (!mat) {
+            // If there is no material in the slot on the object and it does not
+            // exist on the mesh either, this is an empty material slot and should not be exported:
+            if (mesh.totcol <= mi)
+                continue;
+
             mat = mesh.mat[mi];
         }
 
