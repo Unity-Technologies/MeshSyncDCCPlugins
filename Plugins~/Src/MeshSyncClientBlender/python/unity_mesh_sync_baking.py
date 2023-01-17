@@ -100,7 +100,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
                                            default='PIXELS')
     texel_density: bpy.props.FloatProperty(name="Texels / World Unit",
                                          description="How many texture pixels for 1 blender world unit",
-                                         default=20.48)
+                                         default=2048)
     texel_density_limit: bpy.props.IntProperty(name="Max texture size",
                                              description="Maximum texture size when calculating dimensions from texel density",
                                              min=1,
@@ -744,7 +744,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             return dims
 
-    def createImage(self, context, name, colorSpace, alpha=False):
+    def createImage(self, context, obj, name, colorSpace, alpha=False):
         imageName = name.replace(" ", "_")
 
         # Delete any existing image with this name to ensure the dimensions and alpha settings are correct:
@@ -1050,10 +1050,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return 'bsdf' in bsdf.type.lower()
 
-    def bakeToImage(self, context, mat, bsdf, bakeType, channel):
+    def bakeToImage(self, context, obj, mat, bsdf, bakeType, channel):
         colorSpace = self.getChannelColourSpace(channel)
 
-        bakeImage = self.createImage(context, f"{mat.name}_{channel.lower()}", colorSpace,
+        bakeImage = self.createImage(context, obj, f"{mat.name}_{channel.lower()}", colorSpace,
                                      alpha=(colorSpace == 'sRGB'))
 
         node_tree = mat.node_tree
@@ -1115,7 +1115,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         link(channelInput, matOutput.inputs[0])
 
-        bakedImageNode = self.bakeToImage(context, mat, bakedBSDF, 'EMIT', channel)
+        bakedImageNode = self.bakeToImage(context, obj, mat, bakedBSDF, 'EMIT', channel)
 
         self.objectBakeInfo[channelInput] = bakedImageNode
 
@@ -1138,7 +1138,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         node_tree = mat.node_tree
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
 
-        return self.bakeToImage(context, mat, bsdf, bakeType, channel)
+        return self.bakeToImage(context, obj, mat, bsdf, bakeType, channel)
 
     def getChannelNameSynonyms(self, channel):
         '''
