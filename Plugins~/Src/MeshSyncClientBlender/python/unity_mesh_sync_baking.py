@@ -1112,11 +1112,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return mat
 
     def execute(self, context):
-        if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
-            self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
-            self.stop(context)
-            return {'CANCELLED'}
-
         self.startTime = time.time()
         self.context = context
         self.bakeTask = self.bake()
@@ -1128,6 +1123,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         wm.event_timer_remove(self.timer)
 
     def invoke(self, context, event):
+        if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
+            self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
+            return {'CANCELLED'}
+
         wm = context.window_manager
         self.timer = wm.event_timer_add(0, window=context.window)
         context.window_manager.modal_handler_add(self)
