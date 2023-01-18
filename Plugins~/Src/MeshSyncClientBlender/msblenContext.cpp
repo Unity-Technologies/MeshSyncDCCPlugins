@@ -861,13 +861,19 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
-    std::vector<int> mid_table(bobj.m_ptr->totcol);
+    int materialCount = std::max(bobj.m_ptr->totcol, (int)mesh.totcol);
 
+    std::vector<int> mid_table(materialCount);
+  
     // Materials in blender can be on the object or on the mesh.
     // If there is a material on the object's material slot,
     // it overrides the mesh material.
-    for (int mi = 0; mi < bobj.m_ptr->totcol; ++mi) {
-        auto mat = bobj.m_ptr->mat[mi];
+    for (int mi = 0; mi < materialCount; ++mi) {
+        Material* mat = nullptr;
+        if (mi < bobj.m_ptr->totcol) {
+            mat = bobj.m_ptr->mat[mi];
+        }
+
         if (!mat) {
             // If there is no material in the slot on the object and it does not
             // exist on the mesh either, this is an empty material slot and should not be exported:

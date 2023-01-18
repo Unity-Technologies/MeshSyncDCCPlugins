@@ -225,7 +225,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                      "cannot be exported without baking them to textures"
 
     maxBakeProgress = 0
+    mapsToBake = 0
     currentBakeProgress = 0
+    # Keep track of weights assigned to objects at the start of the bake.
+    # These can change when modifiers are applied. We cannot apply all modifiers
+    # at the start because objects are processed individually and their visibility
+    # states, etc. need to change for that to work.
+    objectWeights = {}
 
     def isMaterialCopy(self, mat):
         return ORIGINAL_MATERIAL in mat
@@ -312,7 +318,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             self.currentBakeProgress += 1
 
-            bakeSettings.bake_maps_remaining = f"Baking map {self.currentBakeProgress}/{self.maxBakeProgress}"
+            bakeSettings.bake_maps_remaining = f"Baking map {self.currentBakeProgress}/{self.mapsToBake}"
 
             # The remaining time is not going to be very precise because
             # it's hard to predict how complex each baking task is.
@@ -344,6 +350,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         context = self.context
 
+        if context.object.mode == 'OBJECT':
+            bpy.ops.object.mode_set(mode='EDIT')
+
         # Select object:
         for o in context.selected_objects:
             o.select_set(False)
@@ -369,13 +378,20 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
+                if not self.doesBSDFChannelNeedBaking(obj, bsdf, channel)[0]:
+                    continue
+
+                self.mapsToBake += 1
                 self.maxBakeProgress += self.getObjectProgressWeight(obj)
 
             obj.material_slots[matIndex].material = mat
 
     def getObjectProgressWeight(self, obj):
-        # The polygon count has some impact on baking duration but not a lot, so scale it down:
-        return max(1, int(len(obj.data.polygons) / 10000))
+        if obj.name not in self.objectWeights:
+            # The polygon count has some impact on baking duration but not a lot, so scale it down:
+            self.objectWeights[obj.name] = max(1, int(len(obj.data.polygons) / 10000))
+
+        return self.objectWeights[obj.name]
 
     def bakeObjectMaterials(self, obj, materials):
         context = self.context
@@ -386,6 +402,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             obj.material_slots[matIndex].material = mat
 
             if not self.canMaterialBeBaked(mat):
+                self.finalMaterials.append(mat)
                 continue
 
             obj.active_material_index = matIndex
@@ -393,6 +410,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
 
             if matOutput is None or bsdf is None:
+                self.finalMaterials.append(mat)
                 continue
 
             self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
@@ -414,7 +432,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
-                self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'", obj)
                 if bakeSettings.run_modal:
                     yield
                     context = self.context
@@ -569,6 +586,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.maxBakeProgress = 0
         self.currentBakeProgress = 0
+        self.objectWeights = {}
         for obj in objectsToBake:
             self.preBakeObject(obj)
 
@@ -1195,6 +1213,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return None
 
     def bakeChannel(self, context, obj, mat, bsdf, matOutput, channel):
+        self.incrementProgress(context, f"Baking '{mat.name}'->{channel} on '{obj.name}'", obj)
+
         canBakeBSDF = self.canBsdfBeBaked(bsdf)
 
         mat = self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
