@@ -339,6 +339,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         Counts how many textures need to be baked so progress can be calculated.
         :return:
         '''
+        if not msb_canObjectMaterialsBeBaked(obj):
+            return
+
         context = self.context
 
         # Select object:
