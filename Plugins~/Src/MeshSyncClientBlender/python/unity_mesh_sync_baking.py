@@ -744,9 +744,15 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         link = inputSocket.links[0]
         nodeConnectedToChannelSocket = link.from_node
 
-        if nodeConnectedToChannelSocket.type == 'TEX_IMAGE':
+        type = nodeConnectedToChannelSocket.type
+        
+        # These can be exported by meshsync from their default value:
+        if type in ['RGB', 'VALUE']:
+            return [False]
+
+        if type == 'TEX_IMAGE':
             return self.handleImageNode(obj, link, channel, nodeConnectedToChannelSocket)
-        elif nodeConnectedToChannelSocket.type == 'NORMAL_MAP':
+        elif type == 'NORMAL_MAP':
             return self.handleNormalNode(obj, link, channel, nodeConnectedToChannelSocket)
 
         return [True, "Node input is procedural."]
