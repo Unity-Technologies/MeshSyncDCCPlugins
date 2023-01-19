@@ -555,6 +555,12 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for child in col.children:
             self.restoreAllCollectionsRecursively(child)
 
+    def children_recursive(self, col):
+        for child in col.children:
+            yield child
+            if len(child.children) > 0:
+                yield self.children_recursive(col)
+
     def bake(self):
         context = self.context
 
@@ -590,7 +596,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         hiddenCollectionsRender = []
         self.excludedCollections = []
 
-        for col in context.scene.collection.children_recursive:
+        for col in self.children_recursive(context.scene.collection):
             if col.hide_viewport:
                 col.hide_viewport = False
                 hiddenCollectionsViewport.append(col.name)
@@ -623,11 +629,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for o in selectedObjects:
             o.select_set(True)
         for hiddenCollection in hiddenCollectionsViewport:
-            for col in context.scene.collection.children_recursive:
+            for col in self.children_recursive(context.scene.collection):
                 if col.name == hiddenCollection:
                     col.hide_viewport = True
         for hiddenCollection in hiddenCollectionsRender:
-            for col in context.scene.collection.children_recursive:
+            for col in self.children_recursive(context.scene.collection):
                 if col.name == hiddenCollection:
                     col.hide_render = True
         for col in context.view_layer.layer_collection.children:
