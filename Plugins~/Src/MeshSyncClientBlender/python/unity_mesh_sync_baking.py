@@ -281,6 +281,16 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for node in mat.node_tree.nodes:
             node.select = False
 
+    def isConnectedUpstream(self, nodeA, nodeB):
+        '''
+        True if nodeB is connected anywhere upstream of nodeA.
+        '''
+        for input in nodeA.inputs:
+            for link in input.links:
+                if link.from_node == nodeB or self.isConnectedUpstream(link.from_node, nodeB):
+                    return True
+        return False
+
     def cleanUpNodeTreeAndConnectBakedBSDF(self, bakedMat, matOutput):
         node_tree = bakedMat.node_tree
         bakedBSDF = node_tree.nodes[bakedMat[BAKED_MATERIAL_SHADER]]
@@ -288,12 +298,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         node_tree.links.new(bakedBSDF.outputs[0], matOutput.inputs[0])
 
         # The currently selected nodes are used by baked version:
-        selected = []
         nodesToDelete = []
         for node in node_tree.nodes:
-            if node.select or node == matOutput:
-                selected.append(node)
-            else:
+            if not node.select and node != matOutput and not self.isConnectedUpstream(matOutput, node):
                 nodesToDelete.append(node)
 
         for node in nodesToDelete:
@@ -990,6 +997,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bakedBSDF.name = BAKED_MATERIAL_SHADER
         matCopy[BAKED_MATERIAL_SHADER] = bakedBSDF.name
 
+        # Copy inputs from original BSDF if they match:
+        for input in bsdf.inputs:
+            if len(input.links) > 0 and input.name in bakedBSDF.inputs:
+                inputLink = input.links[0]
+                inputNode = matCopy.node_tree.nodes[inputLink.from_node.name]
+                inputSocket = inputNode.outputs[inputLink.from_socket.name]
+                matCopy.node_tree.links.new(inputSocket, bakedBSDF.inputs[input.name])
+
         return matCopy
 
     def selectObject(self, obj, context):
@@ -1052,6 +1067,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         '''
         self.originalSceneSettings.append((settingName, msb_rgetattr(context, settingName)))
 
+        msb_rsetattr(context, settingName, value)
         msb_rsetattr(context, settingName, value)
         pass
 
