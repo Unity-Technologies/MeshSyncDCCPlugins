@@ -738,17 +738,12 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         link = inputSocket.links[0]
         nodeConnectedToChannelSocket = link.from_node
 
-        result = None
-
         if nodeConnectedToChannelSocket.type == 'TEX_IMAGE':
-            result = self.handleImageNode(obj, link, channel, nodeConnectedToChannelSocket)
+            return self.handleImageNode(obj, link, channel, nodeConnectedToChannelSocket)
         elif nodeConnectedToChannelSocket.type == 'NORMAL_MAP':
-            result = self.handleNormalNode(obj, link, channel, nodeConnectedToChannelSocket)
+            return self.handleNormalNode(obj, link, channel, nodeConnectedToChannelSocket)
 
-        if result is None:
-            result = [True, "Node input is procedural."]
-
-        return result
+        return [True, "Node input is procedural."]
 
     def bakeBSDFChannelIfNeeded(self, context, obj, mat, bsdf, matOutput, channel):
         result = self.doesBSDFChannelNeedBaking(obj, bsdf, channel)
