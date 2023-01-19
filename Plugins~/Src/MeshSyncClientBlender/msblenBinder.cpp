@@ -442,6 +442,17 @@ barray_range<mu::float3> BMesh::normals()
     return { nullptr, (size_t)0 };
 }
 
+#if BLENDER_VERSION >= 304
+barray_range<int> BMesh::material_indices()
+{
+    auto layer = (int*)CustomData_get_layer_named(&m_ptr->pdata, CD_PROP_INT32, "material_index");
+    if (layer)
+        return { layer, (size_t)m_ptr->totpoly };
+
+    return { nullptr, (size_t)0 };
+}
+#endif
+
 //----------------------------------------------------------------------------------------------------------------------
 
 barray_range<MLoopUV> BMesh::uv()

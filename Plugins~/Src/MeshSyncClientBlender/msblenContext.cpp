@@ -895,6 +895,10 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         dst.points[vi] = (mu::float3&)vertices[vi].co;
     }
 
+#if BLENDER_VERSION >= 304
+    blender::barray_range<int> materialIndices = bmesh.material_indices();
+#endif
+
     // faces
     dst.indices.reserve(num_indices);
     dst.counts.resize_discard(num_polygons);
@@ -905,7 +909,10 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
             struct MPoly& polygon = polygons[pi];
 
 #if BLENDER_VERSION >= 304
-            const int material_index = polygon.mat_nr_legacy;
+            int material_index = 0;
+            if (materialIndices.size() > pi) {
+                material_index = materialIndices[pi];
+            }
 #else
             const int material_index = polygon.mat_nr;
 #endif

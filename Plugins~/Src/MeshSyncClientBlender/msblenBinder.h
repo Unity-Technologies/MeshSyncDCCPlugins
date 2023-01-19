@@ -112,6 +112,9 @@ namespace blender
         barray_range<mu::float3> normals();
         barray_range<MLoopUV> uv();
         barray_range<MLoopCol> colors();
+#if BLENDER_VERSION >= 304
+        barray_range<int> material_indices();
+#endif
         MLoopUV* GetUV(const int index) const;
         inline uint32_t GetNumUVs() const;
 
