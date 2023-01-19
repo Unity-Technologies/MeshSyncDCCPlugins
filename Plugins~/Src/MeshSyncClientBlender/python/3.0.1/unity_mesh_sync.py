@@ -14,6 +14,7 @@ from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
+from .unity_mesh_sync_baking import *
 
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
