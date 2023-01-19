@@ -434,8 +434,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             self.objectBakeInfo = {}  # To keep track of baked channels for this object to check if image nodes can be reused
 
             # Ensure object is not hidden, otherwise baking will fail:
-            wasHidden = obj.hide_get()
+            wasHiddenViewport = obj.hide_get()
+            wasHiddenRender = obj.hide_render
             obj.hide_set(False)
+            obj.hide_render = False
             context.view_layer.objects.active = obj
 
             self.deselectAllMaterialNodes(mat)
@@ -471,7 +473,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             # Restore state:
             obj.select_set(False)
-            obj.hide_set(wasHidden)
+            obj.hide_set(wasHiddenViewport)
+            obj.hide_render = wasHiddenRender
 
             if bakeSettings.run_modal:
                 yield
