@@ -227,11 +227,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
     maxBakeProgress = 0
     mapsToBake = 0
     currentBakeProgress = 0
-    # Keep track of weights assigned to objects at the start of the bake.
-    # These can change when modifiers are applied. We cannot apply all modifiers
-    # at the start because objects are processed individually and their visibility
-    # states, etc. need to change for that to work.
-    objectWeights = {}
 
     def isMaterialCopy(self, mat):
         return ORIGINAL_MATERIAL in mat
@@ -350,13 +345,27 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         context = self.context
 
-        if context.object.mode == 'OBJECT':
-            bpy.ops.object.mode_set(mode='EDIT')
+        self.selectObject(obj, context)
 
-        # Select object:
-        for o in context.selected_objects:
-            o.select_set(False)
-        obj.select_set(True)
+        if context.object is not None and context.object.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Apply modifiers before baking, this is needed because the modifiers can have an impact on material
+        # slots and mesh data:
+        if len(obj.modifiers) > 0:
+            bakeSettings = context.scene.meshsync_bake_settings
+            if bakeSettings.apply_modifiers:
+                # Can't apply modifiers with shared data:
+                bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
+                for mod in obj.modifiers[:]:
+                    try:
+                        bpy.ops.object.modifier_apply(modifier=mod.name)
+                    except Exception as e:
+                        print(f"Error applying modifier: {e}")
+            else:
+                msb_log(
+                    f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.",
+                    LogLevel.ERROR)
 
         # Make sure previous bake is undone:
         msb_revertBakedMaterials(obj)
@@ -387,11 +396,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             obj.material_slots[matIndex].material = mat
 
     def getObjectProgressWeight(self, obj):
-        if obj.name not in self.objectWeights:
-            # The polygon count has some impact on baking duration but not a lot, so scale it down:
-            self.objectWeights[obj.name] = max(1, int(len(obj.data.polygons) / 10000))
-
-        return self.objectWeights[obj.name]
+        # The polygon count has some impact on baking duration but not a lot, so scale it down:
+        return max(1, int(len(obj.data.polygons) / 10000))
 
     def bakeObjectMaterials(self, obj, materials):
         context = self.context
@@ -477,10 +483,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         context = self.context
 
-        # Select object:
-        for o in context.selected_objects:
-            o.select_set(False)
-        obj.select_set(True)
+        self.selectObject(obj, context)
 
         msb_log(f"********** Processing object '{obj.name}' **********")
 
@@ -586,7 +589,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.maxBakeProgress = 0
         self.currentBakeProgress = 0
-        self.objectWeights = {}
         for obj in objectsToBake:
             self.preBakeObject(obj)
 
@@ -818,22 +820,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.objectsProcessedForBaking.append(obj)
 
-        # Modifiers:
         bakeSettings = context.scene.meshsync_bake_settings
-
-        if len(obj.modifiers) > 0:
-            if bakeSettings.apply_modifiers:
-                # Can't apply modifiers with shared data:
-                bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
-                for mod in obj.modifiers[:]:
-                    try:
-                        bpy.ops.object.modifier_apply(modifier=mod.name)
-                    except Exception as e:
-                        print(f"Error applying modifier: {e}")
-            else:
-                msb_log(
-                    f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.",
-                    LogLevel.ERROR)
 
         # UVs:
         generateUVs = bakeSettings.generate_uvs == 'ALWAYS' or len(obj.data.uv_layers) == 0
@@ -998,13 +985,17 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return matCopy
 
-    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
-        if context.object is not None:
-            bpy.ops.object.mode_set(mode='OBJECT')
+    def selectObject(self, obj, context):
         for ob in context.selected_objects:
             ob.select_set(False)
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
+
+    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
+        if context.object is not None:
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        self.selectObject(obj, context)
 
         self.prepareObjectForBaking(context, obj)
         mat = self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
