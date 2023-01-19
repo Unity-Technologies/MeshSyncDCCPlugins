@@ -679,6 +679,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             return self.checkIfUVMapIsNotUV0(obj, uvMapName, channel)
 
     def handleImageNode(self, obj, link, channel, imageNode):
+        if imageNode.image.source == 'TILED':
+            return [True, "Image is a UDIM tile that needs to be baked."]
+
         if channel == 'Normal':
             return [True, "Normals require a normal map node as input."]
 
