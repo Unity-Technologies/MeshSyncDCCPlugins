@@ -355,16 +355,14 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         nodes = mod.node_group.nodes
         outputs = [x for x in nodes if x.type == "GROUP_OUTPUT"]
 
-        if len(outputs) != 1:
-            return
-        output = outputs[0]
-        if len(output.inputs) == 0 or len(output.inputs[0].links) == 0:
-            return
+        for output in outputs:
+            if len(output.inputs) == 0 or len(output.inputs[0].links) == 0:
+                continue
 
-        link = output.inputs[0].links[0]
-        realize = nodes.new("GeometryNodeRealizeInstances")
-        mod.node_group.links.new(link.from_socket, realize.inputs[0])
-        mod.node_group.links.new(realize.outputs[0], link.to_socket)
+            link = output.inputs[0].links[0]
+            realize = nodes.new("GeometryNodeRealizeInstances")
+            mod.node_group.links.new(link.from_socket, realize.inputs[0])
+            mod.node_group.links.new(realize.outputs[0], link.to_socket)
 
     def preBakeObject(self, obj):
         '''
