@@ -351,6 +351,21 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         bakeSettings.bake_message = message
 
+    def addRealizeInstances(self, mod):
+        nodes = mod.node_group.nodes
+        outputs = [x for x in nodes if x.type == "GROUP_OUTPUT"]
+
+        if len(outputs) != 1:
+            return
+        output = outputs[0]
+        if len(output.inputs) == 0 or len(output.inputs[0].links) == 0:
+            return
+
+        link = output.inputs[0].links[0]
+        realize = nodes.new("GeometryNodeRealizeInstances")
+        mod.node_group.links.new(link.from_socket, realize.inputs[0])
+        mod.node_group.links.new(realize.outputs[0], link.to_socket)
+
     def preBakeObject(self, obj):
         '''
         Counts how many textures need to be baked so progress can be calculated.
@@ -375,12 +390,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                 for mod in obj.modifiers[:]:
                     if bakeSettings.realize_instances and mod.type == "NODES":
-                        output = mod.node_group.nodes["Group Output"]
-                        link = output.inputs[0].links[0]
-                        realize = mod.node_group.nodes.new("GeometryNodeRealizeInstances")
-                        mod.node_group.links.new(link.from_socket, realize.inputs[0])
-                        mod.node_group.links.new(realize.outputs[0], link.to_socket)
-
+                        self.addRealizeInstances(mod)
                     try:
                         bpy.ops.object.modifier_apply(modifier=mod.name)
                     except Exception as e:
