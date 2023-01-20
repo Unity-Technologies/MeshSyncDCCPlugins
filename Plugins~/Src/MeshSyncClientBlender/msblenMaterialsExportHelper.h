@@ -17,6 +17,7 @@ class msblenMaterialsExportHelper
 	void setShaderFromBSDF(ms::StandardMaterial& stdmat, bNode* bsdfNode);
 	void setHeightFromOutputNode(const Material* mat, ms::StandardMaterial& stdmat, bNode* outputNode);
 	void setPropertiesFromBSDF(const Material* mat, ms::StandardMaterial& stdmat, bNode* bsdfNode);
+	void setAmbientOcclusion(const Material* mat, ms::StandardMaterial& stdmat);
 
 	void exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat);
 
@@ -36,6 +37,8 @@ class msblenMaterialsExportHelper
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handleDisplacementNode(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
+		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
+	void handleValueNode(std::function<void(const mu::float4& colorValue)> setColorHandler,
 		std::function<void(int textureId)> setTextureHandler, bNode* sourceNode);
 	void handlePassthrough(const Material* mat, ms::TextureType textureType, bool resetIfInputIsTexture,
 		std::function<void(const mu::float4& colorValue)> setColorHandler,
