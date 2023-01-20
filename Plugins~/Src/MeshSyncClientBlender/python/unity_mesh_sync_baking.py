@@ -1081,7 +1081,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.originalSceneSettings.append((settingName, msb_rgetattr(context, settingName)))
 
         msb_rsetattr(context, settingName, value)
-        msb_rsetattr(context, settingName, value)
         pass
 
     def restoreOriginalSettings(self, context):
