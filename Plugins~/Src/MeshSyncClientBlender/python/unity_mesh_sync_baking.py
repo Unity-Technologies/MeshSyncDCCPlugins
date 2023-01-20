@@ -133,7 +133,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
                                                  'Automatically UV unwraps objects if there are no UVs or existing UVs are not in the 0..1 range. WARNING: This will delete existing UVs on the object!'),
                                                 ('ALWAYS', 'Always',
                                                  'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!')),
-                                         default='OFF')
+                                         default='IF_NEEDED')
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied. WARNING: This will apply and remove existing modifiers on the object!",
                                             default=True)
