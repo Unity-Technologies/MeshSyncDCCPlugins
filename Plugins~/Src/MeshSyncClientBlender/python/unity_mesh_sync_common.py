@@ -126,12 +126,12 @@ def msb_initialize_properties():
                                                                 update=msb_on_toggle_auto_sync)
     bpy.types.Scene.meshsync_frame_step = bpy.props.IntProperty(name="Frame Step", default=1, min=1,
                                                                 update=msb_on_animation_settings_updated)
-    bpy.types.Scene.meshsync_material_sync_mode = bpy.props.EnumProperty(name="Material sync mode",
+    bpy.types.Scene.meshsync_material_sync_mode = bpy.props.EnumProperty(name="Materials",
                                                                          items=(('0', 'None',
                                                                                  'Sync material IDs but no material data'),
                                                                                 ('1', 'Basic',
                                                                                  'Sync colors and textures assigned to the BSDF')),
-                                                                         default='0',
+                                                                         default='1',
                                                                          update=msb_on_material_sync_updated)
     from .unity_mesh_sync_baking import MESHSYNC_BakeSettings
     bpy.types.Scene.meshsync_bake_settings = bpy.props.PointerProperty(type=MESHSYNC_BakeSettings)

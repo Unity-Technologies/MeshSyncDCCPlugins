@@ -2,6 +2,7 @@ import bpy, os, datetime, time, math
 from bpy_extras.io_utils import ExportHelper
 from bpy.app.handlers import persistent
 import functools
+import tempfile
 
 from .unity_mesh_sync_common import MESHSYNC_PT
 
@@ -95,7 +96,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     '''
     Groups all bake settings in a single class.
     '''
-    bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default='')
+    bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default=tempfile.gettempdir())
     baked_texture_dimensions: bpy.props.EnumProperty(name="Texture dimensions",
                                            items=(('PIXELS', 'Pixels',
                                                    'Custom texture size'),
@@ -133,7 +134,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
                                                  'Automatically UV unwraps objects if there are no UVs or existing UVs are not in the 0..1 range. WARNING: This will delete existing UVs on the object!'),
                                                 ('ALWAYS', 'Always',
                                                  'Always automatically UV unwraps objects. WARNING: This will delete existing UVs on the object!')),
-                                         default='OFF')
+                                         default='IF_NEEDED')
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied. WARNING: This will apply and remove existing modifiers on the object!",
                                             default=True)
@@ -355,7 +356,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         Counts how many textures need to be baked so progress can be calculated.
         :return:
         '''
-        if not msb_canObjectMaterialsBeBaked(obj):
+        if obj.data is None or obj.type != 'MESH':
             return
 
         context = self.context
@@ -391,6 +392,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         # Make sure previous bake is undone:
         msb_revertBakedMaterials(obj)
+
+        if not msb_canObjectMaterialsBeBaked(obj):
+            return
 
         for matIndex, matSlot in enumerate(obj.material_slots):
             mat = matSlot.material
@@ -1091,7 +1095,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         '''
         self.originalSceneSettings.append((settingName, msb_rgetattr(context, settingName)))
 
-        msb_rsetattr(context, settingName, value)
         msb_rsetattr(context, settingName, value)
         pass
 
