@@ -499,6 +499,29 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             for matIndex, mat in enumerate(self.finalMaterials):
                 obj.material_slots[matIndex].material = mat
 
+    def enableAllCollectionsRecursively(self, col):
+        '''
+        Enables the view layer and all its children recursively.
+        '''
+        if col.exclude:
+            col.exclude = False
+            self.excludedCollections.append(col.name)
+
+        for child in col.children:
+            self.enableAllCollectionsRecursively(child)
+
+    def restoreAllCollectionsRecursively(self, col):
+        '''
+        Disables the view layer and all its children recursively if
+        they have been enabled by 'enableAllCollectionsRecursively'.
+        '''
+        if col.name in self.excludedCollections:
+            col.exclude = True
+            self.excludedCollections.remove(col.name)
+
+        for child in col.children:
+            self.restoreAllCollectionsRecursively(child)
+
     def bake(self):
         context = self.context
 
@@ -532,6 +555,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Make sure all collections are visible, baking won't work for objects in hidden collections:
         hiddenCollectionsViewport = []
         hiddenCollectionsRender = []
+        self.excludedCollections = []
 
         for col in context.scene.collection.children_recursive:
             if col.hide_viewport:
@@ -540,6 +564,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             if col.hide_render:
                 col.hide_render = False
                 hiddenCollectionsRender.append(col.name)
+
+        for col in context.view_layer.layer_collection.children:
+            self.enableAllCollectionsRecursively(col)
 
         self.maxBakeProgress = 0
         self.currentBakeProgress = 0
@@ -570,6 +597,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             for col in context.scene.collection.children_recursive:
                 if col.name == hiddenCollection:
                     col.hide_render = True
+        for col in context.view_layer.layer_collection.children:
+            self.restoreAllCollectionsRecursively(col)
 
     def checkIfUVMapIsNotUV0(self, obj, uvMapName, channel):
         '''
