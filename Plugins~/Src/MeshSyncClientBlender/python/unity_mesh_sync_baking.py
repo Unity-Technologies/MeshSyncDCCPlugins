@@ -563,7 +563,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for child in col.children:
             yield child
             if len(child.children) > 0:
-                yield self.children_recursive(col)
+                yield from self.children_recursive(child)
 
     def bake(self):
         context = self.context
