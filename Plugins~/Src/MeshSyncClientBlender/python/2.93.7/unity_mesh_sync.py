@@ -72,6 +72,8 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
         layout.prop(scene, "meshsync_material_sync_mode", expand=True)
+        if scene.meshsync_material_sync_mode == '1':
+            layout.label(text="Please bake materials to ensure this works.")
         
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:

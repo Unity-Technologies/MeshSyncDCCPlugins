@@ -352,7 +352,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         Counts how many textures need to be baked so progress can be calculated.
         :return:
         '''
-        if not msb_canObjectMaterialsBeBaked(obj):
+        if obj.data is None or obj.type != 'MESH':
             return
 
         context = self.context
@@ -381,6 +381,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         # Make sure previous bake is undone:
         msb_revertBakedMaterials(obj)
+
+        if not msb_canObjectMaterialsBeBaked(obj):
+            return
 
         for matIndex, matSlot in enumerate(obj.material_slots):
             mat = matSlot.material
