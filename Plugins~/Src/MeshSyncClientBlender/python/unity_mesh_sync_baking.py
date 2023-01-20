@@ -2,6 +2,7 @@ import bpy, os, datetime, time, math
 from bpy_extras.io_utils import ExportHelper
 from bpy.app.handlers import persistent
 import functools
+import tempfile
 
 from .unity_mesh_sync_common import MESHSYNC_PT
 
@@ -95,7 +96,7 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     '''
     Groups all bake settings in a single class.
     '''
-    bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default='')
+    bakedTexturesPath: bpy.props.StringProperty(name="Baked texture path", default=tempfile.gettempdir())
     baked_texture_dimensions: bpy.props.EnumProperty(name="Texture dimensions",
                                            items=(('PIXELS', 'Pixels',
                                                    'Custom texture size'),
