@@ -1135,7 +1135,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return result
 
     def canBsdfBeBaked(self, bsdf):
-        if bsdf.type in ['EMISSION', 'SUBSURFACE_SCATTERING']:
+        if bsdf.type in ['EMISSION', 'SUBSURFACE_SCATTERING', 'EEVEE_SPECULAR']:
             return True
 
         return 'bsdf' in bsdf.type.lower()
