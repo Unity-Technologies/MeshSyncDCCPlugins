@@ -1090,7 +1090,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             msb_log("The cycles render device is not set. Baking would be faster if this is set to CUDA, OptiX or HIP.")
 
         self.setRestorableContextSetting(context, "scene.cycles.samples",
-                                         10)  # TODO: This could be a setting for the user to change
+                                         100)  # TODO: This could be a setting for the user to change
 
         self.setRestorableContextSetting(context, "scene.render.bake.use_pass_direct", False)
         self.setRestorableContextSetting(context, "scene.render.bake.use_pass_indirect", False)
