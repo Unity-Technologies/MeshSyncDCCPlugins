@@ -363,7 +363,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             realize = nodes.new("GeometryNodeRealizeInstances")
             mod.node_group.links.new(link.from_socket, realize.inputs[0])
             mod.node_group.links.new(realize.outputs[0], link.to_socket)
-            OBJECT_OT_duplicates_make_real
 
     def preBakeObject(self, obj):
         '''
