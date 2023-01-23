@@ -363,6 +363,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             realize = nodes.new("GeometryNodeRealizeInstances")
             mod.node_group.links.new(link.from_socket, realize.inputs[0])
             mod.node_group.links.new(realize.outputs[0], link.to_socket)
+            OBJECT_OT_duplicates_make_real
 
     def preBakeObject(self, obj):
         '''
@@ -379,6 +380,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if context.object is not None and context.object.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
 
+        bakeSettings = context.scene.meshsync_bake_settings
+
         # Apply modifiers before baking, this is needed because the modifiers can have an impact on material
         # slots and mesh data:
         if len(obj.modifiers) > 0:
@@ -387,6 +390,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 # Can't apply modifiers with shared data:
                 bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                 for mod in obj.modifiers[:]:
+
+                    if mod.type == 'PARTICLE_SYSTEM':
+                        continue
+                        
                     if bakeSettings.realize_instances and mod.type == "NODES":
                         self.addRealizeInstances(mod)
                     try:
@@ -554,6 +561,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             # Restore material slots:
             for matIndex, mat in enumerate(self.finalMaterials):
                 obj.material_slots[matIndex].material = mat
+
 
     def enableAllCollectionsRecursively(self, col):
         '''
