@@ -155,6 +155,9 @@ void msblenMaterialsExportHelper::exportImageFromImageNode(ms::TextureType& text
 
 	auto img = (Image*)sourceNode->id;
 
+	if (img == nullptr)
+		return;
+
 	// Use non-color if the image node is not in sRGB space:
 	if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
 		textureType = ms::TextureType::NonColor;
