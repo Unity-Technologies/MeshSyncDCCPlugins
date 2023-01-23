@@ -393,6 +393,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     if mod.type == 'PARTICLE_SYSTEM':
                         continue
                         
+                    if mod.type == 'ARMATURE':
+                        continue
+                        
                     if bakeSettings.realize_instances and mod.type == "NODES":
                         self.addRealizeInstances(mod)
                     try:
