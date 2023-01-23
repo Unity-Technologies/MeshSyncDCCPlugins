@@ -582,7 +582,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         for child in col.children:
             yield child
             if len(child.children) > 0:
-                yield self.children_recursive(col)
+                yield from self.children_recursive(child)
 
     def bake(self):
         context = self.context
@@ -617,6 +617,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Make sure all collections are visible, baking won't work for objects in hidden collections:
         hiddenCollectionsViewport = []
         hiddenCollectionsRender = []
+        hideSelectCollections = []
         self.excludedCollections = []
 
         for col in self.children_recursive(context.scene.collection):
@@ -626,6 +627,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             if col.hide_render:
                 col.hide_render = False
                 hiddenCollectionsRender.append(col.name)
+            if col.hide_select:
+                col.hide_select = False
+                hideSelectCollections.append(col.name)
 
         for col in context.view_layer.layer_collection.children:
             self.enableAllCollectionsRecursively(col)
@@ -659,6 +663,11 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             for col in self.children_recursive(context.scene.collection):
                 if col.name == hiddenCollection:
                     col.hide_render = True
+        for hideSelectCol in hideSelectCollections:
+            for col in self.children_recursive(context.scene.collection):
+                if col.name == hideSelectCol:
+                    col.hide_select = True
+
         for col in context.view_layer.layer_collection.children:
             self.restoreAllCollectionsRecursively(col)
 
@@ -1079,6 +1088,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         self.setRestorableContextSetting(context, "scene.render.bake.image_settings.file_format", 'PNG')
         self.setRestorableContextSetting(context, "scene.render.bake.use_selected_to_active", False)
         self.setRestorableContextSetting(context, "scene.render.bake.use_cage", False)
+        self.setRestorableContextSetting(context, "scene.render.bake.normal_space", 'TANGENT')
 
         # Set Correct Colour space for bake
         self.setRestorableContextSetting(context, "scene.display_settings.display_device", 'sRGB')
@@ -1163,6 +1173,12 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         node_tree.nodes.active = bakedImageNode
         bakedImageNode.image = bakeImage
         bakedImageNode.location = (bsdf.location[0] - 500, bsdf.location[1] - self.bakedImageNodeYOffset)
+
+        uvNode = node_tree.nodes.new("ShaderNodeUVMap")
+        uvNode.select = False
+        uvNode.location = (bakedImageNode.location[0] - 200, bakedImageNode.location[1])
+        uvNode.uv_map = obj.data.uv_layers.active.name
+        node_tree.links.new(uvNode.outputs[0], bakedImageNode.inputs['Vector'])
         self.bakedImageNodeYOffset += 300
 
         # Bake
