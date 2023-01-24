@@ -171,7 +171,6 @@ def msb_setBakingDefaults(dummy):
             channelSettings = bakeSettings.bake_channel_settings.add()
             channelSettings.name = channel
 
-
 class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Baking"
     bl_parent_id = "MESHSYNC_PT_Main"
