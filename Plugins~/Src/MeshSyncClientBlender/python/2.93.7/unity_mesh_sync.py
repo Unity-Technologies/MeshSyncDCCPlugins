@@ -14,6 +14,7 @@ from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
+from .unity_mesh_sync_baking import *
 
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
@@ -70,7 +71,9 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         #layout.prop(scene, "meshsync_sync_textures")
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
-        layout.prop(scene, "meshsync_material_sync_mode")
+        layout.prop(scene, "meshsync_material_sync_mode", expand=True)
+        if scene.meshsync_material_sync_mode == '1':
+            layout.label(text="Please bake materials to ensure this works.")
         
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:

@@ -126,7 +126,7 @@ Shader nodes that take other shader nodes as input (Mix and Add Shader) cannot b
 If the object has no UVs, MeshSync will use blender's *Smart UV Project* operator to generate UVs.
 
 The blender console will show progress during the bake.
-To cancel baking, the user can press Escape. Cancellation is not immediate.
+To cancel baking, the user can press Escape. Cancellation is not immediate and only works when running modal.
 
 ## Material baking troubleshooting
 |**Problem** |**Possible cause** |
