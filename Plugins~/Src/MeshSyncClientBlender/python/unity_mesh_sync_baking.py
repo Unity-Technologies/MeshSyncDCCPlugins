@@ -455,6 +455,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             msb_log(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
 
+            # Check if any channel needs baking.
+            # If any channels need to be baked, generate the UVs before processing any channels.
+            # This ensures that channels that would not need to be baked are still baked if the UVs change!
+            for channel in BAKED_CHANNELS:
+                if not self.isChannelBakeEnabled(context, channel):
+                    continue
+
+                if self.doesBSDFChannelNeedBaking(obj, bsdf, channel):
+                    canBakeBSDF = self.canBsdfBeBaked(bsdf)
+                    self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
+                    break
+
             # If any channel was baked, it will be on a new material,
             # store that to frame all new nodes after everything is baked:
             bakedMat = mat
@@ -693,6 +705,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             return [True, f"Not using Color output of image node."]
 
         uvInputSocket = imageNode.inputs['Vector']
+
+        if UV_OVERRIDE in obj.data:
+            return [True, f"UVs have changed, need to bake to new UVs."]
 
         if len(uvInputSocket.links) == 0:
             # It's an image connected to the socket with default UVs, don't bake that:
