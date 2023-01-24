@@ -323,7 +323,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if reset:
             bakeSettings.bake_progress = 100
             bakeSettings.bake_time_remaining = ""
-        else:
+        elif self.maxBakeProgress > 0:
             bakeSettings.bake_progress += 100.0 / self.maxBakeProgress * self.getObjectProgressWeight(obj)
             elapsedSeconds = datetime.timedelta(seconds=(time.time() - self.startTime)).total_seconds()
 
@@ -424,6 +424,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 continue
 
             context = self.context
+
+            # Check if any channel needs baking.
+            # If any channels need to be baked, generate the UVs before processing any channels.
+            # This ensures that channels that would not need to be baked are still baked if the UVs change!
+            for channel in BAKED_CHANNELS:
+                if not self.isChannelBakeEnabled(context, channel):
+                    continue
+
+                if self.doesBSDFChannelNeedBaking(obj, bsdf, channel):
+                    self.prepareBake(context, obj, bsdf, mat, self.canBsdfBeBaked(bsdf))
+                    break
+
             for channel in BAKED_CHANNELS:
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
@@ -480,18 +492,6 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             self.deselectAllMaterialNodes(mat)
 
             msb_log(f"********** Checking if '{mat.name}' on '{obj.name}' needs baked materials. **********")
-
-            # Check if any channel needs baking.
-            # If any channels need to be baked, generate the UVs before processing any channels.
-            # This ensures that channels that would not need to be baked are still baked if the UVs change!
-            for channel in BAKED_CHANNELS:
-                if not self.isChannelBakeEnabled(context, channel):
-                    continue
-
-                if self.doesBSDFChannelNeedBaking(obj, bsdf, channel):
-                    canBakeBSDF = self.canBsdfBeBaked(bsdf)
-                    self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
-                    break
 
             # If any channel was baked, it will be on a new material,
             # store that to frame all new nodes after everything is baked:
@@ -665,6 +665,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.maxBakeProgress = 0
         self.currentBakeProgress = 0
+
+        bakeSettings.bake_progress = 0.001
+
+        if bakeSettings.run_modal:
+            self.incrementProgress(context, "Preparing")
+        else:
+            self.incrementProgress(context, "Blender will be frozen while baking. Please check the console for progress.")
+
+        # Ensure UI updates:
+        for i in range(100):
+            yield
+
         for obj in objectsToBake:
             self.preBakeObject(obj)
 
