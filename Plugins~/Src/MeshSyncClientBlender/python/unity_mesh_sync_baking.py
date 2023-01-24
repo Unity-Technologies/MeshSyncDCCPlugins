@@ -419,20 +419,27 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bakeSettings = context.scene.meshsync_bake_settings
         self.finalMaterials = []
 
+        bakedMaterials = {}
+
         for matIndex, mat in enumerate(materials):
-            obj.material_slots[matIndex].material = mat
+            # Ensure the same material doesn't get baked twice if it's on the object multiple times.
+            # If it was baked, append the previously baked one again:
+            if mat in bakedMaterials:
+                self.finalMaterials.append(bakedMaterials[mat])
+                continue
 
             if not self.canMaterialBeBaked(mat):
                 self.finalMaterials.append(mat)
                 continue
-
-            obj.active_material_index = matIndex
 
             matOutput, bsdf = self.findMaterialOutputNodeAndInput(mat)
 
             if matOutput is None or bsdf is None:
                 self.finalMaterials.append(mat)
                 continue
+
+            obj.material_slots[matIndex].material = mat
+            obj.active_material_index = matIndex
 
             self.bakedImageNodeYOffset = 0  # To keep track of image node location for this object
             self.objectBakeInfo = {}  # To keep track of baked channels for this object to check if image nodes can be reused
@@ -472,6 +479,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             # Needed for restore afterwards:
             self.finalMaterials.append(bakedMat)
+
+            bakedMaterials[mat] = bakedMat
 
             obj.material_slots[matIndex].material = None
 
