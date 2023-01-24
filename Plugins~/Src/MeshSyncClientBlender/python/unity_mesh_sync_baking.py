@@ -138,6 +138,8 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied. WARNING: This will apply and remove existing modifiers on the object!",
                                             default=True)
+    realize_instances: bpy.props.BoolProperty(name="Realize instances",
+                                            description = "Realize geometry node instances to include them in the bake", default = True)
     run_modal: bpy.props.BoolProperty(name="Run Modal",
                                             description="If this is enabled blender stays more interactive but baking is slower.",
                                             default=False)
@@ -194,6 +196,8 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
 
         layout.prop(bakeSettings, "generate_uvs", expand=True)
         layout.prop(bakeSettings, "apply_modifiers")
+        if bakeSettings.apply_modifiers:
+            layout.prop(bakeSettings, "realize_instances")
         layout.prop(bakeSettings, "run_modal")
 
         layout.prop(bakeSettings, "baked_texture_dimensions", expand=True)
@@ -347,6 +351,19 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         bakeSettings.bake_message = message
 
+    def addRealizeInstances(self, mod):
+        nodes = mod.node_group.nodes
+        outputs = [x for x in nodes if x.type == "GROUP_OUTPUT"]
+
+        for output in outputs:
+            if len(output.inputs) == 0 or len(output.inputs[0].links) == 0:
+                continue
+
+            link = output.inputs[0].links[0]
+            realize = nodes.new("GeometryNodeRealizeInstances")
+            mod.node_group.links.new(link.from_socket, realize.inputs[0])
+            mod.node_group.links.new(realize.outputs[0], link.to_socket)
+
     def preBakeObject(self, obj):
         '''
         Counts how many textures need to be baked so progress can be calculated.
@@ -370,6 +387,15 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 # Can't apply modifiers with shared data:
                 bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                 for mod in obj.modifiers[:]:
+
+                    if mod.type == 'PARTICLE_SYSTEM':
+                        continue
+                        
+                    if mod.type == 'ARMATURE':
+                        continue
+                        
+                    if bakeSettings.realize_instances and mod.type == "NODES":
+                        self.addRealizeInstances(mod)
                     try:
                         bpy.ops.object.modifier_apply(modifier=mod.name)
                     except Exception as e:
@@ -556,6 +582,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             # Restore material slots:
             for matIndex, mat in enumerate(self.finalMaterials):
                 obj.material_slots[matIndex].material = mat
+
 
     def enableAllCollectionsRecursively(self, col):
         '''
