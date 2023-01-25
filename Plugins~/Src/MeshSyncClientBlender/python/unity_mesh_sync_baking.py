@@ -173,7 +173,6 @@ def msb_setBakingDefaults(dummy):
             channelSettings = bakeSettings.bake_channel_settings.add()
             channelSettings.name = channel
 
-
 class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Baking"
     bl_parent_id = "MESHSYNC_PT_Main"
@@ -320,9 +319,13 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 return channelSetting.bakeChannelEnabled
         return False
 
-    def incrementProgress(self, context, message, obj=None, reset=False):
+    def incrementProgress(self, context, message, obj=None, mode= ""):
         bakeSettings = context.scene.meshsync_bake_settings
-        if reset:
+        if mode == "RESET":
+            bakeSettings.bake_time_remaining = ""
+            bakeSettings.bake_maps_remaining = ""
+            bakeSettings.bake_message = message
+        elif mode == "CANCEL":
             bakeSettings.bake_progress = 100
             bakeSettings.bake_time_remaining = ""
         elif self.maxBakeProgress > 0:
@@ -671,9 +674,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bakeSettings.bake_progress = 0.001
 
         if bakeSettings.run_modal:
-            self.incrementProgress(context, "Preparing")
+            self.incrementProgress(context, "Preparing", mode = "RESET")
         else:
-            self.incrementProgress(context, "Blender will be frozen while baking. Please check the console for progress.")
+            self.incrementProgress(context, "Blender will be frozen while baking. Please check the console for progress.", mode = "RESET")
 
         # Ensure UI updates:
         for i in range(100):
@@ -1420,6 +1423,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         wm.event_timer_remove(self.timer)
 
     def invoke(self, context, event):
+
         if not os.access(context.scene.meshsync_bake_settings.bakedTexturesPath, os.W_OK):
             self.report({'WARNING'}, "The folder to save baked textures to does not exist!")
             return {'CANCELLED'}
@@ -1437,7 +1441,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Allow cancellation by pressing escape:
         if event.type == 'ESC':
             self.stop(context)
-            self.incrementProgress(context, "Baking cancelled by user", reset=True)
+            self.incrementProgress(context, "Baking cancelled by user", mode="CANCEL")
             return {'FINISHED'}
 
         # Refresh context each run:

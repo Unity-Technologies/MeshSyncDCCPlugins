@@ -15,6 +15,7 @@ from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
 from .unity_mesh_sync_baking import *
+from .unity_mesh_sync_materials import *
 
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
@@ -71,9 +72,6 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         #layout.prop(scene, "meshsync_sync_textures")
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
-        layout.prop(scene, "meshsync_material_sync_mode", expand=True)
-        if scene.meshsync_material_sync_mode == '1':
-            layout.label(text="Please bake materials to ensure this works.")
         
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:
@@ -332,15 +330,16 @@ classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
-    MESHSYNC_PT_UnityProject,
-    MESHSYNC_PT_Animation,
+    MESHSYNC_PT_Materials,
     MESHSYNC_PT_Baking,
+    MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
     MESHSYNC_OT_SendObjects,
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
+    MESHSYNC_OT_SendMaterials,
     MESHSYNC_Preferences
 ] + sharedClasses
 
