@@ -23,6 +23,7 @@ throwExceptions = False
 showLogLevel = LogLevel.ERROR
 
 AO_CHANNEL_NAME = "Ambient Occlusion"
+DISPLACEMENT_CHANNEL_NAME = "Displacement"
 
 BAKED_CHANNELS = ["Base Color",
                   "Metallic",
@@ -30,7 +31,8 @@ BAKED_CHANNELS = ["Base Color",
                   "Clearcoat",
                   "Emission",
                   "Normal",
-                  AO_CHANNEL_NAME]
+                  AO_CHANNEL_NAME,
+                  DISPLACEMENT_CHANNEL_NAME]
 
 # The above channels may not exist in all BSDF types, mapping of alternative names:
 synonymMap = {"Base Color": ["Color"]}
@@ -435,7 +437,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
-                if self.doesBSDFChannelNeedBaking(obj, bsdf, channel):
+                if self.doesBSDFChannelNeedBaking(obj, bsdf, matOutput, channel):
                     self.prepareBake(context, obj, bsdf, mat, self.canBsdfBeBaked(bsdf))
                     break
 
@@ -443,7 +445,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                 if not self.isChannelBakeEnabled(context, channel):
                     continue
 
-                if not self.doesBSDFChannelNeedBaking(obj, bsdf, channel)[0]:
+                if not self.doesBSDFChannelNeedBaking(obj, bsdf, matOutput, channel)[0]:
                     continue
 
                 self.mapsToBake += 1
@@ -763,6 +765,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
             return self.checkIfUVMapIsNotUV0(obj, uvMapName, channel)
 
+    def handleDisplacementNode(self, obj, link, channel, displacementNode):
+        heightInput = displacementNode.inputs['Height']
+
+        if len(heightInput.links) == 0:
+            return [False]
+
+        displacementInputSocket = self.traverseReroutes(heightInput.links[0].from_socket)
+        if displacementInputSocket is None:
+            return [False]
+
+        return self.handleInputToBake(obj, channel, displacementInputSocket)
+
     def handleImageNode(self, obj, link, channel, imageNode):
         if imageNode.image.source == 'TILED':
             return [True, "Image is a UDIM tile that needs to be baked."]
@@ -799,10 +813,46 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         return [False]
 
-    def doesBSDFChannelNeedBaking(self, obj, bsdf,
+    def handleInputToBake(self, obj, channel, inputSocket):
+        # If there's nothing connected to the socket, we can use the socket's default value.
+        if len(inputSocket.links) == 0:
+            return [False]
+
+        link = inputSocket.links[0]
+        nodeConnectedToChannelSocket = self.traverseReroutes(link.from_node)
+
+        if nodeConnectedToChannelSocket is None:
+            return [False]
+
+        type = nodeConnectedToChannelSocket.type
+
+        # These can be exported by meshsync from their default value:
+        if type in ['RGB', 'VALUE']:
+            return [False]
+
+        if type == 'TEX_IMAGE':
+            return self.handleImageNode(obj, link, channel, nodeConnectedToChannelSocket)
+        elif type == 'NORMAL_MAP':
+            return self.handleNormalNode(obj, link, channel, nodeConnectedToChannelSocket)
+        elif type == 'DISPLACEMENT':
+            return self.handleDisplacementNode(obj, link, channel, nodeConnectedToChannelSocket)
+
+        return [True, "Node input is procedural."]
+
+    def doesBSDFChannelNeedBaking(self, obj, bsdf, matOutput,
                                   channel: str) -> list:
         if channel == AO_CHANNEL_NAME:
             return [True, "Ambient occlusion requires baking."]
+
+        if channel == DISPLACEMENT_CHANNEL_NAME:
+            displacementInput = matOutput.inputs['Displacement']
+            if len(displacementInput.links) == 0:
+                return [False]
+            if displacementInput.links[0].from_node.type != 'DISPLACEMENT':
+                # Input is not from a displacement node, we can't bake that:
+                return [False]
+
+            return self.handleInputToBake(obj, channel, displacementInput)
 
         if bsdf is None:
             return [True, "Material output is not connected to a shader."]
@@ -816,28 +866,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         inputSocket = bsdf.inputs[bsdfInputName]
 
-        # If there's nothing connected to the socket, we can use the socket's default value.
-        if len(inputSocket.links) == 0:
-            return [False]
-
-        link = inputSocket.links[0]
-        nodeConnectedToChannelSocket = link.from_node
-
-        type = nodeConnectedToChannelSocket.type
-        
-        # These can be exported by meshsync from their default value:
-        if type in ['RGB', 'VALUE']:
-            return [False]
-
-        if type == 'TEX_IMAGE':
-            return self.handleImageNode(obj, link, channel, nodeConnectedToChannelSocket)
-        elif type == 'NORMAL_MAP':
-            return self.handleNormalNode(obj, link, channel, nodeConnectedToChannelSocket)
-
-        return [True, "Node input is procedural."]
+        return self.handleInputToBake(obj, channel, inputSocket)
 
     def bakeBSDFChannelIfNeeded(self, context, obj, mat, bsdf, matOutput, channel):
-        result = self.doesBSDFChannelNeedBaking(obj, bsdf, channel)
+        result = self.doesBSDFChannelNeedBaking(obj, bsdf, matOutput, channel)
         if result[0]:
             msb_log(f"Baking {channel} for '{obj.name}'. Reason: {result[1]}")
             bakedMat = self.bakeChannel(context, obj, mat, bsdf, matOutput, channel)
@@ -1177,6 +1209,9 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         :return: upstream input the node or node socket resolves to after reroutes
         '''
 
+        if nodeOrSocket is None:
+            return None
+
         if isinstance(nodeOrSocket, bpy.types.NodeSocket):
             isSocket = True
             node = nodeOrSocket.node
@@ -1263,17 +1298,22 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         # Normals cannot be baked this way, use what the material output receives instead:
         if channel == 'Normal':
             link(bsdf.outputs[0], matOutput.inputs[0])
-            return self.bakeWithFallback(context, obj, mat, channel)
+            return self.bakeWithFallback(context, obj, mat, channel), None
 
-        bsdfChannelSocket = bsdf.inputs[bsdfChannelSocketName]
+        if channel != DISPLACEMENT_CHANNEL_NAME:
+            bsdfChannelSocket = bsdf.inputs[bsdfChannelSocketName]
+        else:
+            displacementInput = matOutput.inputs['Displacement']
+            displacementInputNode = displacementInput.links[0].from_node
+            bsdfChannelSocket = displacementInputNode.inputs['Height']
 
         channelInput = self.traverseReroutes(bsdfChannelSocket.links[0].from_socket)
 
         if channelInput in self.objectBakeInfo:
             msb_log(f"Input for channel {bsdfChannelSocketName} was already baked, reusing the same image.")
-            return self.objectBakeInfo[channelInput]
+            return self.objectBakeInfo[channelInput], bsdfChannelSocket
 
-        msb_log(f"Baking inputs of channel: '{bsdfChannelSocketName}'.")
+        msb_log(f"Baking inputs of channel: '{bsdfChannelSocket.name}'.")
 
         link(channelInput, matOutput.inputs[0])
 
@@ -1281,7 +1321,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.objectBakeInfo[channelInput] = bakedImageNode
 
-        return bakedImageNode
+        return bakedImageNode, bsdfChannelSocket
 
     def bakeWithFallback(self, context, obj, mat, channel):
         '''
@@ -1331,14 +1371,18 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         mat = self.prepareBake(context, obj, bsdf, mat, canBakeBSDF)
 
+        bsdfChannelSocket = None
+
         # AO cannot be baked from inputs:
         if channel == AO_CHANNEL_NAME:
             bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
             bakedImageNode.name = "BAKED_AO"
+        elif channel == DISPLACEMENT_CHANNEL_NAME:
+            bakedImageNode, bsdfChannelSocket = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
         else:
             # Ideally, we should bake the BSDF inputs:
             if canBakeBSDF:
-                bakedImageNode = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
+                bakedImageNode, bsdfChannelSocket = self.bakeChannelInputsDirectly(context, obj, mat, bsdf, matOutput, channel)
             else:
                 bakedImageNode = self.bakeWithFallback(context, obj, mat, channel)
 
@@ -1350,7 +1394,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         bsdf = node_tree.nodes[mat[BAKED_MATERIAL_SHADER]]
         inputChannelName = self.getBSDFChannelInputName(bsdf, channel)
 
-        if channel != AO_CHANNEL_NAME:
+        if channel == DISPLACEMENT_CHANNEL_NAME:
+            node_tree.links.new(bakedImageNode.outputs[0], bsdfChannelSocket)
+
+        elif channel != AO_CHANNEL_NAME:
             # Connect baked image to the input now:
             if inputChannelName == 'Normal':
                 normalMapNode = node_tree.nodes.new("ShaderNodeNormalMap")
