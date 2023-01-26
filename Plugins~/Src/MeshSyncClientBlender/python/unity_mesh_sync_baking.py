@@ -382,7 +382,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     return ""
 
                 # Ignore these, they won't be applied:
-                if mod.type == 'PARTICLE_SYSTEM' or mod.type == 'ARMATURE':
+                if mod.type in ['PARTICLE_SYSTEM', 'ARMATURE']:
                     continue
 
                 for prop in mod.bl_rna.properties.keys():
@@ -427,10 +427,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     # Can't apply modifiers with shared data:
                     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
                     for mod in obj.modifiers[:]:
-                        if mod.type == 'PARTICLE_SYSTEM':
-                            continue
-
-                        if mod.type == 'ARMATURE':
+                        if mod.type in ['PARTICLE_SYSTEM', 'ARMATURE']:
                             continue
 
                         if bakeSettings.realize_instances and mod.type == "NODES":
