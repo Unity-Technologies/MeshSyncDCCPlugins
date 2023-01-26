@@ -47,6 +47,16 @@ bNode* traverseReroutes(bNode* node, const Material* mat) {
 	return nullptr;
 }
 
+bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
+	for (auto inputSocket : list_range((bNodeSocket*)node->inputs.first)) {
+		if (STREQ(inputSocket->name, socketName)) {
+			return inputSocket;
+		}
+	}
+
+	return nullptr;
+}
+
 bNode* getNodeConnectedToSocket(bNodeSocket* socket) {
 	if (socket->link) {
 		return socket->link->fromnode;
@@ -68,14 +78,36 @@ bNode* handleBSDFTypes(const Material* mat, bNode* bsdf) {
 		bsdf->type != SH_NODE_ADD_SHADER)
 		return bsdf;
 
+	// Get all connected inputs:
+	std::vector<bNode*> connectedValues;
 	for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
 		if (STREQ(inputSocket->name, shaderIdentifier)) {
 			bNode* connectedBSDF = handleBSDFTypes(mat, traverseReroutes(getNodeConnectedToSocket(inputSocket), mat));
 			if (connectedBSDF)
 			{
-				return connectedBSDF;
+				connectedValues.push_back(connectedBSDF);
 			}
 		}
+	}
+
+	if (connectedValues.size() > 0) {
+		// For mix shaders, prefer output based on fraction if it's connected:
+		if (bsdf->type == SH_NODE_MIX_SHADER)
+		{
+			auto factorSocket = getInputSocket(bsdf, "Fac");
+			if (factorSocket)
+			{
+				// Can only evaluate default value on the socket:
+				if (!traverseReroutes(getNodeConnectedToSocket(factorSocket), mat)) {
+					auto factor = (bNodeSocketValueFloat*)factorSocket->default_value;
+					if (factor->value > 0.5f) {
+						return connectedValues.back();
+					}
+				}
+			}
+		}
+
+		return connectedValues.front();
 	}
 
 	return bsdf;
@@ -98,16 +130,6 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 	}
 
 	return false;
-}
-
-bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
-	for (auto inputSocket : list_range((bNodeSocket*)node->inputs.first)) {
-		if (STREQ(inputSocket->name, socketName)) {
-			return inputSocket;
-		}
-	}
-
-	return nullptr;
 }
 
 int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::TextureType type) const
