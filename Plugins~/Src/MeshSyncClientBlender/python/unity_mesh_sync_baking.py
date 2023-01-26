@@ -371,7 +371,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
     def getModifierHash(self, obj):
         '''
-        Generates a unique string based on the object and its modifiers
+        Generates a unique string based on the object's data and its modifiers
         '''
         try:
             mods = obj.modifiers
