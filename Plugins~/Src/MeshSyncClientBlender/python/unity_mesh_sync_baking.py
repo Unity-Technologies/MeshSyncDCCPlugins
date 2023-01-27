@@ -438,7 +438,7 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                     continue
 
                 if self.doesBSDFChannelNeedBaking(obj, bsdf, matOutput, channel):
-                    self.prepareBake(context, obj, bsdf, mat, self.canBsdfBeBaked(bsdf))
+                    self.prepareBake(context, obj, bsdf, mat, self.canBsdfBeBaked(bsdf), prepareMaterial=False)
                     break
 
             for channel in BAKED_CHANNELS:
@@ -953,10 +953,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         return result
 
     def prepareObjectForBaking(self, context, obj):
-        if obj in self.objectsProcessedForBaking:
+        if obj.data in self.objectsProcessedForBaking:
             return
 
-        self.objectsProcessedForBaking.append(obj)
+        self.objectsProcessedForBaking.append(obj.data)
 
         bakeSettings = context.scene.meshsync_bake_settings
 
@@ -1137,14 +1137,16 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
 
-    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF):
-        if context.object is not None:
+    def prepareBake(self, context, obj, bsdf, mat, canBakeBSDF, prepareMaterial=True):
+        if context.object.mode != 'OBJECT' and context.object is not None:
             bpy.ops.object.mode_set(mode='OBJECT')
 
         self.selectObject(obj, context)
 
         self.prepareObjectForBaking(context, obj)
-        mat = self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
+
+        if prepareMaterial:
+            mat = self.prepareMaterial(context, obj, bsdf, mat, canBakeBSDF)
 
         return mat
 
