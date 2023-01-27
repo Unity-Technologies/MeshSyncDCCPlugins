@@ -30,7 +30,7 @@ void msblenContextState::clear() {
 }
 
 void msblenContextState::clearRecordsState() {
-    for (std::map<const void*, msblenContextState::ObjectRecord>::value_type& kvp : records)
+    for (std::map<std::string, msblenContextState::ObjectRecord>::value_type& kvp : records)
         kvp.second.clearState();
 }
 
@@ -40,13 +40,15 @@ msblenContextState::ObjectRecord& msblenContextState::touchRecord(
     const std::string& base_path,
     bool children)
 {
-    auto& rec = records[obj];
+    std::string local_path = paths.get_path(obj);
+
+    auto& rec = records[local_path];
+
     if (rec.touched && base_path.empty())
         return rec; // already touched
 
     rec.touched = true;
 
-    std::string local_path = paths.get_path(obj);
     if (local_path != rec.path) {
         rec.renamed = true;
         rec.path = local_path;
@@ -58,7 +60,8 @@ msblenContextState::ObjectRecord& msblenContextState::touchRecord(
     if (is_armature(obj)) {
         blender::blist_range<struct bPoseChannel> poses = blender::list_range((bPoseChannel*)obj->pose->chanbase.first);
         for (struct bPoseChannel* pose : poses) {
-            records[pose->bone].touched = true;
+            auto path = paths.get_path(obj, pose->bone);
+            records[path].touched = true;
             manager.touch(base_path + paths.get_path(obj, pose->bone));
         }
     }

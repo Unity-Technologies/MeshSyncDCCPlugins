@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Unity Mesh Sync",
     "author": "Unity Technologies",
-    "blender": (3, 1, 0),
+    "blender": (3, 4, 1),
     "description": "Sync Meshes with Unity",
     "location": "View3D > Mesh Sync",
     "tracker_url": "https://github.com/Unity-Technologies/MeshSyncDCCPlugins",
@@ -14,7 +14,6 @@ from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
 from .unity_mesh_sync_preferences import *
-from .unity_mesh_sync_baking import *
 from .unity_mesh_sync_materials import *
 
 
@@ -34,9 +33,8 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-
         layout.prop(scene, "meshsync_auto_config_server")
-
+        
         row = layout.row()
         row.prop(scene, "meshsync_server_address")
         row.enabled = not context.scene.meshsync_auto_config_server
@@ -48,6 +46,7 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         row = layout.row()
         row.prop(scene, "meshsync_editor_server_port")
         row.enabled = not context.scene.meshsync_auto_config_server
+
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Scene"
@@ -71,13 +70,14 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         #layout.prop(scene, "meshsync_sync_textures")
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
-        
+
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
+
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
     bl_label = "Animation"
@@ -153,7 +153,7 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
             setup = msb_try_setup_scene_server(context)
             if msb_error_messages_for_status(setup, context) == False:
                 return {'FINISHED'}
-            
+
             scene.meshsync_auto_sync = True
             if not scene.meshsync_auto_sync:
                 # server not available
@@ -324,7 +324,7 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking, msb_setBakingDefaults
 
 classes = [
     MESHSYNC_PT_Main,
@@ -348,13 +348,11 @@ def register():
     for c in classes:
         bpy.utils.register_class(c)
     msb_initialize_properties()
-    bpy.app.handlers.load_post.append(msb_setBakingDefaults)
 
 def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
-    bpy.app.handlers.load_post.remove(msb_setBakingDefaults)
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()

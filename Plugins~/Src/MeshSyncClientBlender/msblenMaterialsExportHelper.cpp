@@ -26,6 +26,10 @@ const auto displacementIdentifier = "Displacement";
 const auto heightIdentifier = "Height";
 const auto scaleIdentifier = "Scale";
 
+// This is the name of the image AO is baked to. It's not connected to the BSDF or material output:
+const auto bakedAOImageName = "BAKED_AO";
+
+
 // Moves upstream to find input nodes, passing through reroutes.
 bNode* traverseReroutes(bNode* node, const Material* mat) {
 	if (!node || node->type != NODE_REROUTE) {
@@ -37,6 +41,16 @@ bNode* traverseReroutes(bNode* node, const Material* mat) {
 	for (auto link : list_range((bNodeLink*)tree->links.first)) {
 		if (link->tonode == node) {
 			return traverseReroutes(link->fromnode, mat);
+		}
+	}
+
+	return nullptr;
+}
+
+bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
+	for (auto inputSocket : list_range((bNodeSocket*)node->inputs.first)) {
+		if (STREQ(inputSocket->name, socketName)) {
+			return inputSocket;
 		}
 	}
 
@@ -64,14 +78,36 @@ bNode* handleBSDFTypes(const Material* mat, bNode* bsdf) {
 		bsdf->type != SH_NODE_ADD_SHADER)
 		return bsdf;
 
+	// Get all connected inputs:
+	std::vector<bNode*> connectedValues;
 	for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
 		if (STREQ(inputSocket->name, shaderIdentifier)) {
 			bNode* connectedBSDF = handleBSDFTypes(mat, traverseReroutes(getNodeConnectedToSocket(inputSocket), mat));
 			if (connectedBSDF)
 			{
-				return connectedBSDF;
+				connectedValues.push_back(connectedBSDF);
 			}
 		}
+	}
+
+	if (connectedValues.size() > 0) {
+		// For mix shaders, prefer output based on fraction if it's connected:
+		if (bsdf->type == SH_NODE_MIX_SHADER)
+		{
+			auto factorSocket = getInputSocket(bsdf, "Fac");
+			if (factorSocket)
+			{
+				// Can only evaluate default value on the socket:
+				if (!traverseReroutes(getNodeConnectedToSocket(factorSocket), mat)) {
+					auto factor = (bNodeSocketValueFloat*)factorSocket->default_value;
+					if (factor->value > 0.5f) {
+						return connectedValues.back();
+					}
+				}
+			}
+		}
+
+		return connectedValues.front();
 	}
 
 	return bsdf;
@@ -94,16 +130,6 @@ bool getBSDFAndOutput(const Material* mat, bNode*& bsdf, bNode*& output) {
 	}
 
 	return false;
-}
-
-bNodeSocket* getInputSocket(bNode* node, const char* socketName) {
-	for (auto inputSocket : list_range((bNodeSocket*)node->inputs.first)) {
-		if (STREQ(inputSocket->name, socketName)) {
-			return inputSocket;
-		}
-	}
-
-	return nullptr;
 }
 
 int msblenMaterialsExportHelper::exportTexture(const std::string& path, ms::TextureType type) const
@@ -150,6 +176,9 @@ void msblenMaterialsExportHelper::exportImageFromImageNode(ms::TextureType& text
 	if (!setTextureHandler) return;
 
 	auto img = (Image*)sourceNode->id;
+
+	if (img == nullptr)
+		return;
 
 	// Use non-color if the image node is not in sRGB space:
 	if (textureType == ms::TextureType::Default && !STREQ(img->colorspace_settings.name, "sRGB")) {
@@ -252,12 +281,22 @@ void msblenMaterialsExportHelper::handleDisplacementNode(const Material* mat,
 	}
 }
 
-void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
-	ms::TextureType textureType,
-	bool resetIfInputIsTexture,
+void msblenMaterialsExportHelper::handleValueNode(
 	std::function<void(const mu::float4& colorValue)> setColorHandler,
-	std::function<void(int textureId)> setTextureHandler,
+    std::function<void(int textureId)> setTextureHandler, 
 	bNode* sourceNode)
+{
+	bNodeSocket* outputSocket = (bNodeSocket*)sourceNode->outputs.first;
+
+	handleSocketValue(outputSocket, setColorHandler, setTextureHandler);
+}
+
+void msblenMaterialsExportHelper::handlePassthrough(const Material* mat,
+                                                    ms::TextureType textureType,
+                                                    bool resetIfInputIsTexture,
+                                                    std::function<void(const mu::float4& colorValue)> setColorHandler,
+                                                    std::function<void(int textureId)> setTextureHandler,
+                                                    bNode* sourceNode)
 {
 	auto imageInput = getInputSocket(sourceNode, colorIdentifier);
 	if (!imageInput)
@@ -328,7 +367,7 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 		setTextureHandler = nullptr;
 	}
 
-	switch (sourceNode->type) {
+    switch (sourceNode->type) {
 	case SH_NODE_TEX_IMAGE:
 	{
 		handleImageNode(textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
@@ -342,6 +381,12 @@ void msblenMaterialsExportHelper::setValueFromSocket(const Material* mat,
 	case SH_NODE_DISPLACEMENT:
 	{
 		handleDisplacementNode(mat, textureType, resetIfInputIsTexture, setColorHandler, setTextureHandler, sourceNode);
+		break;
+	}
+	case SH_NODE_RGB:
+	case SH_NODE_VALUE:
+	{
+		handleValueNode(setColorHandler, setTextureHandler, sourceNode);
 		break;
 	}
 	// Pass input straight through these:
@@ -416,7 +461,7 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 					stdmat.setSmoothness(1 - colorValue[0]);
 				},
 				[&](int textureId) {
-					stdmat.setSmoothnessMap(textureId);
+					stdmat.setRoughnessMap(textureId);
 				});
 		}
 		else if (isSocket(metallicIdentifier))
@@ -482,6 +527,28 @@ void msblenMaterialsExportHelper::setPropertiesFromBSDF(const Material* mat, ms:
 	}
 }
 
+void msblenMaterialsExportHelper::setAmbientOcclusion(const Material* mat, ms::StandardMaterial& stdmat)
+{
+	// Checks if there is an image node called 'BAKED_AO' and if there is, it sends its image as AO:
+	auto tree = mat->nodetree;
+	for (auto node : list_range((bNode*)tree->nodes.first)) {
+		if(node->type == SH_NODE_TEX_IMAGE)
+		{
+		    if(STREQ(node->name, bakedAOImageName))
+		    {
+                ms::TextureType textureType = ms::TextureType::NonColor;
+				exportImageFromImageNode(textureType,
+					[&](int textureId)
+					{
+						stdmat.setOcclusionMap(textureId);
+					},
+					node);
+			
+		    }
+		}
+	}
+}
+
 void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat, ms::StandardMaterial& stdmat)
 {
 	bNode* bsdfNode;
@@ -493,6 +560,7 @@ void msblenMaterialsExportHelper::exportMaterialFromNodeTree(const Material* mat
 
 	setShaderFromBSDF(stdmat, bsdfNode);
 	setPropertiesFromBSDF(mat, stdmat, bsdfNode);
+	setAmbientOcclusion(mat, stdmat);
 	setHeightFromOutputNode(mat, stdmat, outputNode);
 }
 

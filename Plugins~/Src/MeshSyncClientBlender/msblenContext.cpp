@@ -463,8 +463,7 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
 
             auto do_merge = [this, dst, &dst_mesh, &src_mesh, &settings, &state]() {
                 dst_mesh.merge(src_mesh);
-                if (settings.ExportSceneCache)
-                    dst_mesh.detach();
+                dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
@@ -688,10 +687,18 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         if (material_index != ms::InvalidID) {
             auto it = rev_mid_table.find(material_index);
             if (it != rev_mid_table.end()) {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = it->second;
+#else
                 bmeshPolygons[pi].mat_nr = it->second;
+#endif
             }
             else {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = 0;
+#else
                 bmeshPolygons[pi].mat_nr = 0;
+#endif
             }
         }
 
@@ -874,9 +881,31 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
-    std::vector<int> mid_table(mesh.totcol);
-    for (int mi = 0; mi < mesh.totcol; ++mi)
-        mid_table[mi] = getMaterialID(mesh.mat[mi]);
+    int materialCount = std::max(bobj.m_ptr->totcol, (int)mesh.totcol);
+
+    std::vector<int> mid_table(materialCount);
+  
+    // Materials in blender can be on the object or on the mesh.
+    // If there is a material on the object's material slot,
+    // it overrides the mesh material.
+    for (int mi = 0; mi < materialCount; ++mi) {
+        Material* mat = nullptr;
+        if (mi < bobj.m_ptr->totcol) {
+            mat = bobj.m_ptr->mat[mi];
+        }
+
+        if (!mat) {
+            // If there is no material in the slot on the object and it does not
+            // exist on the mesh either, this is an empty material slot and should not be exported:
+            if (mesh.totcol <= mi)
+                continue;
+
+            mat = mesh.mat[mi];
+        }
+
+        mid_table[mi] = getMaterialID(mat);
+    }
+
     if (mid_table.empty())
         mid_table.push_back(ms::InvalidID);
 
@@ -886,6 +915,10 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         dst.points[vi] = (mu::float3&)vertices[vi].co;
     }
 
+#if BLENDER_VERSION >= 304
+    blender::barray_range<int> materialIndices = bmesh.material_indices();
+#endif
+
     // faces
     dst.indices.reserve(num_indices);
     dst.counts.resize_discard(num_polygons);
@@ -894,7 +927,15 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         int ii = 0;
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
+
+#if BLENDER_VERSION >= 304
+            int material_index = 0;
+            if (materialIndices.size() > pi) {
+                material_index = materialIndices[pi];
+            }
+#else
             const int material_index = polygon.mat_nr;
+#endif
             const int count = polygon.totloop;
             dst.counts[pi] = count;
             dst.material_ids[pi] = mid_table[material_index];
@@ -1106,6 +1147,7 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
 
+
             int material_index = 0;
             const int polygon_index = triangle[0]->f->head.index;
             if (polygon_index < polygons.size())
@@ -1131,21 +1173,41 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
-            for (struct BMLoop* idx : triangle)
-                dst.normals[ii++] = -bl::BM_loop_calc_face_normal(*idx);
+            const int polygon_index = triangle[0]->f->head.index;
+
+            auto polygon = polygons[polygon_index];
+            auto smooth = polygon->head.hflag & BM_ELEM_SMOOTH;
+
+            for (struct BMLoop* idx : triangle) {
+                if (smooth) {
+                    auto index =  idx->v->head.index;
+                    auto vertext = vertices[index];
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(vertext->no));
+                }
+                else {
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(idx->f->no));
+                }
+            }
         }
     }
 
-    // uv
     if (settings.sync_uvs) {
-        const int offset = emesh.uv_data_offset();
-        if (offset != -1) {
-            dst.m_uv[0].resize_discard(num_indices);
+        
+        const int num_uv_layers = std::min(emesh.GetNumUVs(), ms::MeshSyncConstants::MAX_UV);
+
+        for (auto layerIndex = 0; layerIndex < num_uv_layers; layerIndex++) {
+            
+            const int offset = emesh.uv_data_offset(layerIndex);
+
+            if (offset == -1)
+                continue;
+
+            dst.m_uv[layerIndex].resize_discard(num_indices);
             size_t ii = 0;
             for (size_t ti = 0; ti < num_triangles; ++ti) {
                 auto& triangle = triangles[ti];
-                for (auto *idx : triangle)
-                    dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+                for (auto* idx : triangle)
+                    dst.m_uv[layerIndex][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
             }
         }
     }

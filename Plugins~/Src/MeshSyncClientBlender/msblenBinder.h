@@ -112,6 +112,9 @@ namespace blender
         barray_range<mu::float3> normals();
         barray_range<MLoopUV> uv();
         barray_range<MLoopCol> colors();
+#if BLENDER_VERSION >= 304
+        barray_range<int> material_indices();
+#endif
         MLoopUV* GetUV(const int index) const;
         inline uint32_t GetNumUVs() const;
 
@@ -139,10 +142,13 @@ namespace blender
         barray_range<BMFace*> polygons();
         barray_range<BMVert*> vertices();
         barray_range<BMTriangle> triangles();
-        int uv_data_offset() const;
+        int uv_data_offset(int index) const;
+        inline uint32_t GetNumUVs() const;
 
         MLoopUV* GetUV(const int index) const;
     };
+
+    uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }
 
     //----------------------------------------------------------------------------------------------------------------------
     

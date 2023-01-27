@@ -5,8 +5,8 @@ import atexit
 
 from .unity_mesh_sync_installation import *
 from . import MeshSyncClientBlender as ms
-from bpy.types import AddonPreferences
-from bpy.props import StringProperty, IntProperty, BoolProperty
+from bpy.types import AddonPreferences, PropertyGroup
+from bpy.props import StringProperty, IntProperty, BoolProperty, IntVectorProperty, CollectionProperty, PointerProperty
 from threading import Thread
 from time import sleep
 

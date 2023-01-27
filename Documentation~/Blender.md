@@ -16,6 +16,7 @@ as can be seen above, where most of the options are self-explanatory.
 | Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
 | **Export Cache** | Export into an *.sc* file. Please refer to the SceneCache feature in [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest).|
 | **Material sync mode**    | How to handle materials. Refer to [Material sync mode](#Material-sync-mode) for more details.|
+| **Baking**                | Options to create baked material copies. Refer to [Material baking](#Material-baking) for more details.|
 
 |**Paths** |**Description**|
 |:---       |:---|
@@ -94,3 +95,43 @@ The following is a list of supported nodes and how they are handled.
 | Normal Map | Normal strength is exported. The normal map needs to be in tangent space. |
 | Image Texture | Images are exported but not the texture coordinates. Unity uses UV0. |
 | Displacement | Height and scale is exported. |
+
+
+## Material baking
+
+The basic material sync mode only supports bsdf inputs that are textures or constant values.
+MeshSync has functionality to create baked material copies for each object to allow syncing of procedural materials.
+
+|**Option** |**Description** |
+|:---     |:---|
+| Objects to bake | Bakes all objects in the scene or only selected objects (including hidden objects). |
+| Material channels to bake | Choose which channels should be baked. |
+| Generate UVs | *Off*: Uses UVs on the object. <br /> *If needed*: Generates UVs if there are no usable UVs on the object. <br /> *Always*: Always generates UVs for baking, even if there are existing UVs. <br /> <br /> **NOTE**: These settings can be destructive to existing UVs. |
+| Apply modifiers | Applies all modifiers on the object to ensure the UV coordinates are correct for baking. <br /> <br /> **NOTE**: This is not reversible. Please backup your file before using this option. |
+| Run modal | Redraws the blender UI periodically so blender does not freeze. |
+| Bake to individual materials | Performs the bake. |
+| Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |
+| Baked texture path | Folder to save baked textures in. |
+
+### 
+
+|**Texture dimension options** |**Description** |
+|:---     |:---|
+| Pixels | Size of the baked texture in pixels. <br /><br /> *Baked texture size*: Size of the baked texture in pixels. |
+| Texel density | Set texture dimensions based on a texel density. <br /><br /> *Texels / World Unit*: How many pixels the baked texture should have relative to the area of the polygon in blender's world space. The average of each polygon's area in the UV map vs its world space area is used to calculate this. <br /> *Max texture size*: Limits the texture dimensions so they don't get too large for higher texel densities. <br /> *Power of 2*: Increases the texture size to the next power of 2 (within the limits of the max texture size setting). |
+
+MeshSync will attempt to find a BSDF node connected to the *Material Output* node and bake the input of the BSDF. If there is no BSDF connected, MeshSync will bake the data coming into the *Material Output* that can be baked (Only color, normals and roughness are supported). 
+Shader nodes that take other shader nodes as input (Mix and Add Shader) cannot be baked and will use the fallback mode.
+
+If the object has no UVs, MeshSync will use blender's *Smart UV Project* operator to generate UVs.
+
+The blender console will show progress during the bake.
+To cancel baking, the user can press Escape. Cancellation is not immediate and only works when running modal.
+
+## Material baking troubleshooting
+|**Problem** |**Possible cause** |
+|:---     |:---|
+| The baked maps are black | There are many possible causes. Is the object UV unwrapped? Baking will not work without valid UVs. Metallic materials do not bake well in blender. |
+| The baked maps do not match the original material | The material node tree does not use a BSDF as input to the *Material Output* node and the lower quality fallback bake mode had to be used. |
+| Geometry node instances are missing | To bake materials, all modifiers need to be applied. When geometry node modifiers are applied, instances are lost. Use a *Realize Instances* node to make the instances real geometry. |
+| Alpha channel is not baking | Baking alpha is currently not supported. |
