@@ -261,7 +261,7 @@ void msblenContext::extractLightData(const Object *src,
     stype = (data->mode & 1) ? ms::Light::ShadowType::Soft : ms::Light::ShadowType::None;
 }
 
-ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip, exportCache* cache)
+ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj, bool parent, bool tip)
 {
     if (!obj)
         return nullptr;
@@ -272,44 +272,12 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     
     auto handle_parent = [&]() {
         if (parent)
-            exportObject(state, paths, settings, obj->parent, parent, false, cache);
+            exportObject(state, paths, settings, obj->parent, parent, false);
     };
     auto handle_transform = [&]() {
         handle_parent();
         rec.dst = exportTransform(state, paths, settings, obj);
     };
-
-    if (!settings.BakeDuplicates && cache != nullptr && obj->data != nullptr) {
-        auto id = std::string(((ID*)obj->data)->name);
-        if (settings.BakeModifiers) {
-
-            Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
-            auto bobj = (Object*)bl::BlenderPyID(obj).evaluated_get(depsgraph);
-
-           id += msblenUtils::get_modifier_stack_values(obj);
-        }
-        
-        if (settings.BakeTransform) {
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-#if BLENDER_VERSION >= 304
-                    id += std::to_string(obj->object_to_world[i][j]);
-#else
-                    id += std::to_string(obj->obmat[i][j]);
-#endif
-                }
-            }
-        }
-
-        auto isCached = (*cache)[id].length() > 0;
-        if (isCached) {
-            handle_parent();
-            handle_transform();
-            rec.dst->reference = (*cache)[id];
-            return rec.dst;
-        }
-        (*cache)[id] = paths.get_path(obj);
-    }
 
     switch (obj->type) {
     case OB_ARMATURE:
@@ -1592,24 +1560,22 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
-    exportCache cache;
-
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        scene.each_objects([this, &cache](Object *obj) {
+        scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, true, &cache);
+                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, true);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
         for (std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, true, &cache);
+            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, true);
     }
 
 #if BLENDER_VERSION >= 300
@@ -1847,9 +1813,10 @@ void msblenContext::WaitAndKickAsyncExport()
         t.textures = m_texture_manager.getDirtyTextures();
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
-        t.geometries = m_entity_manager.getDirtyGeometries();
+        deduplicateGeometry(m_entity_manager.getDirtyGeometriesWithChecksum(), t.geometries, t.transforms);
+
         t.instanceInfos = m_instances_manager.getDirtyInstances();
-        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
+        deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
@@ -1896,6 +1863,51 @@ void msblenContext::WaitAndKickAsyncExport()
     };
 
     exporter->kick();
+}
+
+void msblenContext::deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry->checksumGeom();
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry->path;
+            geometries.push_back(geometry);
+        }
+    }
+}
+
+void msblenContext::deduplicateGeometry(
+    std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, 
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry.second;
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry.first;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry.first->path;
+            geometries.push_back(geometry.first);
+        }
+    }
 }
 
 /// Application Handler Events ///

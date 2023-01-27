@@ -24,7 +24,6 @@ struct BaseSyncSettings {
     bool make_double_sided = false;    
     bool BakeModifiers = false; 
     bool BakeTransform = false;
-    bool BakeDuplicates = false;
 
     bool flatten_hierarchy = false;
 

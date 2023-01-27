@@ -67,7 +67,6 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
             b.prop(scene, "meshsync_make_double_sided")
             b.prop(scene, "meshsync_bake_modifiers")
             b.prop(scene, "meshsync_bake_transform")
-            b.prop(scene, "meshsync_bake_duplicates")
         layout.prop(scene, "meshsync_sync_bones")
         layout.prop(scene, "meshsync_sync_blendshapes")
         #layout.prop(scene, "meshsync_sync_textures")

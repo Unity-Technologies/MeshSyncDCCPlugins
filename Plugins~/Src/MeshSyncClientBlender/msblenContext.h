@@ -44,8 +44,6 @@
 
 class msblenContext;
 
-using exportCache = std::unordered_map<std::string, std::string>;
-
 class msblenContext {
 public:
     msblenContext();
@@ -133,7 +131,7 @@ private:
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
 
-    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true, exportCache* cache = nullptr);
+    ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
     ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -166,6 +164,8 @@ private:
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
+    void deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    void deduplicateGeometry(std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
