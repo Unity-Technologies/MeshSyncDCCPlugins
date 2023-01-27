@@ -1574,7 +1574,7 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         });
     }
     else {
-        for (std::vector<Object*>::value_type obj : getNodes(scope))
+        for(std::vector<Object*>::value_type obj : getNodes(scope))
             exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
     }
 
