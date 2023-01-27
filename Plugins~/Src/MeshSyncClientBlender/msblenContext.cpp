@@ -279,7 +279,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
         rec.dst = exportTransform(state, paths, settings, obj);
     };
 
-    if (cache != nullptr && obj->data != nullptr) {
+    if (!settings.BakeDuplicates && cache != nullptr && obj->data != nullptr) {
         auto id = std::string(((ID*)obj->data)->name);
         if (settings.BakeModifiers) {
 

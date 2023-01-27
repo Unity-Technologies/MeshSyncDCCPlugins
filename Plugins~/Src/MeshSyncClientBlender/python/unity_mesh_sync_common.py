@@ -43,6 +43,7 @@ def msb_apply_scene_settings(self=None, context=None):
     ctx.make_double_sided = scene.meshsync_make_double_sided
     ctx.bake_modifiers = scene.meshsync_bake_modifiers
     ctx.bake_transform = scene.meshsync_bake_transform
+    ctx.bake_duplicates = scene.meshsync_bake_duplicates
     ctx.sync_bones = scene.meshsync_sync_bones
     ctx.sync_blendshapes = scene.meshsync_sync_blendshapes
     ctx.sync_textures = scene.meshsync_sync_textures
@@ -84,7 +85,6 @@ def msb_on_bake_transform_updated(self=None, context=None):
     if scene.meshsync_bake_transform:
         scene.meshsync_bake_modifiers = True
     return msb_on_scene_settings_updated(self, context)
-
 
 def msb_on_toggle_auto_sync(self=None, context=None):
     msb_apply_scene_settings()
@@ -131,6 +131,9 @@ def msb_initialize_properties():
                                                                      update=msb_on_bake_modifiers_updated)
     bpy.types.Scene.meshsync_bake_transform = bpy.props.BoolProperty(name="Bake Transform", default=False,
                                                                      update=msb_on_bake_transform_updated)
+    bpy.types.Scene.meshsync_bake_duplicates = bpy.props.BoolProperty(name="Bake Linked Duplicates", default=False, 
+        description = "Export each linked duplicate as a new copy")
+
     bpy.types.Scene.meshsync_sync_bones = bpy.props.BoolProperty(name="Sync Bones", default=True,
                                                                  update=msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_sync_blendshapes = bpy.props.BoolProperty(name="Sync Blend Shapes", default=True,

@@ -146,6 +146,9 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindProperty(bake_transform,
                 [](const self_t& self) { return self->getSettings().BakeTransform; },
                 [](self_t& self, bool v) { self->getSettings().BakeTransform = v; })
+            BindProperty(bake_duplicates,
+                [](const self_t& self){ return self->getSettings().BakeDuplicates;},
+                [](self_t& self, bool v){ self->getSettings().BakeDuplicates = v; })
             BindProperty(curves_as_mesh,
                 [](const self_t& self) { return self->getSettings().curves_as_mesh; },
                 [](self_t& self, bool v) { self->getSettings().curves_as_mesh = v; })
