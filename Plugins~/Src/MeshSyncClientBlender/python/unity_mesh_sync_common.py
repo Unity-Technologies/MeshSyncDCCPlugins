@@ -11,25 +11,6 @@ from .unity_mesh_sync_installation import *
 msb_context = ms.Context()
 msb_cache = ms.Cache()
 
-#invoked by C++ layer
-def msb_modifier_stack_values(objectName):
-    try:
-        mods = bpy.data.objects[objectName].modifiers
-        values = []
-        for mod in mods:
-            for prop in mod.bl_rna.properties.keys():
-                if prop == "name" or prop == "rna_type" or prop == "custom_profile":
-                    continue
-                value = getattr(mod, prop, True)
-
-                #if the value is a float, round to 8 decimal places
-                if isinstance(value, float):
-                    value = round(value, 5)
-                values.append(value)
-        return ''.join(map(str,values))
-    except Exception as e:
-        print (e)
-        return ""
 
 def msb_apply_scene_settings(self=None, context=None):
     ctx = msb_context
@@ -85,6 +66,7 @@ def msb_on_bake_transform_updated(self=None, context=None):
         scene.meshsync_bake_modifiers = True
     return msb_on_scene_settings_updated(self, context)
 
+
 def msb_on_toggle_auto_sync(self=None, context=None):
     msb_apply_scene_settings()
     if bpy.context.scene.meshsync_auto_sync:
@@ -130,7 +112,6 @@ def msb_initialize_properties():
                                                                      update=msb_on_bake_modifiers_updated)
     bpy.types.Scene.meshsync_bake_transform = bpy.props.BoolProperty(name="Bake Transform", default=False,
                                                                      update=msb_on_bake_transform_updated)
-
     bpy.types.Scene.meshsync_sync_bones = bpy.props.BoolProperty(name="Sync Bones", default=True,
                                                                  update=msb_on_scene_settings_updated)
     bpy.types.Scene.meshsync_sync_blendshapes = bpy.props.BoolProperty(name="Sync Blend Shapes", default=True,

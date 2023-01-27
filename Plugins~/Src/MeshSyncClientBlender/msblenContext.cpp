@@ -1568,14 +1568,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
-                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false, true);
+                exportObject(*m_entities_state, m_default_paths, m_settings, obj, false);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
         });
     }
     else {
         for (std::vector<Object*>::value_type obj : getNodes(scope))
-            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true, true);
+            exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
     }
 
 #if BLENDER_VERSION >= 300

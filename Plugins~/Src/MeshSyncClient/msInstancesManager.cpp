@@ -15,7 +15,6 @@ namespace ms {
         }
         return ret;
     }
-
     vector<InstanceInfoPtr> InstancesManager::getDirtyInstances()
     {
         vector<InstanceInfoPtr> ret;

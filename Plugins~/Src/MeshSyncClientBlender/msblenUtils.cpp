@@ -177,12 +177,6 @@ bPoseChannel* find_pose(Object *obj, const char *name)
     return nullptr;
 }
 
-std::string get_modifier_stack_values(const Object* obj)
-{
-    auto name = obj->id.name + 2;
-    return blender::callPythonMethod<std::string, const char*>("MeshSyncClientBlender.unity_mesh_sync_common", "msb_modifier_stack_values", name);
-}
-
 bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
