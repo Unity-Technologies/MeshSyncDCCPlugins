@@ -288,6 +288,18 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
 
            id += msblenUtils::get_modifier_stack_values(obj);
         }
+        
+        if (settings.BakeTransform) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+#if BLENDER_VERSION >= 304
+                    id += std::to_string(obj->object_to_world[i][j]);
+#else
+                    id += std::to_string(obj->obmat[i][j]);
+#endif
+                }
+            }
+        }
 
         auto isCached = (*cache)[id].length() > 0;
         if (isCached) {
