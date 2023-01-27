@@ -369,6 +369,36 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
             mod.node_group.links.new(link.from_socket, realize.inputs[0])
             mod.node_group.links.new(realize.outputs[0], link.to_socket)
 
+    def getModifierHash(self, obj):
+        '''
+        Generates a unique string based on the object's data and its modifiers
+        '''
+        try:
+            mods = obj.modifiers
+            values = [obj.data.name]
+            for mod in mods:
+                # Geo nodes might have different output for the same object data, so we cannot de-duplicate that:
+                if mod.type == 'NODES':
+                    return ""
+
+                # Ignore these, they won't be applied:
+                if mod.type in ['PARTICLE_SYSTEM', 'ARMATURE']:
+                    continue
+
+                for prop in mod.bl_rna.properties.keys():
+                    if prop == "name" or prop == "rna_type" or prop == "custom_profile":
+                        continue
+                    value = getattr(mod, prop, True)
+
+                    # if the value is a float, round to 8 decimal places
+                    if isinstance(value, float):
+                        value = round(value, 5)
+                    values.append(value)
+            return ''.join(map(str, values))
+        except Exception as e:
+            print(e)
+            return ""
+
     def preBakeObject(self, obj):
         '''
         Counts how many textures need to be baked so progress can be calculated.
@@ -389,22 +419,25 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
         if len(obj.modifiers) > 0:
             bakeSettings = context.scene.meshsync_bake_settings
             if bakeSettings.apply_modifiers:
-                # Can't apply modifiers with shared data:
-                bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
-                for mod in obj.modifiers[:]:
+                modifierInfo = self.getModifierHash(obj)
+                if len(modifierInfo) > 0 and modifierInfo in self.modifierDeDuplicationInfo:
+                    msb_log(f"Object's data: '{obj.name}' was already used by another object with the same modifier stack. It will be reused.", LogLevel.VERBOSE)
+                    obj.data = self.modifierDeDuplicationInfo[modifierInfo]
+                else:
+                    # Can't apply modifiers with shared data:
+                    bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', obdata=True)
+                    for mod in obj.modifiers[:]:
+                        if mod.type in ['PARTICLE_SYSTEM', 'ARMATURE']:
+                            continue
 
-                    if mod.type == 'PARTICLE_SYSTEM':
-                        continue
-                        
-                    if mod.type == 'ARMATURE':
-                        continue
-                        
-                    if bakeSettings.realize_instances and mod.type == "NODES":
-                        self.addRealizeInstances(mod)
-                    try:
-                        bpy.ops.object.modifier_apply(modifier=mod.name)
-                    except Exception as e:
-                        print(f"Error applying modifier: {e}")
+                        if bakeSettings.realize_instances and mod.type == "NODES":
+                            self.addRealizeInstances(mod)
+                        try:
+                            bpy.ops.object.modifier_apply(modifier=mod.name)
+                        except Exception as e:
+                            print(f"Error applying modifier: {e}")
+
+                    self.modifierDeDuplicationInfo[modifierInfo] = obj.data
             else:
                 msb_log(
                     f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.",
@@ -670,6 +703,10 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
 
         self.maxBakeProgress = 0
         self.currentBakeProgress = 0
+
+        # Keeps track of applied modifiers to re-use the object
+        # data instead of applying them multiple times and generating unique objects:
+        self.modifierDeDuplicationInfo = {}
 
         bakeSettings.bake_progress = 0.001
 
