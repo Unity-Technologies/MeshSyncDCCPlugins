@@ -1816,6 +1816,7 @@ void msblenContext::WaitAndKickAsyncExport()
         deduplicateGeometry(m_entity_manager.getDirtyGeometriesWithChecksum(), t.geometries, t.transforms);
 
         t.instanceInfos = m_instances_manager.getDirtyInstances();
+        t.instanceMeshes.clear();
         deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
