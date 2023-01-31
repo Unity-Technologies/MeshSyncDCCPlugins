@@ -140,6 +140,9 @@ class MESHSYNC_BakeSettings(bpy.types.PropertyGroup):
     apply_modifiers: bpy.props.BoolProperty(name="Apply modifiers",
                                             description="In order to bake and get correct UVs, all modifiers need to be applied. WARNING: This will apply and remove existing modifiers on the object!",
                                             default=True)
+    deduplication_enabled: bpy.props.BoolProperty(name="Deduplicate",
+                                              description="Share meshes across objects if the object data and their modifiers are the same. This might not work for all modifiers.",
+                                              default=True)
     realize_instances: bpy.props.BoolProperty(name="Realize instances",
                                             description = "Realize geometry node instances to include them in the bake", default = True)
     run_modal: bpy.props.BoolProperty(name="Run Modal",
@@ -198,6 +201,7 @@ class MESHSYNC_PT_Baking(MESHSYNC_PT, bpy.types.Panel):
         layout.prop(bakeSettings, "generate_uvs", expand=True)
         layout.prop(bakeSettings, "apply_modifiers")
         if bakeSettings.apply_modifiers:
+            layout.prop(bakeSettings, "deduplication_enabled")
             layout.prop(bakeSettings, "realize_instances")
         layout.prop(bakeSettings, "run_modal")
 
@@ -437,7 +441,8 @@ class MESHSYNC_OT_Bake(bpy.types.Operator):
                         except Exception as e:
                             print(f"Error applying modifier: {e}")
 
-                    self.modifierDeDuplicationInfo[modifierInfo] = obj.data
+                    if bakeSettings.deduplication_enabled:
+                        self.modifierDeDuplicationInfo[modifierInfo] = obj.data
             else:
                 msb_log(
                     f"WARNING: Object '{obj.name}' has modifiers but the option to apply modifiers is disabled. The baked material will probably not be correct.",
