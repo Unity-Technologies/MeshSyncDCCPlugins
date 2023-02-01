@@ -217,6 +217,20 @@ std::vector<TransformPtr> EntityManager::getDirtyTransforms()
     return ret;
 }
 
+std::vector<std::pair<TransformPtr, uint64_t>> EntityManager::getDirtyGeometriesWithChecksum() {
+
+    waitTasks();
+
+    std::vector< std::pair<TransformPtr, uint64_t>> ret;
+    for (auto& p : m_records) {
+        EntityManagerRecord& r = p.second;
+        if (r.dirty_geom) {
+            ret.push_back((std::pair(r.entity, r.checksum_geom)));
+        }
+    }
+    return ret;
+}
+
 std::vector<TransformPtr> EntityManager::getDirtyGeometries()
 {
     waitTasks();

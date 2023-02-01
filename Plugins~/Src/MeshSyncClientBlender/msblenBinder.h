@@ -225,4 +225,20 @@ namespace blender
         void remove(Mesh *v);
     };
 
+    template<typename R, typename A1>
+    R callPythonMethod(const char* moduleName, const char* methodName, const A1& param1) {
+        py::gil_scoped_acquire acquire;
+
+        try {
+            auto module = py::module::import(moduleName);
+            auto method = module.attr(methodName);
+            auto ret = method(param1);
+            return ret.cast<R>();
+        }
+        catch (...) {
+        }
+
+        py::gil_scoped_release release;
+    }
+
 } // namespace blender

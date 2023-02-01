@@ -1813,9 +1813,11 @@ void msblenContext::WaitAndKickAsyncExport()
         t.textures = m_texture_manager.getDirtyTextures();
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
-        t.geometries = m_entity_manager.getDirtyGeometries();
+        deduplicateGeometry(m_entity_manager.getDirtyGeometriesWithChecksum(), t.geometries, t.transforms);
+
         t.instanceInfos = m_instances_manager.getDirtyInstances();
-        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
+        t.instanceMeshes.clear();
+        deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
@@ -1862,6 +1864,51 @@ void msblenContext::WaitAndKickAsyncExport()
     };
 
     exporter->kick();
+}
+
+void msblenContext::deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry->checksumGeom();
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry->path;
+            geometries.push_back(geometry);
+        }
+    }
+}
+
+void msblenContext::deduplicateGeometry(
+    std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, 
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry.second;
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry.first;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry.first->path;
+            geometries.push_back(geometry.first);
+        }
+    }
 }
 
 /// Application Handler Events ///

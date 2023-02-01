@@ -80,7 +80,7 @@ namespace blender {
         std::function<void(Record&)> obj_handler,
         std::function<void(Record&)> matrix_handler) {
 
-        std::unordered_map<unsigned int, Record> records_by_session_id;
+        std::unordered_map<std::string, Record> records_by_session_id;
         std::unordered_map<std::string, Record> records_by_name;
 
         // Collect object names in the file
@@ -110,12 +110,13 @@ namespace blender {
                 //Some objects, i.e. lights, do not use a session uuid.
                 bool useName = id->session_uuid == 0;
 
-                auto& rec = useName? records_by_name[id->name + 2] : records_by_session_id[id->session_uuid];
+                // An object might be sharing data with other objects, need to use the object name in keys
+                auto& rec = useName? records_by_name[std::string(id->name + 2) + obj->id.name] : records_by_session_id[std::to_string(id->session_uuid) + obj->id.name];
 
                 if (!rec.handled_object)
                 {
                     rec.handled_object = true;
-                    rec.name = id->name + 2;
+                    rec.name = std::string(id->name + 2) + std::string(obj->id.name);
                     rec.obj = obj;
                     rec.parent = parent;
                     
