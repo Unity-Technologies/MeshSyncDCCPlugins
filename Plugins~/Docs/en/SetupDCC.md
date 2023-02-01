@@ -40,7 +40,7 @@ Based on the version of [MotionBuilder](https://www.autodesk.com/products/motion
 
 > On Linux, no setup is necessary if MotionBuilder is installed in the default location.
 
-## Modo
+## Modo (No longer supported)
 
 1. Get [Modo Developer SDK](https://www.foundry.com/products/modo/download) and extract.
 1. Add `MODO_SDK` environment variable to point to the path of the SDK.

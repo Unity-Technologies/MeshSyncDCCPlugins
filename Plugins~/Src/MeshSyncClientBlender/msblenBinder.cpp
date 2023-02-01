@@ -375,7 +375,12 @@ bool blender::BObject::is_selected() const
 
 Mesh* BObject::to_mesh() const
 {
+#if BLENDER_VERSION >= 303
+    // In blender 3.3 the pointer to interpret the bool moves by 8 instead of 1 for some reason so this needs to be a type of that size:
+    return call<Object, Mesh*, bool*, Depsgraph*>(g_context, m_ptr, BObject_to_mesh, nullptr, nullptr);
+#else
     return call<Object, Mesh*, bool, Depsgraph*>(g_context, m_ptr, BObject_to_mesh, false, nullptr);
+#endif
 }
 
 void BObject::to_mesh_clear()
@@ -400,7 +405,11 @@ blist_range<bDeformGroup> BObject::deform_groups()
 
 barray_range<MLoop> BMesh::indices()
 {
+#if BLENDER_VERSION >= 304
+    return{ (MLoop*)CustomData_get(m_ptr->ldata, CD_MLOOP), (size_t)m_ptr->totloop };
+#else
     return { m_ptr->mloop, (size_t)m_ptr->totloop };
+#endif
 }
 barray_range<MEdge> BMesh::edges()
 {
@@ -408,12 +417,20 @@ barray_range<MEdge> BMesh::edges()
 }
 barray_range<MPoly> BMesh::polygons()
 {
+#if BLENDER_VERSION >= 304
+    return { (MPoly*)CustomData_get(m_ptr->pdata, CD_MPOLY), (size_t)m_ptr->totpoly };
+#else
     return { m_ptr->mpoly, (size_t)m_ptr->totpoly };
+#endif
 }
 
 barray_range<MVert> BMesh::vertices()
 {
+#if BLENDER_VERSION >= 304
+    return { (MVert*)CustomData_get(m_ptr->vdata, CD_MVERT),(size_t) m_ptr->totvert};
+#else
     return { m_ptr->mvert, (size_t)m_ptr->totvert };
+#endif
 }
 barray_range<mu::float3> BMesh::normals()
 {
@@ -424,6 +441,17 @@ barray_range<mu::float3> BMesh::normals()
     }
     return { nullptr, (size_t)0 };
 }
+
+#if BLENDER_VERSION >= 304
+barray_range<int> BMesh::material_indices()
+{
+    auto layer = (int*)CustomData_get_layer_named(&m_ptr->pdata, CD_PROP_INT32, "material_index");
+    if (layer)
+        return { layer, (size_t)m_ptr->totpoly };
+
+    return { nullptr, (size_t)0 };
+}
+#endif
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -502,9 +530,15 @@ barray_range<BMTriangle> BEditMesh::triangles()
     return barray_range<BMTriangle> { m_ptr->looptris, (size_t)m_ptr->tottri };
 }
 
-int BEditMesh::uv_data_offset() const
+int BEditMesh::uv_data_offset(int index) const
 {
-    return CustomData_get_offset(m_ptr->bm->ldata, CD_MLOOPUV);
+    int layer_index = CustomData_get_layer_index_n(&m_ptr->bm->ldata, CD_MLOOPUV, index);
+    if (layer_index == -1) {
+        return NULL;
+    }
+
+    auto layer = m_ptr->bm->ldata.layers[layer_index];
+    return layer.offset;
 }
 
 MLoopUV* BEditMesh::GetUV(const int index) const {
@@ -630,15 +664,40 @@ std::string abspath(const std::string& path)
     }
 }
 
+std::string getBlenderVersion()
+{
+    try {
+        auto global = py::dict();
+        auto local = py::dict();
+        py::eval<py::eval_mode::eval_statements>(
+            "import bpy\n"
+            "ret = bpy.app.version_string"
+            , global, local);
+        return (py::str)local["ret"];
+    }
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
+        return "";
+    }
+}
+
+/**
+ * Calls a python method that takes no arguments.
+ */
 void callPythonMethod(const char* name) {
     py::gil_scoped_acquire acquire;
 
     try {
-        auto module = py::module::import("unity_mesh_sync");
-        auto method = module.attr(name);
-        method();
+        auto statement = Format("import MeshSyncClientBlender\n" 
+            "from MeshSyncClientBlender.unity_mesh_sync_common import *\n"
+            "try: %s()\n"
+            "except Exception as e: print(e)", name);
+        
+        py::eval<py::eval_mode::eval_statements>(
+            statement.c_str());
     }
-    catch (...) {
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
     }
 
     py::gil_scoped_release release;

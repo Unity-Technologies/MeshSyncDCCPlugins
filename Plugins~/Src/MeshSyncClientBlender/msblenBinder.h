@@ -15,6 +15,7 @@ namespace blender
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
     std::string abspath(const std::string& path);
     void callPythonMethod(const char* name);
+    std::string getBlenderVersion();
 
     struct ListHeader { ListHeader *next, *prev; };
 
@@ -111,6 +112,9 @@ namespace blender
         barray_range<mu::float3> normals();
         barray_range<MLoopUV> uv();
         barray_range<MLoopCol> colors();
+#if BLENDER_VERSION >= 304
+        barray_range<int> material_indices();
+#endif
         MLoopUV* GetUV(const int index) const;
         inline uint32_t GetNumUVs() const;
 
@@ -138,10 +142,13 @@ namespace blender
         barray_range<BMFace*> polygons();
         barray_range<BMVert*> vertices();
         barray_range<BMTriangle> triangles();
-        int uv_data_offset() const;
+        int uv_data_offset(int index) const;
+        inline uint32_t GetNumUVs() const;
 
         MLoopUV* GetUV(const int index) const;
     };
+
+    uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }
 
     //----------------------------------------------------------------------------------------------------------------------
     
@@ -217,5 +224,21 @@ namespace blender
         bool objects_is_updated();
         void remove(Mesh *v);
     };
+
+    template<typename R, typename A1>
+    R callPythonMethod(const char* moduleName, const char* methodName, const A1& param1) {
+        py::gil_scoped_acquire acquire;
+
+        try {
+            auto module = py::module::import(moduleName);
+            auto method = module.attr(methodName);
+            auto ret = method(param1);
+            return ret.cast<R>();
+        }
+        catch (...) {
+        }
+
+        py::gil_scoped_release release;
+    }
 
 } // namespace blender

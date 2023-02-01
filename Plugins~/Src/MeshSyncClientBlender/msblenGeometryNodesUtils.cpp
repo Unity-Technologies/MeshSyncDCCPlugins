@@ -8,6 +8,8 @@
 #include <msblenUtils.h>
 #include <BLI_listbase.h>
 
+#include "msblenEntityHandler.h"
+
 
 using namespace std;
 using namespace mu;
@@ -33,6 +35,8 @@ namespace blender {
             to_mat4x4(rotation) *
             to_mat4x4(rotation180) *
             scale44(scale_z);
+        
+        m_camera_light_correction = to_mat4x4(rotate_x(90 * DegToRad));
     }
 
     /// <summary>
@@ -40,14 +44,29 @@ namespace blender {
     /// </summary>
     /// <param name="blenderMatrix"></param>
     /// <returns></returns>
-    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(const float4x4& blenderMatrix) {            
+    float4x4 GeometryNodesUtils::blenderToUnityWorldMatrix(ms::TransformPtr transform, const float4x4& blenderMatrix) const
+    {
+        float4x4 result = blenderMatrix;
 
-        return 
-            m_blender_to_unity_world *
-            blenderMatrix *
+        auto type = transform->getType();
+        auto is_camera = type == ms::Entity::Type::Camera;
+        auto is_light = type == ms::Entity::Type::Light;
+        msblenEntityHandler::applyCorrectionIfNeeded(result, is_camera, is_light);
+
+        result = m_blender_to_unity_world *
+            result *
             m_blender_to_unity_local;
-    }
 
+        // Apply inverse of the correction because the original of the instanced light/camera
+        // would have the correction applied and without this its inverse would not match
+        // the inverse we use on blender's side:
+        if (is_camera || is_light) {
+            result = m_camera_light_correction * result;
+        }
+        
+        return result;
+    }
+        
     void GeometryNodesUtils::setInstancesDirty(bool dirty)
     {
         m_instances_dirty = dirty;
@@ -57,65 +76,75 @@ namespace blender {
         return m_instances_dirty;
     }
 
-    void GeometryNodesUtils::each_instanced_object(std::function<void(Object*, Object*, SharedVector<float4x4>, bool)> handler) {
+    void GeometryNodesUtils::each_instanced_object(
+        std::function<void(Record&)> obj_handler,
+        std::function<void(Record&)> matrix_handler) {
 
-        std::unordered_map<unsigned int, Record> records;
-        std::unordered_map<std::string, Record*> records_by_name;
+        std::unordered_map<std::string, Record> records_by_session_id;
+        std::unordered_map<std::string, Record> records_by_name;
+
+        // Collect object names in the file
+        auto ctx = blender::BlenderPyContext::get();
+        auto objects = ctx.data()->objects;
+        std::unordered_set<std::string> file_objects;
+
+        auto get_path = [](Object* obj) {
+            auto data = (ID*)obj->data;
+            return string(data->name) + string(obj->id.name);
+        };
+
+        LISTBASE_FOREACH(Object*, obj, &objects) {
+
+            if (obj->data == nullptr)
+                continue;
+
+            auto path = get_path(obj);
+
+            file_objects.insert(path);
+        }
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
             {
-                // Critical path, must do as few things as possible
                 auto id = (ID*)obj->data;
-                auto& rec = records[id->session_uuid];
-                if (!rec.updated)
-                {
-                    rec.parent = parent;
-                    std::memcpy(&rec.object_copy, obj, sizeof(Object));
-                    rec.updated = true;
-    
-                    records_by_name[obj->id.name] = &rec;
-                }
 
+                //Some objects, i.e. lights, do not use a session uuid.
+                bool useName = id->session_uuid == 0;
+
+                // An object might be sharing data with other objects, need to use the object name in keys
+                auto& rec = useName? records_by_name[std::string(id->name + 2) + obj->id.name] : records_by_session_id[std::to_string(id->session_uuid) + obj->id.name];
+
+                if (!rec.handled_object)
+                {
+                    rec.handled_object = true;
+                    rec.name = std::string(id->name + 2) + std::string(obj->id.name);
+                    rec.obj = obj;
+                    rec.parent = parent;
+                    
+                    rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
+
+                    rec.id = rec.name +"_" + std::to_string(id->session_uuid);
+                    obj_handler(rec);
+                }
+                
                 rec.matrices.push_back(matrix);
             });
 
-            // Look for objects in the file
-            auto ctx = blender::BlenderPyContext::get();
-            auto objects = ctx.data()->objects;
-            LISTBASE_FOREACH(Object*, obj, &objects) {
 
-                if (obj->data == nullptr)
+            // Export transforms
+            for (auto& rec : records_by_session_id) {
+                if (rec.second.handled_matrices)
                     continue;
 
-                // Check if there is record with the same object name
-                auto rec = records_by_name.find(obj->id.name);
-                if (rec == records_by_name.end())
-                    continue;
-
-                // Sometimes an object in the data might come up more than once
-                if (rec->second->handled)
-                    continue;
-
-                // Check if the data names also match
-                auto recDataId = (ID*)rec->second->object_copy.data;
-                auto sceneDataId = (ID*)obj->data;
-
-                if (strcmp(sceneDataId->name + 2, recDataId->name + 2) != 0)
-                    continue;
-
-                handler(obj, rec->second->parent, std::move(rec->second->matrices), true);
-                rec->second->handled = true;
-
+                rec.second.handled_matrices = true;
+                matrix_handler(rec.second);
             }
 
-            // Export objects that are not in the file
-            for (auto& rec : records) {
-                if (rec.second.handled)
+            for (auto& rec : records_by_name) {
+                if (rec.second.handled_matrices)
                     continue;
 
-
-                handler(&rec.second.object_copy, rec.second.parent, std::move(rec.second.matrices), false);
-                rec.second.handled = true;
+                rec.second.handled_matrices = true;
+                matrix_handler(rec.second);
             }
 
     }
@@ -152,7 +181,8 @@ namespace blender {
 
             auto object = instance.object();
 
-            if (object->type != OB_MESH) {
+            // Don't instance empties, they have no data we can use to get a session id:
+            if (object->type == OB_EMPTY) {
                 continue;
             }
 

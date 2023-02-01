@@ -1,7 +1,8 @@
 ![demo](Documentation~/images/Demo.gif)
 
-# Other Languages
-- [日本語](Readme_JP.md)
+# Latest official docs
+- [English](https://docs.unity3d.com/Packages/com.unity.meshsync.dcc-plugins@latest)
+- [日本語](https://docs.unity3d.com/ja/Packages/com.unity.meshsync.dcc-plugins@latest)
 
 # MeshSync DCC Plugins
 
@@ -30,7 +31,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
 | Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
 | Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
-
+| Bidirectional Sync  |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
 
 ### Caveats
 
@@ -39,7 +40,7 @@ This allows devs to immediately see how things will look in-game while modelling
   Unity will treat the mesh as though every axis has a negative value.
   Certain DCC tools may have *Bake Transform* option which can sync the mesh in this case, but it will lose any 
   deformer information.
-
+  
 
 ## Supported DCC Tools
 
@@ -68,9 +69,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 3.0        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Modo 12            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Modo 13            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Metasequoia 4.x    | :heavy_check_mark: | :heavy_check_mark: |                    |
+| Blender 3.3        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 Notes:
 * :white_check_mark: : Supported
@@ -83,7 +82,16 @@ Notes:
 
 [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest)'s Preferences page
 provides easy installation on several DCC tools.  
-Alternatively, [Manual Installation](Documentation~/en/Installation.md) is also available.
+Alternatively, [Manual Installation](Documentation~/Installation.md) is also available.
+
+## Usage in DCC Tools
+
+1. [Maya](Documentation~/Maya.md)
+2. [3ds Max](Documentation~/3dsMax.md)
+3. [MotionBuilder](Documentation~/MotionBuilder.md)
+4. [Blender](Documentation~/Blender.md)
+5. [Modo](Documentation~/Modo.md)
+6. [Metasequoia](Documentation~/Metasequoia.md)
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -254,4 +262,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Fri Jul 22 02:43:28 UTC 2022*
+*Auto-generated on Thu Nov 17 02:14:56 UTC 2022*

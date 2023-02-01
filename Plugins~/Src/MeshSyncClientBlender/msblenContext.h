@@ -29,18 +29,23 @@
 
 #include "msblenCurveHandler.h"
 
+#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
+
 #if BLENDER_VERSION >= 300
 #include <msblenGeometryNodeUtils.h>
 #endif
 
+#include "msblenMaterialsExportHelper.h"
+
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
+
+#include <MeshSync/Utility/msIdUtility.h>
 
 class msblenContext;
 
 class msblenContext {
 public:
-
     msblenContext();
     ~msblenContext();
 
@@ -54,11 +59,14 @@ public:
 
     void logInfo(const char *format, ...);
     bool isServerAvailable();
+    bool isEditorServerAvailable();
     const std::string& getErrorMessage();
 
     void wait();
     void clear();
     bool prepare();
+
+    void resetMaterials();
 
     bool sendMaterials(bool dirty_all);
     bool sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_all);
@@ -72,6 +80,10 @@ public:
     void onDepsgraphUpdatedPost(Depsgraph* graph);
 
     void requestLiveEditMessage();
+    
+    bool sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input = nullptr);
+    string& getEditorCommandReply();
+
 private:
     // todo
     struct NodeRecord {
@@ -113,13 +125,11 @@ private:
 
     static std::vector<Object*> getNodes(MeshSyncClient::ObjectScope scope);
 
-    int exportTexture(const std::string & path, ms::TextureType type);
     int getMaterialID(Material *m);
     ms::MaterialPtr CreateDefaultMaterial(const uint32_t matIndex);
     void RegisterSceneMaterials();
     void RegisterObjectMaterials(const std::vector<Object*> objects);
     void RegisterMaterial(Material* mat, const uint32_t matIndex);
-
 
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -154,17 +164,18 @@ private:
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
+    void deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    void deduplicateGeometry(std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
-    void exportInstancesFromFile(Object* object, Object* parent, SharedVector<mu::float4x4>, mu::float4x4& inverse);
-    void exportInstancesFromTree(Object* object, Object* parent, SharedVector<mu::float4x4>);
+    void exportInstances(ms::TransformPtr transform, ms::TransformPtr parent, SharedVector<mu::float4x4>, mu::float4x4& inverse, msblenContextPathProvider& pathProvider);
 
     ms::InstanceInfoPtr exportInstanceInfo(
         msblenContextState& state,
         msblenContextPathProvider& paths,
-        Object* instancedObject,
-        Object* parent,
+        ms::TransformPtr transform,
+        ms::TransformPtr parent,
         SharedVector<mu::float4x4> mat);
 
 #endif
@@ -199,11 +210,18 @@ private:
 
     msblenCurveHandler m_curves_handler;
 
-    bool m_server_requested_sync;
+    bool m_server_requested_sync = false;
+    bool m_server_requested_python_callback = false;
+
+    string m_editor_command_reply;
+
+    ms::IdUtility id_utility;
 
 #if BLENDER_VERSION >= 300
     blender::GeometryNodesUtils m_geometryNodeUtils;
 #endif
+
+    blender::msblenMaterialsExportHelper m_materialsHelper;
 
     // animation export
     std::map<std::string, AnimationRecord> m_anim_records;

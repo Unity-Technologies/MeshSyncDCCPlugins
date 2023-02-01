@@ -47,3 +47,26 @@ int CustomData_number_of_layers(const CustomData *data, int type)
 
     return number;
 }
+
+void* CustomData_get_layer_named(const CustomData* data, const int type, const char* name)
+{
+    int layer_index = CustomData_get_named_layer_index(data, type, name);
+    if (layer_index == -1) {
+        return nullptr;
+    }
+
+    return data->layers[layer_index].data;
+}
+
+int CustomData_get_named_layer_index(const CustomData* data, const int type, const char* name)
+{
+    for (int i = 0; i < data->totlayer; i++) {
+        if (data->layers[i].type == type) {
+            if (STREQ(data->layers[i].name, name)) {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}

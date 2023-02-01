@@ -20,13 +20,23 @@ static inline mu::float4x4 camera_correction(const mu::float4x4& v)
     } };
 }
 
+void msblenEntityHandler::applyCorrectionIfNeeded(const Object* obj, mu::float4x4& matrix)
+{
+    applyCorrectionIfNeeded(matrix, is_camera(obj), is_light(obj));
+}
+
+void msblenEntityHandler::applyCorrectionIfNeeded(mu::float4x4& matrix, bool is_camera, bool is_light) {
+
+    if (is_camera || is_light) {
+        // Cameras and lights point towards their negative z in blender, in Unity they point in positive Z, correct for this:
+        matrix = camera_correction(matrix);
+    }
+}
+
 mu::float4x4 msblenEntityHandler::getWorldMatrix(const Object* obj)
 {
     mu::float4x4 r = bl::BObject(obj).matrix_world();
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
+    applyCorrectionIfNeeded(obj, r);
     return r;
 }
 
@@ -49,10 +59,8 @@ mu::float4x4 msblenEntityHandler::getLocalMatrix(const Object* obj)
         }
     }
 
-    if (is_camera(obj) || is_light(obj)) {
-        // camera/light correction
-        r = camera_correction(r);
-    }
+    applyCorrectionIfNeeded(obj, r);
+
     return r;
 }
 

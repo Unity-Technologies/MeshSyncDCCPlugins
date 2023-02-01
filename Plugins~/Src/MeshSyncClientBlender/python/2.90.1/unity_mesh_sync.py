@@ -13,11 +13,9 @@ import bpy
 from bpy.app.handlers import persistent
 from . import MeshSyncClientBlender as ms
 from .unity_mesh_sync_common import *
-
-class MESHSYNC_PT:
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "Tool"
+from .unity_mesh_sync_preferences import *
+from .unity_mesh_sync_baking import *
+from .unity_mesh_sync_materials import *
 
 
 class MESHSYNC_PT_Main(MESHSYNC_PT, bpy.types.Panel):
@@ -36,8 +34,19 @@ class MESHSYNC_PT_Server(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-        layout.prop(scene, "meshsync_server_address")
-        layout.prop(scene, "meshsync_server_port")
+        layout.prop(scene, "meshsync_auto_config_server")
+
+        row = layout.row()
+        row.prop(scene, "meshsync_server_address")
+        row.enabled = not context.scene.meshsync_auto_config_server
+        
+        row = layout.row()
+        row.prop(scene, "meshsync_server_port")
+        row.enabled = not context.scene.meshsync_auto_config_server
+
+        row = layout.row()
+        row.prop(scene, "meshsync_editor_server_port")
+        row.enabled = not context.scene.meshsync_auto_config_server
 
 
 class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
@@ -62,6 +71,7 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         #layout.prop(scene, "meshsync_sync_textures")
         layout.prop(scene, "meshsync_sync_cameras")
         layout.prop(scene, "meshsync_sync_lights")
+        
         layout.separator()
         if MESHSYNC_OT_AutoSync._timer:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PAUSE")
@@ -104,6 +114,21 @@ class MESHSYNC_PT_Version(MESHSYNC_PT, bpy.types.Panel):
         layout = self.layout
         layout.label(text = msb_context.PLUGIN_VERSION)
 
+class MESHSYNC_PT_UnityProject(MESHSYNC_PT, bpy.types.Panel):
+    bl_label = "Unity Project"
+    bl_parent_id = "MESHSYNC_PT_Main"
+
+    initialized = False
+
+    def draw(self, context):
+        scene = bpy.context.scene
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+
+        layout.prop(addon_prefs, "project_path")
 
 class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     bl_idname = "meshsync.auto_sync"
@@ -125,6 +150,11 @@ class MESHSYNC_OT_AutoSync(bpy.types.Operator):
     def invoke(self, context, event):
         scene = bpy.context.scene
         if not MESHSYNC_OT_AutoSync._timer:
+
+            setup = msb_try_setup_scene_server(context)
+            if msb_error_messages_for_status(setup, context) == False:
+                return {'FINISHED'}
+
             scene.meshsync_auto_sync = True
             if not scene.meshsync_auto_sync:
                 # server not available
@@ -293,10 +323,14 @@ class MESHSYNC_OT_ExportCache(bpy.types.Operator):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-classes = (
+from .unity_mesh_sync_baking import MESHSYNC_PT_Baking
+
+classes = [
     MESHSYNC_PT_Main,
     MESHSYNC_PT_Server,
     MESHSYNC_PT_Scene,
+    MESHSYNC_PT_Materials,
+    MESHSYNC_PT_Baking,
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
@@ -304,18 +338,22 @@ classes = (
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
-)
+    MESHSYNC_OT_SendMaterials,
+    MESHSYNC_Preferences
+] + sharedClasses
 
 def register():
-    msb_initialize_properties()
     bpy.app.handlers.load_post.append(MESHSYNC_OT_AutoSync.load_handler)
     for c in classes:
         bpy.utils.register_class(c)
+    msb_initialize_properties()
+    bpy.app.handlers.load_post.append(msb_setBakingDefaults)
 
 def unregister():
     msb_context.Destroy()
     for c in classes:
         bpy.utils.unregister_class(c)
+    bpy.app.handlers.load_post.remove(msb_setBakingDefaults)
 
 def DestroyMeshSyncContext():
     msb_context.Destroy()

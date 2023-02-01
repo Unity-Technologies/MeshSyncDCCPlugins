@@ -51,6 +51,7 @@ public:
     std::vector<TransformPtr> getAllEntities();
     std::vector<TransformPtr> getDirtyTransforms();
     std::vector<TransformPtr> getDirtyGeometries();
+    std::vector<std::pair<TransformPtr, uint64_t>> getDirtyGeometriesWithChecksum();
     std::vector<Identifier>& getDeleted();
     void makeDirtyAll();
     void clearDirtyFlags();

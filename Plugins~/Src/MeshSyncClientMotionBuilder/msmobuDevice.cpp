@@ -141,7 +141,7 @@ void msmobuDevice::logError(const char *format, ...)
 bool msmobuDevice::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+    return m_sender.isServerAvailable();
 }
 const std::string& msmobuDevice::getErrorMessage()
 {

@@ -32,7 +32,7 @@ public:
     };
 
     std::set<const Object*> pending;
-    std::map<const void*, msblenContextState::ObjectRecord> records;
+    std::map<std::string, msblenContextState::ObjectRecord> records;
     std::map<Bone*, ms::TransformPtr> bones;
 
     ms::ITransformManager& manager;

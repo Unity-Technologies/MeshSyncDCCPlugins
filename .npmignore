@@ -24,8 +24,9 @@ build.bat.meta
 Plugins~/**
 MeshSyncDCCPlugins~/**
 
-# Don't ignore DCC plugin zip files
-!Editor/Plugins~/*.zip
+# Don't ignore DCC plugin zip and meta files
+!Editor/Plugins/*.zip
+!Editor/Plugins/*.zip.meta
 
 # Parts to auto generate files
 AutoGenerateParts/**

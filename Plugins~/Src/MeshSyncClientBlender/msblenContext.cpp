@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "msblenBinder.h"
 #include "msblenContext.h"
+
+#include <BLI_listbase.h>
+
 #include "msblenUtils.h"
 
 #include "MeshSync/SceneCache/msSceneCacheOutputSettings.h"
@@ -14,8 +17,6 @@
 
 #include "msblenEntityHandler.h"
 
-#include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
-
 #include "BlenderUtility.h" //ApplyMeshUV
 #include "MeshSyncClient/SettingsUtility.h"
 #include "MeshSyncClient/SceneCacheUtility.h"
@@ -26,6 +27,8 @@
 #include <sstream>
 #include "msblenBinder.h"
 #include "MeshUtils/muLog.h"
+
+#include "MeshSync/msProtocol.h"
 
 
 #ifdef mscDebug
@@ -84,6 +87,7 @@ void msblenContext::Destroy() {
 msblenContext::msblenContext()
 {
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
+    m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
 }
 
 msblenContext::~msblenContext()
@@ -121,11 +125,6 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
     }
 
     return ret;
-}
-
-int msblenContext::exportTexture(const std::string & path, ms::TextureType type)
-{
-    return m_texture_manager.addFile(path, type);
 }
 
 int msblenContext::getMaterialID(Material *m)
@@ -198,27 +197,11 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
     ret->id = m_material_ids.getID(mat);
     ret->index = matIndex;
 
-    ms::StandardMaterial& stdmat = ms::AsStandardMaterial(*ret);
-    bl::BMaterial bm(mat);
-    struct Material* color_src = mat;
-    stdmat.setColor(mu::float4{ color_src->r, color_src->g, color_src->b, 1.0f });
-
-    // todo: handle texture
-#if 0
-    if (m_settings.sync_textures) {
-        auto export_texture = [this](MTex *mtex, ms::TextureType type) -> int {
-            if (!mtex || !mtex->tex || !mtex->tex->ima)
-                return -1;
-            return exportTexture(bl::abspath(mtex->tex->ima->name), type);
-        };
-#if BLENDER_VERSION < 280
-        stdmat.setColorMap(export_texture(mat->mtex[0], ms::TextureType::Default));
-#endif
-    }
-#endif
-
-    m_material_manager.add(ret);
+    m_materialsHelper.m_settings = &m_settings;
+    m_materialsHelper.m_texture_manager = &m_texture_manager;
+    m_materialsHelper.exportMaterial(mat, ret);
     
+    m_material_manager.add(ret);
 }
 
 
@@ -287,7 +270,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     msblenContextState::ObjectRecord& rec = state.touchRecord(paths, obj);
     if (rec.dst)
         return rec.dst; // already exported
-
+    
     auto handle_parent = [&]() {
         if (parent)
             exportObject(state, paths, settings, obj->parent, parent, false);
@@ -371,10 +354,9 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     }
     default:
     {
-        if (get_instance_collection(obj) || (!tip && parent)) {
-            handle_parent();
-            rec.dst = exportTransform(state, paths, settings, obj);
-        }
+        // Export everything, even if it's an empty object:
+        handle_parent();
+        rec.dst = exportTransform(state, paths, settings, obj);
         break;
     }
     }
@@ -456,14 +438,13 @@ ms::TransformPtr msblenContext::exportReference(msblenContextState& state, msble
             dst = ms::Mesh::create();
             ms::Mesh& dst_mesh = static_cast<ms::Mesh&>(*dst);
             ms::Mesh& src_mesh = static_cast<ms::Mesh&>(*rec.dst);
-
+            
             (ms::Transform&)dst_mesh = (ms::Transform&)src_mesh;
             assign_base_params();
 
             auto do_merge = [this, dst, &dst_mesh, &src_mesh, &settings, &state]() {
                 dst_mesh.merge(src_mesh);
-                if (settings.ExportSceneCache)
-                    dst_mesh.detach();
+                dst_mesh.detach();
                 dst_mesh.refine_settings = src_mesh.refine_settings;
                 dst_mesh.refine_settings.local2world = dst_mesh.world_matrix;
                 dst_mesh.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_LOCAL2WORLD, true);
@@ -543,6 +524,22 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
     extractCameraData(src, dst.is_ortho, dst.ortho_size, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+
+    // We don't use frame_set(), so the scene camera is not updated.
+    // Look at the markers to figure out what the active camera should be:
+    auto scene = bl::BlenderPyContext::get().scene();
+
+    const Object* currentCamera = src;
+    for (TimeMarker* marker : bl::list_range((TimeMarker*)scene->markers.first)) {
+        if (marker->frame <= scene->r.cfra) {
+            currentCamera = marker->camera;
+        }
+    }
+
+    if (strcmp(currentCamera->id.name, src->id.name) != 0) {
+        dst.visibility.visible_in_render = false;
+    }
+
     state.manager.add(ret);
     return ret;
 }
@@ -610,11 +607,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         mid_table[mi] = getMaterialID(blenMesh->mat[mi]);
     
     // Make reverse lookup list:
-    std::vector<int> rev_mid_table(mid_table.size());
+    std::map<int, int> rev_mid_table;
     for (int i = 0; i < mid_table.size(); i++)
-    {
-        rev_mid_table[mid_table[i]] = i;
-    }
+        rev_mid_table.insert(make_pair(mid_table[i], i));
 
     int num_indices = mesh->indices.size();
     int num_polygons = num_indices / 3;
@@ -671,11 +666,20 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
         const int material_index = mesh->material_ids[pi];
         if (material_index != ms::InvalidID) {
-            if (material_index < rev_mid_table.size()) {
-                bmeshPolygons[pi].mat_nr = rev_mid_table[material_index];
+            auto it = rev_mid_table.find(material_index);
+            if (it != rev_mid_table.end()) {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = it->second;
+#else
+                bmeshPolygons[pi].mat_nr = it->second;
+#endif
             }
             else {
+#if BLENDER_VERSION >= 304
+                bmeshPolygons[pi].mat_nr_legacy = 0;
+#else
                 bmeshPolygons[pi].mat_nr = 0;
+#endif
             }
         }
 
@@ -710,6 +714,7 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     Mesh *data = nullptr;
     if (is_mesh(src))
         data = (Mesh*)src->data;
+    
     bool is_editing = false;
 
     if (settings.sync_meshes && data) {
@@ -733,17 +738,19 @@ ms::MeshPtr msblenContext::exportMesh(msblenContextState& state, msblenContextPa
     msblenEntityHandler::extractTransformData(settings, src, dst);
 
     if (settings.sync_meshes) {
-        const bool need_convert = 
-            (!is_editing && settings.BakeModifiers ) || !is_mesh(src);
+        const bool need_convert = settings.BakeModifiers || !is_mesh(src);
 
         if (need_convert) {
             if (settings.BakeModifiers ) {
                 Depsgraph* depsgraph = bl::BlenderPyContext::get().evaluated_depsgraph_get();
                 bobj = (Object*)bl::BlenderPyID(bobj).evaluated_get(depsgraph);
             }
-            if (Mesh *tmp = bobj.to_mesh()) {
+            if (Mesh* tmp = bobj.to_mesh()) {
                 data = tmp;
-                m_meshes_to_clear.push_back(src);
+                // Only clear meshes that aren't created from others:
+                if (src->id.orig_id == NULL) {
+                    m_meshes_to_clear.push_back(src);
+                }
             }
         }
 
@@ -855,9 +862,31 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     const size_t num_polygons = polygons.size();
     size_t num_vertices = vertices.size();
 
-    std::vector<int> mid_table(mesh.totcol);
-    for (int mi = 0; mi < mesh.totcol; ++mi)
-        mid_table[mi] = getMaterialID(mesh.mat[mi]);
+    int materialCount = std::max(bobj.m_ptr->totcol, (int)mesh.totcol);
+
+    std::vector<int> mid_table(materialCount);
+  
+    // Materials in blender can be on the object or on the mesh.
+    // If there is a material on the object's material slot,
+    // it overrides the mesh material.
+    for (int mi = 0; mi < materialCount; ++mi) {
+        Material* mat = nullptr;
+        if (mi < bobj.m_ptr->totcol) {
+            mat = bobj.m_ptr->mat[mi];
+        }
+
+        if (!mat) {
+            // If there is no material in the slot on the object and it does not
+            // exist on the mesh either, this is an empty material slot and should not be exported:
+            if (mesh.totcol <= mi)
+                continue;
+
+            mat = mesh.mat[mi];
+        }
+
+        mid_table[mi] = getMaterialID(mat);
+    }
+
     if (mid_table.empty())
         mid_table.push_back(ms::InvalidID);
 
@@ -867,6 +896,10 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         dst.points[vi] = (mu::float3&)vertices[vi].co;
     }
 
+#if BLENDER_VERSION >= 304
+    blender::barray_range<int> materialIndices = bmesh.material_indices();
+#endif
+
     // faces
     dst.indices.reserve(num_indices);
     dst.counts.resize_discard(num_polygons);
@@ -875,7 +908,15 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         int ii = 0;
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
+
+#if BLENDER_VERSION >= 304
+            int material_index = 0;
+            if (materialIndices.size() > pi) {
+                material_index = materialIndices[pi];
+            }
+#else
             const int material_index = polygon.mat_nr;
+#endif
             const int count = polygon.totloop;
             dst.counts[pi] = count;
             dst.material_ids[pi] = mid_table[material_index];
@@ -1087,6 +1128,7 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
 
+
             int material_index = 0;
             const int polygon_index = triangle[0]->f->head.index;
             if (polygon_index < polygons.size())
@@ -1112,28 +1154,43 @@ void msblenContext::doExtractEditMeshData(msblenContextState& state, BlenderSync
         size_t ii = 0;
         for (size_t ti = 0; ti < num_triangles; ++ti) {
             struct BMLoop*(& triangle)[3] = triangles[ti];
-            for (struct BMLoop* idx : triangle)
-                dst.normals[ii++] = -bl::BM_loop_calc_face_normal(*idx);
+            const int polygon_index = triangle[0]->f->head.index;
+
+            auto polygon = polygons[polygon_index];
+            auto smooth = polygon->head.hflag & BM_ELEM_SMOOTH;
+
+            for (struct BMLoop* idx : triangle) {
+                if (smooth) {
+                    auto index =  idx->v->head.index;
+                    auto vertext = vertices[index];
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(vertext->no));
+                }
+                else {
+                    dst.normals[ii++] = ms::ceilToDecimals(to_float3(idx->f->no));
+                }
+            }
         }
     }
 
-    // uv
     if (settings.sync_uvs) {
-        //const int offset = emesh.uv_data_offset();
-        //if (offset != -1) {
-        //    dst.m_uv[0].resize_discard(num_indices);
-        //    size_t ii = 0;
-        //    for (size_t ti = 0; ti < num_triangles; ++ti) {
-        //        auto& triangle = triangles[ti];
-        //        for (auto *idx : triangle)
-        //            dst.m_uv[0][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
-        //    }
-        //}
-        //
-        //
-        //
-        blender::BlenderUtility::ApplyBMeshUVToMesh(&bmesh, num_indices, &dst);
+        
+        const int num_uv_layers = std::min(emesh.GetNumUVs(), ms::MeshSyncConstants::MAX_UV);
 
+        for (auto layerIndex = 0; layerIndex < num_uv_layers; layerIndex++) {
+            
+            const int offset = emesh.uv_data_offset(layerIndex);
+
+            if (offset == -1)
+                continue;
+
+            dst.m_uv[layerIndex].resize_discard(num_indices);
+            size_t ii = 0;
+            for (size_t ti = 0; ti < num_triangles; ++ti) {
+                auto& triangle = triangles[ti];
+                for (auto* idx : triangle)
+                    dst.m_uv[layerIndex][ii++] = *reinterpret_cast<mu::float2*>((char*)idx->head.data + offset);
+            }
+        }
     }
 }
 
@@ -1332,7 +1389,38 @@ void msblenContext::logInfo(const char * format, ...)
 bool msblenContext::isServerAvailable()
 {
     m_sender.client_settings = m_settings.client_settings;
-    return m_sender.isServerAvaileble();
+
+    int server_session_id;
+    bool available = m_sender.isServerAvailable(&server_session_id);
+
+    // If server session changed, reset texture manager so textures are sent again:
+    if (m_sender.server_session_id != ms::InvalidID &&
+        server_session_id != m_sender.server_session_id) {
+        if (server_session_id != ms::InvalidID) {
+            resetMaterials();
+            // Ensure a full sync:
+            m_server_requested_sync = true;
+        }
+    }
+    m_sender.server_session_id = server_session_id;
+
+    return available;
+}
+
+bool msblenContext::isEditorServerAvailable()
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+
+    ms::Client client(settings);
+
+    auto success = client.isServerAvailable();
+    return success;
+}
+
+string& msblenContext::getEditorCommandReply() {
+    return m_editor_command_reply;
 }
 
 const std::string& msblenContext::getErrorMessage()
@@ -1353,6 +1441,12 @@ void msblenContext::clear()
     m_texture_manager.clear();
     m_material_manager.clear();
     m_entity_manager.clear();
+}
+
+void msblenContext::resetMaterials()
+{
+    m_texture_manager.clear();
+    m_material_manager.clear();
 }
 
 bool msblenContext::prepare()
@@ -1389,8 +1483,31 @@ void msblenContext::requestLiveEditMessage()
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
         }
+        else if (messageFromServer == ms::REQUEST_USER_SCRIPT_CALLBACK) {
+            m_server_requested_python_callback = true;
+        }
     };
     m_sender.requestLiveEditMessage();
+}
+
+
+bool msblenContext::sendEditorCommand(ms::EditorCommandMessage::CommandType type, const char* input)
+{
+    ms::ClientSettings settings = ms::ClientSettings();
+    settings.server = m_settings.client_settings.server;
+    settings.port = m_settings.editor_server_port;
+    ms::Client client(settings);
+
+    ms::EditorCommandMessage message;
+    message.command_type = type;
+    message.session_id = id_utility.GetSessionId();
+    message.message_id = id_utility.GetNextMessageId();
+    message.SetBuffer(input);
+
+    auto success = client.send(message, m_editor_command_reply);
+
+    return success;
+    
 }
 
 bool msblenContext::sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope scope, bool dirty_all)
@@ -1413,6 +1530,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     m_property_manager.clearReceivedData();
 
+    // If a python callback was requested, that may change the scene so run it and don't export until next update:
+    if (m_server_requested_python_callback) {
+        m_server_requested_python_callback = false;
+        m_ignore_events = true;
+        blender::callPythonMethod("meshsync_server_requested_callback");
+        m_ignore_events = false;
+        // Set this to true to force a sync after a python update.
+        // This ensures the server gets refreshed even if the python callback
+        // did not change the scene:
+        m_server_requested_sync = true;
+        return false;
+    }
+
     if (m_server_requested_sync) {
         scope = MeshSyncClient::ObjectScope::All;
         dirty_all = true;
@@ -1428,13 +1558,14 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
 
     if (m_settings.sync_meshes)
         RegisterSceneMaterials();
+    
+    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_objects([this](Object *obj) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
@@ -1449,10 +1580,19 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     }
 
 #if BLENDER_VERSION >= 300
-    if (m_geometryNodeUtils.getInstancesDirty() || dirty_all) {
+    // The dependency graph update event does not fire when the scene changes while the timeline is playing.
+    // To ensure geometry nodes get exported correctly while playing, check the frame number:
+    static int lastExportedFrame = -1;
+    int currentFrame = scene.GetCurrentFrame();
+
+    if (m_geometryNodeUtils.getInstancesDirty() ||
+        dirty_all || 
+        currentFrame != lastExportedFrame) {
         exportInstances();
         m_asyncTasksController.Wait();
         m_instances_state->eraseStaleObjects();
+
+        lastExportedFrame = currentFrame;
     }
 #endif
 
@@ -1471,7 +1611,10 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
     m_settings.Validate();
     m_ignore_events = true;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+    bl::BlenderPyContext  pyContext = bl::BlenderPyContext::get();
+    Depsgraph* depsGraph = pyContext.evaluated_depsgraph_get();
+
+    bl::BlenderPyScene scene = bl::BlenderPyScene(pyContext.scene());
     const int frame_rate = scene.fps();
     const int frame_step = std::max(m_settings.frame_step, 1);
 
@@ -1497,7 +1640,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
             kvp.second.dst->reserve(reserve_size);
         };
         for (int f = frame_start;;) {
-            scene.frame_set(f);
+            scene.SetCurrentFrame(f, depsGraph);
             m_anim_time = static_cast<float>(f - frame_start) / frame_rate;
 
             mu::parallel_for_each(m_anim_records.begin(), m_anim_records.end(), [this](auto& kvp) {
@@ -1510,7 +1653,7 @@ bool msblenContext::sendAnimations(MeshSyncClient::ObjectScope scope)
                 f = std::min(f + interval, frame_end);
         }
         m_anim_records.clear();
-        scene.frame_set(frame_current);
+        scene.SetCurrentFrame(frame_current, depsGraph);
     }
 
     m_ignore_events = false;
@@ -1671,9 +1814,11 @@ void msblenContext::WaitAndKickAsyncExport()
         t.textures = m_texture_manager.getDirtyTextures();
         t.materials = m_material_manager.getDirtyMaterials();
         t.transforms = m_entity_manager.getDirtyTransforms();
-        t.geometries = m_entity_manager.getDirtyGeometries();
+        deduplicateGeometry(m_entity_manager.getDirtyGeometriesWithChecksum(), t.geometries, t.transforms);
+
         t.instanceInfos = m_instances_manager.getDirtyInstances();
-        t.instanceMeshes = m_instances_manager.getDirtyMeshes();
+        t.instanceMeshes.clear();
+        deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
@@ -1696,8 +1841,9 @@ void msblenContext::WaitAndKickAsyncExport()
 
                     for (size_t i = 0; i < obj->transforms.size(); ++i)
                     {
-                        // We can divide the w component instead of applying the multiplier on xyz:
-                        obj->transforms[i][3][3] /= scale_factor;
+                        obj->transforms[i][3][0] *= scale_factor;
+                        obj->transforms[i][3][1] *= scale_factor;
+                        obj->transforms[i][3][2] *= scale_factor;
                     }
                 }
             }
@@ -1719,6 +1865,51 @@ void msblenContext::WaitAndKickAsyncExport()
     };
 
     exporter->kick();
+}
+
+void msblenContext::deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry->checksumGeom();
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry->path;
+            geometries.push_back(geometry);
+        }
+    }
+}
+
+void msblenContext::deduplicateGeometry(
+    std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, 
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms)
+{
+    std::unordered_map<uint64_t, std::string> cache;
+    for (auto& geometry : input) {
+        auto checksum = geometry.second;
+        auto entry = cache[checksum];
+        if (entry.length() > 0) {
+            // Create a new pointer to avoid issues with change checks
+            // in auto sync
+            auto ptr = ms::Transform::create();
+            *ptr = *geometry.first;
+            ptr->reference = entry;
+            transforms.push_back(ptr);
+        }
+        else {
+            cache[checksum] = geometry.first->path;
+            geometries.push_back(geometry.first);
+        }
+    }
 }
 
 /// Application Handler Events ///

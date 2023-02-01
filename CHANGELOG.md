@@ -1,5 +1,84 @@
 # Changelog
 
+## [0.16.0-preview] - 2022-11-25
+
+### Feat
+* blender-feat: material support 
+* blender-feat: support exporting empty objects
+
+### Changed
+* blender-doc: update installation docs 
+
+### Fixed
+* blender-fix: make all object types (incl. lights) instantiable for geometry nodes 
+* blender-fix: fix for exporting keyframes in 3.3.0 and above 
+* blender-fix: null check for geometry node properties
+
+### Removed
+* blender: removed editor path property from project panel
+
+## [0.15.2-preview] - 2022-11-16
+
+### Feat
+* blender: preferences UI for auto-detecting the hub and the editors folder
+* blender: use hub to select or create project 
+
+### Changed
+* blender-change: Handled local packages 
+
+### Fixed
+
+* fix: fix for crash when exporting baked transforms
+* blender-fix: fix for broken uvs on edit mode 
+* blender-fix: get latest compatible version of MeshSync package in AutoSetup
+* blender-fix: More reliable way to check if project is already running 
+* blender-fix: give feedback when selecting project
+* blender-fix: give feedback for project creation  
+
+## [0.15.1-preview] - 2022-10-07
+
+### Added
+* blender-feat: add Add-on Preferences file
+* blender-doc: add Unity project panel documentation
+
+### Changed
+* doc: update Installation page (TOC, typo fixes) and add missing English docs in DCC pages
+* doc: put Unity setup via DCC section below in the Installation page
+
+### Fixed
+* blender-fix: avoid overwriting manifest package and report error if installed package is not supported
+* blender-fix: do not reset Server port if server is available
+* blender-fix: use default ports if possible in auto-config
+* blender-fix: fix for crash in blender 3.3 
+
+### Removed
+* doc: remove obsolete installation steps in DCC pages
+* doc: remove Japanese documentation. Moved to the official page
+
+## [0.15.0-preview] - 2022-09-29
+
+### Added
+* blender-feat: support Blender 3.3.0
+* blender-feat: Editor commands in Blender clients 
+* blender-feat: install MeshSync from Blender
+* blender-feat: auto-config of ports for AutoSetup via Blender
+* blender-doc: add doc for installing MeshSync via Blender
+
+### Changed
+* change: change plugins folder to Plugins to reveal it in the Unity Editor
+* doc: organize usage in DCC tools into separate pages
+* doc: reorganize and update installation documentation
+* blender-doc: update the section about BakeModifiers 
+* blender-doc: add Bidirectional Sync section in the Blender documentation 
+
+### Fixed
+* blender-fix: Scale instance transforms with meshsync scale factor to ensure correct positioning. 
+* blender-fix: fix instance scaling
+* blender-fix: set camera visibility based on the active scene camera
+* blender-fix: export geometry node instances when frame changes
+* blender-fix: fix for material index bug 
+
+
 ## [0.14.1-preview] - 2022-07-29
 
 ### Fixed
