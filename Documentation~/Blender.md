@@ -130,6 +130,15 @@ If the object has no UVs, MeshSync will use blender's *Smart UV Project* operato
 The blender console will show progress during the bake.
 To cancel baking, the user can press Escape. Cancellation is not immediate and only works when running modal.
 
+## Material baking example
+Using this approach, the following procedural material node graph:
+<img src="images/baking_1.png" />
+
+was baked to textures, resulting in this material node graph:
+<img src="images/baking_2.png" />
+
+which can be synchronised to and rendered in Unity.
+
 ## Material baking troubleshooting
 |**Problem** |**Possible cause** |
 |:---     |:---|
