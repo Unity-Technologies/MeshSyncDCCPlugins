@@ -108,6 +108,8 @@ MeshSync has functionality to create baked material copies for each object to al
 | Material channels to bake | Choose which channels should be baked. |
 | Generate UVs | *Off*: Uses UVs on the object. <br /> *If needed*: Generates UVs if there are no usable UVs on the object. <br /> *Always*: Always generates UVs for baking, even if there are existing UVs. <br /> <br /> **NOTE**: These settings can be destructive to existing UVs. |
 | Apply modifiers | Applies all modifiers on the object to ensure the UV coordinates are correct for baking. <br /> <br /> **NOTE**: This is not reversible. Please backup your file before using this option. |
+| Deduplicate | Share meshes across objects if the object data and their modifiers are the same. This might not work for all modifiers. |
+| Realize instances | Realize geometry node instances to include them in the bake. |
 | Run modal | Redraws the blender UI periodically so blender does not freeze. |
 | Bake to individual materials | Performs the bake. |
 | Restore original materials | Removes the baked material copies and assigns the original materials back to all objects in the scene. |
@@ -127,6 +129,15 @@ If the object has no UVs, MeshSync will use blender's *Smart UV Project* operato
 
 The blender console will show progress during the bake.
 To cancel baking, the user can press Escape. Cancellation is not immediate and only works when running modal.
+
+## Material baking example
+Using this approach, the following procedural material node graph:
+<img src="images/baking_1.png" />
+
+was baked to textures, resulting in this material node graph:
+<img src="images/baking_2.png" />
+
+which can be synchronised to and rendered in Unity.
 
 ## Material baking troubleshooting
 |**Problem** |**Possible cause** |
