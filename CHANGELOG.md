@@ -2,36 +2,32 @@
 
 ## [0.17.0-preview] - 2023-02-07
 
-Blender 3.4 support
-Fix for materials not referencing correctly and smoothness map being roughness.
+### Added
+* Blender 3.4 support
+* blender-feat: Material baking
+* blender-feat: displacement maps baking
+* blender-feat: AO baking for materials
+* blender-feat: implementing orthographic size for camera
+* blender-feat: Adding texel density setting for baking
 
-doc: update Table of contents with Blender Installer page
-blender-change: bake modifiers in Edit Mode
-blender-fix: export normals correctly in edit mode, taking polygon smooth into account 
-blender-fix: dangling pointers on Mesh data
-blender-fix: Fix for crashes when instantiating curves through geonodes
-blender: geometry node fixes 
-blender: Multiple UVs in Edit mode (#333)
-* Use all available UV layers in edit mode 
-feat: Material baking
-feat: Adding texel density setting for baking
-blender-feat: Material baking ao
-Fix for crash on empty material slots.
-Null check when extracting image
-updated UI to show materials panel. Reordered panels and removed Unity Project panel 
-Added cancel and reset modes to increment progress. Used reset mode when resetting and cancel mode when cancelling (#347)
-feat: Displacement baking (#345)
+### Changed
+* blender-change: bake modifiers in Edit Mode
+* blender: Making deduplication of meshes optional 
+* blender-opt: optimisation to avoid making unique objects when the source object is the same.
+* blender-doc: update docs to include all new material baking settings 
+* blender: use all available UV layers in Edit mode  
+* blender: updated UI to show materials panel. Reordered panels and removed Unity Project panel 
+* blender: added cancel and reset modes to increment progress. Used reset mode when resetting and cancel mode when cancelling
+* doc: update Table of contents with Blender Installer page
 
-Adding a way to bake displacement maps.
-fix: Optimisation to avoid making unique objects when the source object is the same. (#350)
-
-Optimisation to avoid making unique objects when the source object is the same.
-
-Making deduplication optional (#352)
-
-blender-fix: avoid copies of linked duplicates 
-
-blender-doc: update docs to include all new material baking settings 
+### Fixed
+* blender-fix: export normals correctly in edit mode, taking polygon smooth into account 
+* blender-fix: dangling pointers on Mesh data
+* blender-fix: avoid copies of linked duplicates 
+* blender-fix: fix for materials not referencing correctly and smoothness map being roughness.
+* blender-fix for crash on empty material slots.
+* blender-fix: Fix for crashes when instantiating curves through geonodes
+* blender: geometry node fixes 
 
 ## [0.16.0-preview] - 2022-11-25
 
