@@ -1116,7 +1116,7 @@ ms::TransformPtr msmaxContext::exportCamera(TreeNode& n)
     ms::Camera& dst = *ret;
     extractTransform(n, t, dst);
     extractCameraData(n, t,
-        dst.is_ortho, dst.fov, dst.near_plane, dst.far_plane, dst.focal_length, dst.sensor_size, dst.lens_shift,
+        dst.is_ortho, dst.fov_or_ortho_size, dst.near_plane, dst.far_plane, dst.focal_length, dst.sensor_size, dst.lens_shift,
         &dst.view_matrix);
     m_entity_manager.add(ret);
     return ret;
