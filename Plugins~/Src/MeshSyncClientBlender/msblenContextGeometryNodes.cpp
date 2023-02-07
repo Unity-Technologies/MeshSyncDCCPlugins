@@ -70,7 +70,7 @@ void msblenContext::exportInstances() {
             auto& transform = exportedTransforms[rec.id];
 
             //parent is always part of the scene
-            auto& parent = exportObject(*m_entities_state, m_default_paths, m_settings, rec.parent, false);
+            const auto& parent = exportObject(*m_entities_state, m_default_paths, m_settings, rec.parent, false);
 
             if (rec.from_file) {
                 exportInstances(transform, parent, std::move(rec.matrices), inverse, m_default_paths);
