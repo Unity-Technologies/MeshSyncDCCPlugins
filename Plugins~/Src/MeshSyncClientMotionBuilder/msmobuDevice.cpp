@@ -472,7 +472,7 @@ ms::CameraPtr msmobuDevice::exportCamera(NodeRecord& n)
     auto src = static_cast<FBCamera*>(n.src);
 
     extractTransformData(src, dst.position, dst.rotation, dst.scale, dst.visibility);
-    extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov,
+    extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov_or_ortho_size,
         dst.focal_length, dst.sensor_size, dst.lens_shift);
 
     m_entity_manager.add(ret);
