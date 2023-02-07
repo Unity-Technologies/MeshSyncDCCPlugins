@@ -430,7 +430,7 @@ bool msmqContext::sendCamera(MQDocument doc, bool dirty_all)
         }
         auto prev_pos = m_camera->position;
         auto prev_rot = m_camera->rotation;
-        auto prev_fov = m_camera->fov;
+        auto prev_fov = m_camera->fov_or_ortho_size;
 
         m_camera->path = m_settings.host_camera_path;
         extractCameraData(doc, scene, *m_camera);
@@ -438,7 +438,7 @@ bool msmqContext::sendCamera(MQDocument doc, bool dirty_all)
         if (!dirty_all &&
             m_camera->position == prev_pos &&
             m_camera->rotation == prev_rot &&
-            m_camera->fov == prev_fov)
+            m_camera->fov_or_ortho_size == prev_fov)
         {
             // no need to send
             return true;
@@ -798,7 +798,7 @@ void msmqContext::extractCameraData(MQDocument doc, MQScene scene, ms::Camera& d
     auto eular = ToEular(scene->GetCameraAngle(), true);
     dst.rotation = rotate_zxy(eular);
 
-    dst.fov = scene->GetFOV() * mu::RadToDeg;
+    dst.fov_or_ortho_size = scene->GetFOV() * mu::RadToDeg;
 #if MQPLUGIN_VERSION >= 0x450
     dst.near_plane = scene->GetFrontClip();
     dst.far_plane = scene->GetBackClip();
