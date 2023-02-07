@@ -1,8 +1,41 @@
 # Changelog
 
+## [0.17.0-preview] - 2023-02-07
+
+Blender 3.4 support
+Fix for materials not referencing correctly and smoothness map being roughness.
+
+doc: update Table of contents with Blender Installer page
+blender-change: bake modifiers in Edit Mode
+blender-fix: export normals correctly in edit mode, taking polygon smooth into account 
+blender-fix: dangling pointers on Mesh data
+blender-fix: Fix for crashes when instantiating curves through geonodes
+blender: geometry node fixes 
+blender: Multiple UVs in Edit mode (#333)
+* Use all available UV layers in edit mode 
+feat: Material baking
+feat: Adding texel density setting for baking
+blender-feat: Material baking ao
+Fix for crash on empty material slots.
+Null check when extracting image
+updated UI to show materials panel. Reordered panels and removed Unity Project panel 
+Added cancel and reset modes to increment progress. Used reset mode when resetting and cancel mode when cancelling (#347)
+feat: Displacement baking (#345)
+
+Adding a way to bake displacement maps.
+fix: Optimisation to avoid making unique objects when the source object is the same. (#350)
+
+Optimisation to avoid making unique objects when the source object is the same.
+
+Making deduplication optional (#352)
+
+blender-fix: avoid copies of linked duplicates 
+
+blender-doc: update docs to include all new material baking settings 
+
 ## [0.16.0-preview] - 2022-11-25
 
-### Feat
+### Added
 * blender-feat: material support 
 * blender-feat: support exporting empty objects
 
@@ -19,7 +52,7 @@
 
 ## [0.15.2-preview] - 2022-11-16
 
-### Feat
+### Added
 * blender: preferences UI for auto-detecting the hub and the editors folder
 * blender: use hub to select or create project 
 
