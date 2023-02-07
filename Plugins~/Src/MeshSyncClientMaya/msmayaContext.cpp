@@ -1205,7 +1205,7 @@ ms::CameraPtr msmayaContext::exportCamera(TreeNode *n)
     auto& dst = *ret;
 
     extractTransformData(n, dst);
-    extractCameraData(n, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov,
+    extractCameraData(n, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov_or_ortho_size,
         dst.focal_length, dst.sensor_size, dst.lens_shift);
 
     m_entity_manager.add(ret);
