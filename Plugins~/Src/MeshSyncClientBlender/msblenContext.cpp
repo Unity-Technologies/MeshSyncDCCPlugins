@@ -1875,7 +1875,7 @@ void msblenContext::WaitAndKickAsyncExport()
     exporter->kick();
 }
 
-void msblenContext::deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
 {
     std::unordered_map<uint64_t, std::string> cache;
     for (auto& geometry : input) {
@@ -1897,7 +1897,7 @@ void msblenContext::deduplicateGeometry(std::vector<ms::TransformPtr>& input, st
 }
 
 void msblenContext::deduplicateGeometry(
-    std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, 
+    const std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, 
     std::vector<ms::TransformPtr>& geometries, 
     std::vector<ms::TransformPtr>& transforms)
 {

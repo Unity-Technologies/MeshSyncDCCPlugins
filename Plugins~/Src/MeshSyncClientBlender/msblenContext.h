@@ -164,8 +164,9 @@ private:
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
-    void deduplicateGeometry(std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
-    void deduplicateGeometry(std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    void deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    
+    void deduplicateGeometry(const std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
 
 #if BLENDER_VERSION >= 300
     void exportInstances();
