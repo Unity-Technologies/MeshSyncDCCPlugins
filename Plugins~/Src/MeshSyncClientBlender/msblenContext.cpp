@@ -208,17 +208,26 @@ void msblenContext::RegisterMaterial(Material* mat, const uint32_t matIndex) {
 //----------------------------------------------------------------------------------------------------------------------
 
 void msblenContext::extractCameraData(const Object *src,
-    bool& ortho, float& near_plane, float& far_plane, float& fov,
+    bool& ortho, float& near_plane, float& far_plane, float& fov_or_ortho_size,
     float& focal_length, mu::float2& sensor_size, mu::float2& lens_shift)
 {
     bl::BCamera cam(src->data);
 
     // note: fbx exporter seems always export as perspective
     ortho = ((Camera*)src->data)->type == CAM_ORTHO;
-
+    
     near_plane = cam.clip_start();
     far_plane = cam.clip_end();
-    fov = cam.angle_y() * mu::RadToDeg;
+
+    // Use fov field to store ortho size for orthographic cameras, or fov for perspective:
+    if (ortho)
+    {
+        fov_or_ortho_size = ((Camera*)src->data)->ortho_scale;
+    }
+    else {
+        fov_or_ortho_size = cam.angle_y() * mu::RadToDeg;
+    }
+
     focal_length = cam.lens();
     sensor_size.x = cam.sensor_width();  // in mm
     sensor_size.y = cam.sensor_height(); // in mm
@@ -522,7 +531,7 @@ ms::CameraPtr msblenContext::exportCamera(msblenContextState& state, msblenConte
     ms::Camera& dst = *ret;
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
-    extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov, dst.focal_length, dst.sensor_size, dst.lens_shift);
+    extractCameraData(src, dst.is_ortho, dst.near_plane, dst.far_plane, dst.fov_or_ortho_size, dst.focal_length, dst.sensor_size, dst.lens_shift);
 
     // We don't use frame_set(), so the scene camera is not updated.
     // Look at the markers to figure out what the active camera should be:
