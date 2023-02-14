@@ -33,7 +33,9 @@
     
     > To build Poco libraries with other configurations, see [Poco's Getting Started](https://pocoproject.org/docs/00200-GettingStarted.html).
     
-1. Add *Poco_DIR* environment variable to point to the Poco root folder above.
+1. Add *Poco_DIR* environment variable to point to the Poco root folder above. 
+
+For example, if you poco installation is located in C:\Users\Username\Downloads\poco-poco-1.10.1-release\, the environment variable should point to C:\Users\Username\Downloads\poco-poco-1.10.1-release\poco-poco-1.10.1-release\
 1. [Setup DCC tools](SetupDCC.md) for building.
 1. On Windows 10, allow regular users to [create symbolic links](CreateSymbolicLinksOnWindows10.md).
 
