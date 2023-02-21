@@ -7,7 +7,7 @@ as can be seen above, where most of the options are self-explanatory.
 
 |**Options** |**Description** |
 |:---       |:---|
-| **Bake Modifiers** | An option to sync the results after applying all modifiers to get consistent look between Blender and Unity. Refer to [Synchronizable Properties in Unity](#synchronizable-Properties-in-unity) for more details. |
+| **Bake Modifiers** | An option to sync the results after applying all modifiers to get consistent look between Blender and Unity. Refer to [Synchronizable Properties in Unity](#synchronizable-properties-in-unity) for more details. |
 
 |**Buttons** |**Description** |
 |:---       |:---|
@@ -15,8 +15,8 @@ as can be seen above, where most of the options are self-explanatory.
 | **Manual Sync**           | Use the **Manual Sync** button to reflect mesh changes when **Auto Sync** is inactive.|
 | Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
 | **Export Cache** | Export into an *.sc* file. Please refer to the SceneCache feature in [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest).|
-| **Material sync mode**    | How to handle materials. Refer to [Material sync mode](#Material-sync-mode) for more details.|
-| **Baking**                | Options to create baked material copies. Refer to [Material baking](#Material-baking) for more details.|
+| **Material sync mode**    | How to handle materials. Refer to [Material sync mode](#material-sync-mode) for more details.|
+| **Baking**                | Options to create baked material copies. Refer to [Material baking](#material-baking) for more details.|
 
 |**Paths** |**Description**|
 |:---       |:---|
@@ -79,7 +79,7 @@ There are multiple options to export materials from Blender:
 |**Mode** |**Description** |
 |:---       |:---|
 | None | Only the material names are exported to Unity and default materials created. Users can override the materials in the mapping on the MeshSyncServer to use their own materials. |
-| Basic | The materials are synced to Unity in a limited way. Refer to [Basic Material sync mode](#Basic-Material-sync-mode) for more details.||
+| Basic | The materials are synced to Unity in a limited way. Refer to [Basic Material sync mode](#basic-material-sync-mode) for more details.||
 
 ## Basic Material sync mode
 MeshSync looks for an active material output node and exports the BSDF connected to that. 
