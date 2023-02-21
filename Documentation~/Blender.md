@@ -16,7 +16,7 @@ as can be seen above, where most of the options are self-explanatory.
 | Animation &rarr; **Sync** | Bake animations by advancing the timer from the first frame to the final frame, and then send them to Unity.|
 | **Export Cache** | Export into an *.sc* file. Please refer to the SceneCache feature in [MeshSync](https://docs.unity3d.com/Packages/com.unity.meshsync@latest).|
 | **Material sync mode**    | How to handle materials. Refer to [Material sync mode](#material-sync-mode) for more details.|
-| **Baking**                | Options to create baked material copies. Refer to [Material baking](#Material-baking) for more details.|
+| **Baking**                | Options to create baked material copies. Refer to [Material baking](#material-baking) for more details.|
 
 |**Paths** |**Description**|
 |:---       |:---|
