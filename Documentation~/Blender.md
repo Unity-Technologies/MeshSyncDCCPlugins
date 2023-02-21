@@ -82,6 +82,7 @@ There are multiple options to export materials from Blender:
 | Basic | The materials are synced to Unity in a limited way. Refer to [Basic Material sync mode](#basic-material-sync-mode) for more details.||
 
 ## Basic Material sync mode
+
 MeshSync looks for an active material output node and exports the BSDF connected to that. 
 Colors and textures assigned to the active BSDF are exported.
 Smoothness and metallic are baked into maps required by Unity depending on the active render pipeline. MeshSync supports the built-in render pipeline, URP and HDRP.
@@ -131,15 +132,19 @@ The blender console will show progress during the bake.
 To cancel baking, the user can press Escape. Cancellation is not immediate and only works when running modal.
 
 ## Material baking example
+
 Using this approach, the following procedural material node graph:
+
 <img src="images/baking_1.png" />
 
 was baked to textures, resulting in this material node graph:
+
 <img src="images/baking_2.png" />
 
 which can be synchronised to and rendered in Unity.
 
 ## Material baking troubleshooting
+
 |**Problem** |**Possible cause** |
 |:---     |:---|
 | The baked maps are black | There are many possible causes. Is the object UV unwrapped? Baking will not work without valid UVs. Metallic materials do not bake well in blender. |
