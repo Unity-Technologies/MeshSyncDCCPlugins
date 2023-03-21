@@ -1406,8 +1406,6 @@ bool msblenContext::isServerAvailable()
         server_session_id != m_sender.server_session_id) {
         if (server_session_id != ms::InvalidID) {
             resetMaterials();
-            // Ensure a full sync:
-            m_server_requested_sync = true;
         }
     }
     m_sender.server_session_id = server_session_id;

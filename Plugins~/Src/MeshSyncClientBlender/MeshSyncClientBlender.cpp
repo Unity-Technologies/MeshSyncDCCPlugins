@@ -30,7 +30,7 @@ static bool msblenSend(msblenContext& self, MeshSyncClient::ExportTarget target,
 
     if (target == MeshSyncClient::ExportTarget::Objects) {
         self.wait();
-        self.sendObjects(MeshSyncClient::ObjectScope::All, true);
+        self.sendObjects(scope, true);
     }
     else if (target == MeshSyncClient::ExportTarget::Materials) {
         self.wait();
@@ -180,6 +180,7 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
             BindMethod(clear, [](self_t& self) { self->clear(); })
             BindMethod(exportUpdatedObjects, [](self_t& self) { self->sendObjectsAndRequestLiveEdit(MeshSyncClient::ObjectScope::Updated, false); })
             BindMethod(export, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::All); })
+            BindMethod(exportSelectedObjects, [](self_t& self, int _target) { msblenSend(*self, (MeshSyncClient::ExportTarget)_target, MeshSyncClient::ObjectScope::Selected); })
             BindMethod(OnDepsgraphUpdatePost,
                 [](self_t& self, py::object depsgraph) {
                     auto graph = DepsgraphFromPyObject(depsgraph);
