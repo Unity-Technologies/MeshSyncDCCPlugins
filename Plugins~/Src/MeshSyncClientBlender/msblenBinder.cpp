@@ -562,7 +562,12 @@ void BCurve::clear_splines() {
 }
 
 Nurb* BCurve::new_spline() {
+// In blender 3.3, the pointer moves 8 instead of 4 bytes:
+#if BLENDER_VERSION >= 303
+    return call<Curve, Nurb*, long long>(g_context, m_ptr, BCurve_splines_new, CU_BEZIER);
+#else
     return call<Curve, Nurb*, int>(g_context, m_ptr, BCurve_splines_new, CU_BEZIER);
+#endif
 }
 
 const char *BMaterial::name() const
