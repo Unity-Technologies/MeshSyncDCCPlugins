@@ -370,7 +370,15 @@ bool BObject::hide_render() const
 
 bool blender::BObject::is_selected() const
 {
+#if BLENDER_VERSION >= 304
+    PointerRNA ptr;
+    ptr.data = nullptr;
+    ptr.owner_id = nullptr;
+    ptr.type = nullptr;
+    return call<Object, bool, PointerRNA>(g_context, m_ptr, BObject_select_get, ptr);
+#else
     return call<Object, bool, ViewLayer*>(g_context, m_ptr, BObject_select_get, nullptr);
+#endif
 }
 
 Mesh* BObject::to_mesh() const

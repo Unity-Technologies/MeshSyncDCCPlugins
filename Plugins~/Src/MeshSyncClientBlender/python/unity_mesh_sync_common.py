@@ -166,6 +166,21 @@ class MESHSYNC_OT_SendObjects(bpy.types.Operator):
         msb_context.export(msb_context.TARGET_OBJECTS)
         return {'FINISHED'}
 
+class MESHSYNC_OT_SendSelectedObjects(bpy.types.Operator):
+    bl_idname = "meshsync.send_selected_objects"
+    bl_label = "Export Selected Objects"
+
+    def execute(self, context):
+        # Try to ensure there is a scene server running
+        status = msb_try_setup_scene_server(context)
+        if msb_error_messages_for_status(status, context) == False:
+            return {'FINISHED'}
+
+        msb_apply_scene_settings()
+        msb_context.setup(bpy.context)
+        msb_context.exportSelectedObjects(msb_context.TARGET_OBJECTS)
+        return {'FINISHED'}
+
 
 class MESHSYNC_OT_SendAnimations(bpy.types.Operator):
     bl_idname = "meshsync.send_animations"
@@ -226,4 +241,6 @@ sharedClasses = [MESHSYNC_BakeChannelSetting,
                  MESHSYNC_BakeSettings,
                  MESHSYNC_OT_select_bake_folder,
                  MESHSYNC_OT_Bake,
-                 MESHSYNC_OT_RevertBake]
+                 MESHSYNC_OT_RevertBake,
+                 MESHSYNC_OT_SendObjects,
+                 MESHSYNC_OT_SendSelectedObjects]

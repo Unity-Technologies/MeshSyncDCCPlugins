@@ -77,6 +77,7 @@ class MESHSYNC_PT_Scene(MESHSYNC_PT, bpy.types.Panel):
         else:
             layout.operator("meshsync.auto_sync", text="Auto Sync", icon="PLAY")
         layout.operator("meshsync.send_objects", text="Manual Sync")
+        layout.operator("meshsync.send_selected_objects", text="Manual Sync (Selection only)")
 
 
 class MESHSYNC_PT_Animation(MESHSYNC_PT, bpy.types.Panel):
@@ -335,7 +336,6 @@ classes = [
     MESHSYNC_PT_Animation,
     MESHSYNC_PT_Cache,
     MESHSYNC_PT_Version,
-    MESHSYNC_OT_SendObjects,
     MESHSYNC_OT_SendAnimations,
     MESHSYNC_OT_AutoSync,
     MESHSYNC_OT_ExportCache,
