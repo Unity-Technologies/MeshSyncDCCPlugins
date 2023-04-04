@@ -923,10 +923,16 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
                 material_index = materialIndices[pi];
             }
 #else
-            const int material_index = polygon.mat_nr;
+            int material_index = polygon.mat_nr;
 #endif
+
+            // Material indices can be out of range if materials are removed.
+            // Check for it so we don't crash when this happens:
+            material_index = min(material_index, materialCount - 1);
+
             const int count = polygon.totloop;
             dst.counts[pi] = count;
+
             dst.material_ids[pi] = mid_table[material_index];
             dst.indices.resize(dst.indices.size() + count);
 
