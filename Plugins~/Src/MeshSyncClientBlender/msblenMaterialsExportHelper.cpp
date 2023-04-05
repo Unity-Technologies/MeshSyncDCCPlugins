@@ -74,7 +74,7 @@ bNode* handleBSDFTypes(const Material* mat, bNode* bsdf) {
 	}
 
     // If it's a node group, check if there is a bsdf upstream and pass through instead:
-	if (bsdf->type == NODE_GROUP) {
+    if (bsdf->type == NODE_GROUP) {
 		for (auto inputSocket : list_range((bNodeSocket*)bsdf->inputs.first)) {
 			bNode* connectedBSDF = handleBSDFTypes(mat, traverseReroutes(getNodeConnectedToSocket(inputSocket), mat));
 			if (connectedBSDF)
@@ -82,10 +82,10 @@ bNode* handleBSDFTypes(const Material* mat, bNode* bsdf) {
 				return handleBSDFTypes(mat, connectedBSDF);
 			}
 		}
-	}
+    }
 
 	// BSDFs that we pass through:
-	if (bsdf->type != SH_NODE_MIX_SHADER &&
+    if (bsdf->type != SH_NODE_MIX_SHADER &&
 		bsdf->type != SH_NODE_ADD_SHADER)
 		return bsdf;
 
