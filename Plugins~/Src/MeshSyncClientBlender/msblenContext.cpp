@@ -1490,7 +1490,17 @@ void msblenContext::requestLiveEditMessage()
     }
 
     m_sender.on_live_edit_response_received = [this](auto properties, auto entities, std::string messageFromServer) {
+        m_ignore_events = true;
         m_property_manager.updateFromServer(properties, entities);
+        
+#ifdef BLENDER_DEBUG_LOGS
+        for (auto prop : properties)
+        {
+            if (prop.type == ms::PropertyInfo::Type::Int) {
+                debug_log(Format("Received: %s: %d", prop.name.c_str(), prop.get<int>()));
+            }
+        }
+#endif
 
         if (messageFromServer == ms::REQUEST_SYNC) {
             m_server_requested_sync = true;
@@ -1498,6 +1508,7 @@ void msblenContext::requestLiveEditMessage()
         else if (messageFromServer == ms::REQUEST_USER_SCRIPT_CALLBACK) {
             m_server_requested_python_callback = true;
         }
+        m_ignore_events = false;
     };
     m_sender.requestLiveEditMessage();
 }
