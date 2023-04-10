@@ -181,4 +181,24 @@ bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
 bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
+
+
+#ifdef BLENDER_DEBUG_LOGS
+void debug_log(std::string message) {
+    try {
+        py::gil_scoped_acquire acquire;
+
+        auto statement = Format("print('%s')", message.c_str());
+
+        py::eval<py::eval_mode::eval_statements>(
+            statement.c_str());
+
+        py::gil_scoped_release release;
+    }
+    catch (py::error_already_set& e) {
+        muLogError("%s\n", e.what());
+    }
+}
+#endif
+
 }

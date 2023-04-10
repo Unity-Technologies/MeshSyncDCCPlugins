@@ -131,5 +131,12 @@ inline mu::float4 to_float4(const MLoopCol& c)
         c.a * (1.0f / 255.0f),
     };
 }
-}
 
+
+#ifdef BLENDER_DEBUG_LOGS
+void debug_log(std::string message);
+#else
+#define debug_log()
+#endif
+
+}

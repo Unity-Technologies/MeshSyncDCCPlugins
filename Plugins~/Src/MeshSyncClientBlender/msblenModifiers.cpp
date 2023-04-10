@@ -304,13 +304,19 @@ void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {
 		return;
 	}
 
+	debug_log("importProperties");
+
 	std::unique_lock<std::mutex> lock(m_mutex);
 	// Apply returned properties:
 	for (auto& receivedProp : props) {
+		if (receivedProp.type == ms::PropertyInfo::Type::Int)
+			debug_log(Format("importing: %s: %d %d", receivedProp.name.c_str(), receivedProp.get<int>(), receivedProp.sourceType));
+
 		auto obj = msblenUtils::get_object_from_path(receivedProp.path);
 
 		// Should never happen but just in case:
 		if (!obj) {
+			debug_log(Format("cannot find object: %s", receivedProp.path.c_str()));
 			continue;
 		}
 
