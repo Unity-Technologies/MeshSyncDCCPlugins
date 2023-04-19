@@ -7,8 +7,7 @@
 struct Depsgraph;
 
 // The data structures have changed in blender 3.5
-// Make fake data structures as wrappers for the new data.
-// These match the original ones for the fields we need to keep the plugin code for different blender versions the same:
+// These data structures are wrappers for the new data with the fields we need to keep the plugin code for different blender versions the same:
 #if BLENDER_VERSION >= 305
 typedef struct MLoopUV {
     float uv[2];
@@ -142,7 +141,14 @@ namespace blender
         void add_normals(int count);
     };
 
-    uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
+    uint32_t BMesh::GetNumUVs() const
+    {
+#if BLENDER_VERSION < 305
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV);
+#else
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_PROP_FLOAT2);
+#endif
+    }
 
 
 //----------------------------------------------------------------------------------------------------------------------

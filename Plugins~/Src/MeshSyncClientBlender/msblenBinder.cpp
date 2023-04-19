@@ -468,19 +468,6 @@ barray_range<int> BMesh::material_indices()
 //----------------------------------------------------------------------------------------------------------------------
 
 
-//barray_range<MLoopUV> BMesh::uv()
-//{
-//#if BLENDER_VERSION < 305
-//    CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
-//    if (layer_data && layer_data->data)
-//        return { static_cast<MLoopUV*>(layer_data->data), static_cast<size_t>(m_ptr->totloop) };
-//    else
-//        return { nullptr, (size_t)0 };
-//#else
-//
-//#endif
-//}
-
 MLoopUV* BMesh::GetUV(const int index) const {
 #if BLENDER_VERSION < 305
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
