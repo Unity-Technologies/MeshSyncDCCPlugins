@@ -85,7 +85,9 @@ namespace ms {
     {
         for (auto it = m_records.begin(); it != m_records.end(); ) {
             if (!it->second.updated) {
-                m_deleted.push_back(it->second.instances->getIdentifier());
+                if (it->second.instances) {
+                    m_deleted.push_back(it->second.instances->getIdentifier());
+                }
                 m_records.erase(it++);
             }
             else
