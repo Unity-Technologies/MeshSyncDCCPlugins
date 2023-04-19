@@ -21,10 +21,10 @@ namespace blender {
     {
         auto rotation = rotate_x(-90 * DegToRad);
         auto rotation180 = rotate_z(180 * DegToRad);
-        auto scale_z = float3::one();
+        auto scale_z = mu::float3::one();
         scale_z.z = -1;
 
-        auto scale_x = float3::one();
+        auto scale_x = mu::float3::one();
         scale_x.x = -1;
 
         m_blender_to_unity_world =

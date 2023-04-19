@@ -6,6 +6,20 @@
 
 struct Depsgraph;
 
+// The data structures have changed in blender 3.5
+// Make fake data structures as wrappers for the new data.
+// These match the original ones for the fields we need to keep the plugin code for different blender versions the same:
+#if BLENDER_VERSION >= 305
+typedef struct MLoopUV {
+    float uv[2];
+} MLoopUV;
+
+typedef struct MVert {
+    float co[3];
+} MVert;
+#endif
+
+
 namespace blender
 {
     bool ready();
@@ -145,7 +159,7 @@ namespace blender
         int uv_data_offset(int index) const;
         inline uint32_t GetNumUVs() const;
 
-        MLoopUV* GetUV(const int index) const;
+        //MLoopUV* GetUV(const int index) const;
     };
 
     uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }
