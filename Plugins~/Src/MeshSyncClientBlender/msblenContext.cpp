@@ -928,7 +928,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
 
             // Material indices can be out of range if materials are removed.
             // Check for it so we don't crash when this happens:
-            material_index = min(material_index, materialCount - 1);
+            material_index = max(0, min(material_index, materialCount - 1));
 
             const int count = polygon.totloop;
             dst.counts[pi] = count;
