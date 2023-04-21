@@ -550,10 +550,6 @@ int BEditMesh::uv_data_offset(int index) const
     return layer.offset;
 }
 
-//MLoopUV* BEditMesh::GetUV(const int index) const {
-//    return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
-//}
-
 void BNurb::add_bezier_points(int count, Object* obj) {
     call<Nurb, void, int>(g_context, m_ptr, BNurb_splines_bezier_add, count, obj->id);
 }
