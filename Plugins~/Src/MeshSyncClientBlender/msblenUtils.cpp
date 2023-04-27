@@ -4,6 +4,7 @@
 #include "msblenUtils.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h"
+#include "MeshUtils/muLog.h"
 
 namespace bl = blender;
 namespace msblenUtils {
@@ -181,14 +182,14 @@ bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
 bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
-
+}
 
 #ifdef BLENDER_DEBUG_LOGS
 void debug_log(std::string message) {
     try {
         py::gil_scoped_acquire acquire;
 
-        auto statement = Format("print('%s')", message.c_str());
+        auto statement = mu::Format("print('%s')", message.c_str());
 
         py::eval<py::eval_mode::eval_statements>(
             statement.c_str());
@@ -200,5 +201,3 @@ void debug_log(std::string message) {
     }
 }
 #endif
-
-}
