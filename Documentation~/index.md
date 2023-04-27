@@ -75,6 +75,4 @@ Alternatively, [Manual Installation](Installation.md) is also available.
 2. [3ds Max](3dsMax.md)
 3. [MotionBuilder](MotionBuilder.md)
 4. [Blender](Blender.md)
-5. [Modo](Modo.md)
-6. [Metasequoia](Metasequoia.md)
 
