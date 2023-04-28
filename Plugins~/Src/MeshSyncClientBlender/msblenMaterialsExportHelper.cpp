@@ -331,7 +331,7 @@ void msblenMaterialsExportHelper::handleSocketValue(bNodeSocket* socket,
 	}
 
 	if (setColorHandler) {
-		mu::float4 colorValue;
+		mu::float4 colorValue = { 0,0,0,0 };
 
 		switch (socket->type)
 		{
