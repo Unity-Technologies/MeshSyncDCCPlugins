@@ -111,19 +111,19 @@ namespace blender {
                 bool useName = id->session_uuid == 0;
 
                 // An object might be sharing data with other objects, need to use the object name in keys                
-                auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + std::string(obj->id.name + 2)]
-                    : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + std::string(obj->id.name + 2)];
+                auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + "_" + std::string(obj->id.name + 2)]
+                    : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + "_" + std::string(obj->id.name + 2)];
 
                 if (!rec.handled_object)
                 {
                     rec.handled_object = true;
-                    rec.name = std::string(id->name + 2) + std::string(obj->id.name);
+                    rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
                     rec.obj = obj;
                     rec.parent = parent;
 
                     rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
 
-                    rec.id = std::string(parent->id.name) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
+                    rec.id = std::string(parent->id.name + 2) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
                     obj_handler(rec);
                 }
 
@@ -162,6 +162,10 @@ namespace blender {
 
         depsgraph.object_instances_begin(&it);
 
+        // Keep track of the names of the instances we've already processed for nested instance handling:
+        std::set<std::string> instanceParentNames;
+        std::string ignoredParent;
+
         for (; it.valid; depsgraph.object_instances_next(&it)) {
 
             // Get the instance as a Pointer RNA.
@@ -190,6 +194,27 @@ namespace blender {
             instance.world_matrix(&world_matrix);
 
             auto parent = instance.parent();
+
+            auto parentName = msblenUtils::get_name(parent);
+            auto objectName = msblenUtils::get_name(object);
+
+            bool isParent = instanceParentNames.find(objectName) != instanceParentNames.end();
+
+            // If we're inside an ignored parent, skip all its child instances:            
+            if (ignoredParent == parentName && !isParent) {
+                continue;
+            }
+
+            // If this instance is a parent, still export it but mark ignoredParent so the children of the nested instance are not exported:
+            if (isParent)
+            {
+                ignoredParent = parentName;
+            }        
+            else {
+                ignoredParent = "";
+            }
+
+            instanceParentNames.insert(parentName);
 
             handler(object, parent, world_matrix);
         }
