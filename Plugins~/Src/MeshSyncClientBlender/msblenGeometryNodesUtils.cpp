@@ -110,8 +110,9 @@ namespace blender {
                 //Some objects, i.e. lights, do not use a session uuid.
                 bool useName = id->session_uuid == 0;
 
-                // An object might be sharing data with other objects, need to use the object name in keys
-                auto& rec = useName? records_by_name[std::string(id->name + 2) + obj->id.name] : records_by_session_id[std::to_string(id->session_uuid) + obj->id.name];
+                // An object might be sharing data with other objects, need to use the object name in keys                
+                auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + std::string(obj->id.name + 2)]
+                    : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + std::string(obj->id.name + 2)];
 
                 if (!rec.handled_object)
                 {
@@ -119,34 +120,33 @@ namespace blender {
                     rec.name = std::string(id->name + 2) + std::string(obj->id.name);
                     rec.obj = obj;
                     rec.parent = parent;
-                    
+
                     rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
 
-                    rec.id = rec.name +"_" + std::to_string(id->session_uuid);
+                    rec.id = std::string(parent->id.name) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
                     obj_handler(rec);
                 }
-                
+
                 rec.matrices.push_back(matrix);
             });
 
 
-            // Export transforms
-            for (auto& rec : records_by_session_id) {
-                if (rec.second.handled_matrices)
-                    continue;
+        // Export transforms
+        for (auto& rec : records_by_session_id) {
+            if (rec.second.handled_matrices)
+                continue;
 
-                rec.second.handled_matrices = true;
-                matrix_handler(rec.second);
-            }
+            rec.second.handled_matrices = true;
+            matrix_handler(rec.second);
+        }
 
-            for (auto& rec : records_by_name) {
-                if (rec.second.handled_matrices)
-                    continue;
+        for (auto& rec : records_by_name) {
+            if (rec.second.handled_matrices)
+                continue;
 
-                rec.second.handled_matrices = true;
-                matrix_handler(rec.second);
-            }
-
+            rec.second.handled_matrices = true;
+            matrix_handler(rec.second);
+        }
     }
 
     void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler)
