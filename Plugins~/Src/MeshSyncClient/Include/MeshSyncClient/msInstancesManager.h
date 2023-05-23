@@ -15,9 +15,10 @@ struct InstancesManagerRecord
 {
     bool dirtyInstances = false;
     bool dirtyMesh = false;
-    InstanceInfoPtr instances = nullptr;
     TransformPtr entity = nullptr;
     bool updated = false;
+    std::map<std::string, bool> updatedParents;
+    std::map<std::string, std::vector<InstanceInfoPtr>> instancesPerParent;
 };
 
 /// <summary>
