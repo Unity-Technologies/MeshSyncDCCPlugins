@@ -83,9 +83,7 @@ namespace blender {
         std::unordered_map<std::string, Record> records_by_session_id;
         std::unordered_map<std::string, Record> records_by_name;
 
-        // Collect object names in the file
-        auto ctx = blender::BlenderPyContext::get();
-        auto objects = ctx.data()->objects;
+        // Collect object names in the scene
         std::unordered_set<std::string> file_objects;
 
         auto get_path = [](Object* obj) {
@@ -93,15 +91,14 @@ namespace blender {
             return string(data->name) + string(obj->id.name);
         };
 
-        LISTBASE_FOREACH(Object*, obj, &objects) {
-
+        BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
+        scene.each_objects([&](Object* obj) {            
             if (obj->data == nullptr)
-                continue;
+                return;
 
             auto path = get_path(obj);
-
             file_objects.insert(path);
-        }
+            });
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
             {
