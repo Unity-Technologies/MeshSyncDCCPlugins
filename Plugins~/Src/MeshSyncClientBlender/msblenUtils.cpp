@@ -93,15 +93,16 @@ bool visible_in_collection(LayerCollection* lc, const Object* obj) {
     // Check if the object is in the layer collection, if it is, check if the layer is excluded:
     if (lc->collection) {
         for (auto collectionObject : blender::list_range((CollectionObject*)lc->collection->gobject.first)) {
-            if(get_name(collectionObject->ob)== objName) {
+            if (get_name(collectionObject->ob) == objName) {
                 if ((!(lc->flag & LAYER_COLLECTION_EXCLUDE)) &&
 #if BLENDER_VERSION >= 300
-                (!(lc->collection->flag & COLLECTION_HIDE_RENDER))
+                    (!(lc->collection->flag & COLLECTION_HIDE_RENDER))
 #else
-                (!(lc->collection->flag & COLLECTION_RESTRICT_RENDER))
+                    (!(lc->collection->flag & COLLECTION_RESTRICT_RENDER))
 #endif
-                ) {
-                return true;
+                    ) {
+                    return true;
+                }
             }
         }
     }
