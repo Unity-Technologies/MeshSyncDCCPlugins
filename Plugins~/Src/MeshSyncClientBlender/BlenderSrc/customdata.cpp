@@ -24,7 +24,9 @@ int CustomData_get_layer_index_n(const struct CustomData *data, int type, int n)
     return i;
 }
 
-
+#if BLENDER_VERSION >= 305
+const
+#endif
 void *CustomData_get_layer_n(const CustomData *data, int type, int n)
 {
     /* get the layer index of the active layer of type */
@@ -48,6 +50,9 @@ int CustomData_number_of_layers(const CustomData *data, int type)
     return number;
 }
 
+#if BLENDER_VERSION >= 305
+const
+#endif
 void* CustomData_get_layer_named(const CustomData* data, const int type, const char* name)
 {
     int layer_index = CustomData_get_named_layer_index(data, type, name);
