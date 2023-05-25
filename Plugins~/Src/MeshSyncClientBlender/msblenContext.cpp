@@ -1863,14 +1863,19 @@ void msblenContext::WaitAndKickAsyncExport()
         // Remove instance meshes that already exist in scene meshes:
         removeExistingByPath(instanceMeshes, t.geometries);
         removeExistingByPath(instanceMeshes, t.transforms);
+
+        std::vector<ms::Identifier> duplicates;
         
-        deduplicateGeometry(instanceMeshes, t.instanceMeshes, t.transforms);
+        deduplicateGeometry(instanceMeshes, t.instanceMeshes, t.transforms, duplicates);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
         t.deleted_instances = m_instances_manager.getDeleted();
+
+        // Any instanced meshes that were duplicates are now in t.transforms and no longer in t.instanceMeshes so we need to mark them as deleted from instances:
+        t.deleted_instances.insert(t.deleted_instances.end(), duplicates.begin(), duplicates.end());
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1913,7 +1918,10 @@ void msblenContext::WaitAndKickAsyncExport()
     exporter->kick();
 }
 
-void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input,
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms,
+    std::vector<ms::Identifier>& duplicates)
 {
     std::unordered_map<uint64_t, std::string> cache;
     for (auto& geometry : input) {
@@ -1939,6 +1947,7 @@ void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& inp
                 *ptr = *geometry;
                 ptr->reference = entry;
                 transforms.push_back(ptr);
+                duplicates.push_back(geometry->getIdentifier());
             }
         }
         else {

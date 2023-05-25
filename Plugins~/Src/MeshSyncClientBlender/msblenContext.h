@@ -164,7 +164,7 @@ private:
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
-    void deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    void deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references, std::vector<ms::Identifier>& duplicates);
     
     void deduplicateGeometry(const std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
 
