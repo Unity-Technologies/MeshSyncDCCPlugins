@@ -74,7 +74,7 @@ public:
     /// </summary>
     void eraseStaleEntities() override;
 
-    bool needsMirrorBaking() override { return false; }
+    bool needsToApplyMirrorModifier() override { return false; }
 };
 
 

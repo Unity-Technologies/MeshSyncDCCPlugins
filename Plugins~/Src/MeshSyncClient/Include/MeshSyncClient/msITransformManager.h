@@ -15,6 +15,6 @@ public:
 	virtual void clear() = 0;
 	virtual void setAlwaysMarkDirty(bool flag) = 0;
 	
-    virtual bool needsMirrorBaking() { return true; }
+    virtual bool needsToApplyMirrorModifier() { return true; }
 };
 }
