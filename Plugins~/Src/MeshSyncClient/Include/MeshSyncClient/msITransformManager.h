@@ -14,5 +14,7 @@ public:
 	virtual void eraseStaleEntities() = 0;
 	virtual void clear() = 0;
 	virtual void setAlwaysMarkDirty(bool flag) = 0;
+	
+    virtual bool needsToApplyMirrorModifier() { return true; }
 };
 }

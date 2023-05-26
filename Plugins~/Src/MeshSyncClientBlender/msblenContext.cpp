@@ -802,7 +802,7 @@ void msblenContext::doExtractMeshData(msblenContextState& state, BlenderSyncSett
             doExtractNonEditMeshData(state, settings, dst, obj, data);
         }
 
-        if (!settings.BakeModifiers&& !is_editing) {
+        if (!settings.BakeModifiers && !is_editing && state.manager.needsToApplyMirrorModifier()) {
             // mirror
             if (const MirrorModifierData* mirror = (const MirrorModifierData*)FindModifier(obj, eModifierType_Mirror)) {
                 if (mirror->flag & MOD_MIR_AXIS_X) dst.refine_settings.flags.Set(ms::MESH_REFINE_FLAG_MIRROR_X, true);

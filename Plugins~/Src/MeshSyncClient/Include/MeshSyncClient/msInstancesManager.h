@@ -73,6 +73,8 @@ public:
     /// been added or touched in the last exportation.
     /// </summary>
     void eraseStaleEntities() override;
+
+    bool needsToApplyMirrorModifier() override { return false; }
 };
 
 
