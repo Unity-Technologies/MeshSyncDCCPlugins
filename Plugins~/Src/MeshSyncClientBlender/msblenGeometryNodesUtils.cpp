@@ -159,9 +159,37 @@ namespace blender {
 
         depsgraph.object_instances_begin(&it);
 
-        // Keep track of the names of the instances we've already processed for nested instance handling:
-        std::set<std::string> instanceParentNames;
-        std::string ignoredParent;
+        // Blender returns the instances in a flattened list, which causes duplicate instances when we have nested instances.
+        // For example in an instance hierarchy like this:
+        // A
+        // |-B
+        //   |-C
+        //   |-D
+        // Blender would return the instances in this order:
+        // C on parent B
+        // D on parent B
+        // B on parent A
+        // C on parent A (Duplicate!)
+        // D on parent A (Duplicate!)
+        // To get around this, build a map of child instances to their parents and if we find a parent, we can skip the children of that instance.
+        
+        // Parent we're currently under:
+        std::string currentParent = "";
+
+        // Parents and their direct children:
+        std::map<std::string, std::vector<std::string>> instanceParentsToChildren;
+
+        // Iterator to the current position of child instances:
+        vector<string>::iterator currentObjectChildIterator;
+
+        // currentObjectChildIterator cannot be null, this keeps track whether we have an iterator or not:
+        bool hasIterator = false;
+
+        // Parent of the object for currentObjectChildIterator
+        std::string currentObjectChildIteratorParent = "";
+
+        // Keeps track of the parents we built a child hierarchy for. Once the parent changes, the previous parent's hierarchy is complete.
+        std::vector<std::string> processedInstanceParents;
 
         for (; it.valid; depsgraph.object_instances_next(&it)) {
 
@@ -183,36 +211,62 @@ namespace blender {
             auto object = instance.object();
 
             // Don't instance empties, they have no data we can use to get a session id:
-            if (object->type == OB_EMPTY) {
+            if (object->type == OB_EMPTY)
                 continue;
-            }
 
             auto world_matrix = float4x4();
             instance.world_matrix(&world_matrix);
-
+            
             auto parent = instance.parent();
 
             auto parentName = msblenUtils::get_name(parent);
             auto objectName = msblenUtils::get_name(object);
-
-            bool isParent = instanceParentNames.find(objectName) != instanceParentNames.end();
-
-            // If we're inside an ignored parent, skip all its child instances:            
-            if (ignoredParent == parentName && !isParent) {
-                continue;
-            }
-
-            // If this instance is a parent, still export it but mark ignoredParent so the children of the nested instance are not exported:
-            if (isParent)
+            
+            if (currentParent != parentName ||
+                objectName == currentObjectChildIteratorParent)
             {
-                ignoredParent = parentName;
-            }        
-            else {
-                ignoredParent = "";
+                currentParent = parentName;
+
+                if (instanceParentsToChildren.find(objectName) != instanceParentsToChildren.end()) {
+                    hasIterator = true;
+                    currentObjectChildIterator = instanceParentsToChildren[objectName].begin();
+                    currentObjectChildIteratorParent = objectName;
+                }
+                else
+                {
+                    hasIterator = false;
+                }
+            }
+            
+            // build parentToChildren mapping:
+            if (std::find(processedInstanceParents.begin(), processedInstanceParents.end(), parentName) == processedInstanceParents.end()) {
+                processedInstanceParents.push_back(parentName);
             }
 
-            instanceParentNames.insert(parentName);
+            // If this is the current instance parent, add any instances to it as children
+            if (processedInstanceParents[processedInstanceParents.size() - 1] == parentName) {
+                instanceParentsToChildren[parentName].push_back(objectName);
+            }
 
+            // If we're currently iterating over the children of an instance parent, skip this child:
+            if (objectName != currentObjectChildIteratorParent) {
+                if (hasIterator &&
+                    currentObjectChildIterator != instanceParentsToChildren[currentObjectChildIteratorParent].end()) {
+                    if (*currentObjectChildIterator == objectName)
+                    {
+                        currentObjectChildIterator++;
+                        continue;
+                    }
+
+                    hasIterator = false;
+                    currentObjectChildIteratorParent = "";
+                }
+                else {
+                    hasIterator = false;
+                    currentParent = "";
+                }
+            }
+            
             handler(object, parent, world_matrix);
         }
 
