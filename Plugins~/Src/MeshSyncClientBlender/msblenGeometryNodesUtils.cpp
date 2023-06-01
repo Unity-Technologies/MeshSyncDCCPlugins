@@ -83,9 +83,7 @@ namespace blender {
         std::unordered_map<std::string, Record> records_by_session_id;
         std::unordered_map<std::string, Record> records_by_name;
 
-        // Collect object names in the file
-        auto ctx = blender::BlenderPyContext::get();
-        auto objects = ctx.data()->objects;
+        // Collect object names in the scene
         std::unordered_set<std::string> file_objects;
 
         auto get_path = [](Object* obj) {
@@ -93,15 +91,14 @@ namespace blender {
             return string(data->name) + string(obj->id.name);
         };
 
-        LISTBASE_FOREACH(Object*, obj, &objects) {
-
+        BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
+        scene.each_objects([&](Object* obj) {            
             if (obj->data == nullptr)
-                continue;
+                return;
 
             auto path = get_path(obj);
-
             file_objects.insert(path);
-        }
+            });
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
             {
@@ -110,43 +107,43 @@ namespace blender {
                 //Some objects, i.e. lights, do not use a session uuid.
                 bool useName = id->session_uuid == 0;
 
-                // An object might be sharing data with other objects, need to use the object name in keys
-                auto& rec = useName? records_by_name[std::string(id->name + 2) + obj->id.name] : records_by_session_id[std::to_string(id->session_uuid) + obj->id.name];
+                // An object might be sharing data with other objects, need to use the object name in keys                
+                auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + "_" + std::string(obj->id.name + 2)]
+                    : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + "_" + std::string(obj->id.name + 2)];
 
                 if (!rec.handled_object)
                 {
                     rec.handled_object = true;
-                    rec.name = std::string(id->name + 2) + std::string(obj->id.name);
+                    rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
                     rec.obj = obj;
                     rec.parent = parent;
-                    
+
                     rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
 
-                    rec.id = rec.name +"_" + std::to_string(id->session_uuid);
+                    rec.id = std::string(parent->id.name + 2) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
                     obj_handler(rec);
                 }
-                
+
                 rec.matrices.push_back(matrix);
             });
 
 
-            // Export transforms
-            for (auto& rec : records_by_session_id) {
-                if (rec.second.handled_matrices)
-                    continue;
+        // Export transforms
+        for (auto& rec : records_by_session_id) {
+            if (rec.second.handled_matrices)
+                continue;
 
-                rec.second.handled_matrices = true;
-                matrix_handler(rec.second);
-            }
+            rec.second.handled_matrices = true;
+            matrix_handler(rec.second);
+        }
 
-            for (auto& rec : records_by_name) {
-                if (rec.second.handled_matrices)
-                    continue;
+        for (auto& rec : records_by_name) {
+            if (rec.second.handled_matrices)
+                continue;
 
-                rec.second.handled_matrices = true;
-                matrix_handler(rec.second);
-            }
-
+            rec.second.handled_matrices = true;
+            matrix_handler(rec.second);
+        }
     }
 
     void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler)
@@ -161,6 +158,38 @@ namespace blender {
         CollectionPropertyIterator it;
 
         depsgraph.object_instances_begin(&it);
+
+        // Blender returns the instances in a flattened list, which causes duplicate instances when we have nested instances.
+        // For example in an instance hierarchy like this:
+        // A
+        // |-B
+        //   |-C
+        //   |-D
+        // Blender would return the instances in this order:
+        // C on parent B
+        // D on parent B
+        // B on parent A
+        // C on parent A (Duplicate!)
+        // D on parent A (Duplicate!)
+        // To get around this, build a map of child instances to their parents and if we find a parent, we can skip the children of that instance.
+        
+        // Parent we're currently under:
+        std::string currentParent = "";
+
+        // Parents and their direct children:
+        std::map<std::string, std::vector<std::string>> instanceParentsToChildren;
+
+        // Iterator to the current position of child instances:
+        vector<string>::iterator currentObjectChildIterator;
+
+        // currentObjectChildIterator cannot be null, this keeps track whether we have an iterator or not:
+        bool hasIterator = false;
+
+        // Parent of the object for currentObjectChildIterator
+        std::string currentObjectChildIteratorParent = "";
+
+        // Keeps track of the parents we built a child hierarchy for. Once the parent changes, the previous parent's hierarchy is complete.
+        std::vector<std::string> processedInstanceParents;
 
         for (; it.valid; depsgraph.object_instances_next(&it)) {
 
@@ -182,15 +211,62 @@ namespace blender {
             auto object = instance.object();
 
             // Don't instance empties, they have no data we can use to get a session id:
-            if (object->type == OB_EMPTY) {
+            if (object->type == OB_EMPTY)
                 continue;
-            }
 
             auto world_matrix = float4x4();
             instance.world_matrix(&world_matrix);
-
+            
             auto parent = instance.parent();
 
+            auto parentName = msblenUtils::get_name(parent);
+            auto objectName = msblenUtils::get_name(object);
+            
+            if (currentParent != parentName ||
+                objectName == currentObjectChildIteratorParent)
+            {
+                currentParent = parentName;
+
+                if (instanceParentsToChildren.find(objectName) != instanceParentsToChildren.end()) {
+                    hasIterator = true;
+                    currentObjectChildIterator = instanceParentsToChildren[objectName].begin();
+                    currentObjectChildIteratorParent = objectName;
+                }
+                else
+                {
+                    hasIterator = false;
+                }
+            }
+            
+            // build parentToChildren mapping:
+            if (std::find(processedInstanceParents.begin(), processedInstanceParents.end(), parentName) == processedInstanceParents.end()) {
+                processedInstanceParents.push_back(parentName);
+            }
+
+            // If this is the current instance parent, add any instances to it as children
+            if (processedInstanceParents[processedInstanceParents.size() - 1] == parentName) {
+                instanceParentsToChildren[parentName].push_back(objectName);
+            }
+
+            // If we're currently iterating over the children of an instance parent, skip this child:
+            if (objectName != currentObjectChildIteratorParent) {
+                if (hasIterator &&
+                    currentObjectChildIterator != instanceParentsToChildren[currentObjectChildIteratorParent].end()) {
+                    if (*currentObjectChildIterator == objectName)
+                    {
+                        currentObjectChildIterator++;
+                        continue;
+                    }
+
+                    hasIterator = false;
+                    currentObjectChildIteratorParent = "";
+                }
+                else {
+                    hasIterator = false;
+                    currentParent = "";
+                }
+            }
+            
             handler(object, parent, world_matrix);
         }
 

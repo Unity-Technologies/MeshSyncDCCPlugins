@@ -1796,6 +1796,22 @@ void msblenContext::flushPendingList(msblenContextState& state, msblenContextPat
     }
 }
 
+void removeExistingByPath(std::vector<ms::TransformPtr>& listToFilter, std::vector<ms::TransformPtr> sceneList)
+{
+    for (size_t i = 0; i < listToFilter.size(); i++)
+    {
+        for (size_t j = 0; j < sceneList.size(); j++)
+        {
+            if (listToFilter[i]->path == sceneList[j]->path)
+            {
+                listToFilter.erase(listToFilter.begin() + i);
+                i--;
+                break;
+            }
+        }
+    }
+}
+
 void msblenContext::WaitAndKickAsyncExport()
 {
     m_asyncTasksController.Wait();
@@ -1841,13 +1857,25 @@ void msblenContext::WaitAndKickAsyncExport()
 
         t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.instanceMeshes.clear();
-        deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
+
+        auto instanceMeshes = m_instances_manager.getDirtyMeshes();
+
+        // Remove instance meshes that already exist in scene meshes:
+        removeExistingByPath(instanceMeshes, t.geometries);
+        removeExistingByPath(instanceMeshes, t.transforms);
+
+        std::vector<ms::Identifier> duplicates;
+        
+        deduplicateGeometry(instanceMeshes, t.instanceMeshes, t.transforms, duplicates);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
         t.deleted_instances = m_instances_manager.getDeleted();
+
+        // Any instanced meshes that were duplicates are now in t.transforms and no longer in t.instanceMeshes so we need to mark them as deleted from instances:
+        t.deleted_instances.insert(t.deleted_instances.end(), duplicates.begin(), duplicates.end());
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1890,19 +1918,37 @@ void msblenContext::WaitAndKickAsyncExport()
     exporter->kick();
 }
 
-void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input,
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms,
+    std::vector<ms::Identifier>& duplicates)
 {
     std::unordered_map<uint64_t, std::string> cache;
     for (auto& geometry : input) {
         auto checksum = geometry->checksumGeom();
         auto entry = cache[checksum];
         if (entry.length() > 0) {
-            // Create a new pointer to avoid issues with change checks
-            // in auto sync
-            auto ptr = ms::Transform::create();
-            *ptr = *geometry;
-            ptr->reference = entry;
-            transforms.push_back(ptr);
+            bool found = false;
+            // If the transform is already in the list, update it:
+            for (auto& t : transforms)
+            {
+                if (t->path == geometry->path)
+                {
+                    t->reference = entry;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                // Create a new pointer to avoid issues with change checks
+                // in auto sync
+                auto ptr = ms::Transform::create();
+                *ptr = *geometry;
+                ptr->reference = entry;
+                transforms.push_back(ptr);
+                duplicates.push_back(geometry->getIdentifier());
+            }
         }
         else {
             cache[checksum] = geometry->path;

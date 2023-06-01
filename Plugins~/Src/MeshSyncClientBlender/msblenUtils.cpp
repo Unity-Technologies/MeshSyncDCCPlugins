@@ -4,6 +4,7 @@
 #include "msblenUtils.h"
 
 #include "BlenderPyObjects/BlenderPyScene.h"
+#include "MeshUtils/muLog.h"
 
 namespace bl = blender;
 namespace msblenUtils {
@@ -87,17 +88,21 @@ bool visible_in_viewport(const Object *obj)
 }
 
 bool visible_in_collection(LayerCollection* lc, const Object* obj) {
+    std::string objName = get_name(obj);
+
     // Check if the object is in the layer collection, if it is, check if the layer is excluded:
-    for (auto collectionObject : blender::list_range((CollectionObject*)lc->collection->gobject.first)) {
-        if (collectionObject->ob == obj) {
-            if ((!(lc->flag & LAYER_COLLECTION_EXCLUDE)) &&
+    if (lc->collection) {
+        for (auto collectionObject : blender::list_range((CollectionObject*)lc->collection->gobject.first)) {
+            if (get_name(collectionObject->ob) == objName) {
+                if ((!(lc->flag & LAYER_COLLECTION_EXCLUDE)) &&
 #if BLENDER_VERSION >= 300
-                (!(lc->collection->flag & COLLECTION_HIDE_RENDER))
+                    (!(lc->collection->flag & COLLECTION_HIDE_RENDER))
 #else
-                (!(lc->collection->flag & COLLECTION_RESTRICT_RENDER))
+                    (!(lc->collection->flag & COLLECTION_RESTRICT_RENDER))
 #endif
-                ) {
-                return true;
+                    ) {
+                    return true;
+                }
             }
         }
     }
@@ -181,14 +186,14 @@ bool is_mesh(const Object *obj) { return obj->type == OB_MESH; }
 bool is_camera(const Object *obj) { return obj->type == OB_CAMERA; }
 bool is_light(const Object *obj) { return obj->type == OB_LAMP; }
 bool is_armature(const Object *obj) { return obj->type == OB_ARMATURE; }
-
+}
 
 #ifdef BLENDER_DEBUG_LOGS
 void debug_log(std::string message) {
     try {
         py::gil_scoped_acquire acquire;
 
-        auto statement = Format("print('%s')", message.c_str());
+        auto statement = mu::Format("print('%s')", message.c_str());
 
         py::eval<py::eval_mode::eval_statements>(
             statement.c_str());
@@ -200,5 +205,3 @@ void debug_log(std::string message) {
     }
 }
 #endif
-
-}
