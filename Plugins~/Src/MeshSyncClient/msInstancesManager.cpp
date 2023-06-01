@@ -65,17 +65,13 @@ namespace ms {
     void InstancesManager::add(InstanceInfoPtr info)
     {
         auto& rec = lockAndGet(info->path);
-
-        bool existed = false;
-
+        
         for (int i = 0; i < rec.instancesPerParent[info->parent_path].size(); ++i)
         {
             const auto& instance = rec.instancesPerParent[info->parent_path][i];
 
             if (instance->parent_path == info->parent_path)
             {
-                existed = true;
-
                 // Remove instance from the list, the new one will be added below:
                 rec.instancesPerParent[info->parent_path].erase(rec.instancesPerParent[info->parent_path].begin() + i);
 
@@ -83,9 +79,8 @@ namespace ms {
             }
         }
 
-        if (m_always_mark_dirty || !existed) {
-            rec.dirtyInstances = true;
-        }
+        // instanceInfos need to be sent every update because it's how the server knows which instances are still alive:
+        rec.dirtyInstances = true;
 
         rec.instancesPerParent[info->parent_path].push_back(info);
         rec.updatedParents[info->parent_path] = true;
