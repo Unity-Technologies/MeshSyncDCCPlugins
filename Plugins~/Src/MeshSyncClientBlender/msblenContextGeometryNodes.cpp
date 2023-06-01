@@ -37,10 +37,7 @@ void msblenContext::exportInstances() {
             auto id = static_cast<ID*>(obj->data);
             scene_objects.insert(id->name + 2);
         });
-
-    // Assume everything is now dirty
-    m_instances_state->manager.setAlwaysMarkDirty(true);
-
+    
     std::unordered_map<std::string, ms::TransformPtr> exportedTransforms;
 
     m_geometryNodeUtils.each_instanced_object(
