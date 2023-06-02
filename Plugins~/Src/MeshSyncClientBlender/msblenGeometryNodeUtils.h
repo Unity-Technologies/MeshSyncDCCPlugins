@@ -60,6 +60,8 @@ public:
     void setInstancesDirty(bool dirty);
     bool getInstancesDirty();
 
+    std::string get_data_path(Object* obj);
+
 private:
     bool m_instances_dirty;
 

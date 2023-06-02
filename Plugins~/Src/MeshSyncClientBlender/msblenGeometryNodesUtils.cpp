@@ -76,6 +76,14 @@ namespace blender {
         return m_instances_dirty;
     }
 
+    std::string GeometryNodesUtils::get_data_path(Object* obj) {
+        auto data = (ID*)obj->data;
+        if (data) {
+            return string(data->name) + string(obj->id.name);
+        }
+        return string(obj->id.name);
+    };
+
     void GeometryNodesUtils::each_instanced_object(
         std::function<void(Record&)> obj_handler,
         std::function<void(Record&)> matrix_handler) {
@@ -86,23 +94,21 @@ namespace blender {
         // Collect object names in the scene
         std::unordered_set<std::string> file_objects;
 
-        auto get_path = [](Object* obj) {
-            auto data = (ID*)obj->data;
-            return string(data->name) + string(obj->id.name);
-        };
-
         BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
         scene.each_objects([&](Object* obj) {            
-            if (obj->data == nullptr)
-                return;
-
-            auto path = get_path(obj);
+            auto path = get_data_path(obj);
             file_objects.insert(path);
             });
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix)
             {
-                auto id = (ID*)obj->data;
+                ID* id;
+                if (obj->data) {
+                    id = (ID*)obj->data;
+                }
+                else {
+                    id = &obj->id;
+                }
 
                 //Some objects, i.e. lights, do not use a session uuid.
                 bool useName = id->session_uuid == 0;
@@ -114,11 +120,19 @@ namespace blender {
                 if (!rec.handled_object)
                 {
                     rec.handled_object = true;
-                    rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
+
+                    // If there is no data on the object, the object can be uniquely identified by its name:
+                    if (obj->data) {
+                        rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
+                    }
+                    else {
+                        rec.name = std::string(id->name + 2);
+                    }
+
                     rec.obj = obj;
                     rec.parent = parent;
 
-                    rec.from_file = file_objects.find(get_path(obj)) != file_objects.end();
+                    rec.from_file = file_objects.find(get_data_path(obj)) != file_objects.end();
 
                     rec.id = std::string(parent->id.name + 2) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
                     obj_handler(rec);
@@ -209,10 +223,6 @@ namespace blender {
                 continue;
 
             auto object = instance.object();
-
-            // Don't instance empties, they have no data we can use to get a session id:
-            if (object->type == OB_EMPTY)
-                continue;
 
             auto world_matrix = float4x4();
             instance.world_matrix(&world_matrix);

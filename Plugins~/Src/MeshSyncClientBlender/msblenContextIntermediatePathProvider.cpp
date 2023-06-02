@@ -3,6 +3,11 @@
 #include <BLI_listbase.h>
 
 std::string msblenContextIntermediatePathProvider::append_id(std::string path, const Object* obj) {
+    // If there is no data, no need to append anything:
+    if (!obj->data) {
+        return path;
+    }
+
     auto data = (ID*)obj->data;
 
     path += "_" + std::string(data->name);

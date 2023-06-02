@@ -57,7 +57,7 @@ void msblenContext::exportInstances() {
                 transform->reset();
                 exportedTransforms[rec.id] = transform;
             }
-            else if (scene_objects.find(static_cast<ID*>(obj->data)->name + 2) == scene_objects.end()) {
+            else if (scene_objects.find(m_geometryNodeUtils.get_data_path(obj)) == scene_objects.end()) {
                 auto settings = m_settings;
                 settings.multithreaded = false;
                 settings.BakeModifiers = false;
