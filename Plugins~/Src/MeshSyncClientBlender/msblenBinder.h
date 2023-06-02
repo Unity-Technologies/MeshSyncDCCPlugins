@@ -13,7 +13,7 @@ namespace blender
     const void* CustomData_get(const CustomData& data, int type);
     int CustomData_get_offset(const CustomData& data, int type);
     mu::float3 BM_loop_calc_face_normal(const BMLoop& l);
-    std::string abspath(const std::string& path);
+    std::string abspath(const std::string& path, const std::string& libName = "");
     void callPythonMethod(const char* name);
     std::string getBlenderVersion();
 
