@@ -380,7 +380,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     }
 
 #if BLENDER_VERSION >= 300
-        blender::msblenModifiers::exportProperties(obj, &m_property_manager);
+        blender::msblenModifiers::exportProperties(obj, &m_property_manager, paths);
 #endif
 
     return rec.dst;
