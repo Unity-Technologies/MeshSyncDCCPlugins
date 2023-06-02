@@ -200,8 +200,18 @@ void msblenMaterialsExportHelper::exportImageFromImageNode(ms::TextureType& text
 	if (img->packedfiles.first) {
 		exportPackedImages(textureType, setTextureHandler, img);
 	}
-	else {
-		setTextureHandler(exportTexture(abspath(img->filepath), textureType));
+	else {		
+		std::string path;
+		if (img->id.lib)
+		{
+			path = abspath(img->filepath, img->id.lib->id.name + 2);
+		}
+		else
+		{
+		    path = abspath(img->filepath);
+		}
+
+		setTextureHandler(exportTexture(path, textureType));
 	}
 }
 

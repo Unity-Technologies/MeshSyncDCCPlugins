@@ -656,15 +656,17 @@ mu::float3 BM_loop_calc_face_normal(const BMLoop& l)
     return (mu::float3&)r_normal;
 }
 
-std::string abspath(const std::string& path)
+std::string abspath(const std::string& path, const std::string& libName)
 {
     try {
         auto global = py::dict();
         auto local = py::dict();
         local["path"] = py::str(path);
+        local["libName"] = py::str(libName);
         py::eval<py::eval_mode::eval_statements>(
             "import bpy.path\n"
-            "ret = bpy.path.abspath(path)\n"
+            "lib = bpy.data.libraries[libName] if libName else None\n"
+            "ret = bpy.path.abspath(path, library=lib)\n"
             , global, local);
         return (py::str)local["ret"];
     }
