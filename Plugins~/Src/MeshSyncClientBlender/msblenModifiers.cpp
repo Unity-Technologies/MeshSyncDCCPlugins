@@ -8,7 +8,7 @@
 
 namespace blender {
 #if BLENDER_VERSION < 300
-void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager) {}
+void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {}
 void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {}
 #else
 
@@ -130,7 +130,7 @@ void addModifierProperties(ModifierData* modifier, const Object* obj, ms::Proper
 	}
 }
 
-void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager) {
+void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {
 	if (obj->id.properties == nullptr) {
 		return;
 	}
@@ -197,7 +197,7 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 			continue;
 		}
 
-		propertyInfo->path = msblenUtils::get_path(obj);
+		propertyInfo->path = paths.get_path(obj);
 		propertyInfo->name = std::string(property->name);
 		propertyInfo->modifierName = "";
 		propertyInfo->propertyName = std::string(property->name);
@@ -206,7 +206,7 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 	}
 }
 
-void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager)
+void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 
@@ -218,7 +218,7 @@ void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* p
 		addModifierProperties(modifier, obj, propertyManager);
 	}
 
-	addCustomProperties(obj, propertyManager);
+	addCustomProperties(obj, propertyManager, paths);
 }
 
 void setProperty(const Object* obj, IDProperty* property, ms::PropertyInfo& receivedProp) {
