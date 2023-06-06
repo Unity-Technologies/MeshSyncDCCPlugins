@@ -88,6 +88,8 @@ msblenContext::msblenContext()
 {
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
     m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
+
+    ms::Mesh::useNormalsForHashing = false;
 }
 
 msblenContext::~msblenContext()
