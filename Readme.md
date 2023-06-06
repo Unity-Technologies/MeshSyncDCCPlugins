@@ -21,17 +21,17 @@ This allows devs to immediately see how things will look in-game while modelling
 
 ## Features
 
-|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              | Modo                 | Metasequoia          | 
-| --------------------| -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | -------------------- | 
-| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |  
-| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |                      |
-| Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |                      |                      |  
-| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   | :heavy_check_mark:   |                      |  
-| Non-polygon shape   |                      |                      |                      |                      |                      |                      |  
-| Bidirectional Sync  |                      |                      |                      | :heavy_check_mark:   |                      |                      |  
+|                     | Maya                 | 3ds Max              | MotionBuilder        | Blender              |
+| --------------------| -------------------- | -------------------- | -------------------- | -------------------- |
+| Polygon mesh sync   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Camera sync         | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Light sync          | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Double-sided Mesh   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   | :heavy_check_mark:   |
+| Negative Scale      | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: | :small_red_triangle: |
+| Multi UV            |                      | :heavy_check_mark:   |                      | :heavy_check_mark:   |
+| Scene Cache Export  | :heavy_check_mark:   | :heavy_check_mark:   |                      | :heavy_check_mark:   |
+| Non-polygon shape   |                      |                      |                      |                      |
+| Bidirectional Sync  |                      |                      |                      | :heavy_check_mark:   |
 
 ### Caveats
 
@@ -90,8 +90,6 @@ Alternatively, [Manual Installation](Documentation~/Installation.md) is also ava
 2. [3ds Max](Documentation~/3dsMax.md)
 3. [MotionBuilder](Documentation~/MotionBuilder.md)
 4. [Blender](Documentation~/Blender.md)
-5. [Modo](Documentation~/Modo.md)
-6. [Metasequoia](Documentation~/Metasequoia.md)
 # Building
 - [Building DCC Plugins](Plugins~/Docs/en/BuildDCCPlugins.md)
 
@@ -262,4 +260,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Thu Nov 17 02:14:56 UTC 2022*
+*Auto-generated on Tue Jun  6 11:47:04 UTC 2023*
