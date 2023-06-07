@@ -70,6 +70,7 @@ This allows devs to immediately see how things will look in-game while modelling
 | Blender 3.1        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.2        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Blender 3.3        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Blender 3.4        | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 Notes:
 * :white_check_mark: : Supported
@@ -260,4 +261,4 @@ Also, dll is different in version 4.7 and later. This is due to changes to the b
 
 
 
-*Auto-generated on Tue Jun  6 11:47:04 UTC 2023*
+*Auto-generated on Wed Jun  7 08:50:05 UTC 2023*
