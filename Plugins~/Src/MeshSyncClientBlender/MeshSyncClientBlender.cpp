@@ -120,11 +120,11 @@ PYBIND11_MODULE(MeshSyncClientBlender, m)
                 [](const self_t& self) {return self->getSettings().editor_server_port; },
                 [](self_t& self, uint16_t v) {self->getSettings().editor_server_port = v; })
             BindProperty(scale_factor,
-                [](const self_t& self) { return self->getSettings().scene_settings.scale_factor; },
-                [](self_t& self, float v) { self->getSettings().scene_settings.scale_factor = v; })
+                [](const self_t& self) { return self->getSettings().scene_settings.get_scale_factor(); },
+                [](self_t& self, float v) { self->getSettings().scene_settings.set_scale_factor(v); })
             BindProperty(handedness,
-                [](const self_t& self) { return (int)self->getSettings().scene_settings.handedness; },
-                [](self_t& self, int v) { (int&)self->getSettings().scene_settings.handedness = v; })
+                [](const self_t& self) { return (int)self->getSettings().scene_settings.get_handedness(); },
+                [](self_t& self, int v) { self->getSettings().scene_settings.set_handedness((ms::Handedness)v); })
             BindProperty(sync_meshes,
                 [](const self_t& self) { return (int)self->getSettings().sync_meshes; },
                 [](self_t& self, bool v) { self->getSettings().sync_meshes = v; })

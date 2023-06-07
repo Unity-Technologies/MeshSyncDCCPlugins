@@ -86,7 +86,7 @@ void msblenContext::Destroy() {
 
 msblenContext::msblenContext()
 {
-    m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
+    m_settings.scene_settings.set_handedness(ms::Handedness::RightZUp);
     m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
 }
 
@@ -1584,6 +1584,8 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
     
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
 
+    m_settings.scene_settings.set_color_space(scene.get_colorspace());
+
     if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (!bpy_data.objects_is_updated())
@@ -1831,8 +1833,8 @@ void msblenContext::WaitAndKickAsyncExport()
 
         ms::SceneExporter& t = *exporter;
         t.scene_settings = m_settings.scene_settings;
-        const float scale_factor = 1.0f / m_settings.scene_settings.scale_factor;
-        t.scene_settings.scale_factor = 1.0f;
+        const float scale_factor = 1.0f / m_settings.scene_settings.get_scale_factor();
+        t.scene_settings.set_scale_factor(1.0f);
 
         t.textures = m_texture_manager.getDirtyTextures();
         t.materials = m_material_manager.getDirtyMaterials();

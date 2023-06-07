@@ -53,6 +53,7 @@ void BlenderPyScene::frame_set(int f, float subf)
     call<Scene, void, int, float>(g_context, m_ptr, BlenderPyScene_frame_set, f, subf);
 }
 
-
-
+ms::ColorSpace BlenderPyScene::get_colorspace() const {
+    return strcmp(m_ptr->display_settings.display_device, "sRGB") == 0 ? ms::ColorSpace::sRGB : ms::ColorSpace::Linear;
+}
 } // namespace blender

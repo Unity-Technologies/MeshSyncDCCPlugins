@@ -7,6 +7,7 @@
 #include "../msblenBinder.h" //list_range
 
 #include "msblenUtils.h" // get_name
+#include "MeshSync/SceneGraph/msSceneSettings.h"
 
 namespace blender {
 
@@ -22,6 +23,8 @@ public:
     void SetCurrentFrame(int frame, Depsgraph* depsgraph);
 
     void frame_set(int f, float subf = 0.0f);
+
+    ms::ColorSpace get_colorspace() const;
 
     template<class Body>
     void each_objects_impl(const Body& body, CollectionChild *cc)

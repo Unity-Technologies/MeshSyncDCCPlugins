@@ -672,8 +672,8 @@ void msmaxContext::WaitAndKickAsyncExport()
         }
 
         ms::SceneExporter& t = *exporter;
-        t.scene_settings.handedness = ms::Handedness::RightZUp;
-        t.scene_settings.scale_factor = m_settings.scale_factor / to_meter;
+        t.scene_settings.set_handedness(ms::Handedness::RightZUp);
+        t.scene_settings.set_scale_factor(m_settings.scale_factor / to_meter);
 
         t.textures = m_texture_manager.getDirtyTextures();
         t.materials = m_material_manager.getDirtyMaterials();
