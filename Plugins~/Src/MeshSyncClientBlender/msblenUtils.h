@@ -136,7 +136,7 @@ inline mu::float4 to_float4(const MLoopCol& c)
 #ifdef BLENDER_DEBUG_LOGS
 void debug_log(std::string message);
 #else
-#define debug_log()
+#define debug_log(x)
 #endif
 
 }
