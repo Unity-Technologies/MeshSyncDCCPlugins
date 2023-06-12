@@ -8,7 +8,7 @@ namespace blender {
 	class msblenModifiers
 	{
 	public:
-		static void exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths);
+		static void exportProperties(const Object* obj, ms::TransformPtr dst, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths);
 
 		static void importProperties(std::vector<ms::PropertyInfo> props);
 

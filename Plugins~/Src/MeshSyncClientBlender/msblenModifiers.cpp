@@ -8,7 +8,7 @@
 
 namespace blender {
 #if BLENDER_VERSION < 300
-void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {}
+void msblenModifiers::exportProperties(const Object* obj, ms::TransformPtr dst, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {}
 void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {}
 bool msblenModifiers::doesObjectHaveCustomProperties(const Object* obj) { return false; }
 #else
@@ -131,7 +131,9 @@ void addModifierProperties(ModifierData* modifier, const Object* obj, ms::Proper
 	}
 }
 
-void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {
+void addCustomProperties(const Object* obj, ms::TransformPtr dst, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {
+	dst->propertiesHash = 0;
+
 	if (obj->id.properties == nullptr) {
 		return;
 	}
@@ -204,6 +206,9 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 		propertyInfo->propertyName = std::string(property->name);
 		propertyInfo->sourceType = ms::PropertyInfo::SourceType::CUSTOM_PROPERTY;
 		propertyManager->add(propertyInfo);
+
+		dst->propertiesHash += propertyInfo->hash();
+		dst->propertiesHash += ms::vhash(propertyInfo->data);
 	}
 }
 
@@ -223,7 +228,7 @@ bool msblenModifiers::doesObjectHaveCustomProperties(const Object* obj) {
 	return false;
 }
 
-void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths)
+void msblenModifiers::exportProperties(const Object* obj, ms::TransformPtr dst, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 
@@ -235,7 +240,7 @@ void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* p
 		addModifierProperties(modifier, obj, propertyManager);
 	}
 
-	addCustomProperties(obj, propertyManager, paths);
+	addCustomProperties(obj, dst, propertyManager, paths);
 }
 
 void setProperty(const Object* obj, IDProperty* property, ms::PropertyInfo& receivedProp) {
