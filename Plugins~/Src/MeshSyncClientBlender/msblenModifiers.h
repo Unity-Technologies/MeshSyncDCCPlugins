@@ -11,5 +11,7 @@ namespace blender {
 		static void exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths);
 
 		static void importProperties(std::vector<ms::PropertyInfo> props);
+
+		static bool doesObjectHaveCustomProperties(const Object* obj);
 	};
 }

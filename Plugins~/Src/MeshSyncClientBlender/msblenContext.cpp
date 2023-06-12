@@ -297,7 +297,8 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
             handle_parent();
             rec.dst = exportArmature(state, paths, settings, obj);
         }
-        else if (!tip && parent)
+            // Export bones as transforms if we're baking modifiers but the bone has a custom property:
+        else if ((tip && blender::msblenModifiers::doesObjectHaveCustomProperties(obj)) || (!tip && parent))
             handle_transform();
         break;
     }
