@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.17.1-preview] - 2023-06-13
+
+### Added
+* blender-feat: adding option to only sync selected objects. 
+* blender-feat: handle node group for materials
+* doc: mention support for Blender 3.4 
+
+### Changed
+* doc: remove Modo and Metasequoia sections
+
+### Fixed
+
+* blender-fix: Spline crash fix in Blender 3.3+ 
+* blender-fix: material index crash fix 
+* blender-fix: fix for race condition when applying properties 
+* blender-fix: crash fix when removing an empty instance object 
+* blender-fix: fix for debug logs and uninitialized colorValue variable
+* blender-fix: apply mirror Modifier for instances when applicable 
+* blender-fix: null reference check in visible_in_collection() 
+* fix: use path provider to ensure instances use their correct path for properties 
+* blender-fix: fix for image paths coming from libraries
+* doc-blender: fix anchor links (lower case) 
+
 ## [0.17.0-preview] - 2023-02-07
 
 ### Added
