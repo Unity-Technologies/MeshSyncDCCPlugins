@@ -148,8 +148,7 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 			propertyInfo->set(IDP_Int(property), uiData->min, uiData->max);
 			break;
 		}
-		case IDP_FLOAT:
-		{
+		case IDP_FLOAT: {
 			auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
 			propertyInfo->set(IDP_Float(property), uiData->min, uiData->max);
 			break;

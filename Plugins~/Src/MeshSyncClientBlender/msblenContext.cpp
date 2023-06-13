@@ -299,7 +299,10 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
         }
             // Export bones as transforms if we're baking modifiers but the bone has a custom property:
         else if ((tip && blender::msblenModifiers::doesObjectHaveCustomProperties(obj)) || (!tip && parent))
-            handle_transform();
+        {
+            // Don't handle parent here, baked bone parents need to be handled separately:
+            rec.dst = exportTransform(state, paths, settings, obj);
+        }
         break;
     }
     case OB_MESH:
@@ -366,8 +369,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     default:
     {
         // Export everything, even if it's an empty object:
-        handle_parent();
-        rec.dst = exportTransform(state, paths, settings, obj);
+        handle_transform();
         break;
     }
     }
@@ -1930,7 +1932,9 @@ void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& inp
     for (auto& geometry : input) {
         auto checksum = geometry->checksumGeom();
         auto entry = cache[checksum];
-        if (entry.length() > 0) {
+
+        // Don't deduplicate transforms:
+        if (geometry->getType() != ms::EntityType::Transform && entry.length() > 0) {
             bool found = false;
             // If the transform is already in the list, update it:
             for (auto& t : transforms)
