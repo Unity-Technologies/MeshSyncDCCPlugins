@@ -39,8 +39,10 @@
 
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
+#include <msblenContextInstanceChildPathProvider.h>
 
 #include <MeshSync/Utility/msIdUtility.h>
+
 
 class msblenContext;
 
