@@ -293,15 +293,15 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     switch (obj->type) {
     case OB_ARMATURE:
     {
-        if (!tip || (!settings.BakeModifiers && settings.sync_bones)) {
+        if (!tip || (!settings.BakeModifiers && settings.sync_bones && state.manager.needsMirrorBaking())) {
             handle_parent();
             rec.dst = exportArmature(state, paths, settings, obj);
         }
-            // Export bones as transforms if we're baking modifiers but the bone has a custom property:
-        else if ((tip && blender::msblenModifiers::doesObjectHaveCustomProperties(obj)) || (!tip && parent))
+        else if (tip)
         {
-            // Don't handle parent here, baked bone parents need to be handled separately:
-            rec.dst = exportTransform(state, paths, settings, obj);
+            // Export bones as transforms if we're baking modifiers.
+            // Don't handle parent here, baked bone parents need to be handled separately!
+            rec.dst = exportCustomPropsBoneAsEmpty(state, paths, settings, obj);
         }
         break;
     }
@@ -419,12 +419,46 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
+    ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
     state.manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
         struct Bone* bone = pose->bone;
         std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = state.bones[bone];
         dst = exportPose(state, paths, settings, src, pose);
+    }
+    return ret;
+}
+
+ms::TransformPtr msblenContext::exportCustomPropsBoneAsEmpty(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src) {
+    //// Don't handle parent here, baked bone parents need to be handled separately:
+    //ms::TransformPtr ret = exportTransform(state, paths, settings, src);
+    //ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
+
+    //bPoseChannel* pose = (bPoseChannel*)src->pose->chanbase.first;
+
+    //Bone* bone = nullptr;
+
+    //if (pose) {
+    //    bone = pose->bone;
+    //}
+
+    //ret->path = paths.get_path(src, bone);
+
+    //return ret;
+
+    std::shared_ptr<ms::Transform> ret = ms::Transform::create();
+    ms::Transform& dst = *ret;
+    dst.path = paths.get_path(src);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
+    ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
+    state.manager.add(ret);
+
+    for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
+        struct Bone* bone = pose->bone;
+        std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = state.bones[bone];
+        dst = exportPose(state, paths, settings, src, pose);
+        dst->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
     }
     return ret;
 }
@@ -1877,10 +1911,16 @@ void msblenContext::WaitAndKickAsyncExport()
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
+
+        for (auto duplicate : duplicates) {
+            m_instances_manager.erase(duplicate.name);
+        }
+
         t.deleted_instances = m_instances_manager.getDeleted();
 
         // Any instanced meshes that were duplicates are now in t.transforms and no longer in t.instanceMeshes so we need to mark them as deleted from instances:
-        t.deleted_instances.insert(t.deleted_instances.end(), duplicates.begin(), duplicates.end());
+        //t.deleted_instances.insert(t.deleted_instances.end(), duplicates.begin(), duplicates.end());
+        
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);

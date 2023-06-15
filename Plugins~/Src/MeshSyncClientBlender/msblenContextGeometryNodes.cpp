@@ -1,4 +1,4 @@
-#include "msblenGeometryNodeUtils.h"
+#include "msblenGeometryNodesUtils.h"
 #include "msblenContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 
@@ -51,11 +51,14 @@ void msblenContext::exportInstances() {
 
                 auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, rec.obj, false, true);
 
-                // Objects that aren't in the file should always be hidden:
-                transform->visibility = { false, false, false };
+                // Could be null if export is not enabled for the object type:
+                if (transform) {
+                    // Objects that aren't in the file should always be hidden:
+                    transform->visibility = { false, false, false };
 
-                transform->reset();
-                exportedTransforms[rec.id] = transform;
+                    transform->reset();
+                    exportedTransforms[rec.id] = transform;
+                }
             }
             else if (scene_objects.find(m_geometryNodeUtils.get_data_path(obj)) == scene_objects.end()) {
                 auto settings = m_settings;
@@ -91,8 +94,29 @@ void msblenContext::exportInstances() {
             }
             else {
                 exportInstances(transform, parent, std::move(rec.matrices), inverse, m_intermediate_paths);
-            }            
-        });
+            }
+    },
+        [&](Object* childInstance) {
+        auto settings = m_settings;
+        settings.multithreaded = false;
+        settings.BakeModifiers = false;
+
+      /*  const auto& parent = exportObject(*m_entities_state, m_default_paths, m_settings, childInstance, true);*/
+         //auto a = exportObject(*m_entities_state, m_intermediate_paths, settings, childInstance, true);
+         auto a = exportedTransforms;
+
+         //auto instancePaths = msblenContextInstanceChildPathProvider(childInstance);
+         auto transform = exportObject(*m_instances_state, m_instance_child_paths, settings, childInstance, true);
+
+         // Make sure transform is at 0:
+         transform->reset();
+         //auto world_matrix = float4x4::identity();
+         ////auto inverse = mu::invert(world_matrix);
+
+         //world_matrix = m_geometryNodeUtils.blenderToUnityWorldMatrix(transform, world_matrix);
+
+         //transform->assignMatrix(world_matrix);
+    });
 
     m_geometryNodeUtils.setInstancesDirty(false);
 

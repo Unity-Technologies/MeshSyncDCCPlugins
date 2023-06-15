@@ -75,6 +75,8 @@ public:
     /// </summary>
     void eraseStaleEntities() override;
 
+    bool erase(const std::string& path);
+
     bool needsMirrorBaking() override { return false; }
 };
 

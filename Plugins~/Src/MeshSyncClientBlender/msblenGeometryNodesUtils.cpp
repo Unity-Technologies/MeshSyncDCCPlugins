@@ -1,4 +1,4 @@
-#include "msblenGeometryNodeUtils.h"
+#include "msblenGeometryNodesUtils.h"
 #include <sstream>
 #include <BlenderPyObjects/BlenderPyContext.h>
 #include <BlenderPyObjects/BlenderPyDepsgraphObjectInstance.h>
@@ -86,7 +86,8 @@ namespace blender {
 
     void GeometryNodesUtils::each_instanced_object(
         std::function<void(Record&)> obj_handler,
-        std::function<void(Record&)> matrix_handler) {
+        std::function<void(Record&)> matrix_handler,
+        std::function<void(Object*)> child_instance_handler) {
 
         std::unordered_map<std::string, Record> records_by_session_id;
         std::unordered_map<std::string, Record> records_by_name;
@@ -95,51 +96,50 @@ namespace blender {
         std::unordered_set<std::string> file_objects;
 
         BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
-        scene.each_objects([&](Object* obj) {            
+        scene.each_objects([&](Object* obj) {
             auto path = get_data_path(obj);
             file_objects.insert(path);
-            });
+        });
 
-        each_instance([&](Object* obj, Object* parent, float4x4 matrix)
-            {
-                ID* id;
+        each_instance([&](Object* obj, Object* parent, float4x4 matrix) {
+            ID* id;
+            if (obj->data) {
+                id = (ID*)obj->data;
+            }
+            else {
+                id = &obj->id;
+            }
+
+            //Some objects, i.e. lights, do not use a session uuid.
+            bool useName = id->session_uuid == 0;
+
+            // An object might be sharing data with other objects, need to use the object name in keys                
+            auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + "_" + std::string(obj->id.name + 2)]
+                : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + "_" + std::string(obj->id.name + 2)];
+
+            if (!rec.handled_object) {
+                rec.handled_object = true;
+
+                // If there is no data on the object, the object can be uniquely identified by its name:
                 if (obj->data) {
-                    id = (ID*)obj->data;
+                    rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
                 }
                 else {
-                    id = &obj->id;
+                    rec.name = std::string(id->name + 2);
                 }
 
-                //Some objects, i.e. lights, do not use a session uuid.
-                bool useName = id->session_uuid == 0;
+                rec.obj = obj;
+                rec.parent = parent;
 
-                // An object might be sharing data with other objects, need to use the object name in keys                
-                auto& rec = useName ? records_by_name[std::string(parent->id.name) + "_" + std::string(id->name + 2) + "_" + std::string(obj->id.name + 2)]
-                    : records_by_session_id[std::string(parent->id.name + 2) + "_" + std::to_string(id->session_uuid) + "_" + std::string(obj->id.name + 2)];
+                rec.from_file = file_objects.find(get_data_path(obj)) != file_objects.end();
 
-                if (!rec.handled_object)
-                {
-                    rec.handled_object = true;
+                rec.id = std::string(parent->id.name + 2) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
+                obj_handler(rec);
+            }
 
-                    // If there is no data on the object, the object can be uniquely identified by its name:
-                    if (obj->data) {
-                        rec.name = std::string(id->name + 2) + "_" + std::string(obj->id.name + 2);
-                    }
-                    else {
-                        rec.name = std::string(id->name + 2);
-                    }
-
-                    rec.obj = obj;
-                    rec.parent = parent;
-
-                    rec.from_file = file_objects.find(get_data_path(obj)) != file_objects.end();
-
-                    rec.id = std::string(parent->id.name + 2) + "_" + rec.name + "_" + std::to_string(id->session_uuid);
-                    obj_handler(rec);
-                }
-
-                rec.matrices.push_back(matrix);
-            });
+            rec.matrices.push_back(matrix);
+        },
+            child_instance_handler);
 
 
         // Export transforms
@@ -160,7 +160,20 @@ namespace blender {
         }
     }
 
-    void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler)
+    float4x4 getMatrix(float mat[4][4]) {
+        auto object_parent_world_matrix = float4x4();
+
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
+                object_parent_world_matrix[x][y] = mat[x][y];
+            }
+        }
+
+        return object_parent_world_matrix;
+    }
+    
+    void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler,
+                                           std::function<void(Object*)> child_instance_handler)
     {
         auto blender_ctx = BlenderPyContext::get();
         auto depsgraph_ctx = blender_ctx.evaluated_depsgraph_get();
@@ -204,6 +217,7 @@ namespace blender {
 
         // Keeps track of the parents we built a child hierarchy for. Once the parent changes, the previous parent's hierarchy is complete.
         std::vector<std::string> processedInstanceParents;
+        
 
         for (; it.valid; depsgraph.object_instances_next(&it)) {
 
@@ -226,7 +240,7 @@ namespace blender {
 
             auto world_matrix = float4x4();
             instance.world_matrix(&world_matrix);
-            
+
             auto parent = instance.parent();
 
             auto parentName = msblenUtils::get_name(parent);
@@ -274,6 +288,18 @@ namespace blender {
                 else {
                     hasIterator = false;
                     currentParent = "";
+                }
+            }
+            
+
+            // If the parent of the instanced object is also being instanced, skip this instance:
+            if (true) {
+                auto instancedObjectParentName = msblenUtils::get_name(object->parent);
+                std::vector<std::string>& parents = instanceParentsToChildren[parentName];
+                if (instancedObjectParentName != parentName &&
+                    std::find(parents.begin(), parents.end(), instancedObjectParentName) != parents.end()) {
+                    child_instance_handler(object);
+                    continue;
                 }
             }
             

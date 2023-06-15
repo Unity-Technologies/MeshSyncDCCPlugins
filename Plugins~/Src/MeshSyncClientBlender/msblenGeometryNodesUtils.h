@@ -37,7 +37,14 @@ public:
     /// instancedObject is the object that is being instanced.
     /// transform is the transform of the instance
     /// </param>
-    void each_instance(std::function<void(Object*, Object*, mu::float4x4)> handler);
+    /// <param name="child_instance_handler">
+    /// The child handling function: 
+    /// Instances that are have a parent that is also instanced are not handled by the handler function.
+    /// However, they may not exist in the scene and not be exported!
+    /// The child handler is invoked for these instances to add them to the entity manager.
+    /// </param>
+    void each_instance(std::function<void(Object*, Object*, mu::float4x4)> handler,
+                       std::function<void(Object*)> child_instance_handler);
 
     /// <summary>
     /// Invokes the handler function for each instanced object.
@@ -50,7 +57,8 @@ public:
     /// </param>
     void each_instanced_object(
         std::function<void(GeometryNodesUtils::Record& rec)> object_handler,
-        std::function<void(GeometryNodesUtils::Record& rec)> matrix_handler);
+        std::function<void(GeometryNodesUtils::Record& rec)> matrix_handler,
+        std::function<void(Object*)> child_instance_handler);
 
     /// <summary>
     /// Converts the world matrix from blender to Unity coordinate system

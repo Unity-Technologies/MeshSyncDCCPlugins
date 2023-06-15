@@ -35,6 +35,16 @@ namespace ms {
         return m_deleted;
     }
 
+    bool InstancesManager::erase(const std::string& path) {
+        auto it = m_records.find(path);
+        if (it != m_records.end()) {
+            m_records.erase(it);
+            m_deleted.push_back({ path, InvalidID });
+            return true;
+        }
+        return false;
+    }
+
     void InstancesManager::clearDirtyFlags()
     {
         for (auto& p : m_records) {

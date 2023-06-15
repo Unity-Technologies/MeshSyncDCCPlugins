@@ -32,7 +32,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #if BLENDER_VERSION >= 300
-#include <msblenGeometryNodeUtils.h>
+#include <msblenGeometryNodesUtils.h>
 #endif
 
 #include "msblenMaterialsExportHelper.h"
@@ -134,7 +134,8 @@ private:
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
+    ms::TransformPtr exportCustomPropsBoneAsEmpty(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
     ms::TransformPtr exportReference(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
     ms::TransformPtr exportDupliGroup(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
     ms::CameraPtr exportCamera(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -190,6 +191,7 @@ private:
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;
+    msblenContextInstanceChildPathProvider m_instance_child_paths;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;
