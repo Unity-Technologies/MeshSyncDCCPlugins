@@ -39,7 +39,6 @@
 
 #include <msblenContextDefaultPathProvider.h>
 #include <msblenContextIntermediatePathProvider.h>
-#include <msblenContextInstanceChildPathProvider.h>
 
 #include <MeshSync/Utility/msIdUtility.h>
 
@@ -193,7 +192,6 @@ private:
 
     msblenContextDefaultPathProvider m_default_paths;
     msblenContextIntermediatePathProvider m_intermediate_paths;
-    msblenContextInstanceChildPathProvider m_instance_child_paths;
 
     BlenderSyncSettings m_settings;
     BlenderCacheSettings m_cache_settings;

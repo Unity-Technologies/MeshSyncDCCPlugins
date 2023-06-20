@@ -28,6 +28,12 @@ namespace ms {
                 }
             }
         }
+        
+        // Sort by parent to ensure children are grouped correctly by the server:
+        sort(ret.begin(), ret.end(), [](const InstanceInfoPtr& a, const InstanceInfoPtr& b) {
+            return a->parent_path < b->parent_path;
+        });
+
         return ret;
     }
 

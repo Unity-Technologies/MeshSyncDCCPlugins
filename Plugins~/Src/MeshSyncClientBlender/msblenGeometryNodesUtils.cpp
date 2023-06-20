@@ -86,8 +86,7 @@ namespace blender {
 
     void GeometryNodesUtils::each_instanced_object(
         std::function<void(Record&)> obj_handler,
-        std::function<void(Record&)> matrix_handler,
-        std::function<void(Object*)> child_instance_handler) {
+        std::function<void(Record&)> matrix_handler) {
 
         std::unordered_map<std::string, Record> records_by_session_id;
         std::unordered_map<std::string, Record> records_by_name;
@@ -95,11 +94,19 @@ namespace blender {
         // Collect object names in the scene
         std::unordered_set<std::string> file_objects;
 
-        BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
+       /* BlenderPyScene scene = BlenderPyScene(BlenderPyContext::get().scene());
         scene.each_objects([&](Object* obj) {
             auto path = get_data_path(obj);
             file_objects.insert(path);
-        });
+        });*/
+
+        auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+        for (auto obj : bpy_data.objects()) {
+            if (obj->id.override_library == nullptr) {
+                auto path = get_data_path(obj);
+                file_objects.insert(path);
+            }
+        }
 
         each_instance([&](Object* obj, Object* parent, float4x4 matrix) {
             ID* id;
@@ -138,8 +145,7 @@ namespace blender {
             }
 
             rec.matrices.push_back(matrix);
-        },
-            child_instance_handler);
+        });
 
 
         // Export transforms
@@ -172,18 +178,33 @@ namespace blender {
         return object_parent_world_matrix;
     }
     
-    void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler,
-                                           std::function<void(Object*)> child_instance_handler)
+    void GeometryNodesUtils::each_instance(std::function<void(Object*, Object*, float4x4)> handler)
     {
         auto blender_ctx = BlenderPyContext::get();
         auto depsgraph_ctx = blender_ctx.evaluated_depsgraph_get();
 
         auto depsgraph = BlenderPyDepsgraph(depsgraph_ctx);
         
+        // Build map of parents to their children:
+        std::map<std::string, std::vector<std::string>> instanceParentsToChildren;
+        auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+        
+        for (auto obj : bpy_data.objects()) {
+            if (obj->parent) 
+            {
+                auto parentName = msblenUtils::get_name(obj->parent);
+                auto objectName = msblenUtils::get_name(obj);
 
+                // Objects could appear twice if they have lib overrides:
+                std::vector<std::string>& list = instanceParentsToChildren[parentName];
+                if (find(list.begin(), list.end(), objectName) == list.end()) {
+                    instanceParentsToChildren[parentName].push_back(objectName);
+                }
+            }
+        }
+        
         // Iterate over the object instances collection of depsgraph
         CollectionPropertyIterator it;
-
         depsgraph.object_instances_begin(&it);
 
         // Blender returns the instances in a flattened list, which causes duplicate instances when we have nested instances.
@@ -202,10 +223,7 @@ namespace blender {
         
         // Parent we're currently under:
         std::string currentParent = "";
-
-        // Parents and their direct children:
-        std::map<std::string, std::vector<std::string>> instanceParentsToChildren;
-
+        
         // Iterator to the current position of child instances:
         vector<string>::iterator currentObjectChildIterator;
 
@@ -247,8 +265,7 @@ namespace blender {
             auto objectName = msblenUtils::get_name(object);
             
             if (currentParent != parentName ||
-                objectName == currentObjectChildIteratorParent)
-            {
+                objectName == currentObjectChildIteratorParent) {
                 currentParent = parentName;
 
                 if (instanceParentsToChildren.find(objectName) != instanceParentsToChildren.end()) {
@@ -256,8 +273,7 @@ namespace blender {
                     currentObjectChildIterator = instanceParentsToChildren[objectName].begin();
                     currentObjectChildIteratorParent = objectName;
                 }
-                else
-                {
+                else {
                     hasIterator = false;
                 }
             }
@@ -270,6 +286,11 @@ namespace blender {
             // If this is the current instance parent, add any instances to it as children
             if (processedInstanceParents[processedInstanceParents.size() - 1] == parentName) {
                 instanceParentsToChildren[parentName].push_back(objectName);
+
+                // If we modify the current iterator list, the iterator becomes invalid:
+                if (currentObjectChildIteratorParent == parentName) {
+                    hasIterator = false;
+                }
             }
 
             // If we're currently iterating over the children of an instance parent, skip this child:
@@ -278,7 +299,13 @@ namespace blender {
                     currentObjectChildIterator != instanceParentsToChildren[currentObjectChildIteratorParent].end()) {
                     if (*currentObjectChildIterator == objectName)
                     {
-                        currentObjectChildIterator++;
+                        ++currentObjectChildIterator;
+
+                        if(currentObjectChildIterator== instanceParentsToChildren[currentObjectChildIteratorParent].end())
+                        {
+                            hasIterator = false;
+                        }
+
                         continue;
                     }
 
@@ -286,20 +313,16 @@ namespace blender {
                     currentObjectChildIteratorParent = "";
                 }
                 else {
-                    hasIterator = false;
-                    currentParent = "";
-                }
-            }
-            
-
-            // If the parent of the instanced object is also being instanced, skip this instance:
-            if (true) {
-                auto instancedObjectParentName = msblenUtils::get_name(object->parent);
-                std::vector<std::string>& parents = instanceParentsToChildren[parentName];
-                if (instancedObjectParentName != parentName &&
-                    std::find(parents.begin(), parents.end(), instancedObjectParentName) != parents.end()) {
-                    child_instance_handler(object);
-                    continue;
+                    if (instanceParentsToChildren.find(objectName) != instanceParentsToChildren.end()) {
+                        hasIterator = true;
+                        currentObjectChildIterator = instanceParentsToChildren[objectName].begin();
+                        currentObjectChildIteratorParent = objectName;
+                    }
+                    else
+                    {
+                        hasIterator = false;
+                        currentParent = "";
+                    }
                 }
             }
             

@@ -102,27 +102,27 @@ const BlenderSyncSettings& msblenContext::getSettings() const { return m_setting
 BlenderCacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
 const BlenderCacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
-std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
-{
+std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope) {
     std::vector<Object*> ret;
 
     bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     if (scope == MeshSyncClient::ObjectScope::All) {
-        scene.each_objects([&](Object *obj) {
+        auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+        for (auto obj : bpy_data.objects()) {
+            ret.push_back(obj);
+        }
+    }
+    else if (scope == MeshSyncClient::ObjectScope::Selected) {
+        scene.each_selection([&](Object* obj) {
             ret.push_back(obj);
         });
-    } else if (scope == MeshSyncClient::ObjectScope::Selected) {
-        scene.each_selection([&](Object *obj) {
-            ret.push_back(obj);
-        });
-    } else if (scope == MeshSyncClient::ObjectScope::Updated) {
+    }
+    else if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (bpy_data.objects_is_updated()) {
-            scene.each_objects([&](Object *obj) {
-                const bl::BlenderPyID bid = bl::BlenderPyID(obj);
-                if (bid.is_updated() || bid.is_updated_data())
-                    ret.push_back(obj);
-            });
+            for (auto obj : bpy_data.objects()) {
+                ret.push_back(obj);
+            }
         }
     }
 
@@ -431,22 +431,7 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
 }
 
 ms::TransformPtr msblenContext::exportCustomPropsBoneAsEmpty(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src) {
-    //// Don't handle parent here, baked bone parents need to be handled separately:
-    //ms::TransformPtr ret = exportTransform(state, paths, settings, src);
-    //ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
-
-    //bPoseChannel* pose = (bPoseChannel*)src->pose->chanbase.first;
-
-    //Bone* bone = nullptr;
-
-    //if (pose) {
-    //    bone = pose->bone;
-    //}
-
-    //ret->path = paths.get_path(src, bone);
-
-    //return ret;
-
+    // Don't handle parent here, baked bone parents need to be handled separately:
     std::shared_ptr<ms::Transform> ret = ms::Transform::create();
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
@@ -460,6 +445,7 @@ ms::TransformPtr msblenContext::exportCustomPropsBoneAsEmpty(msblenContextState&
         dst = exportPose(state, paths, settings, src, pose);
         dst->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
     }
+
     return ret;
 }
 
@@ -1628,16 +1614,16 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        scene.each_objects([this](Object *obj) {
+        for (auto obj : bpy_data.objects()) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
                 exportObject(*m_entities_state, m_default_paths, m_settings, obj, false);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
-        });
+        }
     }
     else {
-        for(std::vector<Object*>::value_type obj : getNodes(scope))
+        for (std::vector<Object*>::value_type obj : getNodes(scope))
             exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
     }
 
