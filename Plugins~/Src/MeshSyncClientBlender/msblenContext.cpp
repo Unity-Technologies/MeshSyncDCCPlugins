@@ -293,7 +293,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     switch (obj->type) {
     case OB_ARMATURE:
     {
-        if (!tip || (!settings.BakeModifiers && settings.sync_bones && state.manager.needsMirrorBaking())) {
+        if (!tip || (!settings.BakeModifiers && settings.sync_bones && state.manager.needsToApplyMirrorModifier())) {
             handle_parent();
             rec.dst = exportArmature(state, paths, settings, obj);
         }
