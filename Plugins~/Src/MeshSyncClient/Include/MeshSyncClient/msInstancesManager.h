@@ -77,7 +77,7 @@ public:
 
     bool erase(const std::string& path);
 
-    bool needsMirrorBaking() override { return false; }
+    bool needsToApplyMirrorModifier() override { return false; }
 };
 
 
