@@ -981,8 +981,11 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
         if (!normals.empty()) {
             dst.normals.resize_discard(num_indices);
-            for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.normals[ii] = ms::ceilToDecimals(normals[ii]);
+            for (size_t ii = 0; ii < num_indices; ++ii) {
+                // We're not using the normals for hashing so no need to round them anymore:
+                //dst.normals[ii] = ms::ceilToDecimals(normals[ii]);
+                dst.normals[ii] = normals[ii];
+            }
         }
     }
 
