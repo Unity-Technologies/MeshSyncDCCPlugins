@@ -325,6 +325,16 @@ namespace blender {
                     }
                 }
             }
+
+
+            // Instances can be hidden if they reference a mesh without vertices, even if the original mesh has verts.
+            // If that happens, don't pass the instance on:
+            if (object->type == OB_MESH) {
+                auto mesh = (Mesh*)object->data;
+                if (mesh == nullptr || mesh->totvert == 0) {
+                    continue;
+                }
+            }
             
             handler(object, parent, world_matrix);
         }
