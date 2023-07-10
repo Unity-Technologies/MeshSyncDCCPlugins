@@ -23,6 +23,13 @@ std::string get_name(const Object *obj)
     std::string ret;
     if (obj) {
         ret.assign(obj->id.name + 2);
+
+        if (obj->id.lib) {
+            ret += " [";
+            ret += obj->id.lib->id.name + 2;
+            ret += "]";
+        }
+
         mu::SanitizeNodeName(ret);
     }
     return ret;
