@@ -15,19 +15,19 @@
    Make sure to choose one of the "Add CMake to the System PATH ..." options as shown below.  
    ![CMakeInstallation](../Images/CMakeInstallation.png)
    
-1. Install Visual Studio 2017, together with the following components:
+1. Install Visual Studio 2022, together with the following components:
    * Windows 8.1 SDK
    * Windows Universal CRT SDK
    
 1. Install git. For example: [SourceTree](https://www.sourcetreeapp.com/)
 1. Build [Poco](https://pocoproject.org) (static libraries).  
    * Download [Poco 1.10.1](https://github.com/pocoproject/poco/archive/poco-1.10.1-release.zip) and extract the file in a folder.
-   * Start "Developer Command Prompt for VS 2017" and go to where Poco was extracted.
+   * Start "Developer Command Prompt for VS 2022" and go to where Poco was extracted.
    * Execute the following in the command prompt:      
     ``` 
     $ mkdir cmake-build
     $ cd cmake-build
-    $ cmake .. -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 15 2017" -A x64
+    $ cmake .. -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 17 2022" -A x64
     $ cmake --build . --config Release && cmake --build . --config Debug
     ```
     
@@ -41,7 +41,7 @@
 ### Build Steps (Win)
 
 
-Start "Developer Command Prompt for VS 2017" and execute the following:
+Start "Developer Command Prompt for VS 2022" and execute the following:
 
 ``` 
 $ git clone https://github.com/Unity-Technologies/MeshSyncDCCPlugins
@@ -57,9 +57,9 @@ $ cmake -DBUILD_TYPE=Release -P cmake_install.cmake
 * `[optional_arguments]`   
   See [MakeOptionalArguments](MakeOptionalArguments.md) for more details.
 
-> For a regular "Command Prompt", there is a script: *VsDevCmd_2017.bat* 
+> For a regular "Command Prompt", there is a script: *VsDevCmd_2022.bat* 
 > under the *Build* folder, which if executed, will turn the prompt into a 
-> "Developer Command Prompt for VS 2017".
+> "Developer Command Prompt for VS 2022".
 
 #### Notes
 

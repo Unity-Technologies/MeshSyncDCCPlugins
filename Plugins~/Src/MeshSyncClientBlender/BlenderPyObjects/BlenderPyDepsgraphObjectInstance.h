@@ -15,7 +15,7 @@ namespace blender
             void world_matrix(mu::float4x4* world_matrix);
             Object* parent();
             Object* object();
-    private:
+    public:
         PointerRNA& m_instance;
     };
 

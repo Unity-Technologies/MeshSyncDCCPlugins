@@ -434,13 +434,17 @@ barray_range<MPoly> BMesh::polygons()
 
 barray_range<MVert> BMesh::vertices()
 {
-#if BLENDER_VERSION >= 304
+#if BLENDER_VERSION >= 305
+    auto positions = (const float(*)[3])CustomData_get_layer_named(&m_ptr->vdata, CD_PROP_FLOAT3, "position");    
+    return { (MVert*)positions, (size_t)m_ptr->totvert };
+#elif BLENDER_VERSION >= 304
     return { (MVert*)CustomData_get(m_ptr->vdata, CD_MVERT),(size_t) m_ptr->totvert};
 #else
     return { m_ptr->mvert, (size_t)m_ptr->totvert };
 #endif
 }
-barray_range<mu::float3> BMesh::normals()
+
+blender::barray_range<mu::float3> BMesh::normals()
 {
     if (CustomData_number_of_layers(&m_ptr->ldata, CD_NORMAL) > 0) {
         auto data = (mu::float3*)CustomData_get(m_ptr->ldata, CD_NORMAL);
@@ -463,17 +467,14 @@ barray_range<int> BMesh::material_indices()
 
 //----------------------------------------------------------------------------------------------------------------------
 
-barray_range<MLoopUV> BMesh::uv()
-{
-    CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
-    if (layer_data && layer_data->data)
-        return { static_cast<MLoopUV*>(layer_data->data), static_cast<size_t>(m_ptr->totloop) };
-    else
-        return { nullptr, (size_t)0 };
-}
 
 MLoopUV* BMesh::GetUV(const int index) const {
+#if BLENDER_VERSION < 305
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
+#else
+    auto uvs = CustomData_get_layer_n(&m_ptr->ldata, CD_PROP_FLOAT2, index);
+    return (MLoopUV*)uvs;
+#endif
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -547,10 +548,6 @@ int BEditMesh::uv_data_offset(int index) const
 
     auto layer = m_ptr->bm->ldata.layers[layer_index];
     return layer.offset;
-}
-
-MLoopUV* BEditMesh::GetUV(const int index) const {
-    return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
 void BNurb::add_bezier_points(int count, Object* obj) {

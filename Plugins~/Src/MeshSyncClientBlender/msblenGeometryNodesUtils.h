@@ -37,6 +37,12 @@ public:
     /// instancedObject is the object that is being instanced.
     /// transform is the transform of the instance
     /// </param>
+    /// <param name="child_instance_handler">
+    /// The child handling function: 
+    /// Instances that are have a parent that is also instanced are not handled by the handler function.
+    /// However, they may not exist in the scene and not be exported!
+    /// The child handler is invoked for these instances to add them to the entity manager.
+    /// </param>
     void each_instance(std::function<void(Object*, Object*, mu::float4x4)> handler);
 
     /// <summary>
@@ -59,6 +65,8 @@ public:
     
     void setInstancesDirty(bool dirty);
     bool getInstancesDirty();
+
+    std::string get_data_path(Object* obj);
 
 private:
     bool m_instances_dirty;

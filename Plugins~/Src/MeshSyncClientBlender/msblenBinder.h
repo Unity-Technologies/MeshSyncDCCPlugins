@@ -6,6 +6,19 @@
 
 struct Depsgraph;
 
+// The data structures have changed in blender 3.5
+// These data structures are wrappers for the new data with the fields we need to keep the plugin code for different blender versions the same:
+#if BLENDER_VERSION >= 305
+typedef struct MLoopUV {
+    float uv[2];
+} MLoopUV;
+
+typedef struct MVert {
+    float co[3];
+} MVert;
+#endif
+
+
 namespace blender
 {
     bool ready();
@@ -128,7 +141,14 @@ namespace blender
         void add_normals(int count);
     };
 
-    uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
+    uint32_t BMesh::GetNumUVs() const
+    {
+#if BLENDER_VERSION < 305
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV);
+#else
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_PROP_FLOAT2);
+#endif
+    }
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -144,8 +164,6 @@ namespace blender
         barray_range<BMTriangle> triangles();
         int uv_data_offset(int index) const;
         inline uint32_t GetNumUVs() const;
-
-        MLoopUV* GetUV(const int index) const;
     };
 
     uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }

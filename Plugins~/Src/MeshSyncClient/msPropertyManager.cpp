@@ -10,6 +10,7 @@ namespace ms {
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		vector<PropertyInfoPtr> ret;
+		ret.reserve(m_records.size());
 
 		for (const auto& [key, propertyInfo] : m_records) {
 			ret.push_back(propertyInfo);

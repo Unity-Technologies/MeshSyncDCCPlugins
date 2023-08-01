@@ -10,6 +10,7 @@ namespace blender {
 #if BLENDER_VERSION < 300
 void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths) {}
 void msblenModifiers::importProperties(std::vector<ms::PropertyInfo> props) {}
+bool msblenModifiers::doesObjectHaveCustomProperties(const Object* obj) { return false; }
 #else
 
 // Copied from blender source that we cannot include:
@@ -147,8 +148,7 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 			propertyInfo->set(IDP_Int(property), uiData->min, uiData->max);
 			break;
 		}
-		case IDP_FLOAT:
-		{
+		case IDP_FLOAT: {
 			auto uiData = (IDPropertyUIDataFloat*)property->ui_data;
 			propertyInfo->set(IDP_Float(property), uiData->min, uiData->max);
 			break;
@@ -204,6 +204,22 @@ void addCustomProperties(const Object* obj, ms::PropertyManager* propertyManager
 		propertyInfo->sourceType = ms::PropertyInfo::SourceType::CUSTOM_PROPERTY;
 		propertyManager->add(propertyInfo);
 	}
+}
+
+bool msblenModifiers::doesObjectHaveCustomProperties(const Object* obj) {
+	if (!obj->id.properties) {
+		return false;
+	}
+
+	for (auto property : blender::list_range((IDProperty*)obj->id.properties->data.group.first)) {
+		if (property->ui_data == nullptr && property->type != IDP_STRING) {
+			continue;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void msblenModifiers::exportProperties(const Object* obj, ms::PropertyManager* propertyManager, msblenContextPathProvider& paths)

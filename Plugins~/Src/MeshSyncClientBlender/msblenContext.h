@@ -32,7 +32,7 @@
 #include "MeshSync/Utility/msMaterialExt.h" //AsStandardMaterial
 
 #if BLENDER_VERSION >= 300
-#include <msblenGeometryNodeUtils.h>
+#include <msblenGeometryNodesUtils.h>
 #endif
 
 #include "msblenMaterialsExportHelper.h"
@@ -41,6 +41,7 @@
 #include <msblenContextIntermediatePathProvider.h>
 
 #include <MeshSync/Utility/msIdUtility.h>
+
 
 class msblenContext;
 
@@ -134,7 +135,8 @@ private:
     ms::TransformPtr exportObject(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, bool parent, bool tip = true);
     ms::TransformPtr exportTransform(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
     ms::TransformPtr exportPose(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *armature, bPoseChannel *obj);
-    ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
+    ms::TransformPtr exportArmature(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
+    ms::TransformPtr exportCustomPropsBoneAsEmpty(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* obj);
     ms::TransformPtr exportReference(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, Object *obj, const DupliGroupContext& ctx);
     ms::TransformPtr exportDupliGroup(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj, const DupliGroupContext& ctx);
     ms::CameraPtr exportCamera(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object *obj);
@@ -164,7 +166,7 @@ private:
 
     void DoExportSceneCache(const std::vector<Object*>& nodes);
     void WaitAndKickAsyncExport();
-    void deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
+    void deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references, std::vector<ms::Identifier>& duplicates);
     
     void deduplicateGeometry(const std::vector<std::pair<ms::TransformPtr, uint64_t>>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& references);
 
