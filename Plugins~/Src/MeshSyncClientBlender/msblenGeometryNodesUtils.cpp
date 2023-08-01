@@ -256,6 +256,13 @@ namespace blender {
 
             auto object = instance.object();
 
+            // need to export dupli-groups to get linked library override objects to work:
+            //if(object->instance_collection)
+            //{
+            //    // Dupli-groups are exported separately:
+            //    continue;
+            //}
+
             auto world_matrix = float4x4();
             instance.world_matrix(&world_matrix);
 

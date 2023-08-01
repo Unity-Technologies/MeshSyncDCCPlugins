@@ -29,14 +29,14 @@ void msblenContext::exportInstances() {
 
     std::unordered_set<std::string> scene_objects;
 
-    scene.each_objects([this, &scene_objects](Object* obj)
-        {
-            if (obj == nullptr || obj->data == nullptr)
-                return;
+    auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+    for (auto obj : bpy_data.objects()) {
+        if (obj == nullptr || obj->data == nullptr)
+            continue;
 
-            auto id = static_cast<ID*>(obj->data);
-            scene_objects.insert(id->name + 2);
-        });
+        auto id = static_cast<ID*>(obj->data);
+        scene_objects.insert(id->name + 2);
+    }
     
     std::unordered_map<std::string, ms::TransformPtr> exportedTransforms;
 

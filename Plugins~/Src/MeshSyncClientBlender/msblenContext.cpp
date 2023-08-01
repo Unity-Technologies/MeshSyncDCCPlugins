@@ -105,7 +105,6 @@ const BlenderCacheSettings& msblenContext::getCacheSettings() const { return m_c
 std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope) {
     std::vector<Object*> ret;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     if (scope == MeshSyncClient::ObjectScope::All) {
         auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
         for (auto obj : bpy_data.objects()) {
@@ -113,6 +112,7 @@ std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope) 
         }
     }
     else if (scope == MeshSyncClient::ObjectScope::Selected) {
+        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
         scene.each_selection([&](Object* obj) {
             ret.push_back(obj);
         });
@@ -538,12 +538,14 @@ ms::TransformPtr msblenContext::exportDupliGroup(msblenContextState& state, msbl
     ctx2.group_host = src;
     ctx2.dst = dst;
     auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
+
+    // Cannot set visibility from here because of race conditions.
+    // It shouldn't be needed, we set visibility when exporting the objects based on their visibility in the scene.
     for (auto go : gobjects) {
         auto obj = go->ob;
-        if (auto t = exportObject(state, paths, settings, obj, true, false)) {
-            const bool non_lib = obj->id.lib == nullptr;
-            t->visibility = { visible_in_collection(obj), non_lib, non_lib };
-        }
+
+        exportObject(state, paths, settings, obj, true, false);
+        
         exportReference(state, paths, settings, obj, ctx2);
     }
 

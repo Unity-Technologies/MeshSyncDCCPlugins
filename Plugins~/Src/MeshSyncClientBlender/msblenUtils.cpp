@@ -80,9 +80,15 @@ Object* get_object_from_path(std::string path) {
     }
 
     auto objName = path.substr(lastIndexOfDivider + 1);
+    
+    auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+    for (auto obj : bpy_data.objects()) {
+        if (get_name(obj) == objName) {
+            return obj;
+        }
+    }
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-    return scene.get_object_by_name(objName);
+    return nullptr;
 }
 
 bool visible_in_render(const Object *obj)
