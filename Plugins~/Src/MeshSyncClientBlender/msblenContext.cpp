@@ -625,7 +625,7 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         return;
     }
 
-    // Ensure we're in object mode, settiing data on the edit mesh is not supported:
+    // Ensure we're in object mode, setting data on the edit mesh is not supported:
     set_object_mode();
 
     // If we're baking modifiers, the mesh would contain the baked version so remove the modifiers now when the mesh is updated:
@@ -672,7 +672,7 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         }
     }
 
-    int num_vertices = mesh->points.size();
+    const int num_vertices = mesh->points.size();
 
     bl::BMesh bmesh(data);
 
@@ -683,7 +683,11 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
     auto bmeshVerts = bmesh.vertices();
     auto bmeshIndices = bmesh.indices();
+#if BLENDER_VERSION < 306
     auto bmeshPolygons = bmesh.polygons();
+#else
+    auto bmeshPolygons = bmesh.polygonsForWrite();
+#endif
   
     // vertices
     for (size_t vi = 0; vi < num_vertices; ++vi) {
@@ -692,7 +696,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
     // faces
     int ii = 0;
+#if BLENDER_VERSION < 306
     for (size_t pi = 0; pi < num_polygons; ++pi) {
+
         // int count = mesh->counts[pi];
         // always 3 for triangles from unity:
         const int count = 3;
@@ -723,6 +729,19 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         bmeshIndices[bmeshPolygons[pi].loopstart + 2].v = mesh->indices[ii++];
         bmeshIndices[bmeshPolygons[pi].loopstart + 1].v = mesh->indices[ii++];
     }
+#else
+    for (size_t pi = 0; pi < num_polygons; ++pi) {
+        bmeshPolygons[pi] = ii;
+
+        // Ignore material index for now, we probably don't need it:
+
+        // Reverse triangle back because it was reversed in unity during refine step:
+        bmeshIndices[bmeshPolygons[pi] + 0].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi] + 2].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi] + 1].v = mesh->indices[ii++];
+    }
+    bmesh.shade_flat();
+#endif
 
     // Calculate edges, normals, loops, etc:
     bmesh.update();
@@ -889,9 +908,9 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     bl::BMesh bmesh(data);
     struct Mesh& mesh = *data;
 
-    blender::barray_range<struct MLoop> indices = bmesh.indices();
-    blender::barray_range<struct MPoly> polygons = bmesh.polygons();
-    blender::barray_range<struct MVert> vertices = bmesh.vertices();
+    auto indices = bmesh.indices();
+    auto vertices = bmesh.vertices();
+    auto polygons = bmesh.polygons();
 
     const size_t num_indices = indices.size();
     const size_t num_polygons = polygons.size();
@@ -941,6 +960,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     dst.material_ids.resize_discard(num_polygons);
     {
         int ii = 0;
+#if BLENDER_VERSION < 306
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
 
@@ -968,6 +988,31 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
                 dst.indices[ii++] = idx[li].v;
             }
         }
+#else
+        for (const int pi : polygons.index_range()) {
+            const blender::IndexRange polygon = polygons[pi];
+
+            int material_index = 0;
+            if (materialIndices.size() > pi) {
+                material_index = materialIndices[pi];
+            }
+
+            // Material indices can be out of range if materials are removed.
+            // Check for it so we don't crash when this happens:
+            material_index = max(0, min(material_index, materialCount - 1));
+
+            const int count = polygon.size();
+            dst.counts[pi] = count;
+
+            dst.material_ids[pi] = mid_table[material_index];
+            dst.indices.resize(dst.indices.size() + count);
+
+            auto* idx = &indices[polygon.start()];
+            for (int li = 0; li < count; ++li) {
+                dst.indices[ii++] = idx[li].v;
+            }
+        }
+#endif
     }
 
     // normals

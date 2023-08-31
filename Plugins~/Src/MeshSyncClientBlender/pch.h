@@ -48,7 +48,11 @@ namespace py = pybind11;
 #include "DNA_armature_types.h"
 #include "DNA_camera_types.h"
 #include "DNA_collection_types.h"
+#if BLENDER_VERSION < 306
 #include "DNA_gpencil_types.h" //bGPdata
+#else
+#include "DNA_gpencil_legacy_types.h" //bGPdata
+#endif
 #if BLENDER_VERSION < 302
 #include "DNA_hair_types.h" //Hair
 #endif

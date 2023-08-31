@@ -98,10 +98,17 @@ Material ***BKE_object_material_array_p(Object *ob)
     MetaBall *mb = reinterpret_cast<MetaBall*>(ob->data);
     return &(mb->mat);
   }
+#if BLENDER_VERSION < 306
   if (ob->type == OB_GPENCIL) {
     bGPdata *gpd = reinterpret_cast<bGPdata*>(ob->data);
     return &(gpd->mat);
   }
+#else
+  if (ob->type == OB_GPENCIL_LEGACY) {
+      bGPdata* gpd = reinterpret_cast<bGPdata*>(ob->data);
+      return &(gpd->mat);
+  }
+#endif
   if (ob->type == OB_CURVES) {
     Curves *curves = reinterpret_cast<Curves*>(ob->data);
     return &(curves->mat);
@@ -131,14 +138,22 @@ short *BKE_object_material_len_p(Object *ob)
     MetaBall *mb = reinterpret_cast<MetaBall*>(ob->data);
     return &(mb->totcol);
   }
+#if BLENDER_VERSION < 306
   if (ob->type == OB_GPENCIL) {
     bGPdata *gpd = reinterpret_cast<bGPdata*>(ob->data);
     return &(gpd->totcol);
   }
+#else
+  if (ob->type == OB_GPENCIL_LEGACY) {
+      bGPdata* gpd = reinterpret_cast<bGPdata*>(ob->data);
+      return &(gpd->totcol);
+  }
+#endif
   if (ob->type == OB_CURVES) {
     Curves *curves = reinterpret_cast<Curves*>(ob->data);
     return &(curves->totcol);
   }
+
   if (ob->type == OB_POINTCLOUD) {
     PointCloud *pointcloud = reinterpret_cast<PointCloud*>(ob->data);
     return &(pointcloud->totcol);
