@@ -88,6 +88,8 @@ msblenContext::msblenContext()
 {
     m_settings.scene_settings.handedness = ms::Handedness::RightZUp;
     m_settings.client_settings.dcc_tool_name = "Blender_" + blender::getBlenderVersion();
+
+    ms::Mesh::useNormalsForHashing = false;
 }
 
 msblenContext::~msblenContext()
@@ -100,27 +102,27 @@ const BlenderSyncSettings& msblenContext::getSettings() const { return m_setting
 BlenderCacheSettings& msblenContext::getCacheSettings() { return m_cache_settings; }
 const BlenderCacheSettings& msblenContext::getCacheSettings() const { return m_cache_settings; }
 
-std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope)
-{
+std::vector<Object*> msblenContext::getNodes(MeshSyncClient::ObjectScope scope) {
     std::vector<Object*> ret;
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
     if (scope == MeshSyncClient::ObjectScope::All) {
-        scene.each_objects([&](Object *obj) {
+        auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+        for (auto obj : bpy_data.objects()) {
+            ret.push_back(obj);
+        }
+    }
+    else if (scope == MeshSyncClient::ObjectScope::Selected) {
+        bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
+        scene.each_selection([&](Object* obj) {
             ret.push_back(obj);
         });
-    } else if (scope == MeshSyncClient::ObjectScope::Selected) {
-        scene.each_selection([&](Object *obj) {
-            ret.push_back(obj);
-        });
-    } else if (scope == MeshSyncClient::ObjectScope::Updated) {
+    }
+    else if (scope == MeshSyncClient::ObjectScope::Updated) {
         bl::BData bpy_data = bl::BData(bl::BlenderPyContext::get().data());
         if (bpy_data.objects_is_updated()) {
-            scene.each_objects([&](Object *obj) {
-                const bl::BlenderPyID bid = bl::BlenderPyID(obj);
-                if (bid.is_updated() || bid.is_updated_data())
-                    ret.push_back(obj);
-            });
+            for (auto obj : bpy_data.objects()) {
+                ret.push_back(obj);
+            }
         }
     }
 
@@ -291,12 +293,16 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     switch (obj->type) {
     case OB_ARMATURE:
     {
-        if (!tip || (!settings.BakeModifiers && settings.sync_bones)) {
+        if (!tip || (!settings.BakeModifiers && settings.sync_bones && state.manager.needsToApplyMirrorModifier())) {
             handle_parent();
             rec.dst = exportArmature(state, paths, settings, obj);
         }
-        else if (!tip && parent)
-            handle_transform();
+        else if (tip)
+        {
+            // Export bones as transforms if we're baking modifiers.
+            // Don't handle parent here, baked bone parents need to be handled separately!
+            rec.dst = exportCustomPropsBoneAsEmpty(state, paths, settings, obj);
+        }
         break;
     }
     case OB_MESH:
@@ -363,8 +369,7 @@ ms::TransformPtr msblenContext::exportObject(msblenContextState& state, msblenCo
     default:
     {
         // Export everything, even if it's an empty object:
-        handle_parent();
-        rec.dst = exportTransform(state, paths, settings, obj);
+        handle_transform();
         break;
     }
     }
@@ -414,6 +419,7 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
     ms::Transform& dst = *ret;
     dst.path = paths.get_path(src);
     msblenEntityHandler::extractTransformData(settings, src, dst);
+    ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
     state.manager.add(ret);
 
     for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
@@ -421,6 +427,25 @@ ms::TransformPtr msblenContext::exportArmature(msblenContextState& state, msblen
         std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = state.bones[bone];
         dst = exportPose(state, paths, settings, src, pose);
     }
+    return ret;
+}
+
+ms::TransformPtr msblenContext::exportCustomPropsBoneAsEmpty(msblenContextState& state, msblenContextPathProvider& paths, BlenderSyncSettings& settings, const Object* src) {
+    // Don't handle parent here, baked bone parents need to be handled separately:
+    std::shared_ptr<ms::Transform> ret = ms::Transform::create();
+    ms::Transform& dst = *ret;
+    dst.path = paths.get_path(src);
+    msblenEntityHandler::extractTransformData(settings, src, dst);
+    ret->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
+    state.manager.add(ret);
+
+    for (struct bPoseChannel* pose : bl::list_range((bPoseChannel*)src->pose->chanbase.first)) {
+        struct Bone* bone = pose->bone;
+        std::map<struct Bone*, std::shared_ptr<ms::Transform>>::mapped_type& dst = state.bones[bone];
+        dst = exportPose(state, paths, settings, src, pose);
+        dst->visibility = { visible_in_collection(src), visible_in_render(src), visible_in_viewport(src) };
+    }
+
     return ret;
 }
 
@@ -513,12 +538,14 @@ ms::TransformPtr msblenContext::exportDupliGroup(msblenContextState& state, msbl
     ctx2.group_host = src;
     ctx2.dst = dst;
     auto gobjects = bl::list_range((CollectionObject*)group->gobject.first);
+
+    // Cannot set visibility from here because of race conditions.
+    // It shouldn't be needed, we set visibility when exporting the objects based on their visibility in the scene.
     for (auto go : gobjects) {
         auto obj = go->ob;
-        if (auto t = exportObject(state, paths, settings, obj, true, false)) {
-            const bool non_lib = obj->id.lib == nullptr;
-            t->visibility = { visible_in_collection(obj), non_lib, non_lib };
-        }
+
+        exportObject(state, paths, settings, obj, true, false);
+        
         exportReference(state, paths, settings, obj, ctx2);
     }
 
@@ -598,7 +625,7 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         return;
     }
 
-    // Ensure we're in object mode, settiing data on the edit mesh is not supported:
+    // Ensure we're in object mode, setting data on the edit mesh is not supported:
     set_object_mode();
 
     // If we're baking modifiers, the mesh would contain the baked version so remove the modifiers now when the mesh is updated:
@@ -645,7 +672,7 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         }
     }
 
-    int num_vertices = mesh->points.size();
+    const int num_vertices = mesh->points.size();
 
     bl::BMesh bmesh(data);
 
@@ -656,7 +683,11 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
     auto bmeshVerts = bmesh.vertices();
     auto bmeshIndices = bmesh.indices();
+#if BLENDER_VERSION < 306
     auto bmeshPolygons = bmesh.polygons();
+#else
+    auto bmeshPolygons = bmesh.polygonsForWrite();
+#endif
   
     // vertices
     for (size_t vi = 0; vi < num_vertices; ++vi) {
@@ -665,7 +696,9 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
 
     // faces
     int ii = 0;
+#if BLENDER_VERSION < 306
     for (size_t pi = 0; pi < num_polygons; ++pi) {
+
         // int count = mesh->counts[pi];
         // always 3 for triangles from unity:
         const int count = 3;
@@ -696,6 +729,19 @@ void msblenContext::importMesh(ms::Mesh* mesh) {
         bmeshIndices[bmeshPolygons[pi].loopstart + 2].v = mesh->indices[ii++];
         bmeshIndices[bmeshPolygons[pi].loopstart + 1].v = mesh->indices[ii++];
     }
+#else
+    for (size_t pi = 0; pi < num_polygons; ++pi) {
+        bmeshPolygons[pi] = ii;
+
+        // Ignore material index for now, we probably don't need it:
+
+        // Reverse triangle back because it was reversed in unity during refine step:
+        bmeshIndices[bmeshPolygons[pi] + 0].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi] + 2].v = mesh->indices[ii++];
+        bmeshIndices[bmeshPolygons[pi] + 1].v = mesh->indices[ii++];
+    }
+    bmesh.shade_flat();
+#endif
 
     // Calculate edges, normals, loops, etc:
     bmesh.update();
@@ -862,9 +908,9 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     bl::BMesh bmesh(data);
     struct Mesh& mesh = *data;
 
-    blender::barray_range<struct MLoop> indices = bmesh.indices();
-    blender::barray_range<struct MPoly> polygons = bmesh.polygons();
-    blender::barray_range<struct MVert> vertices = bmesh.vertices();
+    auto indices = bmesh.indices();
+    auto vertices = bmesh.vertices();
+    auto polygons = bmesh.polygons();
 
     const size_t num_indices = indices.size();
     const size_t num_polygons = polygons.size();
@@ -914,6 +960,7 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
     dst.material_ids.resize_discard(num_polygons);
     {
         int ii = 0;
+#if BLENDER_VERSION < 306
         for (size_t pi = 0; pi < num_polygons; ++pi) {
             struct MPoly& polygon = polygons[pi];
 
@@ -941,6 +988,31 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
                 dst.indices[ii++] = idx[li].v;
             }
         }
+#else
+        for (const int pi : polygons.index_range()) {
+            const blender::IndexRange polygon = polygons[pi];
+
+            int material_index = 0;
+            if (materialIndices.size() > pi) {
+                material_index = materialIndices[pi];
+            }
+
+            // Material indices can be out of range if materials are removed.
+            // Check for it so we don't crash when this happens:
+            material_index = max(0, min(material_index, materialCount - 1));
+
+            const int count = polygon.size();
+            dst.counts[pi] = count;
+
+            dst.material_ids[pi] = mid_table[material_index];
+            dst.indices.resize(dst.indices.size() + count);
+
+            auto* idx = &indices[polygon.start()];
+            for (int li = 0; li < count; ++li) {
+                dst.indices[ii++] = idx[li].v;
+            }
+        }
+#endif
     }
 
     // normals
@@ -956,8 +1028,11 @@ void msblenContext::doExtractNonEditMeshData(msblenContextState& state, BlenderS
         blender::barray_range<mu::tvec3<float>> normals = bmesh.normals();
         if (!normals.empty()) {
             dst.normals.resize_discard(num_indices);
-            for (size_t ii = 0; ii < num_indices; ++ii)
-                dst.normals[ii] = ms::ceilToDecimals(normals[ii]);
+            for (size_t ii = 0; ii < num_indices; ++ii) {
+                // We're not using the normals for hashing so no need to round them anymore:
+                //dst.normals[ii] = ms::ceilToDecimals(normals[ii]);
+                dst.normals[ii] = normals[ii];
+            }
         }
     }
 
@@ -1589,16 +1664,16 @@ bool msblenContext::sendObjects(MeshSyncClient::ObjectScope scope, bool dirty_al
         if (!bpy_data.objects_is_updated())
             return true; // nothing to send
 
-        scene.each_objects([this](Object *obj) {
+        for (auto obj : bpy_data.objects()) {
             bl::BlenderPyID bid = bl::BlenderPyID(obj);
             if (bid.is_updated() || bid.is_updated_data())
                 exportObject(*m_entities_state, m_default_paths, m_settings, obj, false);
             else
                 m_entities_state->touchRecord(m_default_paths, obj); // this cannot be covered by getNodes()
-        });
+        }
     }
     else {
-        for(std::vector<Object*>::value_type obj : getNodes(scope))
+        for (std::vector<Object*>::value_type obj : getNodes(scope))
             exportObject(*m_entities_state, m_default_paths, m_settings, obj, true);
     }
 
@@ -1796,6 +1871,22 @@ void msblenContext::flushPendingList(msblenContextState& state, msblenContextPat
     }
 }
 
+void removeExistingByPath(std::vector<ms::TransformPtr>& listToFilter, std::vector<ms::TransformPtr> sceneList)
+{
+    for (size_t i = 0; i < listToFilter.size(); i++)
+    {
+        for (size_t j = 0; j < sceneList.size(); j++)
+        {
+            if (listToFilter[i]->path == sceneList[j]->path)
+            {
+                listToFilter.erase(listToFilter.begin() + i);
+                i--;
+                break;
+            }
+        }
+    }
+}
+
 void msblenContext::WaitAndKickAsyncExport()
 {
     m_asyncTasksController.Wait();
@@ -1841,13 +1932,31 @@ void msblenContext::WaitAndKickAsyncExport()
 
         t.instanceInfos = m_instances_manager.getDirtyInstances();
         t.instanceMeshes.clear();
-        deduplicateGeometry(m_instances_manager.getDirtyMeshes(), t.instanceMeshes, t.transforms);
+
+        auto instanceMeshes = m_instances_manager.getDirtyMeshes();
+
+        // Remove instance meshes that already exist in scene meshes:
+        removeExistingByPath(instanceMeshes, t.geometries);
+        removeExistingByPath(instanceMeshes, t.transforms);
+
+        std::vector<ms::Identifier> duplicates;
+        
+        deduplicateGeometry(instanceMeshes, t.instanceMeshes, t.transforms, duplicates);
     	t.propertyInfos = m_property_manager.getAllProperties();
         t.animations = m_animations;
 
         t.deleted_materials = m_material_manager.getDeleted();
         t.deleted_entities = m_entity_manager.getDeleted();
+
+        for (auto duplicate : duplicates) {
+            m_instances_manager.erase(duplicate.name);
+        }
+
         t.deleted_instances = m_instances_manager.getDeleted();
+
+        // Any instanced meshes that were duplicates are now in t.transforms and no longer in t.instanceMeshes so we need to mark them as deleted from instances:
+        //t.deleted_instances.insert(t.deleted_instances.end(), duplicates.begin(), duplicates.end());
+        
 
         if (scale_factor != 1.0f) {
             ms::ScaleConverter cv(scale_factor);
@@ -1883,6 +1992,10 @@ void msblenContext::WaitAndKickAsyncExport()
         blender::callPythonMethod("meshsync_post_export");
     };
 
+    exporter->on_cancel = [this] {
+        m_entity_manager.clearDirtyFlags();
+    };
+
     exporter->on_before_send = [this] {
         blender::callPythonMethod("meshsync_pre_export");
     };
@@ -1890,19 +2003,39 @@ void msblenContext::WaitAndKickAsyncExport()
     exporter->kick();
 }
 
-void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input, std::vector<ms::TransformPtr>& geometries, std::vector<ms::TransformPtr>& transforms)
+void msblenContext::deduplicateGeometry(const std::vector<ms::TransformPtr>& input,
+    std::vector<ms::TransformPtr>& geometries, 
+    std::vector<ms::TransformPtr>& transforms,
+    std::vector<ms::Identifier>& duplicates)
 {
     std::unordered_map<uint64_t, std::string> cache;
     for (auto& geometry : input) {
         auto checksum = geometry->checksumGeom();
         auto entry = cache[checksum];
-        if (entry.length() > 0) {
-            // Create a new pointer to avoid issues with change checks
-            // in auto sync
-            auto ptr = ms::Transform::create();
-            *ptr = *geometry;
-            ptr->reference = entry;
-            transforms.push_back(ptr);
+
+        // Don't deduplicate transforms:
+        if (geometry->getType() != ms::EntityType::Transform && entry.length() > 0) {
+            bool found = false;
+            // If the transform is already in the list, update it:
+            for (auto& t : transforms)
+            {
+                if (t->path == geometry->path)
+                {
+                    t->reference = entry;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                // Create a new pointer to avoid issues with change checks
+                // in auto sync
+                auto ptr = ms::Transform::create();
+                *ptr = *geometry;
+                ptr->reference = entry;
+                transforms.push_back(ptr);
+                duplicates.push_back(geometry->getIdentifier());
+            }
         }
         else {
             cache[checksum] = geometry->path;

@@ -6,6 +6,29 @@
 
 struct Depsgraph;
 
+// The data structures have changed in blender 3.5
+// These data structures are wrappers for the new data with the fields we need to keep the plugin code for different blender versions the same:
+#if BLENDER_VERSION >= 305
+typedef struct MLoopUV {
+    float uv[2];
+} MLoopUV;
+
+typedef struct MVert {
+    float co[3];
+} MVert;
+
+#endif
+
+#if BLENDER_VERSION >= 306
+//typedef struct MPoly {
+//    int loopstart;
+//} MPoly;
+
+typedef struct MLoop {
+    int v;
+} MLoop;
+#endif
+
 namespace blender
 {
     bool ready();
@@ -107,7 +130,14 @@ namespace blender
 
         barray_range<MLoop> indices();
         barray_range<MEdge> edges();
+#if BLENDER_VERSION < 306
         barray_range<MPoly> polygons();
+#else
+        OffsetIndices<int>  polygons();
+        MutableSpan<int>    polygonsForWrite();
+#endif
+
+        
         barray_range<MVert> vertices();
         barray_range<mu::float3> normals();
         barray_range<MLoopUV> uv();
@@ -126,10 +156,20 @@ namespace blender
         void add_loops(int count);
         void add_edges(int count);
         void add_normals(int count);
+
+#if BLENDER_VERSION >= 306
+        void shade_flat();
+#endif
     };
 
-    uint32_t BMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV); }
-
+    uint32_t BMesh::GetNumUVs() const
+    {
+#if BLENDER_VERSION < 305
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_MLOOPUV);
+#else
+        return CustomData_number_of_layers(&m_ptr->ldata, CD_PROP_FLOAT2);
+#endif
+    }
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -144,11 +184,16 @@ namespace blender
         barray_range<BMTriangle> triangles();
         int uv_data_offset(int index) const;
         inline uint32_t GetNumUVs() const;
-
-        MLoopUV* GetUV(const int index) const;
     };
 
-    uint32_t BEditMesh::GetNumUVs() const { return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV); }
+    uint32_t BEditMesh::GetNumUVs() const
+    {
+#if BLENDER_VERSION < 306
+        return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_MLOOPUV);
+#else
+        return CustomData_number_of_layers(&m_ptr->bm->ldata, CD_PROP_FLOAT2);
+#endif
+    }
 
     //----------------------------------------------------------------------------------------------------------------------
     
@@ -159,7 +204,12 @@ namespace blender
 
         barray_range<MLoop> indices();
         barray_range<MEdge> edges();
-        barray_range<MPoly> polygons();
+#if BLENDER_VERSION < 306
+        barray_range<MPoly>
+#else
+        OffsetIndices<int>
+#endif
+        polygons();
         barray_range<MVert> bezier_points();
 
         void add_bezier_points(int count, Object* obj);

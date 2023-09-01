@@ -23,6 +23,13 @@ std::string get_name(const Object *obj)
     std::string ret;
     if (obj) {
         ret.assign(obj->id.name + 2);
+
+        if (obj->id.lib) {
+            ret += " [";
+            ret += obj->id.lib->id.name + 2;
+            ret += "]";
+        }
+
         mu::SanitizeNodeName(ret);
     }
     return ret;
@@ -73,9 +80,15 @@ Object* get_object_from_path(std::string path) {
     }
 
     auto objName = path.substr(lastIndexOfDivider + 1);
+    
+    auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+    for (auto obj : bpy_data.objects()) {
+        if (get_name(obj) == objName) {
+            return obj;
+        }
+    }
 
-    bl::BlenderPyScene scene = bl::BlenderPyScene(bl::BlenderPyContext::get().scene());
-    return scene.get_object_by_name(objName);
+    return nullptr;
 }
 
 bool visible_in_render(const Object *obj)
@@ -88,10 +101,12 @@ bool visible_in_viewport(const Object *obj)
 }
 
 bool visible_in_collection(LayerCollection* lc, const Object* obj) {
+    std::string objName = get_name(obj);
+
     // Check if the object is in the layer collection, if it is, check if the layer is excluded:
     if (lc->collection) {
         for (auto collectionObject : blender::list_range((CollectionObject*)lc->collection->gobject.first)) {
-            if (collectionObject->ob == obj) {
+            if(get_name(collectionObject->ob)== objName) {
                 if ((!(lc->flag & LAYER_COLLECTION_EXCLUDE)) &&
 #if BLENDER_VERSION >= 300
                     (!(lc->collection->flag & COLLECTION_HIDE_RENDER))

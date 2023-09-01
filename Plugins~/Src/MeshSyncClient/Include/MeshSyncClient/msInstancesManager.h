@@ -15,9 +15,10 @@ struct InstancesManagerRecord
 {
     bool dirtyInstances = false;
     bool dirtyMesh = false;
-    InstanceInfoPtr instances = nullptr;
     TransformPtr entity = nullptr;
     bool updated = false;
+    std::map<std::string, bool> updatedParents;
+    std::map<std::string, std::vector<InstanceInfoPtr>> instancesPerParent;
 };
 
 /// <summary>
@@ -73,6 +74,8 @@ public:
     /// been added or touched in the last exportation.
     /// </summary>
     void eraseStaleEntities() override;
+
+    bool erase(const std::string& path);
 
     bool needsToApplyMirrorModifier() override { return false; }
 };

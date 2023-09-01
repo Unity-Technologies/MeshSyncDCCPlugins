@@ -1,4 +1,4 @@
-#include "msblenGeometryNodeUtils.h"
+#include "msblenGeometryNodesUtils.h"
 #include "msblenContext.h"
 #include "BlenderPyObjects/BlenderPyScene.h" //BlenderPyScene
 
@@ -28,46 +28,63 @@ void msblenContext::exportInstances() {
     blender::BlenderPyScene scene = blender::BlenderPyScene(blender::BlenderPyContext::get().scene());
 
     std::unordered_set<std::string> scene_objects;
-    scene.each_objects([this, &scene_objects](Object* obj)
-        {
-            if (obj == nullptr || obj->data == nullptr)
-                return;
 
-            auto id = (ID*)obj->data;
-            scene_objects.insert(id->name + 2);
-        });
+    auto bpy_data = blender::BData(blender::BlenderPyContext::get().data());
+    for (auto obj : bpy_data.objects()) {
+        if (obj == nullptr || obj->data == nullptr)
+            continue;
 
-    // Assume everything is now dirty
-    m_instances_state->manager.setAlwaysMarkDirty(true);
-
+        auto id = static_cast<ID*>(obj->data);
+        scene_objects.insert(id->name + 2);
+    }
+    
     std::unordered_map<std::string, ms::TransformPtr> exportedTransforms;
 
     m_geometryNodeUtils.each_instanced_object(
         [this, &scene_objects, &exportedTransforms](blender::GeometryNodesUtils::Record& rec) {
             auto obj = rec.obj;
+            
             if (!rec.from_file) {
                 auto settings = m_settings;
                 settings.BakeModifiers = false;
                 settings.multithreaded = false;
 
                 auto transform = exportObject(*m_instances_state, m_intermediate_paths, settings, rec.obj, false, true);
-                transform->reset();
-                exportedTransforms[rec.id] = transform;
+
+                // Could be null if export is not enabled for the object type:
+                if (transform) {
+                    // Objects that aren't in the file should always be hidden:
+                    transform->visibility = { false, false, false };
+
+                    transform->reset();
+                    exportedTransforms[rec.id] = transform;
+                }
             }
-            else if (scene_objects.find(rec.name) == scene_objects.end()) {
+            else if (scene_objects.find(m_geometryNodeUtils.get_data_path(obj)) == scene_objects.end()) {
                 auto settings = m_settings;
                 settings.multithreaded = false;
                 settings.BakeModifiers = false;
                 exportedTransforms[rec.id] = exportObject(*m_instances_state, m_default_paths, settings, rec.obj, false, true);
             }
             else {
-                exportedTransforms[rec.id] = exportObject(*m_entities_state, m_default_paths, m_settings, rec.obj, true, true);
+                // The object was already synced as part of the scene
+                auto& sceneTransform = exportObject(*m_entities_state, m_default_paths, m_settings, rec.obj, true, true);
+
+                if (sceneTransform) {
+                    m_instances_state->manager.add(sceneTransform);
+                    exportedTransforms[rec.id] = sceneTransform;
+                }
             }
         },
         [this, &exportedTransforms](blender::GeometryNodesUtils::Record& rec) {
+            auto& transform = exportedTransforms[rec.id];
+
+            // If this transform was not exported (happens when the sync setting for lights, etc. is not enabled), skip it:
+            if(!transform)
+                return;
+
             auto world_matrix = msblenEntityHandler::getWorldMatrix(rec.parent);
             auto inverse = mu::invert(world_matrix);
-            auto& transform = exportedTransforms[rec.id];
 
             //parent is always part of the scene
             const auto& parent = exportObject(*m_entities_state, m_default_paths, m_settings, rec.parent, false);
@@ -78,8 +95,7 @@ void msblenContext::exportInstances() {
             else {
                 exportInstances(transform, parent, std::move(rec.matrices), inverse, m_intermediate_paths);
             }
-            
-        });
+    });
 
     m_geometryNodeUtils.setInstancesDirty(false);
 

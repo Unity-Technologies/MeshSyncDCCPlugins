@@ -46,6 +46,7 @@ with commands described in the following sections.
 * Blender 3.2.0 : `-DBUILD_BLENDER_3.2.0_PLUGIN=ON`
 * Blender 3.3.0 : `-DBUILD_BLENDER_3.3.0_PLUGIN=ON`
 * Blender 3.4.0 : `-DBUILD_BLENDER_3.4.0_PLUGIN=ON`
+* Blender 3.5.0 : `-DBUILD_BLENDER_3.5.0_PLUGIN=ON`
 
 ## Modo
 

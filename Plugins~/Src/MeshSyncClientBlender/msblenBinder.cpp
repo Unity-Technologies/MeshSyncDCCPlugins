@@ -41,6 +41,7 @@ static FunctionRNA* BMesh_polygons_add;
 static FunctionRNA* BMesh_loops_add;
 static FunctionRNA* BMesh_edges_add;
 static FunctionRNA* BMesh_normals_add;
+static PropertyRNA* BMesh_polygons;
 static PropertyRNA* UVLoopLayers_active;
 static PropertyRNA* LoopColors_active;
 
@@ -91,6 +92,8 @@ extern PropertyRNA* BlenderPyDepsgraphObjectInstance_object;
 
 extern PropertyRNA* BlenderPyDepsgraph_object_instances;
 
+static FunctionRNA* BlenderPyAttribute_new;
+
 bool ready()
 {
     return g_context != nullptr;
@@ -115,131 +118,138 @@ void setup(py::object bpy_context)
 
     // resolve blender types and functions
 #define match_type(N) strcmp(type->identifier, N) == 0
-#define match_func(N) strcmp(func->identifier, N) == 0
-#define match_prop(N) strcmp(prop->identifier, N) == 0
-#define each_func for (auto *func : list_range((FunctionRNA*)type->functions.first))
-#define each_prop for (auto *prop : list_range((PropertyRNA*)type->cont.properties.first))
+#define each_func for (auto *f : list_range((FunctionRNA*)type->functions.first))
+#define each_prop for (auto *f : list_range((PropertyRNA*)type->cont.properties.first))
+#define assign(NAME, FUNC_OR_PROP) if (strcmp(f->identifier, (NAME)) == 0) (FUNC_OR_PROP) = f;
 
     for (auto *type : list_range((StructRNA*)first_type)) {
+        if(match_type("AttributeGroup")) {
+            each_func{
+                assign("new", BlenderPyAttribute_new)
+            }
+        }
         if (match_type("ID")) {
             BlenderPyID::s_type = type;
             each_prop{
-                if (match_prop("is_updated")) BlenderPyID_is_updated = prop;
-                if (match_prop("is_updated_data")) BlenderPyID_is_updated_data = prop;
+                assign("is_updated", BlenderPyID_is_updated)
+                assign("is_updated_data", BlenderPyID_is_updated_data)
             }
             each_func {
-                if (match_func("evaluated_get")) BlenderPyID_evaluated_get = func;
-                if (match_func("update_tag")) BlenderPyID_update_tag = func;
+               assign("evaluated_get", BlenderPyID_evaluated_get)
+               assign("update_tag", BlenderPyID_update_tag)
             }
         }
         else if (match_type("Object")) {
             BObject::s_type = type;
             each_prop{
-                if (match_prop("matrix_local")) BObject_matrix_local = prop;
-                if (match_prop("matrix_world")) BObject_matrix_world = prop;
-                if (match_prop("hide")) BObject_hide = prop;
-                if (match_prop("hide_viewport")) BObject_hide_viewport = prop;
-                if (match_prop("hide_render")) BObject_hide_render = prop;
-                if (match_prop("select")) BObject_select = prop;
+                assign("matrix_local", BObject_matrix_local)
+                assign("matrix_world", BObject_matrix_world)
+                assign("hide", BObject_hide)
+                assign("hide_viewport", BObject_hide_viewport)
+                assign("hide_render", BObject_hide_render)
+                assign("select", BObject_select)
             }
             each_func {
-                if (match_func("select_get")) BObject_select_get = func;
-                if (match_func("to_mesh")) BObject_to_mesh = func;
-                if (match_func("to_mesh_clear")) BObject_to_mesh_clear = func;
+                assign("select_get", BObject_select_get)
+                assign("to_mesh", BObject_to_mesh)
+                assign("to_mesh_clear", BObject_to_mesh_clear)
             }
         }
         else if (match_type("ObjectModifiers")) {
             each_func{
-                if (match_func("clear")) BObject_modifiers_clear = func;
+                assign("clear", BObject_modifiers_clear)
             }
         }        
         else if (match_type("Mesh")) {
             BMesh::s_type = type;
             each_func {
-                if (match_func("calc_normals_split")) BMesh_calc_normals_split = func;
-                if (match_func("update")) BMesh_update = func;
-                if (match_func("clear_geometry")) BMesh_clear_geometry = func;
+                assign("calc_normals_split", BMesh_calc_normals_split)
+                assign("update", BMesh_update)
+                assign("clear_geometry", BMesh_clear_geometry)          
+            }
+            each_prop{
+                assign("polygons", BMesh_polygons)
             }
         }
         else if (match_type("MeshVertices")) {
             each_func{
-                if (match_func("add")) BMesh_vertices_add = func;
+                assign("add", BMesh_vertices_add)
             }
         }     
         else if (match_type("MeshPolygons")) {
             each_func{
-                if (match_func("add")) BMesh_polygons_add = func;
+                assign("add", BMesh_polygons_add)
             }
         }        
         else if (match_type("MeshLoops")) {
             each_func{
-                if (match_func("add")) BMesh_loops_add = func;
+                assign("add", BMesh_loops_add)
             }
         }
         else if (match_type("MeshEdges")) {
             each_func{
-                if (match_func("add")) BMesh_edges_add = func;
+                assign("add", BMesh_edges_add)
             }
         }        
         else if (match_type("Curve")) {
             BCurve::s_type = type;
             each_prop{
-                if (match_prop("splines")) BCurve_splines = prop;
+                assign("splines", BCurve_splines)
             }
         }
         else if (match_type("CurveSplines")) {
             each_func{
-                if (match_func("clear")) BCurve_splines_clear = func;
-                if (match_func("new")) BCurve_splines_new = func;            
+                assign("clear", BCurve_splines_clear)
+                assign("new", BCurve_splines_new)            
             }
         }     
         else if (match_type("SplineBezierPoints")) {
             BNurb::s_type = type;
             each_func{
-                if (match_func("add")) BNurb_splines_bezier_add = func;
+                assign("add", BNurb_splines_bezier_add)
             }
         }        
         else if (match_type("UVLoopLayers")) {
             each_prop{
-                if (match_prop("active")) UVLoopLayers_active = prop;
+                assign("active", UVLoopLayers_active)
             }
         }
         else if (match_type("LoopColors")) {
             each_prop{
-                if (match_prop("active")) LoopColors_active = prop;
+                assign("active", LoopColors_active)
             }
         }
         else if (match_type("Camera")) {
             BCamera::s_type = type;
             each_prop{
-                if (match_prop("clip_start")) BCamera_clip_start = prop;
-                if (match_prop("clip_end")) BCamera_clip_end = prop;
-                if (match_prop("angle_x")) BCamera_angle_x = prop;
-                if (match_prop("angle_y")) BCamera_angle_y = prop;
-                if (match_prop("lens")) BCamera_lens = prop;
-                if (match_prop("sensor_fit")) BCamera_sensor_fit = prop;
-                if (match_prop("sensor_width")) BCamera_sensor_width = prop;
-                if (match_prop("sensor_height")) BCamera_sensor_height = prop;
-                if (match_prop("shift_x")) BCamera_shift_x = prop;
-                if (match_prop("shift_y")) BCamera_shift_y = prop;
+                assign("clip_start", BCamera_clip_start)
+                assign("clip_end", BCamera_clip_end)
+                assign("angle_x", BCamera_angle_x)
+                assign("angle_y", BCamera_angle_y)
+                assign("lens", BCamera_lens)
+                assign("sensor_fit", BCamera_sensor_fit)
+                assign("sensor_width", BCamera_sensor_width)
+                assign("sensor_height", BCamera_sensor_height)
+                assign("shift_x", BCamera_shift_x)
+                assign("shift_y", BCamera_shift_y)
             }
         }
         else if (match_type("Material")) {
             BMaterial::s_type = type;
             each_prop{
-                if (match_prop("use_nodes")) BMaterial_use_nodes = prop;
-                if (match_prop("active_node_material")) BMaterial_active_node_material = prop;
+                assign("use_nodes", BMaterial_use_nodes)
+                assign("active_node_material", BMaterial_active_node_material)
             }
         }
         else if (match_type("Scene")) {
             BlenderPyScene::s_type = type;
             each_prop{
-                if (match_prop("frame_start")) BlenderPyScene_frame_start = prop;
-                if (match_prop("frame_end")) BlenderPyScene_frame_end = prop;
-                if (match_prop("frame_current")) BlenderPyScene_frame_current = prop;
+                assign("frame_start", BlenderPyScene_frame_start)
+                assign("frame_end", BlenderPyScene_frame_end)
+                assign("frame_current", BlenderPyScene_frame_current)
             }
             each_func{
-                if (match_func("frame_set")) BlenderPyScene_frame_set = func;
+                assign("frame_set", BlenderPyScene_frame_set)
             }
         }
         else if (match_type("BlendData")) {
@@ -247,63 +257,45 @@ void setup(py::object bpy_context)
         }
         else if (match_type("BlendDataObjects")) {
             each_prop{
-                if (match_prop("is_updated")) BlendDataObjects_is_updated = prop;
+                assign("is_updated", BlendDataObjects_is_updated)
             }
         }
         else if (match_type("BlendDataMeshes")) {
             each_func{
-                if (match_func("remove")) BlendDataMeshes_remove = func;
+                assign("remove", BlendDataMeshes_remove)
             }
         }
         else if (match_type("Context")) {
             BlenderPyContext::s_type = type;
             each_prop{
-                if (match_prop("blend_data")) BlenderPyContext_blend_data = prop;
-                if (match_prop("scene")) BlenderPyContext_scene = prop;
-                if (match_prop("view_layer")) BlenderPyContext_view_layer = prop;
+                assign("blend_data", BlenderPyContext_blend_data)
+                assign("scene", BlenderPyContext_scene)
+                assign("view_layer", BlenderPyContext_view_layer)
             }
             each_func{
-                if (match_func("evaluated_depsgraph_get")) BlenderPyContext_evaluated_depsgraph_get = func;
+                assign("evaluated_depsgraph_get", BlenderPyContext_evaluated_depsgraph_get)
             }
         }
         else if (match_type("Depsgraph")) {
             each_prop{
-                if (match_prop("object_instances")) {
-                    BlenderPyDepsgraph_object_instances = prop;
+                assign("object_instances", BlenderPyDepsgraph_object_instances)
                 }
-            }
             each_func{
-                if (match_func("update")) {
-                    BlenderPyContext_depsgraph_update = func;
+                assign("update", BlenderPyContext_depsgraph_update)
                 }
-            }
         }
         else if (match_type("DepsgraphObjectInstance")) {
             each_prop{
-                if (match_prop("instance_object")) {
-                    BlenderPyDepsgraphObjectInstance_instance_object = prop;
-                }
-
-                if (match_prop("is_instance")) {
-                    BlenderPyDepsgraphObjectInstance_is_instance = prop;
-                }
-                if (match_prop("matrix_world")) {
-                    BlenderPyDepsgraphObjectInstance_world_matrix = prop;
-                }
-                if (match_prop("parent")) {
-                    BlenderPyDepsgraphObjectInstance_parent = prop;
-                }
-                if (match_prop("object")) {
-                    BlenderPyDepsgraphObjectInstance_object = prop;
-                }
+                assign("instance_object", BlenderPyDepsgraphObjectInstance_instance_object)
+                assign("is_instance", BlenderPyDepsgraphObjectInstance_is_instance)
+                assign("matrix_world", BlenderPyDepsgraphObjectInstance_world_matrix)
+                assign("parent", BlenderPyDepsgraphObjectInstance_parent)
+                assign("object", BlenderPyDepsgraphObjectInstance_object)
             }
         }
     }
-#undef each_iprop
-#undef each_nprop
 #undef each_func
-#undef match_prop
-#undef match_func
+#undef assign
 #undef match_type
 
     // test
@@ -413,7 +405,9 @@ blist_range<bDeformGroup> BObject::deform_groups()
 
 barray_range<MLoop> BMesh::indices()
 {
-#if BLENDER_VERSION >= 304
+#if BLENDER_VERSION >= 306
+    return { (MLoop*)CustomData_get_layer_named(&m_ptr->ldata, CD_PROP_INT32, ".corner_vert"), (size_t)m_ptr->totloop };
+#elif BLENDER_VERSION >= 304
     return{ (MLoop*)CustomData_get(m_ptr->ldata, CD_MLOOP), (size_t)m_ptr->totloop };
 #else
     return { m_ptr->mloop, (size_t)m_ptr->totloop };
@@ -423,24 +417,39 @@ barray_range<MEdge> BMesh::edges()
 {
     return { m_ptr->medge, (size_t)m_ptr->totedge };
 }
-barray_range<MPoly> BMesh::polygons()
-{
+
+#if BLENDER_VERSION < 306
+barray_range<MPoly> BMesh::polygons() {
 #if BLENDER_VERSION >= 304
     return { (MPoly*)CustomData_get(m_ptr->pdata, CD_MPOLY), (size_t)m_ptr->totpoly };
 #else
     return { m_ptr->mpoly, (size_t)m_ptr->totpoly };
 #endif
 }
+#else
+OffsetIndices<int> BMesh::polygons()
+{
+    return Span(m_ptr->poly_offset_indices, m_ptr->totpoly + 1);
+}
+MutableSpan<int> BMesh::polygonsForWrite()
+{
+    return MutableSpan(m_ptr->poly_offset_indices, m_ptr->totpoly + 1);
+}
+#endif // #if BLENDER_VERSION < 306
 
 barray_range<MVert> BMesh::vertices()
 {
-#if BLENDER_VERSION >= 304
+#if BLENDER_VERSION >= 305
+    auto positions = (const float(*)[3])CustomData_get_layer_named(&m_ptr->vdata, CD_PROP_FLOAT3, "position");    
+    return { (MVert*)positions, (size_t)m_ptr->totvert };
+#elif BLENDER_VERSION >= 304
     return { (MVert*)CustomData_get(m_ptr->vdata, CD_MVERT),(size_t) m_ptr->totvert};
 #else
     return { m_ptr->mvert, (size_t)m_ptr->totvert };
 #endif
 }
-barray_range<mu::float3> BMesh::normals()
+
+blender::barray_range<mu::float3> BMesh::normals()
 {
     if (CustomData_number_of_layers(&m_ptr->ldata, CD_NORMAL) > 0) {
         auto data = (mu::float3*)CustomData_get(m_ptr->ldata, CD_NORMAL);
@@ -463,17 +472,14 @@ barray_range<int> BMesh::material_indices()
 
 //----------------------------------------------------------------------------------------------------------------------
 
-barray_range<MLoopUV> BMesh::uv()
-{
-    CustomDataLayer* layer_data = static_cast<CustomDataLayer*>(get_pointer(m_ptr, UVLoopLayers_active));
-    if (layer_data && layer_data->data)
-        return { static_cast<MLoopUV*>(layer_data->data), static_cast<size_t>(m_ptr->totloop) };
-    else
-        return { nullptr, (size_t)0 };
-}
 
 MLoopUV* BMesh::GetUV(const int index) const {
+#if BLENDER_VERSION < 305
     return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->ldata, CD_MLOOPUV, index));
+#else
+    auto uvs = CustomData_get_layer_n(&m_ptr->ldata, CD_PROP_FLOAT2, index);
+    return (MLoopUV*)uvs;
+#endif
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -523,6 +529,21 @@ void BMesh::add_normals(int count) {
     call<Mesh, void, int>(g_context, m_ptr, BMesh_normals_add, count);
 }
 
+#if BLENDER_VERSION >= 306
+void BMesh::shade_flat() {
+
+    bool* sharp_faces = (bool*)CustomData_get_layer_named(&m_ptr->pdata, CD_PROP_BOOL, "sharp_face");
+    if (!sharp_faces) {
+        call<ID, PointerRNA, const char*, long long, long long>(g_context, &m_ptr->id, BlenderPyAttribute_new, "sharp_face", CD_PROP_BOOL, 2, &m_ptr->id);   // ATTR_DOMAIN_FACE = 2
+        sharp_faces = (bool*)CustomData_get_layer_named(&m_ptr->pdata, CD_PROP_BOOL, "sharp_face");
+    }
+
+    if (sharp_faces) {
+        std::fill(sharp_faces, sharp_faces + m_ptr->totpoly, true);
+    }
+}
+#endif
+
 barray_range<BMFace*> BEditMesh::polygons()
 {
     return { m_ptr->bm->ftable, (size_t)m_ptr->bm->ftable_tot };
@@ -540,17 +561,17 @@ barray_range<BMTriangle> BEditMesh::triangles()
 
 int BEditMesh::uv_data_offset(int index) const
 {
+#if BLENDER_VERSION < 306
     int layer_index = CustomData_get_layer_index_n(&m_ptr->bm->ldata, CD_MLOOPUV, index);
+#else
+    int layer_index = CustomData_get_layer_index_n(&m_ptr->bm->ldata, CD_PROP_FLOAT2, index);
+#endif
     if (layer_index == -1) {
         return NULL;
     }
 
     auto layer = m_ptr->bm->ldata.layers[layer_index];
     return layer.offset;
-}
-
-MLoopUV* BEditMesh::GetUV(const int index) const {
-    return static_cast<MLoopUV *>(CustomData_get_layer_n(&m_ptr->bm->ldata, CD_MLOOPUV, index));
 }
 
 void BNurb::add_bezier_points(int count, Object* obj) {
