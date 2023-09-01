@@ -3,11 +3,11 @@
 ## [0.18.0-preview] - 2023-08-01
 
 ### Added
-* feat: Blender 3.5 support
+* feat: Blender 3.5 and Blender 3.6.2 support
 * feat: Improved instancing support
 
 ### Changed
-* change: instances are noww sent in a way that allows the same object to be instanced on multiple parents and keep that hierarchy in Unity
+* change: instances are now sent in a way that allows the same object to be instanced on multiple parents and keep that hierarchy in Unity
 
 ### Fixed
 * fix: various instancing fixes
