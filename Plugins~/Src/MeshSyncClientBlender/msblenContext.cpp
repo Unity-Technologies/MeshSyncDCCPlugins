@@ -1992,6 +1992,10 @@ void msblenContext::WaitAndKickAsyncExport()
         blender::callPythonMethod("meshsync_post_export");
     };
 
+    exporter->on_cancel = [this] {
+        m_entity_manager.clearDirtyFlags();
+    };
+
     exporter->on_before_send = [this] {
         blender::callPythonMethod("meshsync_pre_export");
     };
